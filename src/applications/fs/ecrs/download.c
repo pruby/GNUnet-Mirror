@@ -208,7 +208,8 @@ struct GNUNET_ECRS_DownloadContext
  *     is not complete and may be resumed later.
  */
 static void
-free_request_manager (struct GNUNET_ECRS_DownloadContext *rm, int unlinkTreeFiles)
+free_request_manager (struct GNUNET_ECRS_DownloadContext *rm,
+                      int unlinkTreeFiles)
 {
   int i;
   char *fn;
@@ -261,7 +262,7 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm, int unlinkTreeFile
     }
   GNUNET_free_non_null (rm->filename);
   GNUNET_free_non_null (rm->handles);
-  GNUNET_free(rm);
+  GNUNET_free (rm);
 }
 
 /**
@@ -357,14 +358,11 @@ addRequest (struct Node *node)
 }
 
 static void
-signal_abort (struct GNUNET_ECRS_DownloadContext *rm,
-	      const char * msg)
+signal_abort (struct GNUNET_ECRS_DownloadContext *rm, const char *msg)
 {
   rm->abortFlag = GNUNET_YES;
-  if ( (rm->head != NULL) &&
-       (rm->dpcb != NULL) )
-    rm->dpcb (rm->length+1,
-              0, 0, 0, msg, 0, rm->dpcbClosure);
+  if ((rm->head != NULL) && (rm->dpcb != NULL))
+    rm->dpcb (rm->length + 1, 0, 0, 0, msg, 0, rm->dpcbClosure);
   GNUNET_thread_stop_sleep (rm->main);
 }
 
@@ -650,9 +648,9 @@ content_receive_callback (const GNUNET_HashCode * query,
       GNUNET_free (data);
       GNUNET_GE_BREAK (ectx, 0);
       signal_abort (rm,
-		    _("Decrypted content does not match key. "
-		      "This is either a bug or a maliciously inserted "
-		      "file. Download aborted.\n"));
+                    _("Decrypted content does not match key. "
+                      "This is either a bug or a maliciously inserted "
+                      "file. Download aborted.\n"));
       GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;
     }
@@ -754,17 +752,17 @@ get_real_download_filename (struct GNUNET_GE_Context *ectx,
  */
 struct GNUNET_ECRS_DownloadContext *
 GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
-					 struct GNUNET_GC_Configuration *cfg,
-					 const struct GNUNET_ECRS_URI *uri,
-					 const char *filename,
-					 unsigned long long offset,
-					 unsigned long long length,
-					 unsigned int anonymityLevel,
-					 int no_temporaries,
-					 GNUNET_ECRS_DownloadProgressCallback dpcb,
-					 void *dpcbClosure)
+                                         struct GNUNET_GC_Configuration *cfg,
+                                         const struct GNUNET_ECRS_URI *uri,
+                                         const char *filename,
+                                         unsigned long long offset,
+                                         unsigned long long length,
+                                         unsigned int anonymityLevel,
+                                         int no_temporaries,
+                                         GNUNET_ECRS_DownloadProgressCallback
+                                         dpcb, void *dpcbClosure)
 {
-  struct GNUNET_ECRS_DownloadContext * rm;
+  struct GNUNET_ECRS_DownloadContext *rm;
   struct stat buf;
   struct Node *top;
   char *fn;
@@ -776,9 +774,8 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
     }
-  rm = GNUNET_malloc(sizeof (struct GNUNET_ECRS_DownloadContext));
-  memset (rm, 0,
-	  sizeof (struct GNUNET_ECRS_DownloadContext));
+  rm = GNUNET_malloc (sizeof (struct GNUNET_ECRS_DownloadContext));
+  memset (rm, 0, sizeof (struct GNUNET_ECRS_DownloadContext));
   rm->ectx = ectx;
   rm->cfg = cfg;
   rm->startTime = GNUNET_get_time ();
@@ -842,9 +839,9 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
               fn[strlen (fn) - 1] += i;
             }
           rm->handles[i] = GNUNET_disk_file_open (ectx,
-                                                 fn,
-                                                 O_CREAT | O_RDWR,
-                                                 S_IRUSR | S_IWUSR);
+                                                  fn,
+                                                  O_CREAT | O_RDWR,
+                                                  S_IRUSR | S_IWUSR);
           GNUNET_free (fn);
           if (rm->handles[i] < 0)
             {
@@ -884,10 +881,11 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
 }
 
 int
-GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext * rm) 
+GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
+                                        *rm)
 {
   int ret;
-  char * rdir;
+  char *rdir;
   int len;
 
   if ((rm->head == NULL) &&
@@ -909,7 +907,8 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext * rm)
         {
           GNUNET_GE_LOG_STRERROR_FILE (rm->ectx,
                                        GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                       GNUNET_GE_BULK, "unlink", rm->filename);
+                                       GNUNET_GE_BULK, "unlink",
+                                       rm->filename);
         }
       else
         {
@@ -934,8 +933,7 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext * rm)
                  __FUNCTION__, filename,
                  ret == GNUNET_OK ? "SUCCESS" : "INCOMPLETE");
 #endif
-  free_request_manager (rm,
-                        (ret == GNUNET_OK) ? GNUNET_YES : GNUNET_NO);
+  free_request_manager (rm, (ret == GNUNET_OK) ? GNUNET_YES : GNUNET_NO);
   return ret;
 }
 
@@ -972,25 +970,24 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                    GNUNET_ECRS_TestTerminate tt,
                                    void *ttClosure)
 {
-  struct GNUNET_ECRS_DownloadContext * rm;
+  struct GNUNET_ECRS_DownloadContext *rm;
 
   rm = GNUNET_ECRS_file_download_partial_start (ectx,
-						cfg,
-						uri,
-						filename,
-						offset,
-						length,
-						anonymityLevel,
-						no_temporaries,
-						dpcb,
-						dpcbClosure);
+                                                cfg,
+                                                uri,
+                                                filename,
+                                                offset,
+                                                length,
+                                                anonymityLevel,
+                                                no_temporaries,
+                                                dpcb, dpcbClosure);
   if (rm == NULL)
     return (length == 0) ? GNUNET_OK : GNUNET_SYSERR;
   while ((GNUNET_OK == tt (ttClosure)) &&
          (GNUNET_YES != GNUNET_shutdown_test ()) &&
          (rm->abortFlag == GNUNET_NO) && (rm->head != NULL))
     GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
-  return GNUNET_ECRS_file_download_partial_stop(rm);
+  return GNUNET_ECRS_file_download_partial_stop (rm);
 }
 
 /**

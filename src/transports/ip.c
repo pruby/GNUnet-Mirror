@@ -288,8 +288,8 @@ getAddress6FromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
               if (ifa_ptr->ifa_addr->sa_family != AF_INET6)
                 continue;
               memcpy (identity,
-                      &((struct sockaddr_in6 *) ifa_ptr->ifa_addr)->sin6_addr, 
-		      sizeof (struct in6_addr));	      
+                      &((struct sockaddr_in6 *) ifa_ptr->ifa_addr)->sin6_addr,
+                      sizeof (struct in6_addr));
               freeifaddrs (ifa_first);
               GNUNET_free (interfaces);
               return GNUNET_OK;
@@ -327,47 +327,43 @@ getAddress6 (struct GNUNET_GC_Configuration *cfg,
       if (strlen (ipString) > 0)
         {
 #if HAVE_GETADDRINFO
-	  int s;
-	  struct addrinfo hints;	 
-	  struct addrinfo *result;
+          int s;
+          struct addrinfo hints;
+          struct addrinfo *result;
 
-	  memset(&hints, 0, sizeof(struct addrinfo));
-	  hints.ai_family = AF_INET6;    /* Allow only IPv6 */
-	  hints.ai_socktype = SOCK_STREAM; /* fixme? */
-	  hints.ai_protocol = 0;          /* Any protocol */
-	  hints.ai_canonname = NULL;
-	  hints.ai_addr = NULL;
-	  hints.ai_next = NULL;
-	  
-	  if (0 !=
-	      (s = getaddrinfo(ipString,
-			       NULL,
-			       &hints,
-			       &result)))
-	    {
-	      GNUNET_GE_LOG (ectx,
+          memset (&hints, 0, sizeof (struct addrinfo));
+          hints.ai_family = AF_INET6;   /* Allow only IPv6 */
+          hints.ai_socktype = SOCK_STREAM;      /* fixme? */
+          hints.ai_protocol = 0;        /* Any protocol */
+          hints.ai_canonname = NULL;
+          hints.ai_addr = NULL;
+          hints.ai_next = NULL;
+
+          if (0 != (s = getaddrinfo (ipString, NULL, &hints, &result)))
+            {
+              GNUNET_GE_LOG (ectx,
                              GNUNET_GE_ERROR | GNUNET_GE_USER |
                              GNUNET_GE_BULK,
                              _("Could not resolve `%s': %s\n"), ipString,
-                             gai_strerror(s));
-	    }
-	  else
-	    {
-	      if ( (result != NULL) &&
-		   (result->ai_addrlen == sizeof(struct sockaddr_in6)) )
-		{
-		  GNUNET_GE_ASSERT (ectx,
-				    sizeof (struct in6_addr) ==
-				    sizeof (GNUNET_IPv6Address));
-		  memcpy(address,
-			 &((struct sockaddr_in6*)result->ai_addr)->sin6_addr,
-			 sizeof(struct in6_addr));
-		  retval = GNUNET_OK;
-		}
-	      freeaddrinfo(result);
-	    }		      
+                             gai_strerror (s));
+            }
+          else
+            {
+              if ((result != NULL) &&
+                  (result->ai_addrlen == sizeof (struct sockaddr_in6)))
+                {
+                  GNUNET_GE_ASSERT (ectx,
+                                    sizeof (struct in6_addr) ==
+                                    sizeof (GNUNET_IPv6Address));
+                  memcpy (address,
+                          &((struct sockaddr_in6 *) result->ai_addr)->
+                          sin6_addr, sizeof (struct in6_addr));
+                  retval = GNUNET_OK;
+                }
+              freeaddrinfo (result);
+            }
 #else
-	  struct hostent *ip;   
+          struct hostent *ip;
 
           ip = gethostbyname2 (ipString, AF_INET6);
           if (ip == NULL)
@@ -382,18 +378,17 @@ getAddress6 (struct GNUNET_GC_Configuration *cfg,
             {
               GNUNET_GE_ASSERT (ectx, 0);
             }
-	  else
-	    {
-	      GNUNET_GE_ASSERT (ectx,
-				sizeof (struct in6_addr) ==
-				sizeof (address->addr));
-	      GNUNET_GE_ASSERT (ectx,
-				sizeof (struct in6_addr) ==
-				sizeof (GNUNET_IPv6Address));
-	      memcpy (address, ip->h_addr_list[0],
-		      sizeof (struct in6_addr));
-	      retval = GNUNET_OK;           
-	    }
+          else
+            {
+              GNUNET_GE_ASSERT (ectx,
+                                sizeof (struct in6_addr) ==
+                                sizeof (address->addr));
+              GNUNET_GE_ASSERT (ectx,
+                                sizeof (struct in6_addr) ==
+                                sizeof (GNUNET_IPv6Address));
+              memcpy (address, ip->h_addr_list[0], sizeof (struct in6_addr));
+              retval = GNUNET_OK;
+            }
 #endif
         }
       GNUNET_free (ipString);

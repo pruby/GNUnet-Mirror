@@ -106,9 +106,10 @@ main (int argc, char **argv)
       p = GNUNET_thread_create (&pt, boot, 1024 * 64);
       GNUNET_thread_join (p, &unused);
       done =
-	GNUNET_plugin_resolve_function (plugin, "release_module_", GNUNET_YES);
-      if (done != NULL) 
-	done ();
+        GNUNET_plugin_resolve_function (plugin, "release_module_",
+                                        GNUNET_YES);
+      if (done != NULL)
+        done ();
     }
   GNUNET_plugin_unload (plugin);
   GNUNET_GC_free (cfg);

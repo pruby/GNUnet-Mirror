@@ -229,9 +229,9 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
        i > GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT; i--)
     {
       if (transport == NULL)
-	protocols |= (1LL << i);
+        protocols |= (1LL << i);
       else if (transport->isAvailable ((unsigned short) i))
-	protocols |= (1LL << i);
+        protocols |= (1LL << i);
     }
   sprintf (purl, "%s?p=%llu", url, protocols);
   GNUNET_free (url);

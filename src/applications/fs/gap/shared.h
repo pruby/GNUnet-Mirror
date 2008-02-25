@@ -182,9 +182,9 @@ struct RequestList
   /**
    * What is the chance that we have more results
    * locally for this request?  Set to a positive
-   * number if we think we have more results, 
+   * number if we think we have more results,
    * decremented by one each time we fail to find
-   * more results; set to zero if we are sure 
+   * more results; set to zero if we are sure
    * that we have no more results.
    */
   unsigned int have_more;

@@ -160,8 +160,7 @@ main (int argc, const char **argv)
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      8,
-				      value));
+                                      8, value));
   printf ("Peer1 gets key2\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
@@ -180,8 +179,7 @@ main (int argc, const char **argv)
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-				      8, 
-                                      value));
+                                      8, value));
   printf ("Peer2 gets key.\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,

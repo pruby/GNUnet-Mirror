@@ -145,8 +145,7 @@ main (int argc, const char **argv)
                                           ectx,
                                           &key,
                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					  8,
-                                          value));
+                                          8, value));
       GNUNET_free (value);
     }
 

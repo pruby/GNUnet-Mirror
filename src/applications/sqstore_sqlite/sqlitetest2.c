@@ -148,8 +148,8 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i, int k)
                    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
   memset (&value[1], i, size - sizeof (GNUNET_DatastoreValue));
   if (i > 255)
-    memset (&value[1], i-255, (size - sizeof (GNUNET_DatastoreValue))/2);
-  ((char*)&value[1])[0] = k;
+    memset (&value[1], i - 255, (size - sizeof (GNUNET_DatastoreValue)) / 2);
+  ((char *) &value[1])[0] = k;
   if (GNUNET_OK != api->put (&key, value))
     {
       GNUNET_free (value);

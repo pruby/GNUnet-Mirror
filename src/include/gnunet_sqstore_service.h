@@ -72,7 +72,7 @@ typedef struct
    * in the datastore.
    *
    * @param key maybe NULL (to match all entries)
-   * @param vhash hash of the value, maybe NULL (to 
+   * @param vhash hash of the value, maybe NULL (to
    *        match all values that have the right key).
    *        Note that for DBlocks there is no difference
    *        betwen key and vhash, but for other blocks

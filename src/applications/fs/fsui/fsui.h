@@ -458,7 +458,8 @@ int GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list);
 
 int
 GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
-				      const GNUNET_HashCode * key, int isRoot, void *cls);
+                                      const GNUNET_HashCode * key, int isRoot,
+                                      void *cls);
 
 void *GNUNET_FSUI_uploadThread (void *dl);
 

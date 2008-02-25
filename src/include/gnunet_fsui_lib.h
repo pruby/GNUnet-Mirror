@@ -175,7 +175,7 @@ enum GNUNET_FSUI_EventType
  * PAUSED means that the user asked to pause the activity
  * (and that it is to be resumed once the user explicitly
  * asks for it to be resumed).
- * 
+ *
  * COMPLETED means that the download is finished (but the
  * thread has not been joined yet).  The download thread
  * makes the transition from PENDING to COMPLETED when it

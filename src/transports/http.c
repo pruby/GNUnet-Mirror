@@ -445,7 +445,7 @@ static unsigned int tsessionArrayLength;
  * Lock for concurrent access to all structures used
  * by http, including CURL.
  */
-static struct GNUNET_Mutex * lock;
+static struct GNUNET_Mutex *lock;
 
 
 /**
@@ -601,7 +601,7 @@ requestCompletedCallback (void *unused,
 #endif
 
   if (stats != NULL)
-    stats->change(stat_mhd_close_callbacks, 1);
+    stats->change (stat_mhd_close_callbacks, 1);
   ENTER ();
   if (httpsession == NULL)
     return;                     /* oops */
@@ -724,7 +724,7 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
   struct MHDGetData *mgd = cls;
 
   if (stats != NULL)
-    stats->change(stat_mhd_read_callbacks, 1);
+    stats->change (stat_mhd_read_callbacks, 1);
   ENTER ();
   GNUNET_mutex_lock (lock);
   if (mgd->wpos < max)
@@ -803,7 +803,7 @@ accessHandlerCallback (void *cls,
   unsigned int poff;
 
   if (stats != NULL)
-    stats->change(stat_mhd_access_callbacks, 1);
+    stats->change (stat_mhd_access_callbacks, 1);
   ENTER ();
 #if DEBUG_HTTP
   GNUNET_GE_LOG (coreAPI->ectx,
@@ -1033,7 +1033,7 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   GNUNET_TransportPacket *mp;
 
   if (stats != NULL)
-    stats->change(stat_curl_receive_callbacks, 1);
+    stats->change (stat_curl_receive_callbacks, 1);
   ENTER ();
   httpSession->cs.client.last_get_activity = GNUNET_get_time ();
 #if DEBUG_HTTP
@@ -1108,7 +1108,7 @@ sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   size_t max = size * nmemb;
 
   if (stats != NULL)
-    stats->change(stat_curl_send_callbacks, 1);
+    stats->change (stat_curl_send_callbacks, 1);
   ENTER ();
   put->last_activity = GNUNET_get_time ();
   if (max > put->size - put->pos)
@@ -1136,8 +1136,8 @@ create_session_url (HTTPSession * httpSession)
   char *url;
   GNUNET_EncName enc;
   unsigned short available;
-  const char * obr;
-  const char * cbr;
+  const char *obr;
+  const char *cbr;
   const HostAddress *haddr =
     (const HostAddress *) &httpSession->cs.client.address;
 
@@ -1155,8 +1155,8 @@ create_session_url (HTTPSession * httpSession)
               EXIT ();
               return;
             }
-	  obr = "";
-	  cbr = "";
+          obr = "";
+          cbr = "";
         }
       else if ((available & VERSION_AVAILABLE_IPV6) > 0)
         {
@@ -1166,17 +1166,16 @@ create_session_url (HTTPSession * httpSession)
               EXIT ();
               return;
             }
-	  obr = "[";
-	  cbr = "]";
+          obr = "[";
+          cbr = "]";
         }
       else
-	return; /* error */
+        return;                 /* error */
       url = GNUNET_malloc (64 + sizeof (GNUNET_EncName) + strlen (buf));
       GNUNET_snprintf (url,
                        64 + sizeof (GNUNET_EncName),
-                       "http://%s%s%s:%u/%s", obr, buf, cbr, 
-		       ntohs(haddr->port),
-		       &enc);
+                       "http://%s%s%s:%u/%s", obr, buf, cbr,
+                       ntohs (haddr->port), &enc);
       httpSession->cs.client.url = url;
     }
   EXIT ();
@@ -1295,7 +1294,7 @@ httpConnect (const GNUNET_MessageHello * hello,
   int i;
 
   if (stats != NULL)
-    stats->change(stat_connect_calls, 1);
+    stats->change (stat_connect_calls, 1);
   ENTER ();
   /* check if we have a session pending for this peer */
   tsession = NULL;
@@ -1543,7 +1542,7 @@ httpSend (GNUNET_TSession * tsession,
 #endif
 
   if (stats != NULL)
-    stats->change(stat_send_calls, 1);
+    stats->change (stat_send_calls, 1);
   ENTER ();
   if (httpSession->is_client)
     {
@@ -1561,7 +1560,7 @@ httpSend (GNUNET_TSession * tsession,
           if (httpSession->cs.client.puts != NULL)
             {
               /* do not queue more than one unimportant PUT at a time */
-	      signal_select ();       /* do clean up now! */
+              signal_select (); /* do clean up now! */
               GNUNET_mutex_unlock (lock);
               if (stats != NULL)
                 stats->change (stat_bytesDropped, size);
@@ -1620,7 +1619,7 @@ httpSend (GNUNET_TSession * tsession,
       /* need to grow or discard */
       if (!important)
         {
-	  GNUNET_mutex_unlock (lock);
+          GNUNET_mutex_unlock (lock);
           EXIT ();
           return GNUNET_NO;
         }
@@ -1890,7 +1889,7 @@ curl_runner (void *unused)
       tv.tv_usec = (timeout % 1000) * 1000;
       STEP ();
       if (stats != NULL)
-	stats->change(stat_select_calls, 1);
+        stats->change (stat_select_calls, 1);
       SELECT (max + 1, &rs, &ws, &es, (have_tv == MHD_YES) ? &tv : NULL);
       STEP ();
       if (GNUNET_YES != http_running)
@@ -1907,7 +1906,7 @@ curl_runner (void *unused)
       while ((mret == CURLM_CALL_MULTI_PERFORM)
              && (http_running == GNUNET_YES));
       if (FD_ISSET (signal_pipe[0], &rs))
-	read (signal_pipe[0], buf, sizeof(buf));
+        read (signal_pipe[0], buf, sizeof (buf));
       if ((mret != CURLM_OK) && (mret != CURLM_CALL_MULTI_PERFORM))
         GNUNET_GE_LOG (coreAPI->ectx,
                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
@@ -2133,8 +2132,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
       stat_select_calls
         = stats->create (gettext_noop ("# HTTP select calls"));
 
-      stat_send_calls
-        = stats->create (gettext_noop ("# HTTP send calls"));
+      stat_send_calls = stats->create (gettext_noop ("# HTTP send calls"));
 
       stat_curl_send_callbacks
         = stats->create (gettext_noop ("# HTTP curl send callbacks"));

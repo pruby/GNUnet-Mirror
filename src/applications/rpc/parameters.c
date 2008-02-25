@@ -30,7 +30,7 @@
 #include "platform.h"
 
 /**
- * A linked list of parameters to/from an RPC call. 
+ * A linked list of parameters to/from an RPC call.
  */
 struct Parameter
 {

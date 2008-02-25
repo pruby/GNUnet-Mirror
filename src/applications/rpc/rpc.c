@@ -62,7 +62,7 @@
  * @brief Request to execute an function call on the remote peer.  The
  * message is of variable size to pass arguments.  Requests and reply
  * messages use the same struct, the only difference is in the value
- * of the header.type field.  
+ * of the header.type field.
  */
 typedef struct
 {
@@ -199,7 +199,7 @@ struct GNUNET_RPC_RequestHandle
   P2P_rpc_MESSAGE *msg;
 
   /**
-   * Function to call once we get a reply. 
+   * Function to call once we get a reply.
    */
   GNUNET_RPC_AsynchronousCompletionCallback callback;
 
@@ -264,7 +264,7 @@ struct RegisteredRPC
   char *name;
 
   /**
-   * Callback for an asynchronous RPC. 
+   * Callback for an asynchronous RPC.
    */
   GNUNET_RPC_AsynchronousFunction async_callback;
 
@@ -420,7 +420,7 @@ RPC_get_function_name (const P2P_rpc_MESSAGE * req)
 }
 
 /**
- * Get the arguments (or return value) from 
+ * Get the arguments (or return value) from
  * the request.
  */
 static struct GNUNET_RPC_CallParameters *

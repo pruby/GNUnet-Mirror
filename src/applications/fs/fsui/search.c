@@ -69,7 +69,8 @@ processResult (const GNUNET_ECRS_FileInfo * fi, GNUNET_FSUI_SearchList * pos)
  */
 int
 GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
-				      const GNUNET_HashCode * key, int isRoot, void *cls)
+                                      const GNUNET_HashCode * key, int isRoot,
+                                      void *cls)
 {
   GNUNET_FSUI_SearchList *pos = cls;
   unsigned int i;
@@ -229,12 +230,12 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   event.data.SearchStarted.searchURI = pos->uri;
   event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
   pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-  pos->handle = GNUNET_ECRS_search_start(pos->ctx->ectx,
-					 pos->ctx->cfg,
-					 pos->uri,
-					 pos->anonymityLevel,
-					 &GNUNET_FSUI_search_progress_callback,
-					 pos);
+  pos->handle = GNUNET_ECRS_search_start (pos->ctx->ectx,
+                                          pos->ctx->cfg,
+                                          pos->uri,
+                                          pos->anonymityLevel,
+                                          &GNUNET_FSUI_search_progress_callback,
+                                          pos);
   if (pos->handle == NULL)
     {
       GNUNET_ECRS_uri_destroy (pos->uri);
@@ -269,7 +270,7 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx,
       GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_ECRS_search_stop(sl->handle);
+  GNUNET_ECRS_search_stop (sl->handle);
   sl->state = GNUNET_FSUI_ABORTED_JOINED;
   sl->handle = NULL;
   event.type = GNUNET_FSUI_search_aborted;
@@ -295,7 +296,7 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
       GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_ECRS_search_stop(sl->handle);
+  GNUNET_ECRS_search_stop (sl->handle);
   sl->state = GNUNET_FSUI_PAUSED;
   event.type = GNUNET_FSUI_search_paused;
   event.data.SearchPaused.sc.pos = sl;
@@ -320,12 +321,12 @@ GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx,
   event.data.SearchStarted.sc.pos = pos;
   event.data.SearchStarted.sc.cctx = pos->cctx;
   pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-  pos->handle = GNUNET_ECRS_search_start(pos->ctx->ectx,
-					 pos->ctx->cfg,
-					 pos->uri,
-					 pos->anonymityLevel,
-					 &GNUNET_FSUI_search_progress_callback,
-					 pos);
+  pos->handle = GNUNET_ECRS_search_start (pos->ctx->ectx,
+                                          pos->ctx->cfg,
+                                          pos->uri,
+                                          pos->anonymityLevel,
+                                          &GNUNET_FSUI_search_progress_callback,
+                                          pos);
   if (pos->handle == NULL)
     {
       pos->state = GNUNET_FSUI_PAUSED;

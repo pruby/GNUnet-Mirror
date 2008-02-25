@@ -116,8 +116,8 @@ receive (GNUNET_TransportPacket * mp)
         {
           hello = transport->createhello ();
           /* HACK hello -- change port! */
-          ((HostAddress *) &hello[1])->port =
-            htons (ntohs (((HostAddress *) &hello[1])->port) - OFFSET);
+          ((HostAddress *) & hello[1])->port =
+            htons (ntohs (((HostAddress *) & hello[1])->port) - OFFSET);
           if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
               GNUNET_free (hello);
@@ -176,7 +176,7 @@ main (int argc, char *const *argv)
   GNUNET_MessageHello *hello;
 
   memset (&api, 0, sizeof (GNUNET_CoreAPIForTransport));
-  pid = fork();
+  pid = fork ();
   res = GNUNET_init (argc,
                      argv,
                      "transport-test",
@@ -267,8 +267,8 @@ main (int argc, char *const *argv)
       /* client - initiate requests */
       hello = transport->createhello ();
       /* HACK hello -- change port! */
-      ((HostAddress *) &hello[1])->port =
-	htons (ntohs (((HostAddress *) &hello[1])->port) + OFFSET);
+      ((HostAddress *) & hello[1])->port =
+        htons (ntohs (((HostAddress *) & hello[1])->port) + OFFSET);
       if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
         {
           GNUNET_free (hello);

@@ -435,7 +435,8 @@ quit:
   return errorCode;
 }
 
-void auto_share_shutdown_initiate ()
+void
+auto_share_shutdown_initiate ()
 {
   // FIXME
 }
@@ -509,7 +510,8 @@ ServiceMain (DWORD argc, LPSTR * argv)
   theServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
   theServiceStatus.dwCurrentState = SERVICE_RUNNING;
 
-  hService = GNRegisterServiceCtrlHandler ("GNUnet Auto Share", ServiceCtrlHandler);
+  hService =
+    GNRegisterServiceCtrlHandler ("GNUnet Auto Share", ServiceCtrlHandler);
   if (!hService)
     return;
 

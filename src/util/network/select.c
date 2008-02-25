@@ -533,7 +533,8 @@ selectThread (void *ctx)
                 timeout = 0;
               else
                 timeout =
-                  GNUNET_MIN (timeout, session->lastUse + session->timeout - now);
+                  GNUNET_MIN (timeout,
+                              session->lastUse + session->timeout - now);
             }
         }
       GNUNET_mutex_unlock (sh->lock);
@@ -903,10 +904,10 @@ GNUNET_select_create (const char *description,
       GNUNET_free (sh);
       return NULL;
     }
-  if ( (GNUNET_OK !=
-	GNUNET_pipe_make_nonblocking (sh->ectx, sh->signal_pipe[0])) ||
-       (GNUNET_OK !=
-	GNUNET_pipe_make_nonblocking (sh->ectx, sh->signal_pipe[1])) )
+  if ((GNUNET_OK !=
+       GNUNET_pipe_make_nonblocking (sh->ectx, sh->signal_pipe[0])) ||
+      (GNUNET_OK !=
+       GNUNET_pipe_make_nonblocking (sh->ectx, sh->signal_pipe[1])))
     {
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))

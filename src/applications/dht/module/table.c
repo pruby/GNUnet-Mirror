@@ -272,10 +272,8 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
   unsigned int index;
   int i;
 
-  if (0 == memcmp(peer,
-		  coreAPI->myIdentity,
-		  sizeof(GNUNET_PeerIdentity)))
-    return NULL; /* myself! */
+  if (0 == memcmp (peer, coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity)))
+    return NULL;                /* myself! */
   index = get_bit_distance (&peer->hashPubKey,
                             &coreAPI->myIdentity->hashPubKey);
   i = bucketCount - 1;
@@ -283,7 +281,7 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
     i--;
   if ((buckets[i].bstart <= index) && (buckets[i].bend >= index))
     return &buckets[i];
-  GNUNET_GE_BREAK(NULL, 0);
+  GNUNET_GE_BREAK (NULL, 0);
   return NULL;
 }
 

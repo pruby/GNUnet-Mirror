@@ -34,7 +34,7 @@
 #include "helper.h"
 
 /**
- * send given string to client 
+ * send given string to client
  */
 static void
 cprintf (struct GNUNET_ClientHandle *c, unsigned short t, const char *format,

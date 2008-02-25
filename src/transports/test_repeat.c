@@ -118,8 +118,8 @@ receive (GNUNET_TransportPacket * mp)
         {
           hello = transport->createhello ();
           /* HACK hello -- change port! */
-          ((HostAddress *) &hello[1])->port =
-            htons (ntohs (((HostAddress *) &hello[1])->port) - OFFSET);
+          ((HostAddress *) & hello[1])->port =
+            htons (ntohs (((HostAddress *) & hello[1])->port) - OFFSET);
           if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
               GNUNET_free (hello);
@@ -281,8 +281,8 @@ main (int argc, char *const *argv)
           /* client - initiate requests */
           hello = transport->createhello ();
           /* HACK hello -- change port! */
-          ((HostAddress *) &hello[1])->port =
-            htons (ntohs (((HostAddress *) &hello[1])->port) + OFFSET);
+          ((HostAddress *) & hello[1])->port =
+            htons (ntohs (((HostAddress *) & hello[1])->port) + OFFSET);
           if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
               GNUNET_free (hello);

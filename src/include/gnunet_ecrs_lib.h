@@ -697,8 +697,7 @@ struct GNUNET_ECRS_SearchContext;
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
-struct GNUNET_ECRS_SearchContext *
-GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure); /* search.c */
+struct GNUNET_ECRS_SearchContext *GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure);    /* search.c */
 
 /**
  * Stop search for content.
@@ -706,8 +705,7 @@ GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Confi
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
-void
-GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext * sctx);
+void GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext *sctx);
 
 /**
  * Search for content (synchronous version).
@@ -724,7 +722,7 @@ int GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configu
  * @param totalBytes number of bytes that will need to be downloaded,
  *        excluding inner blocks; the value given here will
  *        be one larger than the requested download size to signal
- *        an error.  In that case, all other values will be 0, 
+ *        an error.  In that case, all other values will be 0,
  *        except form "lastBlock" which will point to an error
  *        message describing the problem.
  * @param completedBytes number of bytes that have been obtained
@@ -762,23 +760,25 @@ struct GNUNET_ECRS_DownloadContext;
  * @param start starting offset
  * @param length length of the download (starting at offset)
  */
-struct GNUNET_ECRS_DownloadContext *
-GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
-					 struct GNUNET_GC_Configuration *cfg,
-					 const struct GNUNET_ECRS_URI *uri,
-					 const char *filename,
-					 unsigned long long offset,
-					 unsigned long long length,
-					 unsigned int anonymityLevel,
-					 int no_temporaries,
-					 GNUNET_ECRS_DownloadProgressCallback dpcb,
-					 void *dpcbClosure);
+struct GNUNET_ECRS_DownloadContext
+  *GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
+                                            struct GNUNET_GC_Configuration
+                                            *cfg,
+                                            const struct GNUNET_ECRS_URI *uri,
+                                            const char *filename,
+                                            unsigned long long offset,
+                                            unsigned long long length,
+                                            unsigned int anonymityLevel,
+                                            int no_temporaries,
+                                            GNUNET_ECRS_DownloadProgressCallback
+                                            dpcb, void *dpcbClosure);
 
 /**
  * Stop a download (aborts if download is incomplete).
  */
 int
-GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext * rm);
+GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
+                                        *rm);
 
 /**
  * DOWNLOAD a file.

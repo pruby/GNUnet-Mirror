@@ -25,7 +25,7 @@
  *
  * TODO:
  * - do not use HANG UP as a shutdown notification; we have a better API now!
- * - define and use structs for messages 
+ * - define and use structs for messages
  */
 #include "vpn.h"
 #include "p2p.h"

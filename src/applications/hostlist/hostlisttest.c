@@ -46,7 +46,7 @@ waitForConnect (const char *name, unsigned long long value, void *cls)
 }
 
 /**
- * Testcase to test hostlist. 
+ * Testcase to test hostlist.
  */
 int
 main (int argc, char **argv)
