@@ -122,6 +122,7 @@ testTracking ()
   CHECK (0 == GNUNET_URITRACK_list (NULL, cfg, GNUNET_NO, NULL, NULL));
   CHECK (GNUNET_NO == GNUNET_URITRACK_get_tracking_status (NULL, cfg));
   GNUNET_URITRACK_clear (NULL, cfg);
+  CHECK (notifications == 0);
   GNUNET_URITRACK_toggle_tracking (NULL, cfg, GNUNET_YES);
   GNUNET_URITRACK_clear (NULL, cfg);
   CHECK (0 == GNUNET_URITRACK_list (NULL, cfg, GNUNET_NO, NULL, NULL));
@@ -133,7 +134,7 @@ testTracking ()
   GNUNET_URITRACK_toggle_tracking (NULL, cfg, GNUNET_NO);
   CHECK (GNUNET_NO == GNUNET_URITRACK_get_tracking_status (NULL, cfg));
   GNUNET_URITRACK_clear (NULL, cfg);
-  CHECK (notifications == 2);
+  CHECK (notifications >= 2);
   GNUNET_URITRACK_unregister_track_callback (&notified, NULL);
   return 0;
 }
