@@ -318,6 +318,7 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
           return NULL;
         }
       pos++;
+      i++;
     }
   GNUNET_free (routeList);
   return result;
