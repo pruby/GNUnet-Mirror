@@ -722,7 +722,11 @@ int GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configu
  * operation.
  *
  * @param totalBytes number of bytes that will need to be downloaded,
- *        excluding inner blocks
+ *        excluding inner blocks; the value given here will
+ *        be one larger than the requested download size to signal
+ *        an error.  In that case, all other values will be 0, 
+ *        except form "lastBlock" which will point to an error
+ *        message describing the problem.
  * @param completedBytes number of bytes that have been obtained
  * @param eta absolute estimated time for the completion of the operation
  * @param lastBlockOffset offset of the last block that was downloaded,
@@ -737,6 +741,44 @@ typedef void (*GNUNET_ECRS_DownloadProgressCallback)
    GNUNET_CronTime eta,
    unsigned long long lastBlockOffset,
    const char *lastBlock, unsigned int lastBlockSize, void *closure);
+
+struct GNUNET_ECRS_DownloadContext;
+
+/**
+ * Download parts of a file ASYNCHRONOUSLY.  Note that this will store
+ * the blocks at the respective offset in the given file.  Also, the
+ * download is still using the blocking of the underlying ECRS
+ * encoding.  As a result, the download may *write* outside of the
+ * given boundaries (if offset and length do not match the 32k ECRS
+ * block boundaries).  <p>
+ *
+ * This function should be used to focus a download towards a
+ * particular portion of the file (optimization), not to strictly
+ * limit the download to exactly those bytes.
+ *
+ * @param uri the URI of the file (determines what to download)
+ * @param filename where to store the file
+ * @param no_temporaries set to GNUNET_YES to disallow generation of temporary files
+ * @param start starting offset
+ * @param length length of the download (starting at offset)
+ */
+struct GNUNET_ECRS_DownloadContext *
+GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
+					 struct GNUNET_GC_Configuration *cfg,
+					 const struct GNUNET_ECRS_URI *uri,
+					 const char *filename,
+					 unsigned long long offset,
+					 unsigned long long length,
+					 unsigned int anonymityLevel,
+					 int no_temporaries,
+					 GNUNET_ECRS_DownloadProgressCallback dpcb,
+					 void *dpcbClosure);
+
+/**
+ * Stop a download (aborts if download is incomplete).
+ */
+int
+GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext * rm);
 
 /**
  * DOWNLOAD a file.

@@ -1,3 +1,9 @@
+Mon Feb 25 00:01:27 MST 2008
+	Added asynchronous search and download methods for 
+	ECRS library.  FSUI now can do with only one thread
+	per search or download (until now, we had two 
+	threads per search / download).
+
 Tue Feb 19 20:35:28 MST 2008
 	Updated database schemata to support O(1) operations
 	even if there are N files under the same keywords.

@@ -609,7 +609,7 @@ GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx,
 {
   struct stat istat;
 
-  if (0 != STAT (fileName, &istat))
+  if (0 != LSTAT (fileName, &istat))
     return GNUNET_NO;           /* file may not exist... */
   if (UNLINK (fileName) == 0)
     return GNUNET_OK;

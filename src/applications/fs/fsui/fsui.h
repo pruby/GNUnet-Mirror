@@ -193,9 +193,9 @@ typedef struct GNUNET_FSUI_DownloadList
   void *cctx;
 
   /**
-   * Currently assigned thread (if any).
+   * Currently assigned ECRS context (if any).
    */
-  struct GNUNET_ThreadHandle *handle;
+  struct GNUNET_ECRS_DownloadContext *handle;
 
   /**
    * FIs of completed sub-downloads.

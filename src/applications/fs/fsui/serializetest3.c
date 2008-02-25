@@ -86,7 +86,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_unindex_error:
     case GNUNET_FSUI_upload_error:
     case GNUNET_FSUI_download_error:
-    case GNUNET_FSUI_search_error:
       fprintf (stderr, "Received ERROR: %d\n", event->type);
       GNUNET_GE_BREAK (ectx, 0);
       break;
@@ -106,7 +105,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_search_started:
     case GNUNET_FSUI_search_aborted:
     case GNUNET_FSUI_search_stopped:
-    case GNUNET_FSUI_search_completed:
     case GNUNET_FSUI_unindex_started:
     case GNUNET_FSUI_unindex_stopped:
       break;

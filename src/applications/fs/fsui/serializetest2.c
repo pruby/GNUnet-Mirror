@@ -233,12 +233,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
                event->type, event->data.DownloadError.message);
       GNUNET_GE_BREAK (ectx, 0);
       break;
-    case GNUNET_FSUI_search_error:
-      fprintf (stderr,
-               "Received ERROR: %d %s\n",
-               event->type, event->data.SearchError.message);
-      GNUNET_GE_BREAK (ectx, 0);
-      break;
     case GNUNET_FSUI_download_aborted:
 #if DEBUG_VERBOSE
       printf ("Received download aborted event.\n");

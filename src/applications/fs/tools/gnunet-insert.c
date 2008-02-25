@@ -398,6 +398,8 @@ main (int argc, char *const *argv)
     }
   if (uri_string == NULL)
     filename = argv[i];
+  else
+    filename = NULL;
 
   if (extract_only)
     {

@@ -81,16 +81,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #endif
       download = event->data.DownloadResumed.dc.pos;
       break;
-    case GNUNET_FSUI_search_completed:
-#if DEBUG_VERBOSE
-      printf ("Search completed\n");
-#endif
-      if (download == NULL)
-        {
-          fprintf (stderr,
-                   "ERROR: Search completed but download not started!\n");
-        }
-      break;
     case GNUNET_FSUI_search_result:
 #if DEBUG_VERBOSE
       printf ("Received search result\n");
@@ -173,7 +163,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_unindex_error:
     case GNUNET_FSUI_upload_error:
     case GNUNET_FSUI_download_error:
-    case GNUNET_FSUI_search_error:
       fprintf (stderr, "Received ERROR: %d\n", event->type);
       GNUNET_GE_BREAK (ectx, 0);
       break;

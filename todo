@@ -4,17 +4,20 @@ Annotations:
   RC == Release Critical
   PRE == to be done before a pre-release
 
-0.8.0 [6'08] (aka "advanced features"):
-- clean up VPN code
-- asynchronous ECRS API [?]
-- tune GAP query planning code [RC]
-- HTTP transport sometimes goes crazy with CPU usage
-- gnunet-chat (CS-only)
+0.8.0pre0 [2'08]:
+- make sure "make check" passes
 - make tcpserver IPv6 compatible
+- gnunet-gtk ready?
+- more IPv6 testing
 
-TESTING:
+0.8.0 [4'08] (aka "advanced features"):
+- clean up VPN code
+- tune GAP query planning code [RC]
+- HTTP transport sometimes goes crazy with CPU usage [RC]
+- gnunet-chat (CS-only) [RC]
 - test RPC code (write a small demo)
-- test GAP code in general (still have one unexplained crazy crash!)
+- test new asynchronous ECRS API (and resulting FSUI changes)
+- test GAP code in general; still have one unexplained crazy crash:
   Program terminated with signal 11, Segmentation fault.
  #0  0xb4e8e73a in GNUNET_FS_SHARED_test_valid_new_response (rl=0x8060,
      primary_key=0xb343f1c8, size=820, data=0xb0b8f0e8, hc=0xb343f134) at shared.c:94
