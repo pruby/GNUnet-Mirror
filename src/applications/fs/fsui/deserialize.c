@@ -687,7 +687,7 @@ readUploads (int fd, struct GNUNET_FSUI_Context *ctx)
       READLONG (sshared.expiration);
       if ((big & 2) == 2)
         READSTRING (sshared.extractor_config, 1024 * 1024);
-      READSTRING(sshared.top_filename, 1024 * 1024);
+      READSTRING (sshared.top_filename, 1024 * 1024);
       if ((big & 4) == 4)
         {
           sshared.global_keywords = read_uri (ctx->ectx, fd);

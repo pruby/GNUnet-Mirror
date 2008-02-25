@@ -141,6 +141,7 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
+  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-check-fsui/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
@@ -166,13 +167,13 @@ main (int argc, char *argv[])
   ctx = GNUNET_FSUI_start (NULL,
                            cfg, "fsuisearchtest", 32, GNUNET_YES,
                            &eventCallback, NULL);
-  GNUNET_FSUI_search_pause(ctx, search);
+  GNUNET_FSUI_search_pause (ctx, search);
   GNUNET_FSUI_stop (ctx);
   /* resume search! */
   ctx = GNUNET_FSUI_start (NULL,
                            cfg, "fsuisearchtest", 32, GNUNET_YES,
                            &eventCallback, NULL);
-  GNUNET_FSUI_search_restart(ctx, search);
+  GNUNET_FSUI_search_restart (ctx, search);
 
   fn = makeName (42);
   GNUNET_disk_file_write (NULL,
@@ -210,10 +211,9 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (ctx, upload);
-  GNUNET_FSUI_search_pause(ctx, search);
-  GNUNET_FSUI_search_restart(ctx, search);
-  while ( (uri == NULL) &&
-	  (GNUNET_shutdown_test() != GNUNET_YES) )
+  GNUNET_FSUI_search_pause (ctx, search);
+  GNUNET_FSUI_search_restart (ctx, search);
+  while ((uri == NULL) && (GNUNET_shutdown_test () != GNUNET_YES))
     {
       prog++;
       CHECK (prog < 10000);

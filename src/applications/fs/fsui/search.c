@@ -377,7 +377,7 @@ int
 GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
                           struct GNUNET_FSUI_SearchList *sl)
 {
-  void * unused; 
+  void *unused;
 
   GNUNET_mutex_lock (ctx->lock);
   if (sl->state != GNUNET_FSUI_ACTIVE)
