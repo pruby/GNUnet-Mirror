@@ -28,6 +28,8 @@
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
 
+#define CHECK_VERBOSE GNUNET_NO
+
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 static char *
@@ -78,17 +80,25 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       GNUNET_mutex_unlock (lock);
       return &unused;
     case GNUNET_FSUI_search_result:
+#if CHECK_VERBOSE
       printf ("Received search result\n");
+#endif
       uri = GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
       break;
     case GNUNET_FSUI_upload_completed:
+#if CHECK_VERBOSE
       printf ("Upload complete.\n");
+#endif
       break;
     case GNUNET_FSUI_download_completed:
+#if CHECK_VERBOSE
       printf ("Download complete.\n");
+#endif
       break;
     case GNUNET_FSUI_unindex_completed:
+#if CHECK_VERBOSE
       printf ("Unindex complete.\n");
+#endif
       break;
     case GNUNET_FSUI_upload_error:
       printf ("Upload error.\n");
