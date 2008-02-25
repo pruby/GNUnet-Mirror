@@ -596,7 +596,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   "PATHS"
   ""
   (_ "Fundamentals")
-  (_ "")
+  ""
   (list 
     (paths-home builder) 
     (general-applications builder) 
