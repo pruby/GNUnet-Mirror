@@ -100,6 +100,12 @@ poll_thread (void *rcls)
       /* NO NEED TO SEND ROOM! */
       room_name_len = ntohl (received_msg->room_name_len);
 
+      if (size < (nick_len + msg_len + room_name_len))
+        {
+          GNUNET_GE_BREAK (NULL, 0);
+          return GNUNET_SYSERR; /* invalid message */
+        }
+
       nick = GNUNET_malloc (nick_len + 1);
       message_content = GNUNET_malloc (msg_len + 1);
       room_name = GNUNET_malloc (room_name_len + 1);
