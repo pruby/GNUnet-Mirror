@@ -33,7 +33,7 @@
 
 /**
  * Listen for incoming messages on this chat room.  When received, call the client callback.
- * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)...
+ * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)... 
  */
 static void *
 poll_thread (void *rcls)
@@ -99,12 +99,6 @@ poll_thread (void *rcls)
       msg_len = ntohl (received_msg->msg_len);
       /* NO NEED TO SEND ROOM! */
       room_name_len = ntohl (received_msg->room_name_len);
-
-      if (size < (nick_len + msg_len + room_name_len))
-        {
-          GNUNET_GE_BREAK (NULL, 0);
-          return GNUNET_SYSERR; /* invalid message */
-        }
 
       nick = GNUNET_malloc (nick_len + 1);
       message_content = GNUNET_malloc (msg_len + 1);
