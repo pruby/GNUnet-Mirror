@@ -210,7 +210,8 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (ctx, upload);
-
+  GNUNET_FSUI_search_pause(ctx, search);
+  GNUNET_FSUI_search_restart(ctx, search);
   while (uri == NULL)
     {
       prog++;
