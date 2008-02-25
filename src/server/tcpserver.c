@@ -86,15 +86,25 @@ typedef struct GNUNET_ClientHandle
 /**
  * Configuration...
  */
-static struct GNUNET_IPv4NetworkSet *trustedNetworks_ = NULL;
+static struct GNUNET_IPv4NetworkSet *trustedNetworksV4;
+static struct GNUNET_IPv6NetworkSet *trustedNetworksV6;
 
 /**
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted (GNUNET_IPv4Address ip)
+isWhitelisted4 (GNUNET_IPv4Address ip)
 {
-  return GNUNET_check_ipv4_listed (trustedNetworks_, ip);
+  return GNUNET_check_ipv4_listed (trustedNetworksV4, ip);
+}
+
+/**
+ * Is this IP labeled as trusted for CS connections?
+ */
+static int
+isWhitelisted6 (GNUNET_IPv6Address ip)
+{
+  return GNUNET_check_ipv6_listed (trustedNetworksV6, ip);
 }
 
 static int
@@ -158,15 +168,38 @@ select_accept_handler (void *ah_cls,
                        const void *addr, unsigned int addr_len)
 {
   struct GNUNET_ClientHandle *session;
-  GNUNET_IPv4Address ip;
-  struct sockaddr_in *a;
-
-  if (addr_len != sizeof (struct sockaddr_in))
-    return NULL;
-  a = (struct sockaddr_in *) addr;
-  memcpy (&ip, &a->sin_addr, sizeof (GNUNET_IPv4Address));
-  if (!isWhitelisted (ip))
-    return NULL;
+  GNUNET_IPv4Address ip4;
+  GNUNET_IPv6Address ip6;
+  struct sockaddr_in *a4;
+  struct sockaddr_in6 *a6;
+  
+  if (addr_len == sizeof (struct sockaddr_in6))
+    {
+      a6 = (struct sockaddr_in6 *) addr;
+      
+      memcpy (&ip6, &a6->sin6_addr, sizeof (GNUNET_IPv6Address));
+      /* get embedded ipv4 address in case address embedding is used */
+      memcpy (&ip4,
+	      &((char*) &ip6)[sizeof(GNUNET_IPv6Address) - sizeof(GNUNET_IPv4Address)], 
+	      sizeof (GNUNET_IPv4Address));
+      if ( (!isWhitelisted6 (ip6)) &&
+	   (! ( ( (IN6_IS_ADDR_V4COMPAT(&a6->sin6_addr)) ||
+		  (IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr)) ) &&
+		(isWhitelisted4(ip4) ) ) ) )      
+	return NULL;	
+    }
+  else if (addr_len == sizeof (struct sockaddr_in))
+    {
+      a4 = (struct sockaddr_in *) addr;
+      memcpy (&ip4, &a4->sin_addr, sizeof (GNUNET_IPv4Address));
+      if (!isWhitelisted4 (ip4))
+	return NULL;
+    }
+  else
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return NULL; 
+    }
   session = GNUNET_malloc (sizeof (ClientHandle));
   session->sock = sock;
   return session;
@@ -300,32 +333,48 @@ startTCPServer ()
 {
   int listenerFD;
   int listenerPort;
-  struct sockaddr_in serverAddr;
+  struct sockaddr_in6 serverAddr6;
+  struct sockaddr_in serverAddr4;
+  struct sockaddr * serverAddr;
+  socklen_t socklen;
   const int on = 1;
 
   listenerPort = getGNUnetPort ();
   if (listenerPort == 0)
     return GNUNET_SYSERR;
-  listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
-  if (listenerFD < 0)
+  if (-1 == (listenerFD = SOCKET (PF_INET6, SOCK_STREAM, 0)))
     {
-      GNUNET_GE_LOG_STRERROR (ectx,
-                              GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
-                              GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "socket");
-      return GNUNET_SYSERR;
+      listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
+      if (listenerFD < 0)
+	{
+	  GNUNET_GE_LOG_STRERROR (ectx,
+				  GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+				  GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "socket");
+	  return GNUNET_SYSERR;
+	}
+      memset (&serverAddr4, 0, sizeof (serverAddr4));
+      serverAddr4.sin_family = AF_INET;
+      serverAddr4.sin_addr.s_addr = htonl (INADDR_ANY);
+      serverAddr4.sin_port = htons (listenerPort);
+      socklen = sizeof(serverAddr4);
+      serverAddr = (struct sockaddr*) &serverAddr4;
+    }
+  else
+    {
+      memset (&serverAddr6, 0, sizeof (serverAddr6));
+      serverAddr6.sin6_family = AF_INET6;
+      serverAddr6.sin6_port = htons (listenerPort);
+      socklen = sizeof(serverAddr6);
+      serverAddr = (struct sockaddr*) &serverAddr6;
     }
   /* fill in the inet address structure */
-  memset (&serverAddr, 0, sizeof (serverAddr));
-  serverAddr.sin_family = AF_INET;
-  serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
-  serverAddr.sin_port = htons (listenerPort);
   if (SETSOCKOPT (listenerFD, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
     GNUNET_GE_LOG_STRERROR (ectx,
                             GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                             GNUNET_GE_BULK, "setsockopt");
   /* bind the socket */
   if (BIND (listenerFD,
-            (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
+            serverAddr, socklen) < 0)
     {
       GNUNET_GE_LOG_STRERROR (ectx,
                               GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
@@ -339,7 +388,7 @@ startTCPServer ()
       CLOSE (listenerFD);
       return GNUNET_SYSERR;
     }
-  selector = GNUNET_select_create ("tcpserver", GNUNET_NO, ectx, NULL, listenerFD, sizeof (struct sockaddr_in), 0,      /* no timeout */
+  selector = GNUNET_select_create ("tcpserver", GNUNET_NO, ectx, NULL, listenerFD, socklen, 0,      /* no timeout */
                                    &select_message_handler,
                                    NULL,
                                    &select_accept_handler,
@@ -369,7 +418,8 @@ GNUNET_CORE_cs_done ()
                                   &shutdownHandler);
   GNUNET_array_grow (handlers, max_registeredType, 0);
   GNUNET_array_grow (exitHandlers, exitHandlerCount, 0);
-  GNUNET_free (trustedNetworks_);
+  GNUNET_free (trustedNetworksV4);
+  GNUNET_free (trustedNetworksV6);
   return GNUNET_OK;
 }
 
@@ -404,8 +454,8 @@ GNUNET_CORE_cs_init (struct GNUNET_GE_Context *e,
                                                       "127.0.0.0/8;", &ch))
     return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (ectx, ch != NULL);
-  trustedNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
-  if (trustedNetworks_ == NULL)
+  trustedNetworksV4 = GNUNET_parse_ipv4_network_specification (ectx, ch);
+  if (trustedNetworksV4 == NULL)
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN |
@@ -413,6 +463,27 @@ GNUNET_CORE_cs_init (struct GNUNET_GE_Context *e,
                      _
                      ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
                      "NETWORK", "TRUSTED", ch);
+      GNUNET_free (ch);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_free (ch);
+
+  ch = NULL;
+  if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
+                                                      "NETWORK",
+                                                      "TRUSTED6",
+                                                      "::1;", &ch))
+    return GNUNET_SYSERR;
+  GNUNET_GE_ASSERT (ectx, ch != NULL);
+  trustedNetworksV6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
+  if (trustedNetworksV6 == NULL)
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                     GNUNET_GE_IMMEDIATE,
+                     _
+                     ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
+                     "NETWORK", "TRUSTED6", ch);
       GNUNET_free (ch);
       return GNUNET_SYSERR;
     }
