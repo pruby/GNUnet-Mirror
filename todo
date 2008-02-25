@@ -5,10 +5,12 @@ Annotations:
   PRE == to be done before a pre-release
 
 0.8.0 [6'08] (aka "advanced features"):
-- full support for FSUI pause/resume of search [DONE, could use more testing]
 - clean up VPN code
+- asynchronous ECRS API [?]
 - tune GAP query planning code [RC]
+- HTTP transport sometimes goes crazy with CPU usage
 - gnunet-chat (CS-only)
+- make tcpserver IPv6 compatible
 
 TESTING:
 - test RPC code (write a small demo)
