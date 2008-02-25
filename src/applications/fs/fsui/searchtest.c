@@ -212,7 +212,8 @@ main (int argc, char *argv[])
   GNUNET_FSUI_upload_stop (ctx, upload);
   GNUNET_FSUI_search_pause(ctx, search);
   GNUNET_FSUI_search_restart(ctx, search);
-  while (uri == NULL)
+  while ( (uri == NULL) &&
+	  (GNUNET_shutdown_test() != GNUNET_YES) )
     {
       prog++;
       CHECK (prog < 10000);
