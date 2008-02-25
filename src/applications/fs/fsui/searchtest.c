@@ -168,9 +168,9 @@ main (int argc, char *argv[])
   GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
                    keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
+  uri = NULL;
   search = GNUNET_FSUI_search_start (ctx, 0, luri);
   GNUNET_ECRS_uri_destroy (luri);
-  uri = NULL;
   CHECK (NULL != search);
   GNUNET_FSUI_stop (ctx);
   /* resume search! */
