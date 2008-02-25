@@ -41,7 +41,7 @@ struct PendingSearch
 {
   struct PendingSearch *next;
 
-  struct SearchContext *context;
+  struct GNUNET_ECRS_SearchContext *context;
 
   /**
    * The key (for decryption)
@@ -63,7 +63,7 @@ struct PendingSearch
 /**
  * Context for search operation.
  */
-struct SearchContext
+struct GNUNET_ECRS_SearchContext
 {
   /**
    * Time when the cron-job was first started.
@@ -112,7 +112,7 @@ static void
 add_search (unsigned int type,
             unsigned int keyCount,
             const GNUNET_HashCode * keys,
-            const GNUNET_HashCode * dkey, struct SearchContext *sqc)
+            const GNUNET_HashCode * dkey, struct GNUNET_ECRS_SearchContext *sqc)
 {
   struct PendingSearch *ps;
 
@@ -144,7 +144,7 @@ add_search (unsigned int type,
  */
 static void
 add_search_for_uri (const struct GNUNET_ECRS_URI *uri,
-                    struct SearchContext *sqc)
+                    struct GNUNET_ECRS_SearchContext *sqc)
 {
   struct GNUNET_GE_Context *ectx = sqc->ectx;
 
@@ -267,7 +267,7 @@ compute_id_at_time (const SBlock * sb, GNUNET_Int32Time now,
 static int
 process_nblock_result (const NBlock * nb,
                        const GNUNET_HashCode * key,
-                       unsigned int size, struct SearchContext *sqc)
+                       unsigned int size, struct GNUNET_ECRS_SearchContext *sqc)
 {
   struct GNUNET_GE_Context *ectx = sqc->ectx;
   GNUNET_ECRS_FileInfo fi;
@@ -310,7 +310,7 @@ receive_response_callback (const GNUNET_HashCode * key,
                            const GNUNET_DatastoreValue * value, void *cls)
 {
   struct PendingSearch *ps = cls;
-  struct SearchContext *sqc = ps->context;
+  struct GNUNET_ECRS_SearchContext *sqc = ps->context;
   struct GNUNET_GE_Context *ectx = sqc->ectx;
   unsigned int type;
   GNUNET_ECRS_FileInfo fi;
@@ -544,6 +544,52 @@ receive_response_callback (const GNUNET_HashCode * key,
   return GNUNET_OK;
 }
 
+/**
+ * Start search for content.
+ *
+ * @param uri specifies the search parameters
+ * @param uri set to the URI of the uploaded file
+ */
+struct GNUNET_ECRS_SearchContext *
+GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure)
+{
+  struct GNUNET_ECRS_SearchContext * ctx;
+
+  ctx = GNUNET_malloc(sizeof(  struct GNUNET_ECRS_SearchContext));  
+  ctx->start = GNUNET_get_time ();
+  ctx->anonymityLevel = anonymityLevel;
+  ctx->ectx = ectx;
+  ctx->cfg = cfg;
+  ctx->queries = NULL;
+  ctx->spcb = spcb;
+  ctx->spcbClosure = spcbClosure;
+  ctx->aborted = GNUNET_NO;
+  ctx->lock = GNUNET_mutex_create (GNUNET_YES);
+  ctx->sctx = GNUNET_FS_create_search_context (ectx, cfg, ctx->lock);
+  add_search_for_uri (uri, ctx);
+  return ctx;
+}
+
+/**
+ * Stop search for content.
+ *
+ * @param uri specifies the search parameters
+ * @param uri set to the URI of the uploaded file
+ */
+void
+GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext * ctx)
+{
+  struct PendingSearch *pos;
+  GNUNET_FS_destroy_search_context (ctx->sctx);
+  while (ctx->queries != NULL)
+    {
+      pos = ctx->queries;
+      ctx->queries = pos->next;
+      GNUNET_free (pos);
+    }
+  GNUNET_mutex_destroy (ctx->lock);
+  GNUNET_free(ctx);
+}
 
 /**
  * Search for content.
@@ -561,32 +607,14 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
                     void *spcbClosure, GNUNET_ECRS_TestTerminate tt,
                     void *ttClosure)
 {
-  struct PendingSearch *pos;
-  struct SearchContext ctx;
+  struct GNUNET_ECRS_SearchContext * ctx;
 
-  ctx.start = GNUNET_get_time ();
-  ctx.anonymityLevel = anonymityLevel;
-  ctx.ectx = ectx;
-  ctx.cfg = cfg;
-  ctx.queries = NULL;
-  ctx.spcb = spcb;
-  ctx.spcbClosure = spcbClosure;
-  ctx.aborted = GNUNET_NO;
-  ctx.lock = GNUNET_mutex_create (GNUNET_YES);
-  ctx.sctx = GNUNET_FS_create_search_context (ectx, cfg, ctx.lock);
-  add_search_for_uri (uri, &ctx);
+  ctx = GNUNET_ECRS_search_start(ectx, cfg, uri, anonymityLevel, spcb, spcbClosure);
   while (((NULL == tt) ||
           (GNUNET_OK == tt (ttClosure))) &&
-         (GNUNET_NO == GNUNET_shutdown_test ()) && (ctx.aborted == GNUNET_NO))
+         (GNUNET_NO == GNUNET_shutdown_test ()) && (ctx->aborted == GNUNET_NO))
     GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
-  GNUNET_FS_destroy_search_context (ctx.sctx);
-  while (ctx.queries != NULL)
-    {
-      pos = ctx.queries;
-      ctx.queries = pos->next;
-      GNUNET_free (pos);
-    }
-  GNUNET_mutex_destroy (ctx.lock);
+  GNUNET_ECRS_search_stop(ctx);
   return GNUNET_OK;
 }
 

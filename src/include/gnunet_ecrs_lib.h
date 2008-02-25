@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -55,7 +55,7 @@ extern "C"
  * 5.0.x: with location URIs
  * 6.x.x: who knows? :-)
  */
-#define GNUNET_ECRS_VERSION "5.0.1"
+#define GNUNET_ECRS_VERSION "5.1.0"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
@@ -689,8 +689,28 @@ typedef int (*GNUNET_ECRS_SearchResultProcessor)
   (const GNUNET_ECRS_FileInfo * fi,
    const GNUNET_HashCode * key, int isRoot, void *closure);
 
+struct GNUNET_ECRS_SearchContext;
+
 /**
- * Search for content.
+ * Start search for content (asynchronous version).
+ *
+ * @param uri specifies the search parameters
+ * @param uri set to the URI of the uploaded file
+ */
+struct GNUNET_ECRS_SearchContext *
+GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure); /* search.c */
+
+/**
+ * Stop search for content.
+ *
+ * @param uri specifies the search parameters
+ * @param uri set to the URI of the uploaded file
+ */
+void
+GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext * sctx);
+
+/**
+ * Search for content (synchronous version).
  *
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
@@ -719,7 +739,7 @@ typedef void (*GNUNET_ECRS_DownloadProgressCallback)
    const char *lastBlock, unsigned int lastBlockSize, void *closure);
 
 /**
- * GNUNET_ND_DOWNLOAD a file.
+ * DOWNLOAD a file.
  *
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
@@ -727,7 +747,7 @@ typedef void (*GNUNET_ECRS_DownloadProgressCallback)
 int GNUNET_ECRS_file_download (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, const char *filename, unsigned int anonymityLevel, GNUNET_ECRS_DownloadProgressCallback dpcb, void *dpcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure); /* download.c */
 
 /**
- * GNUNET_ND_DOWNLOAD parts of a file.  Note that this will store
+ * DOWNLOAD parts of a file.  Note that this will store
  * the blocks at the respective offset in the given file.
  * Also, the download is still using the blocking of the
  * underlying ECRS encoding.  As a result, the download

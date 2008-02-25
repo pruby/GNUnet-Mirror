@@ -129,9 +129,7 @@ enum GNUNET_FSUI_EventType
   GNUNET_FSUI_search_started,
   GNUNET_FSUI_search_stopped,
   GNUNET_FSUI_search_result,
-  GNUNET_FSUI_search_completed,
   GNUNET_FSUI_search_aborted,
-  GNUNET_FSUI_search_error,
   GNUNET_FSUI_search_suspended,
   GNUNET_FSUI_search_resumed,
   GNUNET_FSUI_search_paused,
@@ -332,29 +330,12 @@ typedef struct
 
     } SearchResult;
 
-
-    struct
-    {
-
-      GNUNET_FSUI_SearchContext sc;
-
-    } SearchCompleted;
-
     struct
     {
 
       GNUNET_FSUI_SearchContext sc;
 
     } SearchAborted;
-
-    struct
-    {
-
-      GNUNET_FSUI_SearchContext sc;
-
-      const char *message;
-
-    } SearchError;
 
     struct
     {

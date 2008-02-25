@@ -78,7 +78,7 @@ typedef struct GNUNET_FSUI_SearchList
   /**
    * Handle to the thread which performs the search.
    */
-  struct GNUNET_ThreadHandle *handle;
+  struct GNUNET_ECRS_SearchContext *handle;
 
   /**
    * Which URI are we searching?
@@ -456,9 +456,11 @@ typedef struct GNUNET_FSUI_Context
  */
 int GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list);
 
-void *GNUNET_FSUI_uploadThread (void *dl);
+int
+GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
+				      const GNUNET_HashCode * key, int isRoot, void *cls);
 
-void *GNUNET_FSUI_searchThread (void *pos);
+void *GNUNET_FSUI_uploadThread (void *dl);
 
 void *GNUNET_FSUI_unindexThread (void *cls);
 

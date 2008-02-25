@@ -67,9 +67,9 @@ processResult (const GNUNET_ECRS_FileInfo * fi, GNUNET_FSUI_SearchList * pos)
 /**
  * Process results found by ECRS.
  */
-static int
-spcb (const GNUNET_ECRS_FileInfo * fi,
-      const GNUNET_HashCode * key, int isRoot, void *cls)
+int
+GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
+				      const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   GNUNET_FSUI_SearchList *pos = cls;
   unsigned int i;
@@ -198,116 +198,6 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
   return GNUNET_OK;
 }
 
-static int
-testTerminate (void *cls)
-{
-  GNUNET_FSUI_SearchList *pos = cls;
-  if (pos->state == GNUNET_FSUI_ACTIVE)
-    return GNUNET_OK;
-  return GNUNET_SYSERR;
-}
-
-/**
- * Thread that searches for data.
- */
-void *
-GNUNET_FSUI_searchThread (void *cls)
-{
-  GNUNET_FSUI_SearchList *pos = cls;
-  GNUNET_FSUI_Event event;
-  int ret;
-  struct GNUNET_GE_Memory *mem;
-  struct GNUNET_GE_Context *ee;
-
-  mem = GNUNET_GE_memory_create (2);
-  ee = GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN |
-                                        GNUNET_GE_ERROR | GNUNET_GE_WARNING |
-                                        GNUNET_GE_FATAL | GNUNET_GE_BULK |
-                                        GNUNET_GE_IMMEDIATE, mem);
-  ret =
-    GNUNET_ECRS_search (ee, pos->ctx->cfg, pos->uri, pos->anonymityLevel,
-                        &spcb, pos, &testTerminate, pos);
-  if (ret != GNUNET_OK)
-    {
-      const char *error;
-
-      pos->state = GNUNET_FSUI_ERROR;
-      event.type = GNUNET_FSUI_search_error;
-      event.data.SearchError.sc.pos = pos;
-      event.data.SearchError.sc.cctx = pos->cctx;
-      error = GNUNET_GE_memory_get (mem, 0);
-      if (error == NULL)
-        error = _("Error running search (no reason given).");
-      event.data.SearchError.message = error;
-      pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-    }
-  else if (pos->state == GNUNET_FSUI_ABORTED)
-    {
-      event.type = GNUNET_FSUI_search_aborted;
-      event.data.SearchAborted.sc.pos = pos;
-      event.data.SearchAborted.sc.cctx = pos->cctx;
-      pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-    }
-  else if (pos->state == GNUNET_FSUI_PAUSED)
-    {
-      event.type = GNUNET_FSUI_search_paused;
-      event.data.SearchPaused.sc.pos = pos;
-      event.data.SearchPaused.sc.cctx = pos->cctx;
-      pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-    }
-  else if (pos->state == GNUNET_FSUI_ACTIVE)
-    {
-      pos->state = GNUNET_FSUI_COMPLETED;
-      event.type = GNUNET_FSUI_search_completed;
-      event.data.SearchCompleted.sc.pos = pos;
-      event.data.SearchCompleted.sc.cctx = pos->cctx;
-      pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-    }
-  else
-    {
-      GNUNET_GE_ASSERT (NULL, pos->state == GNUNET_FSUI_PENDING);
-      /* must be suspending */
-    }
-  GNUNET_GE_free_context (ee);
-  GNUNET_GE_memory_free (mem);
-
-  return NULL;
-}
-
-/**
- * Thread that searches for data (and signals startup).
- */
-void *
-GNUNET_FSUI_searchThreadSignal (void *cls)
-{
-  GNUNET_FSUI_SearchList *pos = cls;
-  GNUNET_FSUI_Event event;
-
-  event.type = GNUNET_FSUI_search_started;
-  event.data.SearchStarted.sc.pos = pos;
-  event.data.SearchStarted.sc.cctx = NULL;
-  event.data.SearchStarted.searchURI = pos->uri;
-  event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
-  pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-  return GNUNET_FSUI_searchThread (pos);
-}
-
-/**
- * Thread that searches for data (and signals startup).
- */
-static void *
-GNUNET_FSUI_searchThreadRestartSignal (void *cls)
-{
-  GNUNET_FSUI_SearchList *pos = cls;
-  GNUNET_FSUI_Event event;
-
-  event.type = GNUNET_FSUI_search_restarted;
-  event.data.SearchStarted.sc.pos = pos;
-  event.data.SearchStarted.sc.cctx = pos->cctx;
-  pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-  return GNUNET_FSUI_searchThread (pos);
-}
-
 /**
  * Start a search.
  */
@@ -318,6 +208,7 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
 {
   GNUNET_FSUI_SearchList *pos;
   struct GNUNET_GE_Context *ectx;
+  GNUNET_FSUI_Event event;
 
   ectx = ctx->ectx;
   GNUNET_mutex_lock (ctx->lock);
@@ -332,14 +223,20 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
   pos->start_time = GNUNET_get_time ();
-  pos->handle =
-    GNUNET_thread_create (&GNUNET_FSUI_searchThreadSignal, pos, 32 * 1024);
+  event.type = GNUNET_FSUI_search_started;
+  event.data.SearchStarted.sc.pos = pos;
+  event.data.SearchStarted.sc.cctx = NULL;
+  event.data.SearchStarted.searchURI = pos->uri;
+  event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
+  pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);
+  pos->handle = GNUNET_ECRS_search_start(pos->ctx->ectx,
+					 pos->ctx->cfg,
+					 pos->uri,
+					 pos->anonymityLevel,
+					 &GNUNET_FSUI_search_progress_callback,
+					 pos);
   if (pos->handle == NULL)
     {
-      GNUNET_GE_LOG_STRERROR (ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
-                              GNUNET_GE_USER | GNUNET_GE_ADMIN,
-                              "PTHREAD_CREATE");
       GNUNET_ECRS_uri_destroy (pos->uri);
       GNUNET_free (pos);
       GNUNET_mutex_unlock (ctx->lock);
@@ -358,15 +255,28 @@ int
 GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx,
                           struct GNUNET_FSUI_SearchList *sl)
 {
+  GNUNET_FSUI_Event event;
+
+  GNUNET_mutex_lock (ctx->lock);
   if (sl->state == GNUNET_FSUI_PENDING)
     {
       sl->state = GNUNET_FSUI_ABORTED_JOINED;
+      GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_OK;
     }
   if (sl->state != GNUNET_FSUI_ACTIVE)
-    return GNUNET_SYSERR;
-  sl->state = GNUNET_FSUI_ABORTED;
-  GNUNET_thread_stop_sleep (sl->handle);
+    {
+      GNUNET_mutex_unlock (ctx->lock);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_ECRS_search_stop(sl->handle);
+  sl->state = GNUNET_FSUI_ABORTED_JOINED;
+  sl->handle = NULL;
+  event.type = GNUNET_FSUI_search_aborted;
+  event.data.SearchAborted.sc.pos = sl;
+  event.data.SearchAborted.sc.cctx = sl->cctx;
+  sl->ctx->ecb (sl->ctx->ecbClosure, &event);
+  GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }
 
@@ -377,7 +287,7 @@ int
 GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
                           struct GNUNET_FSUI_SearchList *sl)
 {
-  void *unused;
+  GNUNET_FSUI_Event event;
 
   GNUNET_mutex_lock (ctx->lock);
   if (sl->state != GNUNET_FSUI_ACTIVE)
@@ -385,9 +295,12 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
       GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_SYSERR;
     }
+  GNUNET_ECRS_search_stop(sl->handle);
   sl->state = GNUNET_FSUI_PAUSED;
-  GNUNET_thread_stop_sleep (sl->handle);
-  GNUNET_thread_join (sl->handle, &unused);
+  event.type = GNUNET_FSUI_search_paused;
+  event.data.SearchPaused.sc.pos = sl;
+  event.data.SearchPaused.sc.cctx = sl->cctx;
+  sl->ctx->ecb (sl->ctx->ecbClosure, &event);
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }
@@ -399,17 +312,22 @@ int
 GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx,
                             struct GNUNET_FSUI_SearchList *pos)
 {
+  GNUNET_FSUI_Event event;
+
   GNUNET_mutex_lock (ctx->lock);
   pos->state = GNUNET_FSUI_ACTIVE;
-  pos->handle =
-    GNUNET_thread_create (&GNUNET_FSUI_searchThreadRestartSignal, pos,
-                          32 * 1024);
+  event.type = GNUNET_FSUI_search_restarted;
+  event.data.SearchStarted.sc.pos = pos;
+  event.data.SearchStarted.sc.cctx = pos->cctx;
+  pos->ctx->ecb (pos->ctx->ecbClosure, &event);
+  pos->handle = GNUNET_ECRS_search_start(pos->ctx->ectx,
+					 pos->ctx->cfg,
+					 pos->uri,
+					 pos->anonymityLevel,
+					 &GNUNET_FSUI_search_progress_callback,
+					 pos);
   if (pos->handle == NULL)
     {
-      GNUNET_GE_LOG_STRERROR (ctx->ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
-                              GNUNET_GE_USER | GNUNET_GE_ADMIN,
-                              "PTHREAD_CREATE");
       pos->state = GNUNET_FSUI_PAUSED;
       GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_SYSERR;
@@ -428,7 +346,6 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
   GNUNET_FSUI_Event event;
   GNUNET_FSUI_SearchList *pos;
   GNUNET_FSUI_SearchList *prev;
-  void *unused;
   int i;
 
   GNUNET_mutex_lock (ctx->lock);
@@ -455,28 +372,11 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
   GNUNET_array_grow (sl->my_downloads, sl->my_downloads_size, 0);
   GNUNET_mutex_unlock (ctx->lock);
   pos->next = NULL;
-  if ((pos->state == GNUNET_FSUI_COMPLETED) ||
-      (pos->state == GNUNET_FSUI_ABORTED)
-      || (pos->state == GNUNET_FSUI_ERROR))
-    {
-      GNUNET_GE_ASSERT (ctx->ectx, pos->handle != NULL);
-      GNUNET_thread_join (pos->handle, &unused);
-      pos->handle = NULL;
-      if (pos->state == GNUNET_FSUI_ACTIVE)
-        pos->state = GNUNET_FSUI_PENDING;
-      else
-        pos->state++;           /* add _JOINED */
-    }
-  else
-    {
-      GNUNET_GE_ASSERT (ctx->ectx, pos->handle == NULL);
-    }
+  GNUNET_GE_ASSERT (ctx->ectx, pos->handle == NULL);
   event.type = GNUNET_FSUI_search_stopped;
   event.data.SearchStopped.sc.pos = pos;
   event.data.SearchStopped.sc.cctx = pos->cctx;
   pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-
-
   GNUNET_ECRS_uri_destroy (pos->uri);
   for (i = 0; i < pos->sizeResultsReceived; i++)
     {

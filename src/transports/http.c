@@ -378,6 +378,24 @@ static int stat_put_issued;
 
 static int stat_put_received;
 
+static int stat_select_calls;
+
+static int stat_send_calls;
+
+static int stat_connect_calls;
+
+static int stat_curl_send_callbacks;
+
+static int stat_curl_receive_callbacks;
+
+static int stat_mhd_access_callbacks;
+
+static int stat_mhd_read_callbacks;
+
+static int stat_mhd_close_callbacks;
+
+static int stat_connect_calls;
+
 /**
  * How many requests do we have currently pending
  * (with libcurl)?
@@ -582,6 +600,8 @@ requestCompletedCallback (void *unused,
   struct MHDGetData *gpos;
 #endif
 
+  if (stats != NULL)
+    stats->change(stat_mhd_close_callbacks, 1);
   ENTER ();
   if (httpsession == NULL)
     return;                     /* oops */
@@ -702,8 +722,9 @@ static int
 contentReaderCallback (void *cls, size_t pos, char *buf, int max)
 {
   struct MHDGetData *mgd = cls;
-  GNUNET_CronTime now;
 
+  if (stats != NULL)
+    stats->change(stat_mhd_read_callbacks, 1);
   ENTER ();
   GNUNET_mutex_lock (lock);
   if (mgd->wpos < max)
@@ -711,9 +732,8 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
   memcpy (buf, &mgd->wbuff[mgd->woff], max);
   mgd->wpos -= max;
   mgd->woff += max;
-  now = GNUNET_get_time ();
   if (max > 0)
-    mgd->last_get_activity = now;
+    mgd->last_get_activity = GNUNET_get_time ();
   if (mgd->wpos == 0)
     mgd->woff = 0;
   GNUNET_mutex_unlock (lock);
@@ -782,6 +802,8 @@ accessHandlerCallback (void *cls,
   unsigned int cpy;
   unsigned int poff;
 
+  if (stats != NULL)
+    stats->change(stat_mhd_access_callbacks, 1);
   ENTER ();
 #if DEBUG_HTTP
   GNUNET_GE_LOG (coreAPI->ectx,
@@ -1010,6 +1032,8 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   GNUNET_MessageHeader *hdr;
   GNUNET_TransportPacket *mp;
 
+  if (stats != NULL)
+    stats->change(stat_curl_receive_callbacks, 1);
   ENTER ();
   httpSession->cs.client.last_get_activity = GNUNET_get_time ();
 #if DEBUG_HTTP
@@ -1083,6 +1107,8 @@ sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   struct HTTPPutData *put = ctx;
   size_t max = size * nmemb;
 
+  if (stats != NULL)
+    stats->change(stat_curl_send_callbacks, 1);
   ENTER ();
   put->last_activity = GNUNET_get_time ();
   if (max > put->size - put->pos)
@@ -1268,6 +1294,8 @@ httpConnect (const GNUNET_MessageHello * hello,
   HTTPSession *httpSession;
   int i;
 
+  if (stats != NULL)
+    stats->change(stat_connect_calls, 1);
   ENTER ();
   /* check if we have a session pending for this peer */
   tsession = NULL;
@@ -1514,6 +1542,8 @@ httpSend (GNUNET_TSession * tsession,
   char *tmp;
 #endif
 
+  if (stats != NULL)
+    stats->change(stat_send_calls, 1);
   ENTER ();
   if (httpSession->is_client)
     {
@@ -1859,6 +1889,8 @@ curl_runner (void *unused)
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       STEP ();
+      if (stats != NULL)
+	stats->change(stat_select_calls, 1);
       SELECT (max + 1, &rs, &ws, &es, (have_tv == MHD_YES) ? &tv : NULL);
       STEP ();
       if (GNUNET_YES != http_running)
@@ -2098,6 +2130,24 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
       stat_put_issued = stats->create (gettext_noop ("# HTTP PUT issued"));
       stat_put_received
         = stats->create (gettext_noop ("# HTTP PUT received"));
+      stat_select_calls
+        = stats->create (gettext_noop ("# HTTP select calls"));
+
+      stat_send_calls
+        = stats->create (gettext_noop ("# HTTP send calls"));
+
+      stat_curl_send_callbacks
+        = stats->create (gettext_noop ("# HTTP curl send callbacks"));
+      stat_curl_receive_callbacks
+        = stats->create (gettext_noop ("# HTTP curl receive callbacks"));
+      stat_mhd_access_callbacks
+        = stats->create (gettext_noop ("# HTTP mhd access callbacks"));
+      stat_mhd_read_callbacks
+        = stats->create (gettext_noop ("# HTTP mhd read callbacks"));
+      stat_mhd_close_callbacks
+        = stats->create (gettext_noop ("# HTTP mhd close callbacks"));
+      stat_connect_calls
+        = stats->create (gettext_noop ("# HTTP connect calls"));
     }
   GNUNET_GC_get_configuration_value_string (coreAPI->cfg,
                                             "GNUNETD", "HTTP-PROXY", "",

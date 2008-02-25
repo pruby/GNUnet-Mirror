@@ -322,12 +322,19 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
       if (list->state == GNUNET_FSUI_PENDING)
         {
           list->state = GNUNET_FSUI_ACTIVE;
-          list->handle =
-            GNUNET_thread_create (&GNUNET_FSUI_searchThread, list, 32 * 1024);
+	  list->handle = GNUNET_ECRS_search_start(list->ctx->ectx,
+						  list->ctx->cfg,
+						  list->uri,
+						  list->anonymityLevel,
+						  &GNUNET_FSUI_search_progress_callback,
+						  list);
           if (list->handle == NULL)
-            GNUNET_GE_DIE_STRERROR (ectx,
-                                    GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
-                                    GNUNET_GE_IMMEDIATE, "pthread_create");
+	    {
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+			     GNUNET_GE_IMMEDIATE, "Failed to resume search\n");
+	      list->state = GNUNET_FSUI_PENDING;
+	    }
         }
       list = list->next;
     }
@@ -491,8 +498,8 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
         {
           if (spos->state == GNUNET_FSUI_ACTIVE)
             spos->state = GNUNET_FSUI_PENDING;
-          GNUNET_thread_stop_sleep (spos->handle);
-          GNUNET_thread_join (spos->handle, &unused);
+	  GNUNET_ECRS_search_stop(spos->handle);
+	  spos->handle = NULL;
           if (spos->state != GNUNET_FSUI_PENDING)
             spos->state++;      /* _JOINED */
         }

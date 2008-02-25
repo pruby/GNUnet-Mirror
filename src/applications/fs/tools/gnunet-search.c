@@ -73,16 +73,8 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 
   switch (event->type)
     {
-    case GNUNET_FSUI_search_error:
-      errorCode = 3;
-      GNUNET_shutdown_initiate ();
-      break;
     case GNUNET_FSUI_search_aborted:
       errorCode = 4;
-      GNUNET_shutdown_initiate ();
-      break;
-    case GNUNET_FSUI_search_completed:
-      errorCode = 0;
       GNUNET_shutdown_initiate ();
       break;
     case GNUNET_FSUI_search_result:
