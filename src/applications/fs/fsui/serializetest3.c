@@ -165,12 +165,12 @@ main (int argc, char *argv[])
   CHECK (search != NULL);
   prog = 0;
   suspendRestart = 10;
-  while (prog < 1000)
+  while (prog < 100)
     {
       prog++;
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       if ((suspendRestart > 0)
-          && (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) == 0))
+          && (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 10) == 0))
         {
 #if 1
 #if DEBUG_VERBOSE
