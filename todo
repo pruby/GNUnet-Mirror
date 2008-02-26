@@ -6,17 +6,19 @@ Annotations:
 
 0.8.0pre0 [2'08]:
 - make sure "make check" passes
-- make tcpserver IPv6 compatible
+- make tcpserver & network_client IPv6 compatible
+  => clean up gethostbyname mess!
+  => fix gnunet_util_network API for that stuff!
 - gnunet-gtk ready?
 - more IPv6 testing
 
 0.8.0 [4'08] (aka "advanced features"):
 - clean up VPN code
 - tune GAP query planning code [RC]
-- HTTP transport sometimes goes crazy with CPU usage [RC]
 - gnunet-chat (CS-only) [RC]
+- test new asynchronous ECRS API (and resulting FSUI changes);
+  make sure error handling & reporting are nice [RC]
 - test RPC code (write a small demo)
-- test new asynchronous ECRS API (and resulting FSUI changes)
 - test GAP code in general; still have one unexplained crazy crash:
   Program terminated with signal 11, Segmentation fault.
  #0  0xb4e8e73a in GNUNET_FS_SHARED_test_valid_new_response (rl=0x8060,
