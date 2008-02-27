@@ -71,7 +71,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   unsigned long room_name_len;
 
   cmsg = (CS_chat_MESSAGE *) message;
-  if (ntohs (cmsg->header.size) < (sizeof (CS_chat_MESSAGE)+sizeof (GNUNET_MessageHeader)))
+  if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
@@ -81,7 +81,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   header_size = ntohs (cmsg->header.size);
   nick_len = ntohs (cmsg->nick_len);
   msg_len = ntohs (cmsg->msg_len);
-  room_name_len = header_size - sizeof (GNUNET_MessageHeader) - sizeof (CS_chat_MESSAGE) - nick_len - msg_len;
+  room_name_len = header_size - sizeof (CS_chat_MESSAGE) - nick_len - msg_len;
 
   if (header_size < (nick_len + msg_len + room_name_len))
     {
@@ -161,7 +161,7 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
   cmsg = (CS_chat_JOIN_MESSAGE *) message;
 
-  if (ntohs (cmsg->header.size) < (sizeof (CS_chat_JOIN_MESSAGE) + sizeof (GNUNET_MessageHeader)))
+  if (ntohs (cmsg->header.size) < sizeof (CS_chat_JOIN_MESSAGE))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
@@ -171,10 +171,10 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   header_size = ntohs (cmsg->header.size);
   nick_len = ntohs (cmsg->nick_len);
   pubkey_len = ntohs (cmsg->pubkey_len);
-  room_name_len = 4 + header_size - sizeof (GNUNET_MessageHeader) - sizeof (CS_chat_JOIN_MESSAGE) - nick_len - pubkey_len;
+  room_name_len = header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len - pubkey_len;
   
-  fprintf(stderr,"MessageHeader size : %d\nJOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\npubkey_len : %d\nroom_name_len : %d\n",sizeof (GNUNET_MessageHeader),sizeof (CS_chat_JOIN_MESSAGE),header_size,nick_len,pubkey_len,room_name_len);
-  fprintf(stderr,"According to my addition, header_size should be %d\n",nick_len+pubkey_len+room_name_len+sizeof (CS_chat_JOIN_MESSAGE) + sizeof (GNUNET_MessageHeader));
+  fprintf(stderr,"JOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\npubkey_len : %d\nroom_name_len : %d\n",sizeof (CS_chat_JOIN_MESSAGE),header_size,nick_len,pubkey_len,room_name_len);
+  fprintf(stderr,"According to my addition, header_size should be %d\n",nick_len+pubkey_len+room_name_len+sizeof (CS_chat_JOIN_MESSAGE));
   if (header_size < (nick_len + pubkey_len + room_name_len))
     {
       GNUNET_GE_BREAK (NULL, 0);

@@ -82,7 +82,7 @@ poll_thread (void *rcls)
         }
 
       if ((reply->size <
-           ntohs (sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))
+           ntohs (sizeof (CS_chat_MESSAGE)))
           || (reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
         {
           GNUNET_GE_BREAK (NULL, 0);
@@ -98,7 +98,7 @@ poll_thread (void *rcls)
       nick_len = ntohs (received_msg->nick_len);
       msg_len = ntohs (received_msg->msg_len);
       /* NO NEED TO SEND ROOM! */
-      room_name_len = size - nick_len - msg_len - sizeof(CS_chat_MESSAGE) - sizeof(GNUNET_MessageHeader);
+      room_name_len = size - nick_len - msg_len - sizeof(CS_chat_MESSAGE);
 
       if (size < (nick_len + msg_len + room_name_len))
         {
@@ -331,10 +331,8 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
   GNUNET_MessageHeader cs_msg_hdr;
   CS_chat_MESSAGE *msg_to_send;
 
-
-
   cs_msg_hdr.size =
-    htons (sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE) +
+    htons (sizeof (CS_chat_MESSAGE) +
            strlen (room->nickname) + strlen (message) +
            strlen (room->room_name));
   cs_msg_hdr.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
