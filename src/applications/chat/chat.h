@@ -32,19 +32,9 @@
 typedef struct
 {
   GNUNET_MessageHeader header;
-  unsigned long nick_len;
-  unsigned long msg_len;
-  unsigned long room_name_len;
-  char nick[1];
-
-} P2P_chat_MESSAGE;
-
-typedef struct
-{
-  GNUNET_MessageHeader header;
-  unsigned long nick_len;
-  unsigned long msg_len;
-  unsigned long room_name_len;
+  int nick_len;
+  int msg_len;
+  /*int room_name_len;*/
   char nick[1];
 
 } CS_chat_MESSAGE;
@@ -52,9 +42,9 @@ typedef struct
 typedef struct
 {
   GNUNET_MessageHeader header;
-  unsigned long nick_len;
-  unsigned long pubkey_len;
-  unsigned long room_name_len;
+  int nick_len;
+  int pubkey_len;
+  /*int room_name_len;*/
   char nick[1];
 
 } CS_chat_JOIN_MESSAGE;

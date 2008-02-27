@@ -95,22 +95,21 @@ poll_thread (void *rcls)
 
       received_msg = (CS_chat_MESSAGE *) reply;
 
-      nick_len = ntohl (received_msg->nick_len);
-      msg_len = ntohl (received_msg->msg_len);
+      nick_len = ntohs (received_msg->nick_len);
+      msg_len = ntohs (received_msg->msg_len);
       /* NO NEED TO SEND ROOM! */
-      room_name_len = ntohl (received_msg->room_name_len);
+      room_name_len = size - nick_len - msg_len - sizeof(CS_chat_MESSAGE) - sizeof(GNUNET_MessageHeader);
 
       if (size < (nick_len + msg_len + room_name_len))
         {
           GNUNET_GE_BREAK (NULL, 0);
-          return GNUNET_SYSERR; /* invalid message */
+          return NULL; /* invalid message */
         }
 
       nick = GNUNET_malloc (nick_len + 1);
       message_content = GNUNET_malloc (msg_len + 1);
       room_name = GNUNET_malloc (room_name_len + 1);
 
-      /* BUFFER OVERFLOWS! */
       memcpy (nick, &received_msg->nick[0], nick_len);
       memcpy (message_content, &received_msg->nick[nick_len], msg_len);
       memcpy (room_name, &received_msg->nick[nick_len + msg_len],
@@ -194,9 +193,9 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
     sizeof (GNUNET_RSA_PublicKey) + strlen (room_name);
   join_msg = GNUNET_malloc (size_of_join);
 
-  join_msg->nick_len = htonl (strlen (nickname));
-  join_msg->pubkey_len = htonl (sizeof (GNUNET_RSA_PublicKey));
-  join_msg->room_name_len = htonl (strlen (room_name));
+  join_msg->nick_len = htons (strlen (nickname));
+  join_msg->pubkey_len = htons (sizeof (GNUNET_RSA_PublicKey));
+  //join_msg->room_name_len = htonl (strlen (room_name));
 
 
   memcpy (&join_msg->nick[0], nickname, strlen (nickname));
@@ -270,9 +269,9 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
     sizeof (GNUNET_RSA_PublicKey) + strlen (chat_room->room_name);
   join_msg = GNUNET_malloc (size_of_join);
 
-  join_msg->nick_len = htonl (strlen (chat_room->nickname));
-  join_msg->pubkey_len = htonl (sizeof (GNUNET_RSA_PublicKey));
-  join_msg->room_name_len = htonl (strlen (chat_room->room_name));
+  join_msg->nick_len = htons (strlen (chat_room->nickname));
+  join_msg->pubkey_len = htons (sizeof (GNUNET_RSA_PublicKey));
+  //join_msg->room_name_len = htonl (strlen (chat_room->room_name));
 
 
   memcpy (&join_msg->nick[0], chat_room->nickname,
@@ -340,11 +339,11 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
            strlen (room->room_name));
   cs_msg_hdr.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
 
-  msg_to_send = GNUNET_malloc (ntohl (cs_msg_hdr.size));
+  msg_to_send = GNUNET_malloc (ntohs (cs_msg_hdr.size));
 
-  msg_to_send->nick_len = htonl (strlen (room->nickname));
-  msg_to_send->msg_len = htonl (strlen (message));
-  msg_to_send->room_name_len = htonl (strlen (room->room_name));
+  msg_to_send->nick_len = htons (strlen (room->nickname));
+  msg_to_send->msg_len = htons (strlen (message));
+  //msg_to_send->room_name_len = htonl (strlen (room->room_name));
 
   memcpy (&msg_to_send->nick[0], room->nickname, strlen (room->nickname));
   memcpy (&msg_to_send->nick[strlen (room->nickname)], message,
