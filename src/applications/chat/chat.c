@@ -71,7 +71,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   unsigned long room_name_len;
 
   cmsg = (CS_chat_MESSAGE *) message;
-  if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
+  if (ntohs (cmsg->header.size) < (sizeof (CS_chat_MESSAGE)+sizeof (GNUNET_MessageHeader)))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
@@ -79,9 +79,9 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
 
 
   header_size = ntohs (cmsg->header.size);
-  nick_len = ntohl (cmsg->nick_len);
-  msg_len = ntohl (cmsg->msg_len);
-  room_name_len = ntohl (cmsg->room_name_len);
+  nick_len = ntohs (cmsg->nick_len);
+  msg_len = ntohs (cmsg->msg_len);
+  room_name_len = header_size - sizeof (GNUNET_MessageHeader) - sizeof (CS_chat_MESSAGE) - nick_len - msg_len;
 
   if (header_size < (nick_len + msg_len + room_name_len))
     {
@@ -145,7 +145,6 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
                          const GNUNET_MessageHeader * message)
 {
   const CS_chat_JOIN_MESSAGE *cmsg;
-  P2P_chat_MESSAGE *pmsg;
   GNUNET_HashCode hc;
   GNUNET_HashCode room_name_hash;
 
@@ -155,15 +154,14 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
   int header_size;
   int tempCount;
-  unsigned long nick_len;
-  unsigned long pubkey_len;
-  unsigned long room_name_len;
+  int nick_len;
+  int pubkey_len;
+  int room_name_len;
   struct GNUNET_CS_chat_client *tempClient;
 
-  pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_JOIN_MESSAGE *) message;
 
-  if (ntohs (cmsg->header.size) < sizeof (CS_chat_JOIN_MESSAGE))
+  if (ntohs (cmsg->header.size) < (sizeof (CS_chat_JOIN_MESSAGE) + sizeof (GNUNET_MessageHeader)))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
@@ -171,10 +169,12 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
 
   header_size = ntohs (cmsg->header.size);
-  nick_len = ntohl (cmsg->nick_len);
-  pubkey_len = ntohl (cmsg->pubkey_len);
-  room_name_len = ntohl (cmsg->room_name_len);
-
+  nick_len = ntohs (cmsg->nick_len);
+  pubkey_len = ntohs (cmsg->pubkey_len);
+  room_name_len = 4 + header_size - sizeof (GNUNET_MessageHeader) - sizeof (CS_chat_JOIN_MESSAGE) - nick_len - pubkey_len;
+  
+  fprintf(stderr,"MessageHeader size : %d\nJOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\npubkey_len : %d\nroom_name_len : %d\n",sizeof (GNUNET_MessageHeader),sizeof (CS_chat_JOIN_MESSAGE),header_size,nick_len,pubkey_len,room_name_len);
+  fprintf(stderr,"According to my addition, header_size should be %d\n",nick_len+pubkey_len+room_name_len+sizeof (CS_chat_JOIN_MESSAGE) + sizeof (GNUNET_MessageHeader));
   if (header_size < (nick_len + pubkey_len + room_name_len))
     {
       GNUNET_GE_BREAK (NULL, 0);
@@ -298,8 +298,6 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
 
-  GNUNET_GE_ASSERT (ectx,
-                    sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
 
   coreAPI = capi;
