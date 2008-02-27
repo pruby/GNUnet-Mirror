@@ -93,7 +93,7 @@ static struct GNUNET_IPv6NetworkSet *trustedNetworksV6;
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted4 (const struct in_addr * ip)
+isWhitelisted4 (const struct in_addr *ip)
 {
   return GNUNET_check_ipv4_listed (trustedNetworksV4, ip);
 }
@@ -102,7 +102,7 @@ isWhitelisted4 (const struct in_addr * ip)
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted6 (const struct in6_addr * ip)
+isWhitelisted6 (const struct in6_addr *ip)
 {
   return GNUNET_check_ipv6_listed (trustedNetworksV6, ip);
 }
@@ -172,33 +172,35 @@ select_accept_handler (void *ah_cls,
   struct in6_addr ip6;
   struct sockaddr_in *a4;
   struct sockaddr_in6 *a6;
-  
+
   if (addr_len == sizeof (struct sockaddr_in6))
     {
       a6 = (struct sockaddr_in6 *) addr;
-      
+
       memcpy (&ip6, &a6->sin6_addr, sizeof (struct in6_addr));
       /* get embedded ipv4 address in case address embedding is used */
       memcpy (&ip4,
-	      &((char*) &ip6)[sizeof(struct in6_addr) - sizeof(struct in_addr)], 
-	      sizeof (struct in_addr));
-      if ( (!isWhitelisted6 (&ip6)) &&
-	   (! ( ( (IN6_IS_ADDR_V4COMPAT(&a6->sin6_addr)) ||
-		  (IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr)) ) &&
-		(isWhitelisted4(&ip4) ) ) ) )      
-	return NULL;	
+              &((char *) &ip6)[sizeof (struct in6_addr) -
+                               sizeof (struct in_addr)],
+              sizeof (struct in_addr));
+      if ((!isWhitelisted6 (&ip6))
+          &&
+          (!(((IN6_IS_ADDR_V4COMPAT (&a6->sin6_addr))
+              || (IN6_IS_ADDR_V4MAPPED (&a6->sin6_addr)))
+             && (isWhitelisted4 (&ip4)))))
+        return NULL;
     }
   else if (addr_len == sizeof (struct sockaddr_in))
     {
       a4 = (struct sockaddr_in *) addr;
       memcpy (&ip4, &a4->sin_addr, sizeof (struct in_addr));
       if (!isWhitelisted4 (&ip4))
-	return NULL;
+        return NULL;
     }
   else
     {
-      GNUNET_GE_BREAK(NULL, 0);
-      return NULL; 
+      GNUNET_GE_BREAK (NULL, 0);
+      return NULL;
     }
   session = GNUNET_malloc (sizeof (ClientHandle));
   session->sock = sock;
@@ -335,7 +337,7 @@ startTCPServer ()
   int listenerPort;
   struct sockaddr_in6 serverAddr6;
   struct sockaddr_in serverAddr4;
-  struct sockaddr * serverAddr;
+  struct sockaddr *serverAddr;
   socklen_t socklen;
   const int on = 1;
 
@@ -346,26 +348,27 @@ startTCPServer ()
     {
       listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
       if (listenerFD < 0)
-	{
-	  GNUNET_GE_LOG_STRERROR (ectx,
-				  GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
-				  GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "socket");
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_GE_LOG_STRERROR (ectx,
+                                  GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                                  "socket");
+          return GNUNET_SYSERR;
+        }
       memset (&serverAddr4, 0, sizeof (serverAddr4));
       serverAddr4.sin_family = AF_INET;
       serverAddr4.sin_addr.s_addr = htonl (INADDR_ANY);
       serverAddr4.sin_port = htons (listenerPort);
-      socklen = sizeof(serverAddr4);
-      serverAddr = (struct sockaddr*) &serverAddr4;
+      socklen = sizeof (serverAddr4);
+      serverAddr = (struct sockaddr *) &serverAddr4;
     }
   else
     {
       memset (&serverAddr6, 0, sizeof (serverAddr6));
       serverAddr6.sin6_family = AF_INET6;
       serverAddr6.sin6_port = htons (listenerPort);
-      socklen = sizeof(serverAddr6);
-      serverAddr = (struct sockaddr*) &serverAddr6;
+      socklen = sizeof (serverAddr6);
+      serverAddr = (struct sockaddr *) &serverAddr6;
     }
   /* fill in the inet address structure */
   if (SETSOCKOPT (listenerFD, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
@@ -373,8 +376,7 @@ startTCPServer ()
                             GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                             GNUNET_GE_BULK, "setsockopt");
   /* bind the socket */
-  if (BIND (listenerFD,
-            serverAddr, socklen) < 0)
+  if (BIND (listenerFD, serverAddr, socklen) < 0)
     {
       GNUNET_GE_LOG_STRERROR (ectx,
                               GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
@@ -388,7 +390,7 @@ startTCPServer ()
       CLOSE (listenerFD);
       return GNUNET_SYSERR;
     }
-  selector = GNUNET_select_create ("tcpserver", GNUNET_NO, ectx, NULL, listenerFD, socklen, 0,      /* no timeout */
+  selector = GNUNET_select_create ("tcpserver", GNUNET_NO, ectx, NULL, listenerFD, socklen, 0,  /* no timeout */
                                    &select_message_handler,
                                    NULL,
                                    &select_accept_handler,

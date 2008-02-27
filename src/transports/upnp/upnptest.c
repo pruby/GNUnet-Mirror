@@ -87,7 +87,7 @@ main (int argc, const char *argv[])
       if (GNUNET_OK == upnp->get_ip (2086, "TCP", &addr))
         {
           printf ("UPnP returned external IP %s\n",
-		  inet_ntop(AF_INET, &addr, ntop_buf, INET_ADDRSTRLEN));
+                  inet_ntop (AF_INET, &addr, ntop_buf, INET_ADDRSTRLEN));
         }
       else
         {

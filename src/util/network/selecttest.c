@@ -197,7 +197,7 @@ check ()
   sh = GNUNET_select_create ("Select Tester", GNUNET_NO,        /* tcp */
                              NULL,      /* ectx */
                              NULL,      /* no load monitoring */
-                             listen_sock, sizeof (struct in_addr), 15 * GNUNET_CRON_SECONDS,        /* inactive timeout */
+                             listen_sock, sizeof (struct in_addr), 15 * GNUNET_CRON_SECONDS,    /* inactive timeout */
                              test_smh, NULL, test_sah, NULL, test_sch, NULL, 128 * 1024,        /* memory quota */
                              128 /* socket quota */ );
 

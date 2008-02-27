@@ -51,11 +51,11 @@
  */
 static int
 getAddressFromHostname (struct GNUNET_GE_Context *ectx,
-                        struct in_addr * identity)
+                        struct in_addr *identity)
 {
   char hostname[MAX_HOSTNAME];
   int ret;
-  struct sockaddr * my_addr;
+  struct sockaddr *my_addr;
   struct sockaddr_in a4;
   socklen_t socklen;
 
@@ -66,9 +66,10 @@ getAddressFromHostname (struct GNUNET_GE_Context *ectx,
                               GNUNET_GE_USER | GNUNET_GE_BULK, "gethostname");
       return GNUNET_SYSERR;
     }
-  socklen = sizeof(struct sockaddr_in);	  
-  my_addr = (struct sockaddr*) &a4;
-  ret = GNUNET_get_ip_from_hostname (ectx, hostname, AF_INET, &my_addr, &socklen);
+  socklen = sizeof (struct sockaddr_in);
+  my_addr = (struct sockaddr *) &a4;
+  ret =
+    GNUNET_get_ip_from_hostname (ectx, hostname, AF_INET, &my_addr, &socklen);
   if (ret == GNUNET_OK)
     *identity = a4.sin_addr;
   return ret;
@@ -78,7 +79,7 @@ getAddressFromHostname (struct GNUNET_GE_Context *ectx,
 static int
 getAddressFromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
                           struct GNUNET_GE_Context *ectx,
-                          struct in_addr * identity)
+                          struct in_addr *identity)
 {
   char *interfaces;
   struct ifaddrs *ifa_first;
@@ -135,8 +136,7 @@ getAddressFromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
 #define MAX_INTERFACES 16
 static int
 getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
-                     struct GNUNET_GE_Context *ectx,
-                     struct in_addr * identity)
+                     struct GNUNET_GE_Context *ectx, struct in_addr *identity)
 {
   char *interfaces;
 #ifndef MINGW
@@ -300,14 +300,15 @@ getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
           return GNUNET_SYSERR;
         }
       else if (iAddrCount > 1)
-	{
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-			 _("There is more than one IP address specified"
-			   " for interface `%s'.\nGNUnet will "
-			   "use %s.\n"), interfaces,
-			 inet_ntop(AF_INET, &dwIP, ntop_buf, INET_ADDRSTRLEN));
-	}
+        {
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("There is more than one IP address specified"
+                           " for interface `%s'.\nGNUnet will "
+                           "use %s.\n"), interfaces,
+                         inet_ntop (AF_INET, &dwIP, ntop_buf,
+                                    INET_ADDRSTRLEN));
+        }
 
       identity->addr = dwIP;
 
@@ -360,7 +361,8 @@ getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("GNUnet now uses the IP address %s.\n"),
-		 inet_ntop(AF_INET, &identity->addr, ntop_buf, INET_ADDRSTRLEN));
+                 inet_ntop (AF_INET, &identity->addr, ntop_buf,
+                            INET_ADDRSTRLEN));
   return GNUNET_OK;
 #endif
 }
@@ -373,11 +375,10 @@ getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
  */
 char *
 GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
-                     struct GNUNET_GE_Context *ectx,
-                     struct in_addr * addr)
+                     struct GNUNET_GE_Context *ectx, struct in_addr *addr)
 {
   struct in_addr address;
-  struct sockaddr * my_addr;
+  struct sockaddr *my_addr;
   struct sockaddr_in a4;
   char *ipString;
   int retval;
@@ -392,11 +393,13 @@ GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
                                                 &ipString);
       if (strlen (ipString) > 0)
         {
-	  socklen = sizeof(struct sockaddr_in);	  
-	  my_addr = (struct sockaddr*) &a4;
-          retval = GNUNET_get_ip_from_hostname (ectx, ipString, AF_INET, &my_addr, &socklen);
-	  if (retval == GNUNET_OK)
-	    address = a4.sin_addr;
+          socklen = sizeof (struct sockaddr_in);
+          my_addr = (struct sockaddr *) &a4;
+          retval =
+            GNUNET_get_ip_from_hostname (ectx, ipString, AF_INET, &my_addr,
+                                         &socklen);
+          if (retval == GNUNET_OK)
+            address = a4.sin_addr;
         }
       GNUNET_free (ipString);
     }
@@ -414,11 +417,7 @@ GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
     retval = getAddressFromHostname (ectx, &address);
   if (retval == GNUNET_SYSERR)
     return NULL;
-  if (NULL == 
-      inet_ntop(AF_INET,
-		&address,
-		buf,
-		INET_ADDRSTRLEN))
+  if (NULL == inet_ntop (AF_INET, &address, buf, INET_ADDRSTRLEN))
     return NULL;
   if (addr != NULL)
     *addr = address;

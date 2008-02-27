@@ -565,7 +565,7 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
   const char *endDescURL;
   int ret;
   UPnPDiscoveryData dd;
-  struct sockaddr * sa;
+  struct sockaddr *sa;
 
   memset (&dd, 0, sizeof (UPnPDiscoveryData));
   if (control_info.status == GAIM_UPNP_STATUS_DISCOVERING)
@@ -573,14 +573,11 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
   dd.sock = sock;
   memset (&server, 0, sizeof (struct sockaddr_in));
   server.sin_family = AF_INET;
-  avail = sizeof(struct sockaddr_in);
-  sa = (struct sockaddr*) &server;
+  avail = sizeof (struct sockaddr_in);
+  sa = (struct sockaddr *) &server;
   if (GNUNET_OK !=
-      GNUNET_get_ip_from_hostname(ectx,
-				  HTTPMU_HOST_ADDRESS,
-				  AF_INET,
-				  &sa,
-				  &avail))
+      GNUNET_get_ip_from_hostname (ectx,
+                                   HTTPMU_HOST_ADDRESS, AF_INET, &sa, &avail))
     {
       CLOSE (dd.sock);
       return GNUNET_SYSERR;

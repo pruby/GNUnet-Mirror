@@ -103,7 +103,8 @@ PrintAdapters ()
               if (pAddrTable->table[i].dwIndex ==
                   pTable->table[dwIfIdx].dwIndex)
                 printf ("Address: %s\n",
-			inet_ntop(AF_INET, &pAddrTable->table[i].dwAddr, ntop_buf, INET_ADDRSTRLEN));
+                        inet_ntop (AF_INET, &pAddrTable->table[i].dwAddr,
+                                   ntop_buf, INET_ADDRSTRLEN));
             }
           printf ("\n");
         }

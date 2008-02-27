@@ -36,7 +36,7 @@
  */
 char *
 GNUNET_upnp_get_internal_ip (struct GNUNET_GC_Configuration *cfg,
-			     struct GNUNET_GE_Context *ectx)
+                             struct GNUNET_GE_Context *ectx)
 {
   struct in_addr address;
 

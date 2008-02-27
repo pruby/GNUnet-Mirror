@@ -86,16 +86,14 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         {
           char *u;
 
-	  u = GNUNET_ECRS_uri_to_string(event->data.SearchResult.fi.uri);
+          u = GNUNET_ECRS_uri_to_string (event->data.SearchResult.fi.uri);
           if (!GNUNET_ECRS_uri_test_equal
               (upURI, event->data.SearchResult.fi.uri))
             {
 #if DEBUG_VERBOSE
-              printf
-                ("Received result for different file: %s.\n",
-		 u);
+              printf ("Received result for different file: %s.\n", u);
 #endif
-	      GNUNET_free(u);
+              GNUNET_free (u);
               return NULL;      /* ignore */
             }
 #if DEBUG_VERBOSE
@@ -141,7 +139,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       search = NULL;
       break;
     case GNUNET_FSUI_download_progress:
-#if DEBUG_VERBOSE > 1 
+#if DEBUG_VERBOSE > 1
       printf ("Download is progressing (%llu/%llu)...\n",
               event->data.DownloadProgress.completed,
               event->data.DownloadProgress.total);
@@ -232,7 +230,7 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
-  GNUNET_disk_directory_remove(NULL, "/tmp/gnunet-fsui-test/content/");
+  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-test/content/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==

@@ -236,7 +236,7 @@ GNUNET_client_connection_ensure_connected (struct
                                            GNUNET_ClientServerConnection
                                            *sock)
 {
-  struct sockaddr * soaddr;
+  struct sockaddr *soaddr;
   socklen_t socklen;
   fd_set rset;
   fd_set wset;
@@ -260,7 +260,9 @@ GNUNET_client_connection_ensure_connected (struct
     return GNUNET_SYSERR;
   soaddr = NULL;
   socklen = 0;
-  if (GNUNET_SYSERR == GNUNET_get_ip_from_hostname (sock->ectx, host, AF_UNSPEC, &soaddr, &socklen))
+  if (GNUNET_SYSERR ==
+      GNUNET_get_ip_from_hostname (sock->ectx, host, AF_UNSPEC, &soaddr,
+                                   &socklen))
     {
       GNUNET_free (host);
       return GNUNET_SYSERR;
@@ -270,24 +272,24 @@ GNUNET_client_connection_ensure_connected (struct
     {
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
-      GNUNET_free(soaddr);
+      GNUNET_free (soaddr);
       return GNUNET_OK;
     }
   if (sock->dead == GNUNET_YES)
     {
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
-      GNUNET_free(soaddr);
+      GNUNET_free (soaddr);
       return GNUNET_SYSERR;
     }
   if (soaddr->sa_family == AF_INET)
     {
-      ((struct sockaddr_in*) soaddr)->sin_port = htons (port);
+      ((struct sockaddr_in *) soaddr)->sin_port = htons (port);
       osock = SOCKET (PF_INET, SOCK_STREAM, 0);
-    } 
+    }
   else
     {
-      ((struct sockaddr_in6*) soaddr)->sin6_port = htons (port);
+      ((struct sockaddr_in6 *) soaddr)->sin6_port = htons (port);
       osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
     }
   if (osock == -1)
@@ -297,13 +299,13 @@ GNUNET_client_connection_ensure_connected (struct
                               GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
-      GNUNET_free(soaddr);
+      GNUNET_free (soaddr);
       return GNUNET_SYSERR;
     }
   sock->sock = GNUNET_socket_create (sock->ectx, NULL, osock);
   GNUNET_socket_set_blocking (sock->sock, GNUNET_NO);
   ret = CONNECT (osock, soaddr, socklen);
-  GNUNET_free(soaddr);
+  GNUNET_free (soaddr);
   if ((ret != 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       GNUNET_GE_LOG (sock->ectx,

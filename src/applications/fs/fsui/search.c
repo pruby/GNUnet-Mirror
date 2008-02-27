@@ -113,70 +113,64 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
       GNUNET_GE_BREAK (ectx, 0);
 #if DEBUG_SEARCH
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-		     "Received search result without key to decrypt.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Received search result without key to decrypt.\n");
 #endif
       return GNUNET_SYSERR;
     }
   for (i = 0; i < pos->sizeUnmatchedResultsReceived; i++)
     {
       rp = &pos->unmatchedResultsReceived[i];
-      if (! GNUNET_ECRS_uri_test_equal (fi->uri, rp->fi.uri))
-	continue;
+      if (!GNUNET_ECRS_uri_test_equal (fi->uri, rp->fi.uri))
+        continue;
       for (j = 0; j < rp->matchingKeyCount; j++)
-	if (0 == memcmp (key,
-			 &rp->matchingKeys[j],
-			 sizeof (GNUNET_HashCode)))
-	  {
+        if (0 == memcmp (key, &rp->matchingKeys[j], sizeof (GNUNET_HashCode)))
+          {
 #if DEBUG_SEARCH
-	    GNUNET_GE_LOG (ectx,
-			   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-			   GNUNET_GE_USER,
-			   "Received search result that I have seen before (missing keyword to show client).\n");
+            GNUNET_GE_LOG (ectx,
+                           GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                           GNUNET_GE_USER,
+                           "Received search result that I have seen before (missing keyword to show client).\n");
 #endif
-	    return GNUNET_OK;
-	  }
+            return GNUNET_OK;
+          }
       if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys)
-	{
+        {
 #if DEBUG_SEARCH
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-			 GNUNET_GE_USER,
-			 "Received search result (showing client)!\n");
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                         GNUNET_GE_USER,
+                         "Received search result (showing client)!\n");
 #endif
-	  GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount,
-			     0);
-	  processResult (&rp->fi, pos);
-	  GNUNET_ECRS_uri_destroy (rp->fi.uri);
-	  GNUNET_ECRS_meta_data_destroy (rp->fi.meta);
-	  pos->unmatchedResultsReceived[i]
-	    =
-	    pos->unmatchedResultsReceived[pos->
-					  sizeUnmatchedResultsReceived
-					  - 1];
-	  GNUNET_array_grow (pos->unmatchedResultsReceived,
-			     pos->sizeUnmatchedResultsReceived,
-			     pos->sizeUnmatchedResultsReceived - 1);
-	  return GNUNET_OK;
-	}
+          GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount, 0);
+          processResult (&rp->fi, pos);
+          GNUNET_ECRS_uri_destroy (rp->fi.uri);
+          GNUNET_ECRS_meta_data_destroy (rp->fi.meta);
+          pos->unmatchedResultsReceived[i]
+            =
+            pos->unmatchedResultsReceived[pos->
+                                          sizeUnmatchedResultsReceived - 1];
+          GNUNET_array_grow (pos->unmatchedResultsReceived,
+                             pos->sizeUnmatchedResultsReceived,
+                             pos->sizeUnmatchedResultsReceived - 1);
+          return GNUNET_OK;
+        }
       GNUNET_array_grow (rp->matchingKeys,
-			 rp->matchingKeyCount,
-			 rp->matchingKeyCount + 1);
+                         rp->matchingKeyCount, rp->matchingKeyCount + 1);
       rp->matchingKeys[rp->matchingKeyCount - 1] = *key;
 #if DEBUG_SEARCH
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-		     GNUNET_GE_USER,
-		     "Received search result (waiting for more %u keys before showing client).\n",
-		     pos->numberOfURIKeys - rp->matchingKeyCount);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_USER,
+                     "Received search result (waiting for more %u keys before showing client).\n",
+                     pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
       return GNUNET_OK;
     }
   GNUNET_array_grow (pos->unmatchedResultsReceived,
-		     pos->sizeUnmatchedResultsReceived,
-		     pos->sizeUnmatchedResultsReceived + 1);
-  rp =
-    &pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived - 1];
+                     pos->sizeUnmatchedResultsReceived,
+                     pos->sizeUnmatchedResultsReceived + 1);
+  rp = &pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived - 1];
   rp->fi.meta = GNUNET_ECRS_meta_data_duplicate (fi->meta);
   rp->fi.uri = GNUNET_ECRS_uri_duplicate (fi->uri);
   rp->matchingKeys = NULL;
@@ -185,9 +179,9 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
   GNUNET_GE_LOG (ectx,
-		 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-		 "Received search result (waiting for %u more keys before showing client).\n",
-		 pos->numberOfURIKeys - rp->matchingKeyCount);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Received search result (waiting for %u more keys before showing client).\n",
+                 pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
   return GNUNET_OK;
 }

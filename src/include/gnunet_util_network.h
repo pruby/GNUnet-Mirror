@@ -283,7 +283,7 @@ struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int GNUNET_check_ipv4_listed (const struct GNUNET_IPv4NetworkSet *list,
-                              const struct in_addr * ip);
+                              const struct in_addr *ip);
 
 /**
  * Check if the given IP address is in the list of
@@ -293,7 +293,7 @@ int GNUNET_check_ipv4_listed (const struct GNUNET_IPv4NetworkSet *list,
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int GNUNET_check_ipv6_listed (const struct GNUNET_IPv6NetworkSet *list,
-                              const struct in6_addr * ip);
+                              const struct in6_addr *ip);
 
 
 /* ********************* low-level socket operations **************** */
@@ -516,10 +516,9 @@ int GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
  */
 int
 GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
-			     const char * hostname,	
-			     int domain,
-			     struct sockaddr ** sa,
-			     socklen_t * socklen);
+                             const char *hostname,
+                             int domain,
+                             struct sockaddr **sa, socklen_t * socklen);
 
 /**
  * Get an IP address as a string (works for both IPv4 and IPv6).  Note
@@ -538,7 +537,7 @@ char *GNUNET_get_ip_as_string (const void *sa,
  */
 char *GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
                            struct GNUNET_GE_Context *ectx,
-                           struct in_addr * addr);
+                           struct in_addr *addr);
 
 
 /**

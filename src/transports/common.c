@@ -54,7 +54,7 @@ static int available_protocols;
  * Check if we are allowed to connect to the given IP.
  */
 static int
-is_blacklisted_ipv6 (const struct in6_addr * ip)
+is_blacklisted_ipv6 (const struct in6_addr *ip)
 {
   int ret;
 
@@ -83,21 +83,21 @@ is_whitelisted_ipv6 (const struct in6_addr *ip)
 static int
 is_rejected_ipv6 (const void *addr, unsigned int addr_len)
 {
-  const struct sockaddr_in6 * saddr;
-  const struct in6_addr * inaddr;
+  const struct sockaddr_in6 *saddr;
+  const struct in6_addr *inaddr;
 
-  if (addr_len == sizeof(struct in6_addr))
+  if (addr_len == sizeof (struct in6_addr))
     {
       inaddr = addr;
     }
-  else if (addr_len == sizeof(struct sockaddr_in6))
+  else if (addr_len == sizeof (struct sockaddr_in6))
     {
       saddr = addr;
       inaddr = &saddr->sin6_addr;
     }
   else
     {
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   if ((GNUNET_YES == is_blacklisted_ipv6 (inaddr)) ||
@@ -143,21 +143,21 @@ is_whitelisted_ipv4 (const struct in_addr *ip)
 static int
 is_rejected_ipv4 (const void *addr, unsigned int addr_len)
 {
-  const struct sockaddr_in * saddr;
-  const struct in_addr * inaddr;
+  const struct sockaddr_in *saddr;
+  const struct in_addr *inaddr;
 
-  if (addr_len == sizeof(struct in_addr))
+  if (addr_len == sizeof (struct in_addr))
     {
       inaddr = addr;
     }
-  else if (addr_len == sizeof(struct sockaddr_in))
+  else if (addr_len == sizeof (struct sockaddr_in))
     {
       saddr = addr;
       inaddr = &saddr->sin_addr;
     }
   else
     {
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   if ((GNUNET_NO != is_blacklisted_ipv4 (inaddr)) ||
@@ -184,8 +184,8 @@ is_rejected_ipv4 (const void *addr, unsigned int addr_len)
 static int
 is_rejected_tester (const void *addr, unsigned int addr_len)
 {
-  if ( (addr_len == sizeof (struct in_addr)) ||
-       (addr_len == sizeof (struct sockaddr_in)) )
+  if ((addr_len == sizeof (struct in_addr)) ||
+      (addr_len == sizeof (struct sockaddr_in)))
     return is_rejected_ipv4 (addr, addr_len);
   return is_rejected_ipv6 (addr, addr_len);
 }
@@ -222,11 +222,10 @@ verify_hello (const GNUNET_MessageHello * hello)
           &&
           ((GNUNET_YES ==
             is_blacklisted_ipv6 (&haddr->ipv6))
-           || (GNUNET_YES !=
-               is_whitelisted_ipv6 (&haddr->ipv6)))))
+           || (GNUNET_YES != is_whitelisted_ipv6 (&haddr->ipv6)))))
     {
-      GNUNET_GE_BREAK_OP(NULL, 0);
-      return GNUNET_SYSERR;       /* invalid */
+      GNUNET_GE_BREAK_OP (NULL, 0);
+      return GNUNET_SYSERR;     /* invalid */
     }
   return GNUNET_OK;
 }
@@ -372,8 +371,7 @@ create_hello ()
         GNUNET_IP_get_public_ipv4_address (cfg, coreAPI->ectx,
                                            &haddr->ipv4))))
     {
-      if (0 != memcmp (&haddr->ipv4,
-                       &last_addrv4, sizeof (struct in_addr)))
+      if (0 != memcmp (&haddr->ipv4, &last_addrv4, sizeof (struct in_addr)))
         {
           struct in_addr in4;
           char dst[INET_ADDRSTRLEN];
@@ -393,8 +391,7 @@ create_hello ()
   if (GNUNET_SYSERR !=
       GNUNET_IP_get_public_ipv6_address (cfg, coreAPI->ectx, &haddr->ipv6))
     {
-      if (0 != memcmp (&haddr->ipv6,
-                       &last_addrv6, sizeof (struct in6_addr)))
+      if (0 != memcmp (&haddr->ipv6, &last_addrv6, sizeof (struct in6_addr)))
         {
           struct in6_addr in6;
           char dst[INET6_ADDRSTRLEN];
@@ -443,8 +440,7 @@ hello_to_address (const GNUNET_MessageHello * hello,
       *sa = serverAddr4;
       memset (serverAddr4, 0, sizeof (struct sockaddr_in));
       serverAddr4->sin_family = AF_INET;
-      memcpy (&serverAddr4->sin_addr, &haddr->ipv4,
-              sizeof (struct in_addr));
+      memcpy (&serverAddr4->sin_addr, &haddr->ipv4, sizeof (struct in_addr));
       serverAddr4->sin_port = haddr->port;
     }
   else if (0 != (available & VERSION_AVAILABLE_IPV6))
