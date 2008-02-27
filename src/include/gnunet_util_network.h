@@ -32,6 +32,14 @@
 #ifndef GNUNET_UTIL_NETWORK_H
 #define GNUNET_UTIL_NETWORK_H
 
+#ifndef MINGW
+/* for struct addr_in, etc. */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#endif
+
 #include "gnunet_util_config.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_os.h"
@@ -153,33 +161,10 @@ typedef struct
 
 } GNUNET_MessageReturnErrorMessage;
 
-
-/**
- * @brief an IPv4 address
- */
-typedef struct
-{
-  /**
-   * struct in_addr
-   */
-  unsigned int addr;
-} GNUNET_IPv4Address;
-
 /**
  * @brief IPV4 network in CIDR notation.
  */
 struct GNUNET_IPv4NetworkSet;
-
-/**
- * @brief an IPV6 address.
- */
-typedef struct
-{
-  /**
-   * struct in6_addr addr;
-   */
-  unsigned int addr[4];
-} GNUNET_IPv6Address;
 
 /**
  * @brief IPV6 network in CIDR notation.
@@ -298,7 +283,7 @@ struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int GNUNET_check_ipv4_listed (const struct GNUNET_IPv4NetworkSet *list,
-                              GNUNET_IPv4Address ip);
+                              const struct in_addr * ip);
 
 /**
  * Check if the given IP address is in the list of
@@ -308,20 +293,8 @@ int GNUNET_check_ipv4_listed (const struct GNUNET_IPv4NetworkSet *list,
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int GNUNET_check_ipv6_listed (const struct GNUNET_IPv6NetworkSet *list,
-                              GNUNET_IPv6Address ip);
+                              const struct in6_addr * ip);
 
-#define GNUNET_PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), \
-                 (unsigned int)((((unsigned)(ip)))>>16 & 255), \
-                 (unsigned int)((((unsigned int)(ip)))>>8 & 255), \
-                 (unsigned int)((((unsigned int)(ip))) & 255)
-
-/**
- * Get the IP address of the given host.
- *
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx,
-                             const char *hostname, GNUNET_IPv4Address * ip);
 
 /* ********************* low-level socket operations **************** */
 
@@ -525,6 +498,28 @@ int GNUNET_select_update_closure (struct GNUNET_SelectHandle *sh,
 int GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
                               struct GNUNET_SocketHandle *sock);
 
+/**
+ * Convert a string to an IP address. May block!
+ *
+ * @param hostname the hostname to resolve
+ * @param domain AF_INET or AF_INET6; use AF_UNSPEC for "any"
+ * @param *sa should be of type "struct sockaddr*" and
+ *        will be set to the IP address on success;
+ *        if *sa is NULL, sufficient space will be
+ *        allocated.        
+ * @param socklen will be set to the length of *sa.
+ *        If *sa is not NULL, socklen will be checked
+ *        to see if sufficient space is provided and
+ *        updated to the amount of space actually
+ *        required/used.
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ */
+int
+GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
+			     const char * hostname,	
+			     int domain,
+			     struct sockaddr ** sa,
+			     socklen_t * socklen);
 
 /**
  * Get an IP address as a string (works for both IPv4 and IPv6).  Note
@@ -543,7 +538,7 @@ char *GNUNET_get_ip_as_string (const void *sa,
  */
 char *GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
                            struct GNUNET_GE_Context *ectx,
-                           GNUNET_IPv4Address * addr);
+                           struct in_addr * addr);
 
 
 /**

@@ -49,9 +49,9 @@
 int
 GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
                                    struct GNUNET_GE_Context *ectx,
-                                   GNUNET_IPv4Address * address)
+                                   struct in_addr * address)
 {
-  static GNUNET_IPv4Address myAddress;
+  static struct in_addr myAddress;
   static GNUNET_CronTime last;
   static GNUNET_CronTime lastError;
   GNUNET_CronTime now;
@@ -75,7 +75,7 @@ GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
       GNUNET_free (ips);
       last = now;
     }
-  memcpy (address, &myAddress, sizeof (GNUNET_IPv4Address));
+  memcpy (address, &myAddress, sizeof (struct in_addr));
   return GNUNET_OK;
 }
 
@@ -213,10 +213,12 @@ GNUNET_IP_set_address_for_peer_identity (const GNUNET_PeerIdentity * peer,
  */
 static int
 getAddress6FromHostname (struct GNUNET_GE_Context *ectx,
-                         GNUNET_IPv6Address * identity)
+                         struct in6_addr * identity)
 {
   char hostname[MAX_HOSTNAME];
-  struct hostent *ip;
+  struct sockaddr_in6 addr;
+  struct sockaddr * sa;
+  socklen_t salen;
 
   if (0 != gethostname (hostname, MAX_HOSTNAME))
     {
@@ -228,25 +230,16 @@ getAddress6FromHostname (struct GNUNET_GE_Context *ectx,
   /* GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
      " looking up $HOSTNAME (%s) to obtain local IP\n",
      hostname); */
-
-  ip = gethostbyname2 (hostname, AF_INET6);
-  if (ip == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_INFO | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     _("Could not find IPv6 address of host `%s': %s\n"),
-                     hostname, hstrerror (h_errno));
-      return GNUNET_SYSERR;
-    }
-  if (ip->h_addrtype != AF_INET6)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      return GNUNET_SYSERR;
-    }
-  GNUNET_GE_ASSERT (ectx,
-                    sizeof (struct in6_addr) == sizeof (identity->addr));
-  memcpy (&identity->addr[0], ip->h_addr_list[0], sizeof (struct in6_addr));
+  salen = sizeof(struct sockaddr_in);
+  sa = (struct sockaddr*) &addr;
+  if (GNUNET_OK !=
+      GNUNET_get_ip_from_hostname(ectx,
+				  hostname,
+				  AF_INET6,
+				  &sa,
+				  &salen))
+    return GNUNET_SYSERR;
+  *identity = addr.sin6_addr;
   return GNUNET_OK;
 }
 
@@ -254,7 +247,7 @@ getAddress6FromHostname (struct GNUNET_GE_Context *ectx,
 static int
 getAddress6FromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
                            struct GNUNET_GE_Context *ectx,
-                           GNUNET_IPv6Address * identity)
+                           struct in6_addr * identity)
 {
   char *interfaces;
   struct ifaddrs *ifa_first;
@@ -312,10 +305,14 @@ getAddress6FromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
  */
 static int
 getAddress6 (struct GNUNET_GC_Configuration *cfg,
-             struct GNUNET_GE_Context *ectx, GNUNET_IPv6Address * address)
+             struct GNUNET_GE_Context *ectx, 
+	     struct in6_addr * address)
 {
   char *ipString;
   int retval;
+  socklen_t sa_len;
+  struct sockaddr * sa;
+  struct sockaddr_in6 sa6;
 
   retval = GNUNET_SYSERR;
   if (GNUNET_GC_have_configuration_value (cfg, "NETWORK", "IP6"))
@@ -324,73 +321,19 @@ getAddress6 (struct GNUNET_GC_Configuration *cfg,
       GNUNET_GC_get_configuration_value_string (cfg,
                                                 "NETWORK", "IP6", "",
                                                 &ipString);
-      if (strlen (ipString) > 0)
-        {
-#if HAVE_GETADDRINFO
-          int s;
-          struct addrinfo hints;
-          struct addrinfo *result;
-
-          memset (&hints, 0, sizeof (struct addrinfo));
-          hints.ai_family = AF_INET6;   /* Allow only IPv6 */
-          hints.ai_socktype = SOCK_STREAM;      /* fixme? */
-          hints.ai_protocol = 0;        /* Any protocol */
-          hints.ai_canonname = NULL;
-          hints.ai_addr = NULL;
-          hints.ai_next = NULL;
-
-          if (0 != (s = getaddrinfo (ipString, NULL, &hints, &result)))
-            {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_ERROR | GNUNET_GE_USER |
-                             GNUNET_GE_BULK,
-                             _("Could not resolve `%s': %s\n"), ipString,
-                             gai_strerror (s));
-            }
-          else
-            {
-              if ((result != NULL) &&
-                  (result->ai_addrlen == sizeof (struct sockaddr_in6)))
-                {
-                  GNUNET_GE_ASSERT (ectx,
-                                    sizeof (struct in6_addr) ==
-                                    sizeof (GNUNET_IPv6Address));
-                  memcpy (address,
-                          &((struct sockaddr_in6 *) result->ai_addr)->
-                          sin6_addr, sizeof (struct in6_addr));
-                  retval = GNUNET_OK;
-                }
-              freeaddrinfo (result);
-            }
-#else
-          struct hostent *ip;
-
-          ip = gethostbyname2 (ipString, AF_INET6);
-          if (ip == NULL)
-            {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_ERROR | GNUNET_GE_USER |
-                             GNUNET_GE_BULK,
-                             _("Could not resolve `%s': %s\n"), ipString,
-                             hstrerror (h_errno));
-            }
-          else if (ip->h_addrtype != AF_INET6)
-            {
-              GNUNET_GE_ASSERT (ectx, 0);
-            }
-          else
-            {
-              GNUNET_GE_ASSERT (ectx,
-                                sizeof (struct in6_addr) ==
-                                sizeof (address->addr));
-              GNUNET_GE_ASSERT (ectx,
-                                sizeof (struct in6_addr) ==
-                                sizeof (GNUNET_IPv6Address));
-              memcpy (address, ip->h_addr_list[0], sizeof (struct in6_addr));
-              retval = GNUNET_OK;
-            }
-#endif
-        }
+      sa_len = sizeof(struct sockaddr_in6);
+      sa = (struct sockaddr*) &sa6;      
+      if ( (strlen (ipString) > 0) &&
+	   (GNUNET_OK ==
+	    GNUNET_get_ip_from_hostname(ectx,
+					ipString,
+					AF_INET6,
+					&sa,
+					&sa_len)) )
+	{
+	  *address = sa6.sin6_addr;
+	  retval = GNUNET_OK;
+	}
       GNUNET_free (ipString);
     }
 #if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
@@ -410,9 +353,9 @@ getAddress6 (struct GNUNET_GC_Configuration *cfg,
 int
 GNUNET_IP_get_public_ipv6_address (struct GNUNET_GC_Configuration *cfg,
                                    struct GNUNET_GE_Context *ectx,
-                                   GNUNET_IPv6Address * address)
+                                   struct in6_addr * address)
 {
-  static GNUNET_IPv6Address myAddress;
+  static struct in6_addr myAddress;
   static GNUNET_CronTime last;
   static GNUNET_CronTime lastError;
   GNUNET_CronTime now;
@@ -433,7 +376,7 @@ GNUNET_IP_get_public_ipv6_address (struct GNUNET_GC_Configuration *cfg,
         }
       last = now;
     }
-  memcpy (address, &myAddress, sizeof (GNUNET_IPv6Address));
+  memcpy (address, &myAddress, sizeof (struct in6_addr));
   return GNUNET_OK;
 }
 

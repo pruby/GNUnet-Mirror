@@ -34,8 +34,8 @@
  */
 typedef struct GNUNET_IPv4NetworkSet
 {
-  GNUNET_IPv4Address network;
-  GNUNET_IPv4Address netmask;
+  struct in_addr network;
+  struct in_addr netmask;
 } CIDRNetwork;
 
 /**
@@ -43,8 +43,8 @@ typedef struct GNUNET_IPv4NetworkSet
  */
 typedef struct GNUNET_IPv6NetworkSet
 {
-  GNUNET_IPv6Address network;
-  GNUNET_IPv6Address netmask;
+  struct in6_addr network;
+  struct in6_addr netmask;
 } CIDR6Network;
 
 
@@ -108,11 +108,11 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
                 GNUNET_free (result);
                 return NULL;
               }
-          result[i].network.addr
+          result[i].network.s_addr
             =
             htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
                    temps[3]);
-          result[i].netmask.addr =
+          result[i].netmask.s_addr =
             htonl ((temps[4] << 24) + (temps[5] << 16) + (temps[6] << 8) +
                    temps[7]);
           while (routeList[pos] != ';')
@@ -138,20 +138,20 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
                 GNUNET_free (result);
                 return NULL;
               }
-          result[i].network.addr
+          result[i].network.s_addr
             =
             htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
                    temps[3]);
           if ((slash <= 32) && (slash >= 0))
             {
-              result[i].netmask.addr = 0;
+              result[i].netmask.s_addr = 0;
               while (slash > 0)
                 {
-                  result[i].netmask.addr
-                    = (result[i].netmask.addr >> 1) + 0x80000000;
+                  result[i].netmask.s_addr
+                    = (result[i].netmask.s_addr >> 1) + 0x80000000;
                   slash--;
                 }
-              result[i].netmask.addr = htonl (result[i].netmask.addr);
+              result[i].netmask.s_addr = htonl (result[i].netmask.s_addr);
               while (routeList[pos] != ';')
                 pos++;
               pos++;
@@ -188,18 +188,18 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
                 GNUNET_free (result);
                 return NULL;
               }
-          result[i].network.addr
+          result[i].network.s_addr
             =
             htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
                    temps[3]);
-          result[i].netmask.addr = 0;
+          result[i].netmask.s_addr = 0;
           while (slash > 0)
             {
-              result[i].netmask.addr
-                = (result[i].netmask.addr >> 1) + 0x80000000;
+              result[i].netmask.s_addr
+                = (result[i].netmask.s_addr >> 1) + 0x80000000;
               slash--;
             }
-          result[i].netmask.addr = htonl (result[i].netmask.addr);
+          result[i].netmask.s_addr = htonl (result[i].netmask.s_addr);
           while (routeList[pos] != ';')
             pos++;
           pos++;
@@ -284,7 +284,7 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
         slash--;
       if (slash < start)
         {
-          memset (&result[i].netmask, 0xFF, sizeof (GNUNET_IPv6Address));
+          memset (&result[i].netmask, 0xFF, sizeof (struct in6_addr));
           slash = pos;
         }
       else
@@ -333,20 +333,21 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int
-GNUNET_check_ipv4_listed (const CIDRNetwork * list, GNUNET_IPv4Address ip)
+GNUNET_check_ipv4_listed (const CIDRNetwork * list, 
+			  const struct in_addr * ip)
 {
   int i;
-  GNUNET_IPv4Address add;
+  const struct in_addr * add;
 
   add = ip;
   i = 0;
   if (list == NULL)
     return GNUNET_NO;
 
-  while ((list[i].network.addr != 0) || (list[i].netmask.addr != 0))
+  while ((list[i].network.s_addr != 0) || (list[i].netmask.s_addr != 0))
     {
-      if ((add.addr & list[i].netmask.addr) ==
-          (list[i].network.addr & list[i].netmask.addr))
+      if ((add->s_addr & list[i].netmask.s_addr) ==
+          (list[i].network.s_addr & list[i].netmask.s_addr))
         return GNUNET_YES;
       i++;
     }
@@ -361,7 +362,8 @@ GNUNET_check_ipv4_listed (const CIDRNetwork * list, GNUNET_IPv4Address ip)
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int
-GNUNET_check_ipv6_listed (const CIDR6Network * list, GNUNET_IPv6Address ip)
+GNUNET_check_ipv6_listed (const CIDR6Network * list, 
+			  const struct in6_addr * ip)
 {
   unsigned int i;
   unsigned int j;
@@ -376,7 +378,7 @@ GNUNET_check_ipv6_listed (const CIDR6Network * list, GNUNET_IPv6Address ip)
          (memcmp (&zero, &list[i].netmask, sizeof (struct in6_addr)) != 0))
     {
       for (j = 0; j < sizeof (struct in6_addr) / sizeof (int); j++)
-        if (((((int *) &ip)[j] & ((int *) &list[i].netmask)[j])) !=
+        if (((((int *) ip)[j] & ((int *) &list[i].netmask)[j])) !=
             (((int *) &list[i].network)[j] & ((int *) &list[i].netmask)[j]))
           {
             i++;

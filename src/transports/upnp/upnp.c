@@ -553,7 +553,7 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
                     struct GNUNET_GC_Configuration *cfg, int sock)
 {
   char *proxy;
-  struct hostent *hp;
+  socklen_t avail;
   struct sockaddr_in server;
   int retry_count;
   char *sendMessage;
@@ -565,20 +565,26 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
   const char *endDescURL;
   int ret;
   UPnPDiscoveryData dd;
+  struct sockaddr * sa;
 
   memset (&dd, 0, sizeof (UPnPDiscoveryData));
   if (control_info.status == GAIM_UPNP_STATUS_DISCOVERING)
     return GNUNET_NO;
   dd.sock = sock;
-  hp = gethostbyname (HTTPMU_HOST_ADDRESS);
-  if (hp == NULL)
+  memset (&server, 0, sizeof (struct sockaddr_in));
+  server.sin_family = AF_INET;
+  avail = sizeof(struct sockaddr_in);
+  sa = (struct sockaddr*) &server;
+  if (GNUNET_OK !=
+      GNUNET_get_ip_from_hostname(ectx,
+				  HTTPMU_HOST_ADDRESS,
+				  AF_INET,
+				  &sa,
+				  &avail))
     {
       CLOSE (dd.sock);
       return GNUNET_SYSERR;
     }
-  memset (&server, 0, sizeof (struct sockaddr));
-  server.sin_family = AF_INET;
-  memcpy (&server.sin_addr, hp->h_addr_list[0], hp->h_length);
   server.sin_port = htons (HTTPMU_HOST_PORT);
   control_info.status = GAIM_UPNP_STATUS_DISCOVERING;
 
@@ -694,7 +700,7 @@ gaim_upnp_change_port_mapping (struct GNUNET_GE_Context *ectx,
     return GNUNET_NO;
   if (do_add)
     {
-      internal_ip = gaim_upnp_get_internal_ip (cfg, ectx);
+      internal_ip = GNUNET_upnp_get_internal_ip (cfg, ectx);
       if (internal_ip == NULL)
         {
           gaim_debug_error ("upnp",

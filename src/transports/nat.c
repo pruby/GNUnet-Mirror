@@ -47,14 +47,14 @@ static const char *nat_limited_choices[] = { "YES", "NO", "AUTO", NULL };
 static int
 lan_ip_detected ()
 {
-  GNUNET_IPv4Address addr;
+  struct in_addr addr;
   unsigned int anum;
 
   if (GNUNET_SYSERR == GNUNET_IP_get_public_ipv4_address (coreAPI->cfg,
                                                           coreAPI->ectx,
                                                           &addr))
     return GNUNET_YES;          /* kind-of */
-  anum = ntohl (addr.addr);
+  anum = ntohl (addr.s_addr);
   if (((anum >= 0x0a000000) && (anum <= 0x0affffff)) || /* 10.x.x.x */
       ((anum >= 0xac100000) && (anum <= 0xac10ffff)) || /* 172.16.0.0-172.31.0.0 */
       ((anum >= 0xc0a80000) && (anum <= 0xc0a8ffff)) || /* 192.168.x.x */

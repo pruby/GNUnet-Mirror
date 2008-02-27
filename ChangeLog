@@ -1,3 +1,9 @@
+Mon Feb 25 23:25:48 MST 2008
+	Cleanup of the DNS code: removed GNUNET_IPvXAddress
+	and GNUNET_PRIP; centralized all DNS lookup code in 
+	util/network/dns.c; improved IPv6 support for 
+        network-client code.
+
 Mon Feb 25 00:01:27 MST 2008
 	Added asynchronous search and download methods for 
 	ECRS library.  FSUI now can do with only one thread

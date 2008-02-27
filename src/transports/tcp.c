@@ -602,7 +602,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
   if ((available & VERSION_AVAILABLE_IPV4) > 0)
     {
       soaddr4.sin_family = AF_INET;
-      memcpy (&soaddr4.sin_addr, &haddr->ipv4, sizeof (GNUNET_IPv4Address));
+      memcpy (&soaddr4.sin_addr, &haddr->ipv4, sizeof (struct in_addr));
       soaddr4.sin_port = haddr->port;
       soaddr = (struct sockaddr *) &soaddr4;
       soaddrlen = sizeof (soaddr4);
@@ -610,7 +610,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
   else
     {
       soaddr6.sin6_family = AF_INET6;
-      memcpy (&soaddr6.sin6_addr, &haddr->ipv6, sizeof (GNUNET_IPv6Address));
+      memcpy (&soaddr6.sin6_addr, &haddr->ipv6, sizeof (struct in6_addr));
       soaddr6.sin6_port = haddr->port;
       soaddr = (struct sockaddr *) &soaddr6;
       soaddrlen = sizeof (soaddr6);

@@ -58,14 +58,27 @@ static int discovery_socket;
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
-gnunet_upnp_get_public_ip (GNUNET_IPv4Address * address)
+gnunet_upnp_get_public_ip (struct in_addr * address)
 {
   const char *ip;
+  socklen_t socklen;
+  struct sockaddr * sa;
+  struct sockaddr_in s4;
+  int ret;
 
   ip = gaim_upnp_get_public_ip ();
   if (ip == NULL)
     return GNUNET_SYSERR;
-  return GNUNET_get_host_by_name (ectx, ip, address);
+  socklen = sizeof(struct sockaddr_in);
+  sa = (struct sockaddr*) &s4;  
+  ret = GNUNET_get_ip_from_hostname (NULL,
+				     ip,
+				     AF_INET,
+				     &sa,
+				     &socklen);
+  if (ret == GNUNET_OK)
+    *address = s4.sin_addr;
+  return ret;
 }
 
 static void
@@ -126,7 +139,7 @@ portmap (void *unused)
  */
 static int
 gnunet_upnp_get_ip (unsigned short port,
-                    const char *protocol, GNUNET_IPv4Address * address)
+                    const char *protocol, struct in_addr * address)
 {
   unsigned int i;
 

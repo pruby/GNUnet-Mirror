@@ -236,7 +236,8 @@ GNUNET_client_connection_ensure_connected (struct
                                            GNUNET_ClientServerConnection
                                            *sock)
 {
-  struct sockaddr_in soaddr;
+  struct sockaddr * soaddr;
+  socklen_t socklen;
   fd_set rset;
   fd_set wset;
   fd_set eset;
@@ -245,7 +246,6 @@ GNUNET_client_connection_ensure_connected (struct
   int osock;
   unsigned short port;
   char *host;
-  GNUNET_IPv4Address ip;
 
   GNUNET_GE_ASSERT (NULL, sock != NULL);
   if (sock->sock != NULL)
@@ -258,7 +258,9 @@ GNUNET_client_connection_ensure_connected (struct
   host = getGNUnetdHost (sock->ectx, sock->cfg);
   if (host == NULL)
     return GNUNET_SYSERR;
-  if (GNUNET_SYSERR == GNUNET_get_host_by_name (sock->ectx, host, &ip))
+  soaddr = NULL;
+  socklen = 0;
+  if (GNUNET_SYSERR == GNUNET_get_ip_from_hostname (sock->ectx, host, AF_UNSPEC, &soaddr, &socklen))
     {
       GNUNET_free (host);
       return GNUNET_SYSERR;
@@ -268,15 +270,26 @@ GNUNET_client_connection_ensure_connected (struct
     {
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
+      GNUNET_free(soaddr);
       return GNUNET_OK;
     }
   if (sock->dead == GNUNET_YES)
     {
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
+      GNUNET_free(soaddr);
       return GNUNET_SYSERR;
     }
-  osock = SOCKET (PF_INET, SOCK_STREAM, 6);     /* 6: TCP */
+  if (soaddr->sa_family == AF_INET)
+    {
+      ((struct sockaddr_in*) soaddr)->sin_port = htons (port);
+      osock = SOCKET (PF_INET, SOCK_STREAM, 0);
+    } 
+  else
+    {
+      ((struct sockaddr_in6*) soaddr)->sin6_port = htons (port);
+      osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
+    }
   if (osock == -1)
     {
       GNUNET_GE_LOG_STRERROR (sock->ectx,
@@ -284,17 +297,13 @@ GNUNET_client_connection_ensure_connected (struct
                               GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
+      GNUNET_free(soaddr);
       return GNUNET_SYSERR;
     }
   sock->sock = GNUNET_socket_create (sock->ectx, NULL, osock);
   GNUNET_socket_set_blocking (sock->sock, GNUNET_NO);
-  memset (&soaddr, 0, sizeof (soaddr));
-  soaddr.sin_family = AF_INET;
-  GNUNET_GE_ASSERT (sock->ectx,
-                    sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
-  memcpy (&soaddr.sin_addr, &ip, sizeof (struct in_addr));
-  soaddr.sin_port = htons (port);
-  ret = CONNECT (osock, (struct sockaddr *) &soaddr, sizeof (soaddr));
+  ret = CONNECT (osock, soaddr, socklen);
+  GNUNET_free(soaddr);
   if ((ret != 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       GNUNET_GE_LOG (sock->ectx,

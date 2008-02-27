@@ -479,11 +479,23 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  (builder
  "NETWORK"
  "TRUSTED"
- (_ "IPs allowed to use gnunetd server")
+ (_ "IPv4 networks allowed to use gnunetd server")
  (_ "This option specifies which hosts are trusted enough to connect as clients (to the TCP port).  This is useful if you run gnunetd on one host of your network and want to allow all other hosts to use this node as their server.  By default, this is set to 'loopback only'.  The format is IP/NETMASK where the IP is specified in dotted-decimal and the netmask either in CIDR notation (/16) or in dotted decimal (255.255.0.0). Several entries must be separated by a semicolon, spaces are not allowed.")
  '()
  #t
  "127.0.0.0/8;"
+ '()
+ 'advanced) )
+
+(define (network-trusted6 builder)
+ (builder
+ "NETWORK"
+ "TRUSTED6"
+ (_ "IPv6 networks allowed to use gnunetd server")
+ (_ "This option specifies which hosts are trusted enough to connect as clients (to the TCP port).  This is useful if you run gnunetd on one host of your network and want to allow all other hosts to use this node as their server.  By default, this is set to 'loopback only'.  The format is IP/NETMASK where the IP is specified in dotted-decimal and the netmask either in CIDR notation (/16) or in dotted decimal (255.255.0.0). Several entries must be separated by a semicolon, spaces are not allowed.")
+ '()
+ #t
+ "::1;"
  '()
  'advanced) )
 

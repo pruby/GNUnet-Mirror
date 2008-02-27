@@ -93,7 +93,7 @@ static struct GNUNET_IPv6NetworkSet *trustedNetworksV6;
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted4 (GNUNET_IPv4Address ip)
+isWhitelisted4 (const struct in_addr * ip)
 {
   return GNUNET_check_ipv4_listed (trustedNetworksV4, ip);
 }
@@ -102,7 +102,7 @@ isWhitelisted4 (GNUNET_IPv4Address ip)
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted6 (GNUNET_IPv6Address ip)
+isWhitelisted6 (const struct in6_addr * ip)
 {
   return GNUNET_check_ipv6_listed (trustedNetworksV6, ip);
 }
@@ -168,8 +168,8 @@ select_accept_handler (void *ah_cls,
                        const void *addr, unsigned int addr_len)
 {
   struct GNUNET_ClientHandle *session;
-  GNUNET_IPv4Address ip4;
-  GNUNET_IPv6Address ip6;
+  struct in_addr ip4;
+  struct in6_addr ip6;
   struct sockaddr_in *a4;
   struct sockaddr_in6 *a6;
   
@@ -177,22 +177,22 @@ select_accept_handler (void *ah_cls,
     {
       a6 = (struct sockaddr_in6 *) addr;
       
-      memcpy (&ip6, &a6->sin6_addr, sizeof (GNUNET_IPv6Address));
+      memcpy (&ip6, &a6->sin6_addr, sizeof (struct in6_addr));
       /* get embedded ipv4 address in case address embedding is used */
       memcpy (&ip4,
-	      &((char*) &ip6)[sizeof(GNUNET_IPv6Address) - sizeof(GNUNET_IPv4Address)], 
-	      sizeof (GNUNET_IPv4Address));
-      if ( (!isWhitelisted6 (ip6)) &&
+	      &((char*) &ip6)[sizeof(struct in6_addr) - sizeof(struct in_addr)], 
+	      sizeof (struct in_addr));
+      if ( (!isWhitelisted6 (&ip6)) &&
 	   (! ( ( (IN6_IS_ADDR_V4COMPAT(&a6->sin6_addr)) ||
 		  (IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr)) ) &&
-		(isWhitelisted4(ip4) ) ) ) )      
+		(isWhitelisted4(&ip4) ) ) ) )      
 	return NULL;	
     }
   else if (addr_len == sizeof (struct sockaddr_in))
     {
       a4 = (struct sockaddr_in *) addr;
-      memcpy (&ip4, &a4->sin_addr, sizeof (GNUNET_IPv4Address));
-      if (!isWhitelisted4 (ip4))
+      memcpy (&ip4, &a4->sin_addr, sizeof (struct in_addr));
+      if (!isWhitelisted4 (&ip4))
 	return NULL;
     }
   else

@@ -667,7 +667,7 @@ initHelper (GNUNET_TransportAPI * tapi, void *unused)
   /* Creation of HELLOs takes longer if a locally
      unresolvable hostname ((Dyn)DNS) was specified
      as this host's address and we have no network
-     connection at the moment. gethostbyname()
+     connection at the moment.  Use of gethostbyname()
      blocks the startup process in this case.
      This is why we create the HELLOs in another
      thread. */

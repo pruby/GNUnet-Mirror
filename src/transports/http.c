@@ -1836,6 +1836,7 @@ curl_runner (void *unused)
   long ms;
   int have_tv;
   char buf[128];                /* for reading from pipe */
+  int ret;
 
   ENTER ();
 #if DEBUG_HTTP
@@ -1890,7 +1891,13 @@ curl_runner (void *unused)
       STEP ();
       if (stats != NULL)
         stats->change (stat_select_calls, 1);
-      SELECT (max + 1, &rs, &ws, &es, (have_tv == MHD_YES) ? &tv : NULL);
+      ret = SELECT (max + 1, &rs, &ws, &es, (have_tv == MHD_YES) ? &tv : NULL);
+      if (ret == -1)
+	{
+	  GNUNET_GE_LOG_STRERROR(coreAPI->ectx,
+				 GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER,
+				 "select");
+	}
       STEP ();
       if (GNUNET_YES != http_running)
         break;

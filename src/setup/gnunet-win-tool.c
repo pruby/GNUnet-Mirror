@@ -76,6 +76,7 @@ PrintAdapters ()
   PMIB_IFTABLE pTable;
   PMIB_IPADDRTABLE pAddrTable;
   DWORD dwIfIdx;
+  char ntop_buf[INET_ADDRSTRLEN];
 
   EnumNICs (&pTable, &pAddrTable);
 
@@ -101,8 +102,8 @@ PrintAdapters ()
             {
               if (pAddrTable->table[i].dwIndex ==
                   pTable->table[dwIfIdx].dwIndex)
-                printf ("Address: %u.%u.%u.%u\n",
-                        GNUNET_PRIP (ntohl (pAddrTable->table[i].dwAddr)));
+                printf ("Address: %s\n",
+			inet_ntop(AF_INET, &pAddrTable->table[i].dwAddr, ntop_buf, INET_ADDRSTRLEN));
             }
           printf ("\n");
         }

@@ -30,11 +30,6 @@
 
 #define DEBUG_IO GNUNET_NO
 
-/**
- * Global lock for gethostbyname.
- */
-static struct GNUNET_Mutex *lock;
-
 #ifndef MINGW
 static struct GNUNET_SignalHandlerContext *sctx;
 
@@ -46,7 +41,6 @@ catcher ()
 
 void __attribute__ ((constructor)) GNUNET_network_io_init ()
 {
-  lock = GNUNET_mutex_create (GNUNET_NO);
 #ifndef MINGW
   sctx = GNUNET_signal_handler_install (SIGPIPE, &catcher);
 #else
@@ -56,8 +50,6 @@ void __attribute__ ((constructor)) GNUNET_network_io_init ()
 
 void __attribute__ ((destructor)) GNUNET_network_io_fini ()
 {
-  GNUNET_mutex_destroy (lock);
-  lock = NULL;
 #ifndef MINGW
   GNUNET_signal_handler_uninstall (SIGPIPE, &catcher, sctx);
   sctx = NULL;
@@ -65,42 +57,6 @@ void __attribute__ ((destructor)) GNUNET_network_io_fini ()
   ShutdownWinEnv ();
 #endif
 }
-
-/**
- * Get the IP address of the given host.
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int
-GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx, const char *hostname,
-                         GNUNET_IPv4Address * ip)
-{
-  struct hostent *he;
-
-  /* slight hack: re-use config lock */
-  GNUNET_mutex_lock (lock);
-  he = GETHOSTBYNAME (hostname);
-  if (he == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     _("Could not find IP of host `%s': %s\n"),
-                     hostname, hstrerror (h_errno));
-      GNUNET_mutex_unlock (lock);
-      return GNUNET_SYSERR;
-    }
-  if (he->h_addrtype != AF_INET)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      GNUNET_mutex_unlock (lock);
-      return GNUNET_SYSERR;
-    }
-  memcpy (ip,
-          &((struct in_addr *) he->h_addr_list[0])->s_addr,
-          sizeof (struct in_addr));
-  GNUNET_mutex_unlock (lock);
-  return GNUNET_OK;
-}
-
 
 
 struct GNUNET_SocketHandle *

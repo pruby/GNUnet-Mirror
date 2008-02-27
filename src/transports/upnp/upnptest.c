@@ -36,12 +36,13 @@ main (int argc, const char *argv[])
   static GNUNET_CoreAPIForPlugins capi;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
-  GNUNET_IPv4Address addr;
+  struct in_addr addr;
   int i;
   GNUNET_UPnP_ServiceAPI *upnp;
   struct GNUNET_PluginHandle *plug;
   GNUNET_ServicePluginInitializationMethod init;
   GNUNET_ServicePluginShutdownMethod done;
+  char ntop_buf[INET_ADDRSTRLEN];
 
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
                                           GNUNET_GE_WARNING | GNUNET_GE_ERROR
@@ -85,8 +86,8 @@ main (int argc, const char *argv[])
         break;
       if (GNUNET_OK == upnp->get_ip (2086, "TCP", &addr))
         {
-          printf ("UPnP returned external IP %u.%u.%u.%u\n",
-                  GNUNET_PRIP (ntohl (*(int *) &addr)));
+          printf ("UPnP returned external IP %s\n",
+		  inet_ntop(AF_INET, &addr, ntop_buf, INET_ADDRSTRLEN));
         }
       else
         {

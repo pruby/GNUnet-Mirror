@@ -42,12 +42,12 @@ typedef struct
   /**
    * IPv6 address of the sender, network byte order
    */
-  GNUNET_IPv6Address ipv6;
+  struct in6_addr ipv6;
 
   /**
    * claimed IP of the sender, network byte order
    */
-  GNUNET_IPv4Address ipv4;
+  struct in_addr ipv4;
 
   /**
    * claimed port of the sender, network byte order

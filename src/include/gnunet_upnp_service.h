@@ -50,7 +50,7 @@ typedef struct
    * @return GNUNET_SYSERR on error, GNUNET_OK on success
    */
   int (*get_ip) (unsigned short port, const char *protocol,
-                 GNUNET_IPv4Address * address);
+                 struct in_addr * address);
 
 } GNUNET_UPnP_ServiceAPI;
 

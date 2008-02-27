@@ -47,7 +47,7 @@
  */
 int GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
                                        struct GNUNET_GE_Context *ectx,
-                                       GNUNET_IPv4Address * address);
+                                       struct in_addr * address);
 
 /**
  * @brief Get the IPv6 address for the local machine.
@@ -56,7 +56,7 @@ int GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
  */
 int GNUNET_IP_get_public_ipv6_address (struct GNUNET_GC_Configuration *cfg,
                                        struct GNUNET_GE_Context *ectx,
-                                       GNUNET_IPv6Address * address);
+                                       struct in6_addr * address);
 
 
 /**

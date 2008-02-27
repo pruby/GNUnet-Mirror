@@ -360,7 +360,7 @@ udp_send (GNUNET_TSession * tsession,
       serverAddrv4.sin_family = AF_INET;
       serverAddrv4.sin_port = haddr->port;
       memcpy (&serverAddrv4.sin_addr, &haddr->ipv4,
-              sizeof (GNUNET_IPv4Address));
+              sizeof (struct in_addr));
       addrlen = sizeof (serverAddrv4);
       serverAddr = (struct sockaddr *) &serverAddrv4;
     }
@@ -370,7 +370,7 @@ udp_send (GNUNET_TSession * tsession,
       serverAddrv6.sin6_family = AF_INET;
       serverAddrv6.sin6_port = haddr->port;
       memcpy (&serverAddrv6.sin6_addr, &haddr->ipv6,
-              sizeof (GNUNET_IPv6Address));
+              sizeof (struct in6_addr));
       addrlen = sizeof (serverAddrv6);
       serverAddr = (struct sockaddr *) &serverAddrv6;
     }
