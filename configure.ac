@@ -463,6 +463,32 @@ AC_ARG_WITH(dialog,
       AC_CHECK_LIB([dialog], [dlg_menu],
           dialog=1))])
 
+AC_ARG_WITH(cdialog,
+   [  --with-cdialog=PFX    Base of cdialog installation],
+   [AC_MSG_RESULT([$with_cdialog])
+    case $with_cdialog in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(cdialog/dialog.h,
+          AC_CHECK_LIB([cdialog], [dlg_menu],
+            dialog=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_cdialog/lib $LDFLAGS"
+        CPPFLAGS="-I$with_cdialog/include $CPPFLAGS"
+        AC_CHECK_HEADERS(cdialog/dialog.h,
+          AC_CHECK_LIB([cdialog], [dlg_menu],
+            EXT_LIB_PATH="-L$with_cdialog/lib $EXT_LIB_PATH"
+              dialog=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-cdialog not specified])
+    AC_CHECK_HEADERS(cdialog/dialog.h,
+      AC_CHECK_LIB([cdialog], [dlg_menu],
+          dialog=1))])
+
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
 AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 # restore LIBS
