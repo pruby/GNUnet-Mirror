@@ -486,7 +486,8 @@ int
 GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
                              const char *hostname,
                              int domain,
-                             struct sockaddr **sa, socklen_t * socklen)
+                             struct sockaddr **sa, 
+			     unsigned int * socklen)
 {
   int ret;
 

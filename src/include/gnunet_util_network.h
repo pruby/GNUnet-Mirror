@@ -32,14 +32,6 @@
 #ifndef GNUNET_UTIL_NETWORK_H
 #define GNUNET_UTIL_NETWORK_H
 
-#ifndef MINGW
-/* for struct addr_in, etc. */
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#endif
-
 #include "gnunet_util_config.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_os.h"
@@ -274,6 +266,14 @@ struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
                                                                        const
                                                                        char
                                                                        *routeList);
+
+/**
+ * Actual definitions will be in system header files.
+ */ 
+struct sockaddr;
+struct in_addr;
+struct in6_addr;
+
 
 /**
  * Check if the given IP address is in the list of
@@ -518,7 +518,7 @@ int
 GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
                              const char *hostname,
                              int domain,
-                             struct sockaddr **sa, socklen_t * socklen);
+                             struct sockaddr **sa, unsigned int * socklen);
 
 /**
  * Get an IP address as a string (works for both IPv4 and IPv6).  Note
