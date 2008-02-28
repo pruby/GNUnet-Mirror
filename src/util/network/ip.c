@@ -310,7 +310,7 @@ getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
                                     INET_ADDRSTRLEN));
         }
 
-      identity->addr = dwIP;
+      identity->S_un.S_addr = dwIP;
 
       GlobalFree (pTable);
       GlobalFree (pAddrTable);
@@ -356,12 +356,12 @@ getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
           return GNUNET_SYSERR;
         }
       closesocket (s);
-      identity->addr = theHost.sin_addr.S_un.S_addr;
+      *identity = theHost.sin_addr;
     }
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("GNUnet now uses the IP address %s.\n"),
-                 inet_ntop (AF_INET, &identity->addr, ntop_buf,
+                 inet_ntop (AF_INET, identity, ntop_buf,
                             INET_ADDRSTRLEN));
   return GNUNET_OK;
 #endif

@@ -148,6 +148,7 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
       {
         BYTE bPhysAddr[MAXLEN_PHYSADDR];
   		  char *pszIfName = NULL;
+        char dst[INET_ADDRSTRLEN];
      
         /* Get friendly interface name */
   			pAdapterInfo = (IP_ADAPTER_INFO *) malloc(sizeof(IP_ADAPTER_INFO));
@@ -192,7 +193,7 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
           
         snprintf(szEntry, 1000, "%s (%d.%d.%d.%d - %I64u)",
           pszIfName ? pszIfName : (char *) pTable->table[dwIfIdx].bDescr,
-          GNUNET_PRIP(ntohl(dwIP)),
+          inet_ntop (AF_INET, &dwIP, dst, INET_ADDRSTRLEN),
           *((unsigned long long *) bPhysAddr));
         szEntry[1000] = 0;
         
