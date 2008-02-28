@@ -82,6 +82,9 @@ static int stat_gap_query_refreshed;
 
 static int stat_gap_content_found_locally;
 
+static int stat_trust_earned;
+
+
 
 static unsigned int
 get_table_index (const GNUNET_HashCode * key)
@@ -197,6 +200,13 @@ datastore_value_processor (const GNUNET_HashCode * key,
       req->have_more += HAVE_MORE_INCREMENT;
       want_more = GNUNET_SYSERR;
     }
+  if (stats != NULL)
+    {
+      stats->change(stat_trust_earned, 
+		    req->value_offered);
+      req->value_offered = 0;
+    }
+  req->remaining_value = 0;
   GNUNET_cron_add_job (cron,
                        send_delayed,
                        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
@@ -215,6 +225,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
  *
  * @param respond_to where to send replies
  * @param priority how important is the request for us?
+ * @param original_priority how important is the request to the sender?
  * @param ttl how long should the query live?
  * @param type type of content requested
  * @param query_count how many queries are in the queries array?
@@ -226,6 +237,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
 void
 GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                              unsigned int priority,
+			     unsigned int original_priority,
                              enum GNUNET_FS_RoutingPolicy policy,
                              int ttl,
                              unsigned int type,
@@ -365,6 +377,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->type = type;
   rl->value = priority;
   rl->remaining_value = priority > 0 ? priority - 1 : 0;
+  rl->value_offered = original_priority;
   rl->expiration = newTTL;
   rl->next = table[index];
   rl->response_target = peer;
@@ -466,6 +479,12 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                             BASE_REPLY_PRIORITY * (1 + rl->value),
                             MAX_GAP_DELAY);
           GNUNET_free (msg);
+	  if (stats != NULL)
+	    {
+	      stats->change(stat_trust_earned,
+			    rl->value_offered);
+	      rl->value_offered = 0;
+	    }
           if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
             GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
@@ -656,6 +675,9 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_query_refreshed =
         stats->
         create (gettext_noop ("# gap queries refreshed existing record"));
+      stat_trust_earned =
+        stats->
+        create (gettext_noop ("# trust earned"));
     }
   cron = GNUNET_cron_create (coreAPI->ectx);
   GNUNET_cron_start (cron);

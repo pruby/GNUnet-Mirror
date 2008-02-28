@@ -174,6 +174,12 @@ struct RequestList
   unsigned int value;
 
   /**
+   * Total offered value of the request (how much
+   * trust we will earn from the other peer).
+   */
+  unsigned int value_offered;
+
+  /**
    * Remaining value of the request (invalid
    * if response_client == NULL).
    */

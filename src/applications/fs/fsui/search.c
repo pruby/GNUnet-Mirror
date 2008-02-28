@@ -284,6 +284,7 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
       return GNUNET_SYSERR;
     }
   GNUNET_ECRS_search_stop (sl->handle);
+  sl->handle = NULL;
   sl->state = GNUNET_FSUI_PAUSED;
   event.type = GNUNET_FSUI_search_paused;
   event.data.SearchPaused.sc.pos = sl;

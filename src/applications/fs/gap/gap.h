@@ -59,6 +59,7 @@ int GNUNET_FS_GAP_done (void);
 void
 GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                              unsigned int priority,
+			     unsigned int original_priority,
                              enum GNUNET_FS_RoutingPolicy policy,
                              int ttl,
                              unsigned int type,

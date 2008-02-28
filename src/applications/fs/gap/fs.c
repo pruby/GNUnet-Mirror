@@ -662,6 +662,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   coreAPI->preferTrafficFrom (sender, preference);
   GNUNET_FS_GAP_execute_query (sender,
                                prio,
+			       ntohl (req->priority),
                                policy,
                                ttl,
                                type,

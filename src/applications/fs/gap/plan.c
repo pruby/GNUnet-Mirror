@@ -202,6 +202,8 @@ static int stat_gap_query_planned;
 
 static int stat_gap_query_success;
 
+static int stat_trust_spent;
+
 /**
  * Find the entry in the client list corresponding
  * to the given client information.  If no such entry
@@ -686,7 +688,10 @@ try_add_request (struct RequestList *req,
     }
   req->remaining_value -= prio;
   if (stats != NULL)
-    stats->change (stat_gap_query_sent, 1);
+    {
+      stats->change (stat_gap_query_sent, 1);
+      stats->change (stat_trust_spent, prio);
+    }
   return size;
 }
 
@@ -965,6 +970,8 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap content total planned"));
       stat_gap_query_success =
         stats->create (gettext_noop ("# gap routes succeeded"));
+      stat_trust_spent =
+        stats->create (gettext_noop ("# trust spent"));
     }
   return 0;
 }
