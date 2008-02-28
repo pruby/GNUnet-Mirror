@@ -206,26 +206,33 @@ verify_hello (const GNUNET_MessageHello * hello)
 
   haddr = (HostAddress *) & hello[1];
   if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
-      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
-      (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO) ||
-      (ntohs (hello->protocol) != myAPI.protocolNumber) ||
-      (0 ==
-       (ntohs (haddr->availability) &
-        (VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4)))
-      || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV4))
-          &&
-          ((GNUNET_YES ==
-            is_blacklisted_ipv4 (&haddr->ipv4))
-           || (GNUNET_YES !=
-               is_whitelisted_ipv4 (&haddr->ipv4))))
-      || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV6))
-          &&
-          ((GNUNET_YES ==
-            is_blacklisted_ipv6 (&haddr->ipv6))
-           || (GNUNET_YES != is_whitelisted_ipv6 (&haddr->ipv6)))))
+      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) )
     {
       GNUNET_GE_BREAK_OP (NULL, 0);
-      return GNUNET_SYSERR;     /* invalid */
+      return GNUNET_SYSERR;     /* invalid (external error) */
+    }
+  if ( (ntohs (hello->protocol) != myAPI.protocolNumber) ||
+       (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO) )     
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;     /* invalid (internal error) */
+    }
+  if ( (0 ==
+	(ntohs (haddr->availability) &
+	 (VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4)))
+       || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV4))
+	   &&
+	   ((GNUNET_YES ==
+	     is_blacklisted_ipv4 (&haddr->ipv4))
+	    || (GNUNET_YES !=
+		is_whitelisted_ipv4 (&haddr->ipv4))))
+       || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV6))
+	   &&
+	   ((GNUNET_YES ==
+	     is_blacklisted_ipv6 (&haddr->ipv6))
+	    || (GNUNET_YES != is_whitelisted_ipv6 (&haddr->ipv6)))))
+    {
+      return GNUNET_SYSERR;     /* invalid, incompatible with us */
     }
   return GNUNET_OK;
 }
