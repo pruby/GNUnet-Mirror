@@ -206,7 +206,10 @@ verify_hello (const GNUNET_MessageHello * hello)
 
   haddr = (HostAddress *) & hello[1];
   if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
-      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) )
+      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
+      (0 ==
+       (ntohs (haddr->availability) &
+	(VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4))) )
     {
       GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;     /* invalid (external error) */
@@ -217,15 +220,12 @@ verify_hello (const GNUNET_MessageHello * hello)
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* invalid (internal error) */
     }
-  if ( (0 ==
-	(ntohs (haddr->availability) &
-	 (VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4)))
-       || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV4))
-	   &&
-	   ((GNUNET_YES ==
-	     is_blacklisted_ipv4 (&haddr->ipv4))
-	    || (GNUNET_YES !=
-		is_whitelisted_ipv4 (&haddr->ipv4))))
+  if ( ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV4))
+	&&
+	((GNUNET_YES ==
+	  is_blacklisted_ipv4 (&haddr->ipv4))
+	 || (GNUNET_YES !=
+	     is_whitelisted_ipv4 (&haddr->ipv4))))
        || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV6))
 	   &&
 	   ((GNUNET_YES ==
