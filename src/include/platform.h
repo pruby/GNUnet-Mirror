@@ -39,12 +39,8 @@
 #define BREAKPOINT
 #endif
 
-#ifdef OPENBSD
-/* force declaration of u_int, u_char, ... needed by netinet/tcp.h */
-#undef __BSD_VISIBLE
-#define __BSD_VISIBLE 1
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#include <dlfcn.h>
 #endif
 
 #define ALLOW_EXTRA_CHECKS GNUNET_NO
