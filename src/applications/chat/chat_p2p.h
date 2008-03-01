@@ -19,9 +19,8 @@
 */
 
 /**
- * @author Christian Grothoff
  * @author Nathan Evans
- * @file applications/chat/chatP2P.h
+ * @file applications/chat/chat_p2p.h
  **/
 #ifndef CHATP2P_H_
 #define CHATP2P_H_
@@ -58,3 +57,5 @@ p2pSendRoomList()
 	return GNUNET_SYSERR;
 }
 #endif /*CHATP2P_H_*/
+
+/* end of chat_p2p.h */
