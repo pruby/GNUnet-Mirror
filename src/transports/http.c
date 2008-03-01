@@ -2084,6 +2084,7 @@ GNUNET_TransportAPI *
 inittransport_http (GNUNET_CoreAPIForTransport * core)
 {
   ENTER ();
+  GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (HostAddress) == 24);
   coreAPI = core;
   cfg = coreAPI->cfg;
   lock = GNUNET_mutex_create (GNUNET_YES);

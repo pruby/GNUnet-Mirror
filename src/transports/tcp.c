@@ -761,6 +761,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
   cfg = core->cfg;
   GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (GNUNET_MessageHeader) == 4);
   GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (TCPWelcome) == 68);
+  GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (HostAddress) == 24);
   lock = GNUNET_mutex_create (GNUNET_YES);
   if (0 !=
       GNUNET_GC_attach_change_listener (cfg, &reload_configuration, NULL))

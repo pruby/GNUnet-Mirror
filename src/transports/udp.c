@@ -503,6 +503,7 @@ inittransport_udp (GNUNET_CoreAPIForTransport * core)
   cfg = core->cfg;
   load_monitor = core->load_monitor;
   GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (UDPMessage) == 68);
+  GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (HostAddress) == 24);
   coreAPI = core;
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                       "UDP",
