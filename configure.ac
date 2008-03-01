@@ -633,23 +633,29 @@ AC_ARG_WITH(microhttpd,
         ;;
       yes)
         AC_CHECK_HEADERS(microhttpd.h,
-          AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
-            lmhd=1))
+	  AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+            AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
+              lmhd=1),
+	    [],[#include <microhttpd.h>]))
         ;;
       *)
         LDFLAGS="-L$with_microhttpd/lib $LDFLAGS"
         CPPFLAGS="-I$with_microhttpd/include $CPPFLAGS"
         AC_CHECK_HEADERS(microhttpd.h,
-          AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
-            EXT_LIB_PATH="-L$with_microhttpd/lib $EXT_LIB_PATH"
-              lmhd=1))
+	  AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+            AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
+              EXT_LIB_PATH="-L$with_microhttpd/lib $EXT_LIB_PATH"
+              lmhd=1),
+	    [],[#include <microhttpd.h>]))
         ;;
     esac
    ],
    [AC_MSG_RESULT([--with-microhttpd not specified])
     AC_CHECK_HEADERS(microhttpd.h,
-      AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
-          lmhd=1))])
+      AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+        AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
+          lmhd=1),
+	[],[#include <microhttpd.h>]))])
 AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
 AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
 # restore LIBS
