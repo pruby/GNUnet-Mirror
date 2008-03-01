@@ -14,6 +14,7 @@ gnunetincludedir = $(includedir)/GNUnet
 
 gnunetinclude_HEADERS = \
   gnunet_bootstrap_service.h \
+  gnunet_chat_lib.h \
   gnunet_collection_lib.h \
   gnunet_core.h \
   gnunet_datastore_service.h \
