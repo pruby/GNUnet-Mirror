@@ -53,4 +53,8 @@ p2pGetRoomList()
 }
 
 static int
+p2pSendRoomList()
+{
+	return GNUNET_SYSERR;
+}
 #endif /*CHATP2P_H_*/
