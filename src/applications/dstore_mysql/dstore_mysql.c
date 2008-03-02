@@ -203,7 +203,7 @@ iopen ()
                "  puttime BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                "  hash BINARY(64) NOT NULL DEFAULT '',"
-               "  vhash BINARY(64) PRIMARY KEY,"
+               "  vhash BINARY(64) NOT NULL DEFAULT '',"
                "  value BLOB NOT NULL DEFAULT '',"
                "  INDEX hashidx (hash(64),type,expire),"
                "  INDEX allidx (hash(64),vhash(64),type,size),"

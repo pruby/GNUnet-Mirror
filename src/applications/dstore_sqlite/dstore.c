@@ -115,7 +115,7 @@ db_init (sqlite3 * dbh)
                 "  puttime INTEGER NOT NULL DEFAULT 0,"
                 "  expire INTEGER NOT NULL DEFAULT 0,"
                 "  key BLOB NOT NULL DEFAULT '',"
-                "  vhash BLOB PRIMARY KEY,"
+                "  vhash BLOB NOT NULL DEFAULT '',"
                 "  value BLOB NOT NULL DEFAULT '')");
   SQLITE3_EXEC (dbh, "CREATE INDEX idx_hashidx ON ds080 (key,type,expire)");
   SQLITE3_EXEC (dbh, "CREATE INDEX idx_allidx ON ds080 (key,vhash,type,size)");
