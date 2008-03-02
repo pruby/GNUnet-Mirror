@@ -1965,21 +1965,27 @@ startTransportServer ()
   if ((mhd_daemon == NULL) && (port != 0))
     {
       STEP ();
-      mhd_daemon = MHD_start_daemon (MHD_USE_IPv6,
-                                     port,
-                                     &acceptPolicyCallback,
-                                     NULL, &accessHandlerCallback, NULL,
-                                     MHD_OPTION_CONNECTION_TIMEOUT,
-                                     (unsigned int) HTTP_TIMEOUT,
-                                     MHD_OPTION_CONNECTION_MEMORY_LIMIT,
-                                     (unsigned int) 1024 * 128,
-                                     MHD_OPTION_CONNECTION_LIMIT,
-                                     (unsigned int) 128,
-                                     MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-                                     (unsigned int) 8,
-                                     MHD_OPTION_NOTIFY_COMPLETED,
-                                     &requestCompletedCallback, NULL,
-                                     MHD_OPTION_END);
+      if (GNUNET_YES !=
+          GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD",
+                                                   "DISABLE-IPV6",
+                                                   GNUNET_YES))
+        {
+          mhd_daemon = MHD_start_daemon (MHD_USE_IPv6,
+                                         port,
+                                         &acceptPolicyCallback,
+                                         NULL, &accessHandlerCallback, NULL,
+                                         MHD_OPTION_CONNECTION_TIMEOUT,
+                                         (unsigned int) HTTP_TIMEOUT,
+                                         MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+                                         (unsigned int) 1024 * 128,
+                                         MHD_OPTION_CONNECTION_LIMIT,
+                                         (unsigned int) 128,
+                                         MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+                                         (unsigned int) 8,
+                                         MHD_OPTION_NOTIFY_COMPLETED,
+                                         &requestCompletedCallback, NULL,
+                                         MHD_OPTION_END);
+        }
       if (mhd_daemon == NULL)
         {
           /* try without IPv6 */
@@ -2009,9 +2015,13 @@ startTransportServer ()
     }
   if (port == 0)
     {
-      /* assume both work for NAT */
+      /* NAT */
       available_protocols |= VERSION_AVAILABLE_IPV4;
-      available_protocols |= VERSION_AVAILABLE_IPV6;
+      if (GNUNET_YES !=
+          GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD",
+                                                   "DISABLE-IPV6",
+                                                   GNUNET_YES))
+        available_protocols |= VERSION_AVAILABLE_IPV6;
     }
   if (0 != PIPE (signal_pipe))
     {
