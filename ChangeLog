@@ -1,3 +1,6 @@
+Sun Mar  2 15:33:41 MST 2008
+	Added option to allow user to disable IPv6 support.
+
 Sat Mar  1 21:14:02 MST 2008
 	Fixed some dstore performance issues.
 	Made transports alternate between trying IPv4 and IPv6

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-02-25 00:31-0700\n"
+"POT-Creation-Date: 2008-03-02 16:08-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -17,16 +17,16 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/transports/upnp/upnp.c:356 src/transports/upnp/upnp.c:541
-#: src/transports/http.c:1129 src/transports/http.c:1258
-#: src/transports/http.c:1440 src/transports/http.c:1861
-#: src/transports/http.c:1913 src/applications/bootstrap_http/http.c:126
-#: src/applications/bootstrap_http/http.c:276
-#: src/applications/bootstrap_http/http.c:293
-#: src/applications/bootstrap_http/http.c:325
-#: src/applications/bootstrap_http/http.c:344
-#: src/applications/bootstrap_http/http.c:357
-#: src/applications/bootstrap_http/http.c:367
-#: src/applications/bootstrap_http/http.c:377
+#: src/transports/http.c:1129 src/transports/http.c:1265
+#: src/transports/http.c:1447 src/transports/http.c:1869
+#: src/transports/http.c:1928 src/applications/bootstrap_http/http.c:126
+#: src/applications/bootstrap_http/http.c:277
+#: src/applications/bootstrap_http/http.c:294
+#: src/applications/bootstrap_http/http.c:334
+#: src/applications/bootstrap_http/http.c:353
+#: src/applications/bootstrap_http/http.c:366
+#: src/applications/bootstrap_http/http.c:376
+#: src/applications/bootstrap_http/http.c:386
 #, c-format
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr "`%s' schlug fehl bei %s:%d mit dem Fehler: `%s'.\n"
@@ -41,101 +41,91 @@ msgstr "`%s' schlug fehl bei %s:%d mit dem Fehler: `%s'.\n"
 msgid "upnp: NAT Returned IP: %s\n"
 msgstr ""
 
-#: src/transports/ip.c:70 src/transports/ip.c:430
+#: src/transports/ip.c:70 src/transports/ip.c:365
 #, fuzzy, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "Fehler beim Bestimmen der (externen) IP-Adresse!\n"
 
-#: src/transports/ip.c:238
-#, fuzzy, c-format
-msgid "Could not find IPv6 address of host `%s': %s\n"
-msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
-
-#: src/transports/ip.c:271 src/util/network/ip.c:88 src/util/network/ip.c:153
+#: src/transports/ip.c:260 src/util/network/ip.c:96 src/util/network/ip.c:160
 #, fuzzy, c-format
 msgid "No interface specified in section `%s' under `%s'!\n"
 msgstr ""
 "Es sind keine Netzwerkgeräte in der Konfigurationsdatei in der Sektion `%s' "
 "unter `%s' definiert!\n"
 
-#: src/transports/ip.c:302 src/util/network/ip.c:119 src/util/network/ip.c:239
+#: src/transports/ip.c:291 src/util/network/ip.c:127 src/util/network/ip.c:246
 #, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
 msgstr ""
 "Es konnte keine IP für das Gerät `%s' unter Verwendung von `%s' ermittelt "
 "werden.\n"
 
-#: src/transports/ip.c:347 src/transports/ip.c:374
-#, c-format
-msgid "Could not resolve `%s': %s\n"
-msgstr "`%s' konnte nicht aufgelöst werden: %s\n"
-
-#: src/transports/http.c:2113
+#: src/transports/http.c:2139
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2122
+#: src/transports/http.c:2148
 msgid "# bytes received via HTTP"
 msgstr "# Bytes empfangen über HTTP"
 
-#: src/transports/http.c:2123
+#: src/transports/http.c:2149
 msgid "# bytes sent via HTTP"
 msgstr "# Bytes gesendet über HTTP"
 
-#: src/transports/http.c:2125
+#: src/transports/http.c:2151
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# Bytes verworfen von HTTP"
 
-#: src/transports/http.c:2126
+#: src/transports/http.c:2152
 msgid "# HTTP GET issued"
 msgstr ""
 
-#: src/transports/http.c:2128
+#: src/transports/http.c:2154
 #, fuzzy
 msgid "# HTTP GET received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/http.c:2129
+#: src/transports/http.c:2155
 msgid "# HTTP PUT issued"
 msgstr ""
 
-#: src/transports/http.c:2131
+#: src/transports/http.c:2157
 #, fuzzy
 msgid "# HTTP PUT received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/http.c:2133
+#: src/transports/http.c:2159
 msgid "# HTTP select calls"
 msgstr ""
 
-#: src/transports/http.c:2135
+#: src/transports/http.c:2161
 msgid "# HTTP send calls"
 msgstr ""
 
-#: src/transports/http.c:2138
+#: src/transports/http.c:2164
 msgid "# HTTP curl send callbacks"
 msgstr ""
 
-#: src/transports/http.c:2140
+#: src/transports/http.c:2166
 #, fuzzy
 msgid "# HTTP curl receive callbacks"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/http.c:2142
+#: src/transports/http.c:2168
 msgid "# HTTP mhd access callbacks"
 msgstr ""
 
-#: src/transports/http.c:2144
+#: src/transports/http.c:2170
 msgid "# HTTP mhd read callbacks"
 msgstr ""
 
-#: src/transports/http.c:2146
+#: src/transports/http.c:2172
 msgid "# HTTP mhd close callbacks"
 msgstr ""
 
-#: src/transports/http.c:2148
+#: src/transports/http.c:2174
 #, fuzzy
 msgid "# HTTP connect calls"
 msgstr "# verbundener Knoten"
@@ -185,7 +175,7 @@ msgstr "# Bytes gesendet über TCP"
 msgid "# bytes dropped by SMTP (outgoing)"
 msgstr "# Bytes verworfen von TCP (ausgehend)"
 
-#: src/transports/common.c:363
+#: src/transports/common.c:370
 #, c-format
 msgid "Port is 0, will only send using %s.\n"
 msgstr ""
@@ -196,26 +186,26 @@ msgid "Received malformed message via TCP. Closing.\n"
 msgstr ""
 "Es wurde eine ungültige Nachricht per SMTP empfangen (ungültige Größe).\n"
 
-#: src/transports/tcp.c:702 src/transports/udp.c:460
+#: src/transports/tcp.c:711 src/transports/udp.c:471
 #, fuzzy, c-format
 msgid "Failed to bind to %s port %d.\n"
 msgstr "Fehler beim Binden an UDP Port %d.\n"
 
-#: src/transports/tcp.c:784
+#: src/transports/tcp.c:794
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"TCP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/tcp.c:793
+#: src/transports/tcp.c:803
 msgid "# bytes received via TCP"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/tcp.c:794
+#: src/transports/tcp.c:804
 msgid "# bytes sent via TCP"
 msgstr "# Bytes gesendet über TCP"
 
-#: src/transports/tcp.c:796
+#: src/transports/tcp.c:806
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr "# Bytes verworfen von TCP (ausgehend)"
 
@@ -225,26 +215,26 @@ msgid "Received malformed message via UDP. Ignored.\n"
 msgstr ""
 "Es wurde eine ungültige Nachricht per SMTP empfangen (ungültige Größe).\n"
 
-#: src/transports/udp.c:525
+#: src/transports/udp.c:537
 #, fuzzy, c-format
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr ""
 "MTU für `%s' ist möglicherweise zu gering (Fragmentierung ist nicht "
 "implementiert!)\n"
 
-#: src/transports/udp.c:548
+#: src/transports/udp.c:560
 msgid "# bytes received via UDP"
 msgstr "# Bytes empfangen über UDP"
 
-#: src/transports/udp.c:549
+#: src/transports/udp.c:561
 msgid "# bytes sent via UDP"
 msgstr "# Bytes gesendet über UDP"
 
-#: src/transports/udp.c:551
+#: src/transports/udp.c:563
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# Bytes verworfen von UDP (outgoing)"
 
-#: src/transports/udp.c:553
+#: src/transports/udp.c:565
 msgid "# UDP connections (right now)"
 msgstr ""
 
@@ -967,42 +957,42 @@ msgstr ""
 msgid "display a file's hash value"
 msgstr ""
 
-#: src/setup/gnunet-win-tool.c:123
+#: src/setup/gnunet-win-tool.c:125
 #, c-format
 msgid "GNUnet service installed successfully.\n"
 msgstr "Der GNUnet Dienst wurde erfolgreich installiert.\n"
 
-#: src/setup/gnunet-win-tool.c:126 src/setup/gnunet-win-tool.c:154
+#: src/setup/gnunet-win-tool.c:128 src/setup/gnunet-win-tool.c:156
 #, c-format
 msgid "This version of Windows doesn't support services.\n"
 msgstr "Diese Version von Windows unterstützt keine Dienste.\n"
 
-#: src/setup/gnunet-win-tool.c:130 src/setup/gnunet-win-tool.c:158
+#: src/setup/gnunet-win-tool.c:132 src/setup/gnunet-win-tool.c:160
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
 msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s\n"
 
-#: src/setup/gnunet-win-tool.c:135
+#: src/setup/gnunet-win-tool.c:137
 #, c-format
 msgid "Error: can't create service: %s\n"
 msgstr "Fehler: Dienst konnte nicht angelegt werden: %s\n"
 
-#: src/setup/gnunet-win-tool.c:138 src/setup/gnunet-win-tool.c:170
+#: src/setup/gnunet-win-tool.c:140 src/setup/gnunet-win-tool.c:172
 #, c-format
 msgid "Unknown error.\n"
 msgstr "Unbekannter Fehler.\n"
 
-#: src/setup/gnunet-win-tool.c:151
+#: src/setup/gnunet-win-tool.c:153
 #, c-format
 msgid "Service deleted.\n"
 msgstr "Dienst gelöscht.\n"
 
-#: src/setup/gnunet-win-tool.c:163
+#: src/setup/gnunet-win-tool.c:165
 #, c-format
 msgid "Error: can't access service: %s\n"
 msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
 
-#: src/setup/gnunet-win-tool.c:167
+#: src/setup/gnunet-win-tool.c:169
 #, c-format
 msgid "Error: can't delete service: %s\n"
 msgstr "Fehler: Dienst konnte nicht gelöscht werden: %s\n"
@@ -1230,7 +1220,7 @@ msgstr "Statistiken der GNUnet Aktivitäten ausgeben."
 msgid "Suppress display of asynchronous log messages"
 msgstr ""
 
-#: src/applications/vpn/gnunet-vpn.c:154 src/applications/chat/clientapi.c:184
+#: src/applications/vpn/gnunet-vpn.c:154 src/applications/chat/clientapi.c:161
 #: src/applications/stats/gnunet-stats.c:121
 #: src/applications/tbench/gnunet-tbench.c:126
 #: src/applications/tracekit/gnunet-tracekit.c:352
@@ -2144,29 +2134,35 @@ msgstr ""
 #: src/applications/sqstore_mysql/mysql.c:1443
 #: src/applications/sqstore_mysql/mysql.c:1455
 #: src/applications/sqstore_mysql/mysql.c:1535
-#: src/applications/dstore_mysql/dstore_mysql.c:107
-#: src/applications/dstore_mysql/dstore_mysql.c:114
-#: src/applications/dstore_mysql/dstore_mysql.c:286
-#: src/applications/dstore_mysql/dstore_mysql.c:301
-#: src/applications/dstore_mysql/dstore_mysql.c:315
-#: src/applications/dstore_mysql/dstore_mysql.c:329
-#: src/applications/dstore_mysql/dstore_mysql.c:342
-#: src/applications/dstore_mysql/dstore_mysql.c:412
-#: src/applications/dstore_mysql/dstore_mysql.c:434
-#: src/applications/dstore_mysql/dstore_mysql.c:446
-#: src/applications/dstore_mysql/dstore_mysql.c:521
-#: src/applications/dstore_mysql/dstore_mysql.c:533
-#: src/applications/dstore_mysql/dstore_mysql.c:554
-#: src/applications/dstore_sqlite/dstore.c:91
-#: src/applications/dstore_sqlite/dstore.c:98
-#: src/applications/dstore_sqlite/dstore.c:194
-#: src/applications/dstore_sqlite/dstore.c:236
-#: src/applications/dstore_sqlite/dstore.c:257
-#: src/applications/dstore_sqlite/dstore.c:313
-#: src/applications/dstore_sqlite/dstore.c:331
-#: src/applications/dstore_sqlite/dstore.c:343
-#: src/applications/dstore_sqlite/dstore.c:375
-#: src/applications/dstore_sqlite/dstore.c:467
+#: src/applications/dstore_mysql/dstore_mysql.c:111
+#: src/applications/dstore_mysql/dstore_mysql.c:118
+#: src/applications/dstore_mysql/dstore_mysql.c:296
+#: src/applications/dstore_mysql/dstore_mysql.c:311
+#: src/applications/dstore_mysql/dstore_mysql.c:324
+#: src/applications/dstore_mysql/dstore_mysql.c:338
+#: src/applications/dstore_mysql/dstore_mysql.c:353
+#: src/applications/dstore_mysql/dstore_mysql.c:429
+#: src/applications/dstore_mysql/dstore_mysql.c:480
+#: src/applications/dstore_mysql/dstore_mysql.c:492
+#: src/applications/dstore_mysql/dstore_mysql.c:576
+#: src/applications/dstore_mysql/dstore_mysql.c:588
+#: src/applications/dstore_mysql/dstore_mysql.c:602
+#: src/applications/dstore_mysql/dstore_mysql.c:614
+#: src/applications/dstore_mysql/dstore_mysql.c:627
+#: src/applications/dstore_mysql/dstore_mysql.c:656
+#: src/applications/dstore_mysql/dstore_mysql.c:668
+#: src/applications/dstore_mysql/dstore_mysql.c:688
+#: src/applications/dstore_sqlite/dstore.c:93
+#: src/applications/dstore_sqlite/dstore.c:100
+#: src/applications/dstore_sqlite/dstore.c:198
+#: src/applications/dstore_sqlite/dstore.c:235
+#: src/applications/dstore_sqlite/dstore.c:261
+#: src/applications/dstore_sqlite/dstore.c:318
+#: src/applications/dstore_sqlite/dstore.c:335
+#: src/applications/dstore_sqlite/dstore.c:347
+#: src/applications/dstore_sqlite/dstore.c:376
+#: src/applications/dstore_sqlite/dstore.c:480
+#: src/applications/dstore_sqlite/dstore.c:524
 #: src/util/crypto/hostkey_gcrypt.c:64 src/util/crypto/hostkey_gcrypt.c:71
 #: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
 #, c-format
@@ -2278,43 +2274,56 @@ msgstr ""
 "Stellt sicher, dass dieser Knoten anderen Knoten bekannt ist und entdeckt "
 "andere Knoten"
 
-#: src/applications/chat/chat.c:307
+#: src/applications/chat/chat.c:311
 #, c-format
 msgid "`%s' registering handlers %d and %d\n"
 msgstr "`%s' registriert Handler %d und %d\n"
 
-#: src/applications/chat/chat.c:332
+#: src/applications/chat/chat.c:336
 msgid "enables P2P-chat (incomplete)"
 msgstr "Ermöglicht P2P-Chat"
 
-#: src/applications/chat/clientapi.c:215 src/applications/chat/clientapi.c:363
+#: src/applications/chat/clientapi.c:184 src/applications/chat/clientapi.c:303
 #, fuzzy, c-format
 msgid "Error writing to socket.\n"
 msgstr "Fehler beim Anlegen des Benutzers"
 
-#: src/applications/chat/gnunet-chat.c:50
+#: src/applications/chat/gnunet-chat.c:53
 msgid "Join a chat on GNUnet."
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:54
-msgid "set the nickname to use (requred)"
-msgstr ""
-
 #: src/applications/chat/gnunet-chat.c:57
-msgid "set the chat room to join (requred)"
+msgid "set the nickname to use (required)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:151
+#: src/applications/chat/gnunet-chat.c:60
+msgid "set the chat room to join"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:89
+#, fuzzy, c-format
+msgid "`%s' said: %s\n"
+msgstr "`%s' %s schlug fehl: %s\n"
+
+#: src/applications/chat/gnunet-chat.c:145
 #, fuzzy, c-format
 msgid "You must specify a nickname\n"
 msgstr "Sie müssen einen Empfänger angeben!\n"
 
-#: src/applications/chat/gnunet-chat.c:166
+#: src/applications/chat/gnunet-chat.c:161
 #, fuzzy, c-format
-msgid "Failed to join the room\n"
+msgid "Failed to join room `%s'\n"
 msgstr "Fehler beim Binden an UDP Port %d.\n"
 
-#: src/applications/chat/gnunet-chat.c:196
+#: src/applications/chat/gnunet-chat.c:168
+#, c-format
+msgid ""
+"Joined room `%s'.\n"
+"Type message and hit return to send.\n"
+"Type `%s' when ready to quit.\n"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:187
 #, fuzzy, c-format
 msgid "Failed to send message.\n"
 msgstr "Zustellung der Nachricht `%s' fehlgeschlagen.\n"
@@ -2483,7 +2492,7 @@ msgid "# sessions established"
 msgstr "# Sitzungen aufgebaut"
 
 #: src/applications/sqstore_mysql/mysql.c:449
-#: src/applications/dstore_mysql/dstore_mysql.c:220
+#: src/applications/dstore_mysql/dstore_mysql.c:229
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error: %s"
 msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
@@ -2495,7 +2504,7 @@ msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
 
 #: src/applications/sqstore_mysql/mysql.c:1674
 #: src/applications/sqstore_mysql/mysql.c:1827
-#: src/applications/dstore_mysql/dstore_mysql.c:627
+#: src/applications/dstore_mysql/dstore_mysql.c:764
 #, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Versuche, Datei `%s' für MySQL Konfiguration zu verwenden.\n"
@@ -2957,26 +2966,26 @@ msgstr "`%s' registriert Client-Handler %d and %d\n"
 msgid "Bootstrap data obtained from `%s' is invalid.\n"
 msgstr "Format des Pseudonyms `%s' ist ungültig.\n"
 
-#: src/applications/bootstrap_http/http.c:184
+#: src/applications/bootstrap_http/http.c:185
 msgid "No hostlist URL specified in configuration, will not bootstrap.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:225
+#: src/applications/bootstrap_http/http.c:226
 #, c-format
 msgid "Bootstrapping using `%s'.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:253
+#: src/applications/bootstrap_http/http.c:254
 #, fuzzy, c-format
 msgid "Trying to download hostlist from `%s'\n"
 msgstr "Fehler beim Lesen der Freunde-Liste von `%s'\n"
 
-#: src/applications/bootstrap_http/http.c:383
+#: src/applications/bootstrap_http/http.c:392
 #, fuzzy, c-format
 msgid "Downloaded %llu bytes from `%s'.\n"
 msgstr "Dateien aus dem GNUnet herunterladen."
 
-#: src/applications/bootstrap_http/http.c:417
+#: src/applications/bootstrap_http/http.c:426
 #, fuzzy
 msgid "# HELLOs downloaded via http"
 msgstr "# Hellos per HTTP heruntergeladen"
@@ -3000,133 +3009,139 @@ msgstr "# Bytes des Typs %d empfangen"
 msgid "tracks bandwidth utilization by gnunetd"
 msgstr "Verfolgt die Bandbreitennutzung von gnunetd"
 
-#: src/applications/dstore_mysql/dstore_mysql.c:636
+#: src/applications/dstore_mysql/dstore_mysql.c:773
 #, fuzzy
 msgid "Failed to initialize MySQL database connection for dstore.\n"
 msgstr "SQLite Datenbank konnte nicht initialisiert werden.\n"
 
-#: src/applications/dstore_mysql/dstore_mysql.c:661
-#: src/applications/dstore_sqlite/dstore.c:535
+#: src/applications/dstore_mysql/dstore_mysql.c:799
+#: src/applications/dstore_sqlite/dstore.c:599
 #, fuzzy
 msgid "# bytes in dstore"
 msgstr "# bytes in der Datenbank"
 
-#: src/server/connection.c:1268
+#: src/applications/dstore_mysql/dstore_mysql.c:801
+#: src/applications/dstore_sqlite/dstore.c:601
+#, fuzzy
+msgid "# max bytes allowed in dstore"
+msgstr "# bytes erlaubt in der Datenbank"
+
+#: src/server/connection.c:1277
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "`%s' wählte %d von %d Nachrichten aus (MTU: %d).\n"
 
-#: src/server/connection.c:1278
+#: src/server/connection.c:1287
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Nachrichten Details: %u: Länge %d, Priorität: %d\n"
 
-#: src/server/connection.c:3083
+#: src/server/connection.c:3094
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Nachricht von `%s' verworfen: ungültiges Format.\n"
 
-#: src/server/connection.c:3172
+#: src/server/connection.c:3183
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Ungültige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:3194
+#: src/server/connection.c:3205
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 "Empfangene Nachricht ist mehr als ein Tag alt. Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:3717
+#: src/server/connection.c:3728
 msgid "# outgoing messages dropped"
 msgstr "# ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:3720
+#: src/server/connection.c:3731
 msgid "# bytes of outgoing messages dropped"
 msgstr "# Bytes ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:3722
+#: src/server/connection.c:3733
 msgid "# connections closed (HANGUP sent)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:3726
+#: src/server/connection.c:3737
 #, fuzzy
 msgid "# connections closed (transport issue)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:3729
+#: src/server/connection.c:3740
 msgid "# bytes encrypted"
 msgstr "# Bytes verschlüsselt"
 
-#: src/server/connection.c:3733
+#: src/server/connection.c:3744
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# Bytes des Typs %d übertragen"
 
-#: src/server/connection.c:3737
+#: src/server/connection.c:3748
 #, fuzzy
 msgid "# bytes received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/server/connection.c:3739
+#: src/server/connection.c:3750
 msgid "# bytes decrypted"
 msgstr "# Bytes entschlüsselt"
 
-#: src/server/connection.c:3740
+#: src/server/connection.c:3751
 msgid "# bytes noise sent"
 msgstr "# Bytes Rauschen gesendet"
 
-#: src/server/connection.c:3743
+#: src/server/connection.c:3754
 msgid "# total bytes per second send limit"
-msgstr ""
-
-#: src/server/connection.c:3746
-#, fuzzy
-msgid "# total bytes per second receive limit"
-msgstr "# Bytes Rauschen empfangen"
-
-#: src/server/connection.c:3749
-#, fuzzy
-msgid "# total number of messages in send buffers"
-msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
-
-#: src/server/connection.c:3753
-msgid "# total number of bytes we were allowed to sent but did not"
 msgstr ""
 
 #: src/server/connection.c:3757
 #, fuzzy
+msgid "# total bytes per second receive limit"
+msgstr "# Bytes Rauschen empfangen"
+
+#: src/server/connection.c:3760
+#, fuzzy
+msgid "# total number of messages in send buffers"
+msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
+
+#: src/server/connection.c:3764
+msgid "# total number of bytes we were allowed to sent but did not"
+msgstr ""
+
+#: src/server/connection.c:3768
+#, fuzzy
 msgid "# total number of bytes we were allowed to sent"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: src/server/connection.c:3761
+#: src/server/connection.c:3772
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
-#: src/server/connection.c:3764
+#: src/server/connection.c:3775
 msgid "# transports switched to stream transport"
 msgstr ""
 
-#: src/server/connection.c:3767
+#: src/server/connection.c:3778
 msgid "# average connection lifetime (in ms)"
 msgstr ""
 
-#: src/server/connection.c:3770
+#: src/server/connection.c:3781
 msgid "# conn. shutdown: other peer sent too much"
 msgstr ""
 
-#: src/server/connection.c:3773
+#: src/server/connection.c:3784
 msgid "# conn. shutdown: we lacked bandwidth"
 msgstr ""
 
-#: src/server/connection.c:3776
+#: src/server/connection.c:3787
 msgid "# conn. shutdown: other peer timed out"
 msgstr ""
 
-#: src/server/connection.c:3779
+#: src/server/connection.c:3790
 msgid "# conn. shutdown: timed out during connect"
 msgstr ""
 
-#: src/server/connection.c:3782
+#: src/server/connection.c:3793
 msgid "# conn. shutdown: other peer requested it"
 msgstr ""
 
@@ -3324,17 +3339,17 @@ msgstr ""
 "%d von %d Knoten erfolgreich kontaktiert (%d mal war der Transport nicht "
 "verfügbar).\n"
 
-#: src/server/tcpserver.c:111
+#: src/server/tcpserver.c:121
 #, c-format
 msgid "The `%s' request received from client is malformed.\n"
 msgstr "Die `%s' Anfrage, die vom Client empfangen wurde, ist beschädigt.\n"
 
-#: src/server/tcpserver.c:337
+#: src/server/tcpserver.c:391
 #, fuzzy, c-format
 msgid "`%s' failed for port %d. Is gnunetd already running?\n"
 msgstr "`%s' schlug fehl für Port %d: %s. Läuft gnunetd bereits?\n"
 
-#: src/server/tcpserver.c:414
+#: src/server/tcpserver.c:469 src/server/tcpserver.c:494
 #, c-format
 msgid ""
 "Malformed network specification in the configuration in section `%s' for "
@@ -3343,7 +3358,7 @@ msgstr ""
 "Beschädigte Netzwerkangabe in der Konfigurationsdatei in Sektion `%s' für "
 "Eintrag `%s': %s\n"
 
-#: src/server/tcpserver.c:472
+#: src/server/tcpserver.c:553
 #, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr "%s schlug fehl, Nachrichten Typ %d ist bereits in Verwendung.\n"
@@ -3537,22 +3552,22 @@ msgstr ""
 msgid "Syntax error in configuration entry HOST in section NETWORK: `%s'"
 msgstr "Syntaxfehler in Konfigurationsdatei `%s' in Zeile %d.\n"
 
-#: src/util/network_client/tcpio.c:302
+#: src/util/network_client/tcpio.c:313
 #, fuzzy, c-format
 msgid "Cannot connect to %s:%u: %s\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
 
-#: src/util/network_client/tcpio.c:340
+#: src/util/network_client/tcpio.c:351
 #, fuzzy, c-format
 msgid "Error connecting to %s:%u\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
 
-#: src/util/network_client/tcpio.c:351
+#: src/util/network_client/tcpio.c:362
 #, fuzzy, c-format
 msgid "Failed to connect to %s:%u in %ds\n"
 msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden.\n"
 
-#: src/util/network_client/tcpio.c:516
+#: src/util/network_client/tcpio.c:527
 #, c-format
 msgid "`%s' failed, reply invalid!\n"
 msgstr "`%s' fehlgeschlagen, Antwort ist ungültig!\n"
@@ -3568,6 +3583,16 @@ msgstr ""
 #, c-format
 msgid "select listen socket for `%s' not valid!\n"
 msgstr ""
+
+#: src/util/network/dns.c:313 src/util/network/dns.c:365
+#, c-format
+msgid "Could not find IP of host `%s': %s\n"
+msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
+
+#: src/util/network/dns.c:442
+#, c-format
+msgid "Could not resolve `%s': %s\n"
+msgstr "`%s' konnte nicht aufgelöst werden: %s\n"
 
 #: src/util/network/ipcheck.c:106 src/util/network/ipcheck.c:136
 #: src/util/network/ipcheck.c:186 src/util/network/ipcheck.c:211
@@ -3596,12 +3621,7 @@ msgstr "Falsches Format `%s' für Netzmaske: %s\n"
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Falsches Format `%s' für Netzwerk: %s\n"
 
-#: src/util/network/io.c:86
-#, c-format
-msgid "Could not find IP of host `%s': %s\n"
-msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
-
-#: src/util/network/ip.c:209
+#: src/util/network/ip.c:216
 #, fuzzy, c-format
 msgid ""
 "Could not find interface `%s' using `%s', trying to find another interface.\n"
@@ -3609,29 +3629,29 @@ msgstr ""
 "Gerät `%s' konnte in `%s' nicht gefunden werden, es wird versucht, ein "
 "anderes Gerät zu finden.\n"
 
-#: src/util/network/ip.c:287
+#: src/util/network/ip.c:295
 #, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "Es konnte keine IP-Adresse für das Gerät `%s' ermittelt werden.\n"
 
-#: src/util/network/ip.c:297
-#, c-format
+#: src/util/network/ip.c:306
+#, fuzzy, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
-"GNUnet will use %u.%u.%u.%u.\n"
+"GNUnet will use %s.\n"
 msgstr ""
 "Es ist mehr als eine IP-Adresse für das Gerät `%s' angegeben.\n"
 "GNUnet wird %u.%u.%u.%u. verwenden.\n"
 
-#: src/util/network/ip.c:319
+#: src/util/network/ip.c:330
 #, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr ""
 "`%s' konnte nicht aufgelöst werden, um unsere IP-Adresse zu ermitteln: %s\n"
 
-#: src/util/network/ip.c:352
-#, c-format
-msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
+#: src/util/network/ip.c:363
+#, fuzzy, c-format
+msgid "GNUnet now uses the IP address %s.\n"
 msgstr "GNUnet verwendet nun die IP-Adresse %u.%u.%u.%u.\n"
 
 #: src/util/error/error.c:117
@@ -4090,45 +4110,45 @@ msgid ""
 "hosts manually."
 msgstr ""
 
-#: contrib/config-daemon.scm:196
+#: contrib/config-daemon.scm:197
 msgid "HTTP Proxy Server"
 msgstr ""
 
-#: contrib/config-daemon.scm:198
+#: contrib/config-daemon.scm:199
 msgid ""
 "If you have to use a proxy for outbound HTTP connections, specify the proxy "
 "configuration here.  Default is no proxy."
 msgstr ""
 
-#: contrib/config-daemon.scm:210
+#: contrib/config-daemon.scm:211
 msgid ""
 "Name of the directory where gnunetd should store contact information about "
 "peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:212
+#: contrib/config-daemon.scm:213
 msgid ""
 "Unless you want to share the directory directly using a webserver, the "
 "default is most likely just fine."
 msgstr ""
 
-#: contrib/config-daemon.scm:238 contrib/config-client.scm:140
+#: contrib/config-daemon.scm:239 contrib/config-client.scm:140
 msgid "How long should logs be kept?"
 msgstr ""
 
-#: contrib/config-daemon.scm:240 contrib/config-client.scm:142
+#: contrib/config-daemon.scm:241 contrib/config-client.scm:142
 msgid ""
 "How long should logs be kept? If you specify a value greater than zero, a "
 "log is created each day with the date appended to its filename. These logs "
 "are deleted after $KEEPLOG days.\tTo keep logs forever, set this value to 0."
 msgstr ""
 
-#: contrib/config-daemon.scm:251
+#: contrib/config-daemon.scm:252
 msgid ""
 "What maximum number of open file descriptors should be requested from the OS?"
 msgstr ""
 
-#: contrib/config-daemon.scm:253
+#: contrib/config-daemon.scm:254
 msgid ""
 "The default of 1024 should be fine for most systems.  If your system can "
 "support more, increasing the number might help support additional clients on "
@@ -4140,66 +4160,66 @@ msgid ""
 "run with what it is given."
 msgstr ""
 
-#: contrib/config-daemon.scm:264
+#: contrib/config-daemon.scm:265
 msgid "Where should gnunetd write the logs?"
 msgstr ""
 
-#: contrib/config-daemon.scm:276
+#: contrib/config-daemon.scm:277
 msgid "Enable for extra-verbose logging."
 msgstr ""
 
-#: contrib/config-daemon.scm:288 contrib/config-client.scm:165
+#: contrib/config-daemon.scm:289 contrib/config-client.scm:165
 msgid "Logging"
 msgstr ""
 
-#: contrib/config-daemon.scm:289 contrib/config-client.scm:166
+#: contrib/config-daemon.scm:290 contrib/config-client.scm:166
 msgid "Specify which system messages should be logged how"
 msgstr ""
 
-#: contrib/config-daemon.scm:294 contrib/config-client.scm:170
+#: contrib/config-daemon.scm:295 contrib/config-client.scm:170
 msgid "Logging of events for users"
 msgstr ""
 
-#: contrib/config-daemon.scm:295 contrib/config-client.scm:171
+#: contrib/config-daemon.scm:296 contrib/config-client.scm:171
 msgid "Logging of events for the system administrator"
 msgstr ""
 
-#: contrib/config-daemon.scm:307
+#: contrib/config-daemon.scm:308
 msgid "Where should gnunetd write the PID?"
 msgstr ""
 
-#: contrib/config-daemon.scm:308
+#: contrib/config-daemon.scm:309
 msgid ""
 "The default is no longer /var/run/gnunetd.pid since we could not delete the "
 "file on shutdown at that location."
 msgstr ""
 
-#: contrib/config-daemon.scm:320
+#: contrib/config-daemon.scm:321
 msgid "As which user should gnunetd run?"
 msgstr ""
 
-#: contrib/config-daemon.scm:322
+#: contrib/config-daemon.scm:323
 msgid ""
 "Empty means \"current user\". On computer startup, it is root/SYSTEM.  Under "
 "Windows, this setting affects the creation of a new system service only."
 msgstr ""
 
-#: contrib/config-daemon.scm:335
+#: contrib/config-daemon.scm:336
 msgid "Should gnunetd be automatically started when the system boots?"
 msgstr ""
 
-#: contrib/config-daemon.scm:336
+#: contrib/config-daemon.scm:337
 msgid ""
 "Set to YES if gnunetd should be automatically started on boot.  If this "
 "option is set, gnunet-setup will install a script to start the daemon upon "
 "completion.  This option may not work on all systems."
 msgstr ""
 
-#: contrib/config-daemon.scm:348
+#: contrib/config-daemon.scm:349
 msgid "Which transport mechanisms should GNUnet use?"
 msgstr ""
 
-#: contrib/config-daemon.scm:350
+#: contrib/config-daemon.scm:351
 msgid ""
 "Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The "
 "available transports are udp, tcp, http, smtp and nat.\n"
@@ -4213,11 +4233,11 @@ msgid ""
 "itself."
 msgstr ""
 
-#: contrib/config-daemon.scm:364
+#: contrib/config-daemon.scm:365
 msgid "Which applications should gnunetd support?"
 msgstr ""
 
-#: contrib/config-daemon.scm:366
+#: contrib/config-daemon.scm:367
 msgid ""
 "Whenever this option is changed, you MUST run gnunet-update. Currently, the "
 "available applications are:\n"
@@ -4257,11 +4277,11 @@ msgid ""
 "compromise your anonymity."
 msgstr ""
 
-#: contrib/config-daemon.scm:397
+#: contrib/config-daemon.scm:398
 msgid "Disable client-server connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:398
+#: contrib/config-daemon.scm:399
 msgid ""
 "This option can be used to tell gnunetd not to open the client port.  When "
 "run like this, gnunetd will participate as a peer in the network but not "
@@ -4270,11 +4290,22 @@ msgid ""
 "prevent you from running diagnostic tools like gnunet-stats!"
 msgstr ""
 
-#: contrib/config-daemon.scm:410
+#: contrib/config-daemon.scm:411
+msgid "YES disables IPv6 support, NO enables IPv6 support"
+msgstr ""
+
+#: contrib/config-daemon.scm:412
+msgid ""
+"This option maybe useful on peers where the kernel does not support IPv6.  "
+"You might also want to set this option if you do not have an IPv6 network "
+"connection."
+msgstr ""
+
+#: contrib/config-daemon.scm:424
 msgid "Disable peer discovery"
 msgstr ""
 
-#: contrib/config-daemon.scm:411
+#: contrib/config-daemon.scm:425
 msgid ""
 "The option 'PRIVATE-NETWORK' can be used to limit the connections of this "
 "peer to peers of which the hostkey has been copied by hand to data/hosts;  "
@@ -4286,15 +4317,15 @@ msgid ""
 "lines above would need some minor editing :-)."
 msgstr ""
 
-#: contrib/config-daemon.scm:422
+#: contrib/config-daemon.scm:436
 msgid "Disable advertising this peer to other peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:434
+#: contrib/config-daemon.scm:448
 msgid "Disable automatic establishment of connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:435
+#: contrib/config-daemon.scm:449
 msgid ""
 "If this option is enabled, GNUnet will not automatically establish "
 "connections to other peers, but instead wait for applications to "
@@ -4302,22 +4333,22 @@ msgid ""
 "connect to us)."
 msgstr ""
 
-#: contrib/config-daemon.scm:446
+#: contrib/config-daemon.scm:460
 msgid "Enable advertising of other peers by this peer"
 msgstr ""
 
-#: contrib/config-daemon.scm:447
+#: contrib/config-daemon.scm:461
 msgid ""
 "This option maybe useful during testing, but turning it off is dangerous! If "
 "in any doubt, set it to YES (which is the default)."
 msgstr ""
 
-#: contrib/config-daemon.scm:458
+#: contrib/config-daemon.scm:472
 #, fuzzy
 msgid "Port for communication with GNUnet user interfaces"
 msgstr "Informationen über andere GNUnet Knoten ausgeben."
 
-#: contrib/config-daemon.scm:459
+#: contrib/config-daemon.scm:473
 msgid ""
 "Which is the client-server port that is used between gnunetd and the clients "
 "(TCP only).  You may firewall this port for non-local machines (but you do "
@@ -4325,15 +4356,15 @@ msgid ""
 "connections from machines that are listed under TRUSTED)."
 msgstr ""
 
-#: contrib/config-daemon.scm:470
+#: contrib/config-daemon.scm:484
 msgid "Port for the integrated hostlist HTTP server"
 msgstr ""
 
-#: contrib/config-daemon.scm:482
-msgid "IPs allowed to use gnunetd server"
+#: contrib/config-daemon.scm:496
+msgid "IPv4 networks allowed to use gnunetd server"
 msgstr ""
 
-#: contrib/config-daemon.scm:483
+#: contrib/config-daemon.scm:497 contrib/config-daemon.scm:509
 msgid ""
 "This option specifies which hosts are trusted enough to connect as clients "
 "(to the TCP port).  This is useful if you run gnunetd on one host of your "
@@ -4344,71 +4375,75 @@ msgid ""
 "separated by a semicolon, spaces are not allowed."
 msgstr ""
 
-#: contrib/config-daemon.scm:495
+#: contrib/config-daemon.scm:508
+msgid "IPv6 networks allowed to use gnunetd server"
+msgstr ""
+
+#: contrib/config-daemon.scm:521
 msgid "Limit connections to the specfied set of peers."
 msgstr ""
 
-#: contrib/config-daemon.scm:496
+#: contrib/config-daemon.scm:522
 msgid ""
 "If this option is not set, any peer is allowed to connect.  If it is set, "
 "only the specified peers are allowed. Specify the list of peer IDs (not IPs!)"
 msgstr ""
 
-#: contrib/config-daemon.scm:507
+#: contrib/config-daemon.scm:533
 #, fuzzy
 msgid "Run gnunetd as this group."
 msgstr "gnunet-update ausführen"
 
-#: contrib/config-daemon.scm:508
+#: contrib/config-daemon.scm:534
 msgid ""
 "When started as root, gnunetd will change permissions to the given group."
 msgstr ""
 
-#: contrib/config-daemon.scm:519
+#: contrib/config-daemon.scm:545
 msgid "Prevent the specfied set of peers from connecting."
 msgstr ""
 
-#: contrib/config-daemon.scm:520
+#: contrib/config-daemon.scm:546
 msgid ""
 "If this option is not set, any peer is allowed to connect.  If the ID of a "
 "peer is listed here, connections from that peer will be refused.  Specify "
 "the list of peer IDs (not IPs!)"
 msgstr ""
 
-#: contrib/config-daemon.scm:531
+#: contrib/config-daemon.scm:557
 msgid "Topology Maintenance"
 msgstr ""
 
-#: contrib/config-daemon.scm:532
+#: contrib/config-daemon.scm:558
 msgid "Rarely used settings for peer advertisements and connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:552
+#: contrib/config-daemon.scm:578
 #, fuzzy
 msgid "General settings"
 msgstr "Weitere Einstellungen"
 
-#: contrib/config-daemon.scm:553
+#: contrib/config-daemon.scm:579
 msgid "Settings that change the behavior of GNUnet in general"
 msgstr ""
 
-#: contrib/config-daemon.scm:579
+#: contrib/config-daemon.scm:606
 msgid "Modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:580
+#: contrib/config-daemon.scm:607
 msgid "Settings that select specific implementations for GNUnet modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:598
+#: contrib/config-daemon.scm:625
 msgid "Fundamentals"
 msgstr ""
 
-#: contrib/config-daemon.scm:618
+#: contrib/config-daemon.scm:645
 msgid "Which database should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:620
+#: contrib/config-daemon.scm:647
 msgid ""
 "Which database should be used?  The options are \"sqstore_sqlite\" and "
 "\"sqstore_mysql\".  You must run gnunet-update after changing this value!\n"
@@ -4417,27 +4452,27 @@ msgid ""
 "is relatively simple.  Read the file doc/README.mysql for how to setup mysql."
 msgstr ""
 
-#: contrib/config-daemon.scm:633 contrib/config-daemon.scm:646
+#: contrib/config-daemon.scm:660 contrib/config-daemon.scm:673
 msgid "Which topology should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:634
+#: contrib/config-daemon.scm:661
 msgid "Which database should be used for the temporary datastore of the DHT?"
 msgstr ""
 
-#: contrib/config-daemon.scm:648
+#: contrib/config-daemon.scm:675
 msgid ""
 "Which topology should be used?  The only option at the moment is "
 "\"topology_default\""
 msgstr ""
 
-#: contrib/config-daemon.scm:662
+#: contrib/config-daemon.scm:689
 msgid ""
 "Minimum number of connected friends before this peer is allowed to connect "
 "to peers that are not listed as friends"
 msgstr ""
 
-#: contrib/config-daemon.scm:663
+#: contrib/config-daemon.scm:690
 msgid ""
 "Note that this option does not guarantee that the peer will be able to "
 "connect to the specified number of friends.  Also, if the peer had connected "
@@ -4450,62 +4485,62 @@ msgid ""
 "is higher than the overall connection target)."
 msgstr ""
 
-#: contrib/config-daemon.scm:674
+#: contrib/config-daemon.scm:701
 msgid ""
 "If set to YES, the peer is only allowed to connect to other peers that are "
 "explicitly specified as friends"
 msgstr ""
 
-#: contrib/config-daemon.scm:675
+#: contrib/config-daemon.scm:702
 msgid ""
 "Use YES only if you have (trustworthy) friends that use GNUnet and are "
 "afraid of establishing (direct) connections to unknown peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:686
+#: contrib/config-daemon.scm:713
 msgid "List of friends for friend-to-friend topology"
 msgstr ""
 
-#: contrib/config-daemon.scm:687
+#: contrib/config-daemon.scm:714
 msgid ""
 "Specifies the name of a file which contains a list of GNUnet peer IDs that "
 "are friends.  If used with the friend-to-friend topology, this will ensure "
 "that GNUnet only connects to these peers (via any available transport)."
 msgstr ""
 
-#: contrib/config-daemon.scm:698
+#: contrib/config-daemon.scm:725
 msgid "Friend-to-Friend Topology Specification"
 msgstr ""
 
-#: contrib/config-daemon.scm:699
+#: contrib/config-daemon.scm:726
 #, fuzzy
 msgid "Settings for restricting connections to friends"
 msgstr "`%s' fehlgeschlagen. Beende Verbindung zu Client.\n"
 
-#: contrib/config-daemon.scm:716
+#: contrib/config-daemon.scm:743
 msgid "Name of the MySQL database GNUnet should use"
 msgstr ""
 
-#: contrib/config-daemon.scm:728
+#: contrib/config-daemon.scm:755
 #, fuzzy
 msgid "Configuration file that specifies the MySQL username and password"
 msgstr ""
 "Konfiguration oder die GNUnet Version hat sich geändert. Sie müssen `%s' "
 "ausführen!\n"
 
-#: contrib/config-daemon.scm:740
+#: contrib/config-daemon.scm:767
 #, fuzzy
 msgid "Configuration of the MySQL database"
 msgstr ""
 "Konfiguration oder die GNUnet Version hat sich geändert. Sie müssen `%s' "
 "ausführen!\n"
 
-#: contrib/config-daemon.scm:759
+#: contrib/config-daemon.scm:786
 #, fuzzy
 msgid "MB of diskspace GNUnet can use for anonymous file sharing"
 msgstr "Ermöglicht (anonymes) Filesharing"
 
-#: contrib/config-daemon.scm:761
+#: contrib/config-daemon.scm:788
 msgid ""
 "How much disk space (MB) is GNUnet allowed to use for anonymous file "
 "sharing?  This does not take indexed files into account, only the space "
@@ -4516,12 +4551,12 @@ msgid ""
 "Note that if you change the quota, you need to run gnunet-update afterwards."
 msgstr ""
 
-#: contrib/config-daemon.scm:775
+#: contrib/config-daemon.scm:802
 #, fuzzy
 msgid "Number of entries in the migration buffer"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: contrib/config-daemon.scm:776
+#: contrib/config-daemon.scm:803
 msgid ""
 "Each entry uses about 32k of memory.  More entries can reduce disk IO and "
 "CPU usage at the expense of having gnunetd use more memory. Very large "
@@ -4529,19 +4564,19 @@ msgid ""
 "from sending unsolicited responses."
 msgstr ""
 
-#: contrib/config-daemon.scm:788
+#: contrib/config-daemon.scm:815
 msgid "Size of the routing table for anonymous routing."
 msgstr ""
 
-#: contrib/config-daemon.scm:800
+#: contrib/config-daemon.scm:827
 msgid "Size of the routing table for DHT routing."
 msgstr ""
 
-#: contrib/config-daemon.scm:813
+#: contrib/config-daemon.scm:840
 msgid "Allow migrating content to this peer."
 msgstr ""
 
-#: contrib/config-daemon.scm:815
+#: contrib/config-daemon.scm:842
 msgid ""
 "If you say yes here, GNUnet will migrate content to your server, and you "
 "will not be able to control what data is stored on your machine. \n"
@@ -4553,13 +4588,13 @@ msgid ""
 "can be considered liable for it."
 msgstr ""
 
-#: contrib/config-daemon.scm:829
+#: contrib/config-daemon.scm:856
 msgid ""
 "MB of diskspace GNUnet can use for caching DHT index data (the data will be "
 "stored in /tmp)"
 msgstr ""
 
-#: contrib/config-daemon.scm:830
+#: contrib/config-daemon.scm:857
 msgid ""
 "DHT index data is inherently small and expires comparatively quickly.  It is "
 "deleted whenever gnunetd is shut down.\n"
@@ -4567,21 +4602,21 @@ msgid ""
 "The size of the DSTORE QUOTA is specified in MB."
 msgstr ""
 
-#: contrib/config-daemon.scm:844
+#: contrib/config-daemon.scm:871
 #, fuzzy
 msgid "Options for anonymous file sharing"
 msgstr "Ermöglicht (anonymes) Filesharing"
 
-#: contrib/config-daemon.scm:863
+#: contrib/config-daemon.scm:890
 #, fuzzy
 msgid "Applications"
 msgstr "_Optionen"
 
-#: contrib/config-daemon.scm:879
+#: contrib/config-daemon.scm:906
 msgid "Is this machine unreachable behind a NAT?"
 msgstr ""
 
-#: contrib/config-daemon.scm:880
+#: contrib/config-daemon.scm:907
 msgid ""
 "Set to YES if this machine is behind a NAT that limits connections from the "
 "outside to the GNUnet port and that cannot be traversed using UPnP.  Note "
@@ -4596,16 +4631,16 @@ msgid ""
 "otherwise."
 msgstr ""
 
-#: contrib/config-daemon.scm:891
+#: contrib/config-daemon.scm:918
 msgid "Which port should be used by the TCP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:903 contrib/config-daemon.scm:994
-#: contrib/config-daemon.scm:1144
+#: contrib/config-daemon.scm:930 contrib/config-daemon.scm:1021
+#: contrib/config-daemon.scm:1171
 msgid "Should we try to determine our external IP using UPnP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:904
+#: contrib/config-daemon.scm:931
 msgid ""
 "You can use 'make check' in src/transports/upnp/ to find out if your NAT "
 "supports UPnP.  You should disable this option if you are sure that you are "
@@ -4613,34 +4648,34 @@ msgid ""
 "will not do much harm (only cost a small amount of resources)."
 msgstr ""
 
-#: contrib/config-daemon.scm:915
+#: contrib/config-daemon.scm:942
 msgid "Which IP(v4)s are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:927
+#: contrib/config-daemon.scm:954
 msgid ""
 "Which IP(v4)s are allowed to connect? Leave empty to use the IP of your "
 "primary network interface."
 msgstr ""
 
-#: contrib/config-daemon.scm:939 contrib/config-daemon.scm:1192
+#: contrib/config-daemon.scm:966 contrib/config-daemon.scm:1219
 msgid "Which IPv6s are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:951 contrib/config-daemon.scm:1204
+#: contrib/config-daemon.scm:978 contrib/config-daemon.scm:1231
 msgid ""
 "Which IPv6s are allowed to connect? Leave empty to allow any IP to connect."
 msgstr ""
 
-#: contrib/config-daemon.scm:964
+#: contrib/config-daemon.scm:991
 msgid "TCP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:982
+#: contrib/config-daemon.scm:1009
 msgid "Which port should be used by the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:995 contrib/config-daemon.scm:1145
+#: contrib/config-daemon.scm:1022 contrib/config-daemon.scm:1172
 msgid ""
 "You can use 'make check' in src/transports/upnp/ to find out if your NAT "
 "supports UPnP. You should disable this option if you are sure that you are "
@@ -4648,11 +4683,11 @@ msgid ""
 "will not do much harm (only cost a small amount of resources)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1006
+#: contrib/config-daemon.scm:1033
 msgid "Which is the external port of the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1007
+#: contrib/config-daemon.scm:1034
 msgid ""
 "Use this option if your firewall maps say port 80 to your real HTTP port.  "
 "This can be useful in making the HTTP messages appear even more legit "
@@ -4660,118 +4695,118 @@ msgid ""
 "priviledged port)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1018
+#: contrib/config-daemon.scm:1045
 msgid "HTTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1037
+#: contrib/config-daemon.scm:1064
 msgid "What is the maximum transfer unit for SMTP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1049
+#: contrib/config-daemon.scm:1076
 msgid ""
 "What is the maximum number of e-mails that gnunetd would be allowed to send "
 "per hour?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1050
+#: contrib/config-daemon.scm:1077
 msgid "Use 0 for unlimited"
 msgstr ""
 
-#: contrib/config-daemon.scm:1061
+#: contrib/config-daemon.scm:1088
 msgid "Which e-mail address should be used to send e-mail to this peer?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1062
+#: contrib/config-daemon.scm:1089
 msgid ""
 "You must make sure that e-mail received at this address is forwarded to the "
 "PIPE which is read by gnunetd.  Use the FILTER option to filter e-mail with "
 "procmail and the PIPE option to set the name of the pipe."
 msgstr ""
 
-#: contrib/config-daemon.scm:1073
+#: contrib/config-daemon.scm:1100
 msgid ""
 "Which header line should other peers include in e-mails to enable filtering?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1074
+#: contrib/config-daemon.scm:1101
 msgid ""
 "You can specify a header line here which can then be used by procmail to "
 "filter GNUnet e-mail from your inbox and forward it to gnunetd."
 msgstr ""
 
-#: contrib/config-daemon.scm:1085
+#: contrib/config-daemon.scm:1112
 msgid "What is the filename of the pipe where gnunetd can read its e-mail?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1086
+#: contrib/config-daemon.scm:1113
 msgid "Have a look at contrib/dot-procmailrc for an example .procmailrc file."
 msgstr ""
 
-#: contrib/config-daemon.scm:1097
+#: contrib/config-daemon.scm:1124
 msgid "What is the name and port of the server for outgoing e-mail?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1098
+#: contrib/config-daemon.scm:1125
 msgid "The basic format is HOSTNAME:PORT."
 msgstr ""
 
-#: contrib/config-daemon.scm:1109
+#: contrib/config-daemon.scm:1136
 msgid "SMTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1132
+#: contrib/config-daemon.scm:1159
 msgid "Which port should be used by the UDP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1156
+#: contrib/config-daemon.scm:1183
 msgid "What is the maximum transfer unit for UDP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1168
+#: contrib/config-daemon.scm:1195
 msgid "Which IPs are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1180
+#: contrib/config-daemon.scm:1207
 msgid ""
 "Which IPs are allowed to connect? Leave empty to allow connections from any "
 "IP."
 msgstr ""
 
-#: contrib/config-daemon.scm:1216
+#: contrib/config-daemon.scm:1243
 msgid "UDP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1238
+#: contrib/config-daemon.scm:1265
 #, fuzzy
 msgid "Network interface"
 msgstr "Netzwerkgerät:"
 
-#: contrib/config-daemon.scm:1250
+#: contrib/config-daemon.scm:1277
 msgid "External IP address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1262
+#: contrib/config-daemon.scm:1289
 msgid "External IPv6 address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1274
+#: contrib/config-daemon.scm:1301
 msgid "Transports"
 msgstr ""
 
-#: contrib/config-daemon.scm:1296
+#: contrib/config-daemon.scm:1323
 msgid "What is the maximum number of bytes per second that we may receive?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1308
+#: contrib/config-daemon.scm:1335
 msgid "What is the maximum number of bytes per second that we may send?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1320
+#: contrib/config-daemon.scm:1347
 msgid "What is the maximum CPU load (percentage)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1322
+#: contrib/config-daemon.scm:1349
 msgid ""
 "Which CPU load can be tolerated.  Load here always refers to the total "
 "system load, that is it includes CPU utilization by other processes.  A "
@@ -4781,11 +4816,11 @@ msgid ""
 "Multiprocessors may use values above 100."
 msgstr ""
 
-#: contrib/config-daemon.scm:1333
+#: contrib/config-daemon.scm:1360
 msgid "What is the maximum IO load (permille)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1335
+#: contrib/config-daemon.scm:1362
 msgid ""
 "Which IO load can be tolerated.  Load here refers to the percentage of CPU "
 "cycles wasted waiting for IO for the entire system, that is it includes disk "
@@ -4795,36 +4830,36 @@ msgid ""
 "values are typically between 10 and 75."
 msgstr ""
 
-#: contrib/config-daemon.scm:1346
+#: contrib/config-daemon.scm:1373
 msgid "What is the maximum CPU load (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1347
+#: contrib/config-daemon.scm:1374
 msgid ""
 "Which CPU load can be tolerated.  This is the hard limit, so once it is "
 "reached, gnunetd will start to massively drop data to reduce the load.  Use "
 "with caution."
 msgstr ""
 
-#: contrib/config-daemon.scm:1358
+#: contrib/config-daemon.scm:1385
 msgid "What is the maximum upstream bandwidth (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1359
+#: contrib/config-daemon.scm:1386
 msgid ""
 "The limit is given as a percentage of the MAXNETUPBPS limit.  Use 100 to "
 "have MAXNETUPBPS be the hard limit.  Use zero for no limit."
 msgstr ""
 
-#: contrib/config-daemon.scm:1370
+#: contrib/config-daemon.scm:1397
 msgid "Should we disable random padding (experimental option)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1382
+#: contrib/config-daemon.scm:1409
 msgid "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES."
 msgstr ""
 
-#: contrib/config-daemon.scm:1384
+#: contrib/config-daemon.scm:1411
 msgid ""
 "Basic bandwidth limitation (YES) means simply that the bandwidth limits "
 "specified apply to GNUnet and only to GNUnet.  If set to YES, you simply "
@@ -4869,12 +4904,12 @@ msgid ""
 "since it is irrelevant)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1401
+#: contrib/config-daemon.scm:1428
 #, fuzzy
 msgid "Network interface to monitor"
 msgstr "Netzwerkgerät:"
 
-#: contrib/config-daemon.scm:1402
+#: contrib/config-daemon.scm:1429
 msgid ""
 "For which interfaces should we do accounting?  GNUnet will evaluate the "
 "total traffic (not only the GNUnet related traffic) and adjust its bandwidth "
@@ -4885,12 +4920,12 @@ msgid ""
 "number reported by  'gnunet-win-tool -n'."
 msgstr ""
 
-#: contrib/config-daemon.scm:1413
+#: contrib/config-daemon.scm:1440
 #, fuzzy
 msgid "Load management"
 msgstr "Ungültige Kommandozeilen Parameter.\n"
 
-#: contrib/config-daemon.scm:1438 contrib/config-client.scm:401
+#: contrib/config-daemon.scm:1465 contrib/config-client.scm:401
 msgid "Root node"
 msgstr ""
 
@@ -5687,32 +5722,32 @@ msgstr ""
 msgid "Not for English ;-)"
 msgstr "Nils Durner and Christian Grothoff"
 
-#: src/applications/fs/gap/fs.c:785
+#: src/applications/fs/gap/fs.c:786
 msgid "# gap requests total received"
 msgstr "# gap Anfragen insgesamt empfangen"
 
-#: src/applications/fs/gap/fs.c:787
+#: src/applications/fs/gap/fs.c:788
 #, fuzzy
 msgid "# gap requests dropped due to load"
 msgstr "# gap Anfragen verworfen: Kollision in RT"
 
-#: src/applications/fs/gap/fs.c:789
+#: src/applications/fs/gap/fs.c:790
 #, fuzzy
 msgid "# gap content total received"
 msgstr "# gap Anfragen insgesamt empfangen"
 
-#: src/applications/fs/gap/fs.c:791
+#: src/applications/fs/gap/fs.c:792
 msgid "# gap total trust awarded"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:819
+#: src/applications/fs/gap/fs.c:820
 #, fuzzy, c-format
 msgid ""
 "`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %"
 "d\n"
 msgstr "`%s' registriert die Client Handler %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/gap/fs.c:871
+#: src/applications/fs/gap/fs.c:872
 msgid "enables (anonymous) file-sharing"
 msgstr "Ermöglicht (anonymes) Filesharing"
 
@@ -5771,29 +5806,34 @@ msgstr "# Blöcke migriert"
 msgid "# on-demand fetches for migration"
 msgstr "# Blöcke migriert"
 
-#: src/applications/fs/gap/gap.c:649
+#: src/applications/fs/gap/gap.c:666
 #, fuzzy
 msgid "# gap queries dropped (table full)"
 msgstr "# gap falsche Antworten"
 
-#: src/applications/fs/gap/gap.c:651
+#: src/applications/fs/gap/gap.c:668
 #, fuzzy
 msgid "# gap queries dropped (redundant)"
 msgstr "# gap falsche Antworten"
 
-#: src/applications/fs/gap/gap.c:653
+#: src/applications/fs/gap/gap.c:670
 #, fuzzy
 msgid "# gap queries routed"
 msgstr "# dht Anfragen weitergeleitet"
 
-#: src/applications/fs/gap/gap.c:655
+#: src/applications/fs/gap/gap.c:672
 #, fuzzy
 msgid "# gap content found locally"
 msgstr "# gap Anfragen insgesamt empfangen"
 
-#: src/applications/fs/gap/gap.c:658
+#: src/applications/fs/gap/gap.c:675
 msgid "# gap queries refreshed existing record"
 msgstr ""
+
+#: src/applications/fs/gap/gap.c:676
+#, fuzzy
+msgid "# trust earned"
+msgstr "# dht Anfragen weitergeleitet"
 
 #: src/applications/fs/gap/ondemand.c:173
 #, c-format
@@ -5818,24 +5858,32 @@ msgstr ""
 "Deindizierter ODB Block `%s' vom Offset %llu fehlt bereits im "
 "Datenspeicher.\n"
 
-#: src/applications/fs/gap/plan.c:963
+#: src/applications/fs/gap/plan.c:968
 #, fuzzy
 msgid "# gap requests total sent"
 msgstr "# gap Anfragen insgesamt empfangen"
 
-#: src/applications/fs/gap/plan.c:965
+#: src/applications/fs/gap/plan.c:970
 #, fuzzy
 msgid "# gap content total planned"
 msgstr "# gap Anfragen insgesamt empfangen"
 
-#: src/applications/fs/gap/plan.c:967
+#: src/applications/fs/gap/plan.c:972
 #, fuzzy
 msgid "# gap routes succeeded"
 msgstr "# gap Routing erfolgreich (insgesamt)"
 
+#: src/applications/fs/gap/plan.c:973
+msgid "# trust spent"
+msgstr ""
+
 #: src/applications/fs/gap/anonymity.c:56
 msgid "Failed to get traffic stats.\n"
 msgstr "Statistiken über den Netzwerkverkehr konnten nicht ermittelt werden.\n"
+
+#, fuzzy
+#~ msgid "Could not find IPv6 address of host `%s': %s\n"
+#~ msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
 
 #, fuzzy
 #~ msgid "VPN Received unknown IP version %d...\n"
@@ -6153,9 +6201,6 @@ msgstr "Statistiken über den Netzwerkverkehr konnten nicht ermittelt werden.\n"
 
 #~ msgid "unloading module failed.  Notifying client.\n"
 #~ msgstr "das Entladen des Moduls schlug fehl. Client wird benachrichtigt.\n"
-
-#~ msgid "`%s' %s failed: %s\n"
-#~ msgstr "`%s' %s schlug fehl: %s\n"
 
 #~ msgid "received invalid `%s' message: %s.\n"
 #~ msgstr "ungültige `%s' Nachricht empfangen: %s.\n"

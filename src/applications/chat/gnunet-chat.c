@@ -44,8 +44,6 @@ static char *nickname;
 
 static char *room_name = "gnunet";
 
-static char *quit = QUIT_COMMAND;
-
 /**
  * All gnunet-chat command line options
  */
