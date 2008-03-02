@@ -23,7 +23,7 @@ libcrypto_la_SOURCES = \
 check_PROGRAMS = \
  crctest \
  hashtest \
- hashperf \
+ hashperf_test \
  hashingtest \
  hostkeytest \
  kblockkey_test \
@@ -57,9 +57,9 @@ hashtest_SOURCES = \
 hashtest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
-hashperf_SOURCES = \
+hashperf_test_SOURCES = \
  hashperf.c
-hashperf_LDADD = \
+hashperf_test_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 symciphertest_SOURCES = \
