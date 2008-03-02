@@ -22,7 +22,6 @@
  * @file applications/dstore_mysql/dstore_mysql.c
  * @brief MySQL based implementation of the dstore service
  * @author Christian Grothoff
- * @todo Indexes, statistics
  *
  * Database: MySQL
  */
@@ -709,9 +708,9 @@ d_get (const GNUNET_HashCode * key,
           GNUNET_free (rbind[1].buffer);
           return cnt;
         }
+      cnt++;
       if (GNUNET_OK != handler (key, type, v_size, rbind[1].buffer, closure))
 	break;
-      cnt++;
     }
   mysql_stmt_reset (select_value);
   mysql_thread_end ();
