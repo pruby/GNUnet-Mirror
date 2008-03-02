@@ -159,6 +159,15 @@
 #define MAX_SEND_BUFFER_SIZE (EXPECTED_MTU * 8)
 
 /**
+ * How often is another peer allowed to transmit above
+ * the limit before we shutdown the connection?
+ * (note that the violation counter also ages and that
+ * advertised bandwidth limits are adjusted to a
+ * fraction according to the current violation counter).
+ */ 
+#define MAX_VIOLATIONS 10
+
+/**
  * Status constants
  *
  * Protocol goes like this:
@@ -1791,7 +1800,7 @@ sendBuffer (BufferEntry * be)
   p2pHdr = (GNUNET_TransportPacket_HEADER *) plaintextMsg;
   p2pHdr->timeStamp = htonl (GNUNET_get_time_int32 (NULL));
   p2pHdr->sequenceNumber = htonl (be->lastSequenceNumberSend);
-  p2pHdr->bandwidth = htonl (be->idealized_limit);
+  p2pHdr->bandwidth = htonl (be->idealized_limit * (MAX_VIOLATIONS - be->violations) / MAX_VIOLATIONS);
   p = sizeof (GNUNET_TransportPacket_HEADER);
   for (i = 0; i < stotal; i++)
     {
@@ -2492,7 +2501,7 @@ scheduleInboundTraffic ()
         {
           entries[u]->violations++;
           entries[u]->recently_received = 0;    /* "clear" slate */
-          if (entries[u]->violations > 10)
+          if (entries[u]->violations > MAX_VIOLATIONS)
             {
 #if DEBUG_CONNECTION
               IF_GELOG (ectx,
