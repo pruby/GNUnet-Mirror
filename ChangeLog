@@ -1,5 +1,8 @@
 Sat Mar  1 21:14:02 MST 2008
 	Fixed some dstore performance issues.
+	Made transports alternate between trying IPv4 and IPv6
+	if both are available (since one of them maybe
+	misconfigured).
 
 Mon Feb 25 23:25:48 MST 2008
 	Cleanup of the DNS code: removed GNUNET_IPvXAddress

@@ -38,5 +38,5 @@ SUBDIRS	= \
  tracekit \
  $(VPN_DIR) \
  fs \
- testing
-# chat
+ testing \
+ chat

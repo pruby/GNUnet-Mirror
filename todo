@@ -3,9 +3,6 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.8.0pre0 [2'08]:
-- more IPv6 testing
-
 0.8.0 [4'08] (aka "advanced features"):
 - document gnunet-auto-share on webpage
 - disconnect issues ("other peer sent too much" - solved?)
