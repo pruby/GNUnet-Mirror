@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 */
 /*
- * @file applications/dstore/dstore_test.c
+ * @file applications/dstore/dstore_quota_test.c
  * @brief Test for the dstore implementations.
  * @author Nils Durner
  */
@@ -31,54 +31,52 @@
 
 #define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
-static int error;
-
-static int
-checkIt (const GNUNET_HashCode * key,
-         unsigned int type, unsigned int size, const char *data, void *cls)
-{
-  if (size != sizeof (GNUNET_HashCode))
-    {
-      printf ("ERROR: Invalid size\n");
-      error = 2;
-    }
-  if (0 != memcmp (data, cls, size))
-    {
-      printf ("ERROR: Invalid data\n");
-      error = 3;
-    }
-  return GNUNET_OK;
-}
-
 /**
- * Add testcode here!
+ * Quota is 1 MB.  Each iteration of the test puts in about 1 MB of
+ * data.  We do 10 iterations. Afterwards we check that the data from
+ * the first 5 iterations has all been discarded and that at least
+ * some of the data from the last iteration is still there.
  */
 static int
 test (GNUNET_Dstore_ServiceAPI * api)
 {
   GNUNET_HashCode k;
   GNUNET_HashCode n;
-  GNUNET_CronTime exp;
   unsigned int i;
+  unsigned int j;
+  char buf[3200];
 
-  exp = GNUNET_get_time () + 5 * GNUNET_CRON_MINUTES;
+  memset(buf, 1, sizeof(buf));
   memset (&k, 0, sizeof (GNUNET_HashCode));
-  for (i = 0; i < 100; i++)
+  for (i = 0; i < 10; i++)
     {
+      fprintf(stderr, ".");
       GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
-      ASSERT (GNUNET_OK == api->put (&k,
-                                     i % 2,
-                                     exp, sizeof (GNUNET_HashCode),
-                                     (const char *) &n));
+      for (j=i;j<sizeof(buf);j+=10)
+	{
+	  buf[j] = i;
+	  ASSERT (GNUNET_OK == api->put (&k,
+					 i,
+					 GNUNET_get_time() + 30 * GNUNET_CRON_MINUTES,
+					 j,
+					 buf));
+	  ASSERT (0 != api->get (&k, i, NULL, NULL));
+	}
       k = n;
     }
+  fprintf(stderr, "\n");
   memset (&k, 0, sizeof (GNUNET_HashCode));
-  for (i = 0; i < 100; i++)
+  for (i = 0; i < 10; i++)
     {
+      fprintf(stderr, ".");
       GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
-      ASSERT (1 == api->get (&k, i % 2, &checkIt, &n));
+      if (i < 5)
+	ASSERT (0 == api->get (&k, i, NULL, NULL));
+      if (i == 9)
+	ASSERT (0 != api->get (&k, i, NULL, NULL));
       k = n;
     }
+  fprintf(stderr, "\n");
   return GNUNET_OK;
 FAILURE:
   return GNUNET_SYSERR;
@@ -111,7 +109,7 @@ main (int argc, char *argv[])
   GNUNET_CORE_done ();
   if (ok == GNUNET_SYSERR)
     return 1;
-  return error;
+  return 0;
 }
 
-/* end of dstore_test.c */
+/* end of dstore_quota_test.c */

@@ -9,7 +9,8 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_dstore_mysql.la
 
 check_PROGRAMS = \
-  dstore_test
+  dstore_test \
+  dstore_quota_test
 
 TESTS = $(check_PROGRAMS)
 
@@ -33,5 +34,11 @@ EXTRA_DIST = check.conf
 dstore_test_SOURCES = \
  dstore_test.c 
 dstore_test_LDADD = \
+ $(top_builddir)/src/server/libgnunetcore.la  \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+dstore_quota_test_SOURCES = \
+ dstore_quota_test.c 
+dstore_quota_test_LDADD = \
  $(top_builddir)/src/server/libgnunetcore.la  \
  $(top_builddir)/src/util/libgnunetutil.la  
