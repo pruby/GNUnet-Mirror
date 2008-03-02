@@ -171,10 +171,16 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   header_size = ntohs (cmsg->header.size);
   nick_len = ntohs (cmsg->nick_len);
   pubkey_len = ntohs (cmsg->pubkey_len);
-  room_name_len = header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len - pubkey_len;
-  
-  fprintf(stderr,"JOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\npubkey_len : %d\nroom_name_len : %d\n",sizeof (CS_chat_JOIN_MESSAGE),header_size,nick_len,pubkey_len,room_name_len);
-  fprintf(stderr,"According to my addition, header_size should be %d\n",nick_len+pubkey_len+room_name_len+sizeof (CS_chat_JOIN_MESSAGE));
+  room_name_len =
+    header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len - pubkey_len;
+
+  fprintf (stderr,
+           "JOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\npubkey_len : %d\nroom_name_len : %d\n",
+           sizeof (CS_chat_JOIN_MESSAGE), header_size, nick_len, pubkey_len,
+           room_name_len);
+  fprintf (stderr, "According to my addition, header_size should be %d\n",
+           nick_len + pubkey_len + room_name_len +
+           sizeof (CS_chat_JOIN_MESSAGE));
   if (header_size < (nick_len + pubkey_len + room_name_len))
     {
       GNUNET_GE_BREAK (NULL, 0);

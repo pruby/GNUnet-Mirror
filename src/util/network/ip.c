@@ -361,8 +361,7 @@ getAddressFromIOCTL (struct GNUNET_GC_Configuration *cfg,
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("GNUnet now uses the IP address %s.\n"),
-                 inet_ntop (AF_INET, identity, ntop_buf,
-                            INET_ADDRSTRLEN));
+                 inet_ntop (AF_INET, identity, ntop_buf, INET_ADDRSTRLEN));
   return GNUNET_OK;
 #endif
 }

@@ -41,20 +41,17 @@
 
 int
 p2pHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
-			  const GNUNET_MessageHeader * message);
+                          const GNUNET_MessageHeader * message);
 
 int
 p2pHandleChatMSG (struct GNUNET_ClientHandle *client,
-		  const GNUNET_MessageHeader * message);
+                  const GNUNET_MessageHeader * message);
 
-int
-p2pSendChatMSG (const GNUNET_MessageHeader *message);
+int p2pSendChatMSG (const GNUNET_MessageHeader * message);
 
-int
-p2pGetRoomList(void);
+int p2pGetRoomList (void);
 
-int
-p2pSendRoomList(void);
+int p2pSendRoomList (void);
 
 #endif
 

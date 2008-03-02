@@ -26,32 +26,32 @@
 
 int
 p2pHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
-			  const GNUNET_MessageHeader * message)
+                          const GNUNET_MessageHeader * message)
 {
-	return GNUNET_SYSERR;
+  return GNUNET_SYSERR;
 }
 
 int
 p2pHandleChatMSG (struct GNUNET_ClientHandle *client,
-                 const GNUNET_MessageHeader * message)
+                  const GNUNET_MessageHeader * message)
 {
-	return GNUNET_SYSERR;
+  return GNUNET_SYSERR;
 }
 
 int
-p2pSendChatMSG (const GNUNET_MessageHeader *message)
+p2pSendChatMSG (const GNUNET_MessageHeader * message)
 {
-	return GNUNET_SYSERR;
+  return GNUNET_SYSERR;
 }
 
 int
-p2pGetRoomList()
-{	
-	return GNUNET_SYSERR;
+p2pGetRoomList ()
+{
+  return GNUNET_SYSERR;
 }
 
 int
-p2pSendRoomList()
+p2pSendRoomList ()
 {
-	return GNUNET_SYSERR;
+  return GNUNET_SYSERR;
 }

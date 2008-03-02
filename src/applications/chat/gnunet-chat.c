@@ -130,7 +130,7 @@ main (int argc, char **argv)
   struct GNUNET_CHAT_Room *room;
   struct GNUNET_RSA_PrivateKey *my_priv;
   GNUNET_RSA_PublicKey my_pub;
-  char message[MAX_MESSAGE_LENGTH+1];
+  char message[MAX_MESSAGE_LENGTH + 1];
 
   /* GNUNET_disable_entropy_gathering (); */
 
@@ -143,7 +143,7 @@ main (int argc, char **argv)
   if (nickname == NULL)
     {
       fprintf (stderr, _("You must specify a nickname\n"));
-      GNUNET_fini(ectx, cfg);
+      GNUNET_fini (ectx, cfg);
       return -1;
     }
 
@@ -152,43 +152,43 @@ main (int argc, char **argv)
   my_priv = GNUNET_RSA_create_key ();
   GNUNET_RSA_get_public_key (my_priv, &my_pub);
   room = GNUNET_CHAT_join_room (ectx,
-				cfg,
-				nickname, room_name,
-				&my_pub, my_priv, "", &receive_callback,
-				NULL);    
+                                cfg,
+                                nickname, room_name,
+                                &my_pub, my_priv, "", &receive_callback,
+                                NULL);
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join room `%s'\n"), room_name);
-      GNUNET_RSA_free_key(my_priv);
-      GNUNET_fini(ectx, cfg);
+      GNUNET_RSA_free_key (my_priv);
+      GNUNET_fini (ectx, cfg);
       return -1;
     }
   fprintf (stdout,
-	   _("Joined room `%s'.\nType message and hit return to send.\nType `%s' when ready to quit.\n"),
-	   room_name,
-	   QUIT_COMMAND);
+           _
+           ("Joined room `%s'.\nType message and hit return to send.\nType `%s' when ready to quit.\n"),
+           room_name, QUIT_COMMAND);
   /* read messages from command line and send */
-  while ( (0 != strcmp (message, QUIT_COMMAND)) &&
-	  (GNUNET_shutdown_test() == GNUNET_NO) )
-    {      
+  while ((0 != strcmp (message, QUIT_COMMAND)) &&
+         (GNUNET_shutdown_test () == GNUNET_NO))
+    {
       memset (message, 0, MAX_MESSAGE_LENGTH + 1);
       if (NULL == fgets (message, MAX_MESSAGE_LENGTH, stdin))
         break;
       if (0 == strcmp (message, QUIT_COMMAND))
         break;
       if (message[strlen (message) - 1] == '\n')
-	message[strlen (message) - 1] = '\0';       
+        message[strlen (message) - 1] = '\0';
       if (GNUNET_OK != GNUNET_CHAT_send_message (room,
                                                  message,
                                                  &confirmation_callback,
                                                  NULL,
                                                  GNUNET_CHAT_MSG_OPTION_NONE,
-                                                 NULL))        
-	fprintf (stderr, _("Failed to send message.\n"));       
+                                                 NULL))
+        fprintf (stderr, _("Failed to send message.\n"));
     }
 
-  GNUNET_CHAT_leave_room (room);    
-  GNUNET_RSA_free_key(my_priv);
+  GNUNET_CHAT_leave_room (room);
+  GNUNET_RSA_free_key (my_priv);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

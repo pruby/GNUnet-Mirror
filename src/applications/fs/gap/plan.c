@@ -970,8 +970,7 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap content total planned"));
       stat_gap_query_success =
         stats->create (gettext_noop ("# gap routes succeeded"));
-      stat_trust_spent =
-        stats->create (gettext_noop ("# trust spent"));
+      stat_trust_spent = stats->create (gettext_noop ("# trust spent"));
     }
   return 0;
 }

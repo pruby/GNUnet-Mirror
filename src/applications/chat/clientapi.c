@@ -98,12 +98,12 @@ poll_thread (void *rcls)
       nick_len = ntohs (received_msg->nick_len);
       msg_len = ntohs (received_msg->msg_len);
       /* NO NEED TO SEND ROOM! */
-      room_name_len = size - nick_len - msg_len - sizeof(CS_chat_MESSAGE);
+      room_name_len = size - nick_len - msg_len - sizeof (CS_chat_MESSAGE);
 
       if (size < (nick_len + msg_len + room_name_len))
         {
           GNUNET_GE_BREAK (NULL, 0);
-          return NULL; /* invalid message */
+          return NULL;          /* invalid message */
         }
 
       nick = GNUNET_malloc (nick_len + 1);

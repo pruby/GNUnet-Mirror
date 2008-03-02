@@ -347,10 +347,10 @@ udp_send (GNUNET_TSession * tsession,
     return GNUNET_SYSERR;
   if (available == (VERSION_AVAILABLE_IPV4 | VERSION_AVAILABLE_IPV6))
     {
-      if (GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2) == 0)
-	available = VERSION_AVAILABLE_IPV4;
+      if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2) == 0)
+        available = VERSION_AVAILABLE_IPV4;
       else
-	available = VERSION_AVAILABLE_IPV6;
+        available = VERSION_AVAILABLE_IPV6;
     }
   ssize = size + sizeof (UDPMessage);
   mp = GNUNET_malloc (ssize);

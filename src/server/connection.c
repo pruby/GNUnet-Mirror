@@ -164,7 +164,7 @@
  * (note that the violation counter also ages and that
  * advertised bandwidth limits are adjusted to a
  * fraction according to the current violation counter).
- */ 
+ */
 #define MAX_VIOLATIONS 10
 
 /**
@@ -1800,7 +1800,9 @@ sendBuffer (BufferEntry * be)
   p2pHdr = (GNUNET_TransportPacket_HEADER *) plaintextMsg;
   p2pHdr->timeStamp = htonl (GNUNET_get_time_int32 (NULL));
   p2pHdr->sequenceNumber = htonl (be->lastSequenceNumberSend);
-  p2pHdr->bandwidth = htonl (be->idealized_limit * (MAX_VIOLATIONS - be->violations) / MAX_VIOLATIONS);
+  p2pHdr->bandwidth =
+    htonl (be->idealized_limit * (MAX_VIOLATIONS - be->violations) /
+           MAX_VIOLATIONS);
   p = sizeof (GNUNET_TransportPacket_HEADER);
   for (i = 0; i < stotal; i++)
     {

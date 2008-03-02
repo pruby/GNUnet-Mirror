@@ -202,8 +202,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
     }
   if (stats != NULL)
     {
-      stats->change(stat_trust_earned, 
-		    req->value_offered);
+      stats->change (stat_trust_earned, req->value_offered);
       req->value_offered = 0;
     }
   req->remaining_value = 0;
@@ -237,7 +236,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
 void
 GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                              unsigned int priority,
-			     unsigned int original_priority,
+                             unsigned int original_priority,
                              enum GNUNET_FS_RoutingPolicy policy,
                              int ttl,
                              unsigned int type,
@@ -479,12 +478,11 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                             BASE_REPLY_PRIORITY * (1 + rl->value),
                             MAX_GAP_DELAY);
           GNUNET_free (msg);
-	  if (stats != NULL)
-	    {
-	      stats->change(stat_trust_earned,
-			    rl->value_offered);
-	      rl->value_offered = 0;
-	    }
+          if (stats != NULL)
+            {
+              stats->change (stat_trust_earned, rl->value_offered);
+              rl->value_offered = 0;
+            }
           if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
             GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
@@ -675,9 +673,7 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_query_refreshed =
         stats->
         create (gettext_noop ("# gap queries refreshed existing record"));
-      stat_trust_earned =
-        stats->
-        create (gettext_noop ("# trust earned"));
+      stat_trust_earned = stats->create (gettext_noop ("# trust earned"));
     }
   cron = GNUNET_cron_create (coreAPI->ectx);
   GNUNET_cron_start (cron);

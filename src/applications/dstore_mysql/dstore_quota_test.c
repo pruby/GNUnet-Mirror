@@ -46,37 +46,36 @@ test (GNUNET_Dstore_ServiceAPI * api)
   unsigned int j;
   char buf[3200];
 
-  memset(buf, 1, sizeof(buf));
+  memset (buf, 1, sizeof (buf));
   memset (&k, 0, sizeof (GNUNET_HashCode));
   for (i = 0; i < 10; i++)
     {
-      fprintf(stderr, ".");
+      fprintf (stderr, ".");
       GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
-      for (j=i;j<sizeof(buf);j+=10)
-	{
-	  buf[j] = i;
-	  ASSERT (GNUNET_OK == api->put (&k,
-					 i,
-					 GNUNET_get_time() + 30 * GNUNET_CRON_MINUTES,
-					 j,
-					 buf));
-	  ASSERT (0 != api->get (&k, i, NULL, NULL));
-	}
+      for (j = i; j < sizeof (buf); j += 10)
+        {
+          buf[j] = i;
+          ASSERT (GNUNET_OK == api->put (&k,
+                                         i,
+                                         GNUNET_get_time () +
+                                         30 * GNUNET_CRON_MINUTES, j, buf));
+          ASSERT (0 != api->get (&k, i, NULL, NULL));
+        }
       k = n;
     }
-  fprintf(stderr, "\n");
+  fprintf (stderr, "\n");
   memset (&k, 0, sizeof (GNUNET_HashCode));
   for (i = 0; i < 10; i++)
     {
-      fprintf(stderr, ".");
+      fprintf (stderr, ".");
       GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
       if (i < 5)
-	ASSERT (0 == api->get (&k, i, NULL, NULL));
+        ASSERT (0 == api->get (&k, i, NULL, NULL));
       if (i == 9)
-	ASSERT (0 != api->get (&k, i, NULL, NULL));
+        ASSERT (0 != api->get (&k, i, NULL, NULL));
       k = n;
     }
-  fprintf(stderr, "\n");
+  fprintf (stderr, "\n");
   return GNUNET_OK;
 FAILURE:
   return GNUNET_SYSERR;

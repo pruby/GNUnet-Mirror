@@ -269,7 +269,7 @@ struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
 
 /**
  * Actual definitions will be in system header files.
- */ 
+ */
 struct sockaddr;
 struct in_addr;
 struct in6_addr;
@@ -518,7 +518,7 @@ int
 GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
                              const char *hostname,
                              int domain,
-                             struct sockaddr **sa, unsigned int * socklen);
+                             struct sockaddr **sa, unsigned int *socklen);
 
 /**
  * Get an IP address as a string (works for both IPv4 and IPv6).  Note

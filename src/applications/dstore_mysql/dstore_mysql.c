@@ -344,7 +344,7 @@ checkQuota ()
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_GE_BREAK(NULL, h_length == sizeof (GNUNET_HashCode));
+  GNUNET_GE_BREAK (NULL, h_length == sizeof (GNUNET_HashCode));
 
   if (mysql_stmt_execute (delete_value))
     {
@@ -390,7 +390,7 @@ d_put (const GNUNET_HashCode * key,
 
   if (size > MAX_CONTENT_SIZE)
     return GNUNET_SYSERR;
-  GNUNET_hash(data, size, &vhash);
+  GNUNET_hash (data, size, &vhash);
   GNUNET_mutex_lock (lock);
   mysql_thread_init ();
   iopen ();
@@ -471,7 +471,7 @@ d_put (const GNUNET_HashCode * key,
   rbind[6].buffer_type = MYSQL_TYPE_BLOB;
   rbind[6].buffer_length = size;
   rbind[6].length = &v_length;
-  rbind[6].buffer = (void*) data;
+  rbind[6].buffer = (void *) data;
 
   if (mysql_stmt_bind_param (insert_value, rbind))
     {
@@ -593,7 +593,7 @@ d_get (const GNUNET_HashCode * key,
       mysql_thread_end ();
       return GNUNET_SYSERR;
     }
-  
+
 
   if (mysql_stmt_bind_result (count_value, rbind))
     {
@@ -650,29 +650,29 @@ d_get (const GNUNET_HashCode * key,
     {
       off = (off + 1) % total;
       if (mysql_stmt_bind_param (select_value, qbind))
-	{
-	  GNUNET_GE_LOG (coreAPI->ectx,
-			 GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-			 _("`%s' failed at %s:%d with error: %s\n"),
-			 "mysql_stmt_bind_param",
-			 __FILE__, __LINE__, mysql_stmt_error (select_value));
-	  iclose ();
-	  mysql_thread_end ();
-	  GNUNET_mutex_unlock (lock);
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("`%s' failed at %s:%d with error: %s\n"),
+                         "mysql_stmt_bind_param",
+                         __FILE__, __LINE__, mysql_stmt_error (select_value));
+          iclose ();
+          mysql_thread_end ();
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_SYSERR;
+        }
       if (mysql_stmt_execute (select_value))
-	{
-	  GNUNET_GE_LOG (coreAPI->ectx,
-			 GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-			 _("`%s' failed at %s:%d with error: %s\n"),
-			 "mysql_stmt_execute",
-			 __FILE__, __LINE__, mysql_stmt_error (select_value));
-	  iclose ();
-	  GNUNET_mutex_unlock (lock);
-	  mysql_thread_end ();
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("`%s' failed at %s:%d with error: %s\n"),
+                         "mysql_stmt_execute",
+                         __FILE__, __LINE__, mysql_stmt_error (select_value));
+          iclose ();
+          GNUNET_mutex_unlock (lock);
+          mysql_thread_end ();
+          return GNUNET_SYSERR;
+        }
       memset (rbind, 0, sizeof (rbind));
       rbind[0].buffer_type = MYSQL_TYPE_LONG;
       rbind[0].is_unsigned = 1;
@@ -682,23 +682,23 @@ d_get (const GNUNET_HashCode * key,
       rbind[1].length = &v_length;
       rbind[1].buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
       if (mysql_stmt_bind_result (select_value, rbind))
-	{
-	  GNUNET_GE_LOG (coreAPI->ectx,
-			 GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-			 _("`%s' failed at %s:%d with error: %s\n"),
-			 "mysql_stmt_bind_result",
-			 __FILE__, __LINE__, mysql_stmt_error (select_value));
-	  iclose ();
-	  mysql_thread_end ();
-	  GNUNET_mutex_unlock (lock);
-	  GNUNET_free (rbind[1].buffer);
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("`%s' failed at %s:%d with error: %s\n"),
+                         "mysql_stmt_bind_result",
+                         __FILE__, __LINE__, mysql_stmt_error (select_value));
+          iclose ();
+          mysql_thread_end ();
+          GNUNET_mutex_unlock (lock);
+          GNUNET_free (rbind[1].buffer);
+          return GNUNET_SYSERR;
+        }
       if (0 != mysql_stmt_fetch (select_value))
-	{
-	  GNUNET_GE_BREAK(NULL, 0);
-	  break;
-	}
+        {
+          GNUNET_GE_BREAK (NULL, 0);
+          break;
+        }
       if (v_length != v_size)
         {
           GNUNET_GE_BREAK (NULL, 0);
@@ -710,7 +710,7 @@ d_get (const GNUNET_HashCode * key,
         }
       cnt++;
       if (GNUNET_OK != handler (key, type, v_size, rbind[1].buffer, closure))
-	break;
+        break;
     }
   mysql_stmt_reset (select_value);
   mysql_thread_end ();
@@ -797,9 +797,9 @@ provide_module_dstore_mysql (GNUNET_CoreAPIForPlugins * capi)
   if (stats != NULL)
     {
       stat_dstore_size = stats->create (gettext_noop ("# bytes in dstore"));
-      stat_dstore_quota = stats->create (gettext_noop ("# max bytes allowed in dstore"));
-      stats->set(stat_dstore_quota,
-		 quota);
+      stat_dstore_quota =
+        stats->create (gettext_noop ("# max bytes allowed in dstore"));
+      stats->set (stat_dstore_quota, quota);
     }
   return &api;
 }
