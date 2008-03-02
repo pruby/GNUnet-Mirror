@@ -269,19 +269,24 @@ reload_configuration (void *ctx,
   else
     allowedNetworksIPv4 = NULL;
   GNUNET_free (ch);
-  GNUNET_free_non_null (filteredNetworksIPv6);
-  GNUNET_free_non_null (allowedNetworksIPv6);
-  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
-                                            "BLACKLISTV6", "", &ch);
-  filteredNetworksIPv6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
-  GNUNET_free (ch);
-  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
-                                            "WHITELISTV6", "", &ch);
-  if (strlen (ch) > 0)
-    allowedNetworksIPv6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
-  else
-    allowedNetworksIPv6 = NULL;
-  GNUNET_free (ch);
+
+  if (GNUNET_YES != GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
+							     GNUNET_YES))
+    {
+      GNUNET_free_non_null (filteredNetworksIPv6);
+      GNUNET_free_non_null (allowedNetworksIPv6);
+      GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
+						"BLACKLISTV6", "", &ch);
+      filteredNetworksIPv6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
+      GNUNET_free (ch);
+      GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
+						"WHITELISTV6", "", &ch);
+      if (strlen (ch) > 0)
+	allowedNetworksIPv6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
+      else
+	allowedNetworksIPv6 = NULL;
+      GNUNET_free (ch);
+    }
   GNUNET_mutex_unlock (lock);
   /* TODO: error handling! */
   return 0;
@@ -369,14 +374,15 @@ create_hello ()
     htons (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
   haddr = (HostAddress *) & msg[1];
 
-  available = VERSION_AVAILABLE_NONE;
-  if ((((upnp != NULL) &&
-        (GNUNET_OK == upnp->get_ip (port,
-                                    MY_TRANSPORT_NAME,
-                                    &haddr->ipv4))) ||
-       (GNUNET_SYSERR !=
-        GNUNET_IP_get_public_ipv4_address (cfg, coreAPI->ectx,
-                                           &haddr->ipv4))))
+  available = available_protocols;
+  if ( (0 != (available & VERSION_AVAILABLE_IPV4)) &&
+       (((upnp != NULL) &&
+	 (GNUNET_OK == upnp->get_ip (port,
+				     MY_TRANSPORT_NAME,
+				     &haddr->ipv4))) ||
+	(GNUNET_SYSERR !=
+	 GNUNET_IP_get_public_ipv4_address (cfg, coreAPI->ectx,
+					    &haddr->ipv4))) )
     {
       if (0 != memcmp (&haddr->ipv4, &last_addrv4, sizeof (struct in_addr)))
         {
@@ -392,11 +398,16 @@ create_hello ()
                          inet_ntop (AF_INET, &in4, dst, INET_ADDRSTRLEN));
           last_addrv4 = haddr->ipv4;
         }
-      available |= VERSION_AVAILABLE_IPV4;
+    }
+  else
+    {
+      available ^= VERSION_AVAILABLE_IPV4;
     }
 
-  if (GNUNET_SYSERR !=
-      GNUNET_IP_get_public_ipv6_address (cfg, coreAPI->ectx, &haddr->ipv6))
+
+  if ( (0 != (available & VERSION_AVAILABLE_IPV6)) &&
+       (GNUNET_SYSERR !=
+	GNUNET_IP_get_public_ipv6_address (cfg, coreAPI->ectx, &haddr->ipv6)) )
     {
       if (0 != memcmp (&haddr->ipv6, &last_addrv6, sizeof (struct in6_addr)))
         {
@@ -412,7 +423,10 @@ create_hello ()
                          inet_ntop (AF_INET6, &in6, dst, INET6_ADDRSTRLEN));
           last_addrv6 = haddr->ipv6;
         }
-      available |= VERSION_AVAILABLE_IPV6;
+    }
+  else
+    {
+      available ^= VERSION_AVAILABLE_IPV6;
     }
   if (available == VERSION_AVAILABLE_NONE)
     {

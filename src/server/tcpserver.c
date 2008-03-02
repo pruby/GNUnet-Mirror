@@ -472,26 +472,30 @@ GNUNET_CORE_cs_init (struct GNUNET_GE_Context *e,
     }
   GNUNET_free (ch);
 
-  ch = NULL;
-  if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                                      "NETWORK",
-                                                      "TRUSTED6",
-                                                      "::1;", &ch))
-    return GNUNET_SYSERR;
-  GNUNET_GE_ASSERT (ectx, ch != NULL);
-  trustedNetworksV6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
-  if (trustedNetworksV6 == NULL)
+  if (GNUNET_YES != GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
+							     GNUNET_YES))
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN |
-                     GNUNET_GE_IMMEDIATE,
-                     _
-                     ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
-                     "NETWORK", "TRUSTED6", ch);
+      ch = NULL;
+      if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
+							  "NETWORK",
+							  "TRUSTED6",
+							  "::1;", &ch))
+	return GNUNET_SYSERR;
+      GNUNET_GE_ASSERT (ectx, ch != NULL);
+      trustedNetworksV6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
+      if (trustedNetworksV6 == NULL)
+	{
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+			 GNUNET_GE_IMMEDIATE,
+			 _
+			 ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
+			 "NETWORK", "TRUSTED6", ch);
+	  GNUNET_free (ch);
+	  return GNUNET_SYSERR;
+	}
       GNUNET_free (ch);
-      return GNUNET_SYSERR;
     }
-  GNUNET_free (ch);
 
   GNUNET_CORE_register_handler (GNUNET_CS_PROTO_SHUTDOWN_REQUEST,
                                 &shutdownHandler);

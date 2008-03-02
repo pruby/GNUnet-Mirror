@@ -408,13 +408,13 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  (builder
  "GNUNETD"
  "DISABLE-IPV6"
- (_ "Set to YES to disable IPv6 support")
+ (_ "YES disables IPv6 support, NO enables IPv6 support")
  (_ "This option maybe useful on peers where the kernel does not support IPv6.  You might also want to set this option if you do not have an IPv6 network connection.")
  '()
  #t
  #t
  #t
- 'rare) )
+ 'advanced) )
 
 
 (define (gnunetd-private-network builder)
@@ -511,7 +511,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  #t
  "::1;"
  '()
- 'advanced) )
+ 'ipv6) )
 
 
 (define (limit-allow builder)
@@ -969,7 +969,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  ""
  '()
- 'advanced))
+ 'ipv6))
 
 (define (tcp6-whitelist builder)
  (builder
@@ -981,7 +981,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  ""
  '()
- 'advanced))
+ 'ipv6))
 
 
 (define (tcp builder)
@@ -1222,7 +1222,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  ""
  '()
- 'advanced))
+ 'ipv6))
 
 (define (udp6-whitelist builder)
  (builder
@@ -1234,7 +1234,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  ""
  '()
- 'advanced))
+ 'ipv6))
 
 (define (udp builder)
  (builder
@@ -1292,7 +1292,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  ""
  '()
- 'ip6-loaded) )
+ 'ipv6) )
 
 (define (transports builder)
  (builder
@@ -1502,6 +1502,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (rare (get-option ctx "Meta" "RARE"))
      (nobasiclimit (not (get-option ctx "LOAD" "BASICLIMITING")))
      (experimental (get-option ctx "Meta" "EXPERIMENTAL"))
+     (ipv6 (not (get-option ctx "GNUNETD" "DISABLE-IPV6")))
      (f2fr (not (get-option ctx "F2F" "RESTRICT") ) )
      (f2f (or (get-option ctx "F2F" "FRIENDS-ONLY")
               (not (eq? (get-option ctx "F2F" "MINIMUM") 0) ) ) )
@@ -1526,6 +1527,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'rare)         (change-visible ctx a b (and advanced rare)))
             ((eq? i 'experimental) (change-visible ctx a b (and advanced experimental)))
             ((eq? i 'f2f)          (change-visible ctx a b f2f))
+            ((eq? i 'ipv6)         (change-visible ctx a b ipv6))
             ((eq? i 'f2fr)         (change-visible ctx a b f2fr))
             ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
