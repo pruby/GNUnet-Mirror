@@ -422,8 +422,8 @@ GNUNET_CORE_cs_done ()
                                   &shutdownHandler);
   GNUNET_array_grow (handlers, max_registeredType, 0);
   GNUNET_array_grow (exitHandlers, exitHandlerCount, 0);
-  GNUNET_free (trustedNetworksV4);
-  GNUNET_free (trustedNetworksV6);
+  GNUNET_free_non_null (trustedNetworksV4);
+  GNUNET_free_non_null (trustedNetworksV6);
   return GNUNET_OK;
 }
 
