@@ -625,7 +625,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
                               GNUNET_GE_USER | GNUNET_GE_BULK, "connect");
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
@@ -657,9 +657,10 @@ tcp_transport_server_start ()
   if (port != 0)
     {
       available_protocols = VERSION_AVAILABLE_NONE;
-      s = SOCKET (PF_INET6, SOCK_STREAM, 0);
-      if (s < 0)
-        {
+      if ( (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
+								   GNUNET_YES)) ||
+	   (0 > (s = SOCKET (PF_INET6, SOCK_STREAM, 0)) ) ) 
+	{ 
           s = SOCKET (PF_INET, SOCK_STREAM, 0);
           if (s < 0)
             {

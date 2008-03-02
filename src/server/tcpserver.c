@@ -344,7 +344,9 @@ startTCPServer ()
   listenerPort = getGNUnetPort ();
   if (listenerPort == 0)
     return GNUNET_SYSERR;
-  if (-1 == (listenerFD = SOCKET (PF_INET6, SOCK_STREAM, 0)))
+  if ( (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
+							       GNUNET_YES)) ||
+       (-1 == (listenerFD = SOCKET (PF_INET6, SOCK_STREAM, 0))) )
     {
       listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
       if (listenerFD < 0)

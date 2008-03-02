@@ -404,6 +404,19 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  'rare) )
 
 
+(define (gnunetd-disable-ipv6 builder)
+ (builder
+ "GNUNETD"
+ "DISABLE-IPV6"
+ (_ "Set to YES to disable IPv6 support")
+ (_ "This option maybe useful on peers where the kernel does not support IPv6.  You might also want to set this option if you do not have an IPv6 network connection.")
+ '()
+ #t
+ #t
+ #t
+ 'rare) )
+
+
 (define (gnunetd-private-network builder)
  (builder
  "GNUNETD"
@@ -575,6 +588,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
     (fs-path builder) 
     (index-path builder) 
     (daemon-fdlimit builder) 
+    (gnunetd-disable-ipv6 builder) 
     (general-username builder) 
     (general-groupname builder) 
     (general-pidfile builder) 
