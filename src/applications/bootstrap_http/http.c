@@ -145,6 +145,7 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   fd_set ws;
   fd_set es;
   int max;
+  int sret;
   struct timeval tv;
   int running;
   struct CURLMsg *msg;
@@ -300,7 +301,15 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
          delay in the reaction than hanging... */
       tv.tv_sec = 0;
       tv.tv_usec = 1000;
-      SELECT (max + 1, &rs, &ws, &es, &tv);
+      sret = SELECT (max + 1, &rs, &ws, &es, &tv);
+      if (sret == -1)
+	{
+          GNUNET_GE_LOG_STRERROR (ectx,
+				  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+				  GNUNET_GE_BULK,
+				  "select");
+	  goto cleanup;
+	}
       if (GNUNET_YES != termTest (targ))
         break;
       do
