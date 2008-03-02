@@ -70,7 +70,7 @@ test (GNUNET_Dstore_ServiceAPI * api)
     {
       fprintf(stderr, ".");
       GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
-      if (i < 5)
+      if (i < 2)
 	ASSERT (0 == api->get (&k, i, NULL, NULL));
       if (i == 9)
 	ASSERT (0 != api->get (&k, i, NULL, NULL));

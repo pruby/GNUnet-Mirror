@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/dstore/dstore.c
+ * @file applications/dstore_sqlite/dstore.c
  * @brief SQLite based implementation of the dstore service
  * @author Christian Grothoff
  * @todo Indexes, statistics
@@ -71,7 +71,7 @@ static unsigned int stat_dstore_quota;
 /**
  * Estimate of the per-entry overhead (including indices).
  */
-#define OVERHEAD ((4+4+8+8*2+sizeof(GNUNET_HashCode)*2+32))
+#define OVERHEAD ((4*2+4*2+8*2+8*2+sizeof(GNUNET_HashCode)*5+32))
 
 struct GNUNET_BloomFilter *bloom;
 
@@ -90,7 +90,7 @@ sq_prepare (sqlite3 * dbh, const char *zSql,    /* SQL statement, UTF-8 encoded 
                           strlen (zSql), ppStmt, (const char **) &dummy);
 }
 
-#define SQLITE3_EXEC(db, cmd) do { if (SQLITE_OK != sqlite3_exec(db, cmd, NULL, NULL, &emsg)) { GNUNET_GE_LOG(coreAPI->ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), "sqlite3_exec", __FILE__, __LINE__, emsg); sqlite3_free(emsg); } } while(0)
+#define SQLITE3_EXEC(db, cmd) do { emsg = NULL; if (SQLITE_OK != sqlite3_exec(db, cmd, NULL, NULL, &emsg)) { GNUNET_GE_LOG(coreAPI->ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), "sqlite3_exec", __FILE__, __LINE__, emsg); sqlite3_free(emsg); } } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
@@ -109,15 +109,17 @@ db_init (sqlite3 * dbh)
   SQLITE3_EXEC (dbh, "PRAGMA count_changes=OFF");
   SQLITE3_EXEC (dbh, "PRAGMA page_size=4092");
   SQLITE3_EXEC (dbh,
-                "CREATE TABLE ds071 ("
+                "CREATE TABLE ds080 ("
                 "  size INTEGER NOT NULL DEFAULT 0,"
                 "  type INTEGER NOT NULL DEFAULT 0,"
                 "  puttime INTEGER NOT NULL DEFAULT 0,"
                 "  expire INTEGER NOT NULL DEFAULT 0,"
-                "  key TEXT NOT NULL DEFAULT '',"
+                "  key BLOB NOT NULL DEFAULT '',"
+                "  vhash BLOB PRIMARY KEY,"
                 "  value BLOB NOT NULL DEFAULT '')");
-  SQLITE3_EXEC (dbh, "CREATE INDEX idx_key ON ds071 (key)");
-  SQLITE3_EXEC (dbh, "CREATE INDEX idx_puttime ON ds071 (puttime)");
+  SQLITE3_EXEC (dbh, "CREATE INDEX idx_hashidx ON ds080 (key,type,expire)");
+  SQLITE3_EXEC (dbh, "CREATE INDEX idx_allidx ON ds080 (key,vhash,type,size)");
+  SQLITE3_EXEC (dbh, "CREATE INDEX idx_puttime ON ds080 (puttime)");
 }
 
 static int
@@ -132,6 +134,7 @@ db_reset ()
       UNLINK (fn);
       GNUNET_free (fn);
     }
+  payload = 0;
   tmpl = "/tmp/dstoreXXXXXX";
 
 #ifdef MINGW
@@ -164,11 +167,9 @@ static int
 checkQuota (sqlite3 * dbh)
 {
   GNUNET_HashCode dkey;
+  GNUNET_HashCode vhash;
   unsigned int dsize;
   unsigned int dtype;
-  GNUNET_CronTime dputtime;
-  GNUNET_CronTime dexpire;
-  char *dcontent;
   sqlite3_stmt *stmt;
   sqlite3_stmt *dstmt;
   int err;
@@ -184,11 +185,11 @@ checkQuota (sqlite3 * dbh)
   stmt = NULL;
   dstmt = NULL;
   if ((sq_prepare (dbh,
-                   "SELECT size, type, puttime, expire, key, value FROM ds071 ORDER BY puttime ASC",
+                   "SELECT size, type, key, vhash FROM ds080 ORDER BY puttime ASC LIMIT 1",
                    &stmt) != SQLITE_OK) ||
       (sq_prepare (dbh,
-                   "DELETE FROM ds071 "
-                   "WHERE size = ? AND type = ? AND puttime = ? AND expire = ? AND key = ? AND value = ?",
+                   "DELETE FROM ds080 "
+                   "WHERE key=? AND vhash=? AND type=? AND size=?",
                    &dstmt) != SQLITE_OK))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
@@ -202,35 +203,29 @@ checkQuota (sqlite3 * dbh)
         sqlite3_finalize (stmt);
       return GNUNET_SYSERR;
     }
-  dcontent = GNUNET_malloc (MAX_CONTENT_SIZE);
   err = SQLITE_DONE;
   while ((payload * 10 > quota * 9) &&  /* we seem to be about 10% off */
          ((err = sqlite3_step (stmt)) == SQLITE_ROW))
     {
       dsize = sqlite3_column_int (stmt, 0);
       dtype = sqlite3_column_int (stmt, 1);
-      dputtime = sqlite3_column_int64 (stmt, 2);
-      dexpire = sqlite3_column_int64 (stmt, 3);
       GNUNET_GE_BREAK (NULL,
                        sqlite3_column_bytes (stmt,
-                                             4) == sizeof (GNUNET_HashCode));
-      GNUNET_GE_BREAK (NULL, dsize == sqlite3_column_bytes (stmt, 5));
-      memcpy (&dkey, sqlite3_column_blob (stmt, 4), sizeof (GNUNET_HashCode));
-      if (dsize >= MAX_CONTENT_SIZE)
-        {
-          GNUNET_GE_BREAK (NULL, 0);
-          dsize = MAX_CONTENT_SIZE;
-        }
-      memcpy (dcontent, sqlite3_column_blob (stmt, 5), dsize);
+                                             2) == sizeof (GNUNET_HashCode));
+      GNUNET_GE_BREAK (NULL,
+                       sqlite3_column_bytes (stmt,
+                                             3) == sizeof (GNUNET_HashCode));
+      memcpy (&dkey, sqlite3_column_blob (stmt, 2), sizeof (GNUNET_HashCode));
+      memcpy (&vhash, sqlite3_column_blob (stmt, 3), sizeof (GNUNET_HashCode));
       sqlite3_reset (stmt);
-      sqlite3_bind_int (dstmt, 1, dsize);
-      sqlite3_bind_int (dstmt, 2, dtype);
-      sqlite3_bind_int64 (dstmt, 3, dputtime);
-      sqlite3_bind_int64 (dstmt, 4, dexpire);
       sqlite3_bind_blob (dstmt,
-                         5, &dkey, sizeof (GNUNET_HashCode),
+                         1, &dkey, sizeof (GNUNET_HashCode),
                          SQLITE_TRANSIENT);
-      sqlite3_bind_blob (dstmt, 6, dcontent, dsize, SQLITE_TRANSIENT);
+      sqlite3_bind_blob (dstmt,
+                         2, &vhash, sizeof (GNUNET_HashCode),
+                         SQLITE_TRANSIENT);
+      sqlite3_bind_int (dstmt, 3, dtype);
+      sqlite3_bind_int (dstmt, 4, dsize);
       if ((err = sqlite3_step (dstmt)) != SQLITE_DONE)
         {
           GNUNET_GE_LOG (coreAPI->ectx,
@@ -242,7 +237,12 @@ checkQuota (sqlite3 * dbh)
           GNUNET_GE_BREAK (NULL, 0);    /* should delete but cannot!? */
           break;
         }
-      payload -= (dsize + OVERHEAD);
+      if (sqlite3_total_changes(dbh) > 0)
+	{
+	  if (bloom != NULL)
+	    GNUNET_bloomfilter_remove (bloom, &dkey);
+	  payload -= (dsize + OVERHEAD);
+	}
 #if DEBUG_DSTORE
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
@@ -260,7 +260,6 @@ checkQuota (sqlite3 * dbh)
                      "sqlite3_step", __FILE__, __LINE__,
                      sqlite3_errmsg (dbh));
     }
-  GNUNET_free (dcontent);
   sqlite3_finalize (dstmt);
   sqlite3_finalize (stmt);
   if (payload * 10 > quota * 9)
@@ -285,12 +284,14 @@ d_put (const GNUNET_HashCode * key,
        unsigned int type,
        GNUNET_CronTime discard_time, unsigned int size, const char *data)
 {
+  GNUNET_HashCode vhash;
   sqlite3 *dbh;
   sqlite3_stmt *stmt;
   int ret;
 
   if (size > MAX_CONTENT_SIZE)
     return GNUNET_SYSERR;
+  GNUNET_hash(data, size, &vhash);
   GNUNET_mutex_lock (lock);
   if ((fn == NULL) || (SQLITE_OK != sqlite3_open (fn, &dbh)))
     {
@@ -306,8 +307,8 @@ d_put (const GNUNET_HashCode * key,
 
   /* first try UPDATE */
   if (sq_prepare (dbh,
-                  "UPDATE ds071 SET puttime=?, expire=? "
-                  "WHERE key=? AND type=? AND size=? AND value=?",
+                  "UPDATE ds080 SET puttime=?, expire=? "
+                  "WHERE key=? AND vhash=? AND type=? AND size=?",
                   &stmt) != SQLITE_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
@@ -318,15 +319,14 @@ d_put (const GNUNET_HashCode * key,
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  if ((SQLITE_OK != sqlite3_bind_int64 (stmt, 1, GNUNET_get_time ())) ||
-      (SQLITE_OK != sqlite3_bind_int64 (stmt, 2, discard_time)) ||
+  if ((SQLITE_OK !=
+       sqlite3_bind_blob (stmt, 1, key, sizeof (GNUNET_HashCode),
+                          SQLITE_TRANSIENT)) ||
       (SQLITE_OK !=
-       sqlite3_bind_blob (stmt, 3, key, sizeof (GNUNET_HashCode),
-                          SQLITE_TRANSIENT))
-      || (SQLITE_OK != sqlite3_bind_int (stmt, 4, type))
-      || (SQLITE_OK != sqlite3_bind_int (stmt, 5, size))
-      || (SQLITE_OK !=
-          sqlite3_bind_blob (stmt, 6, data, size, SQLITE_TRANSIENT)))
+       sqlite3_bind_blob (stmt, 2, &vhash, sizeof (GNUNET_HashCode),
+                          SQLITE_TRANSIENT)) ||
+      (SQLITE_OK != sqlite3_bind_int (stmt, 3, type)) ||
+      (SQLITE_OK != sqlite3_bind_int (stmt, 4, size)))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
@@ -358,9 +358,6 @@ d_put (const GNUNET_HashCode * key,
       GNUNET_mutex_unlock (lock);
       return GNUNET_OK;
     }
-  if (bloom != NULL)
-    GNUNET_bloomfilter_add (bloom, key);
-
   if (GNUNET_OK != checkQuota (dbh))
     {
       sqlite3_close (dbh);
@@ -368,9 +365,9 @@ d_put (const GNUNET_HashCode * key,
       return GNUNET_SYSERR;
     }
   if (sq_prepare (dbh,
-                  "INSERT INTO ds071 "
-                  "(size, type, puttime, expire, key, value) "
-                  "VALUES (?, ?, ?, ?, ?, ?)", &stmt) != SQLITE_OK)
+                  "INSERT INTO ds080 "
+                  "(size, type, puttime, expire, key, vhash, value) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?)", &stmt) != SQLITE_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
@@ -386,16 +383,25 @@ d_put (const GNUNET_HashCode * key,
       (SQLITE_OK == sqlite3_bind_int64 (stmt, 4, discard_time)) &&
       (SQLITE_OK ==
        sqlite3_bind_blob (stmt, 5, key, sizeof (GNUNET_HashCode),
+                          SQLITE_TRANSIENT)) &&
+      (SQLITE_OK ==
+       sqlite3_bind_blob (stmt, 6, &vhash, sizeof (GNUNET_HashCode),
                           SQLITE_TRANSIENT))
       && (SQLITE_OK ==
-          sqlite3_bind_blob (stmt, 6, data, size, SQLITE_TRANSIENT)))
+          sqlite3_bind_blob (stmt, 7, data, size, SQLITE_TRANSIENT)))
     {
       if (SQLITE_DONE != sqlite3_step (stmt))
-        LOG_SQLITE (dbh,
-                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
-                    GNUNET_GE_BULK, "sqlite3_step");
+	{
+	  LOG_SQLITE (dbh,
+		      GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
+		      GNUNET_GE_BULK, "sqlite3_step");
+	}
       else
-        payload += size + OVERHEAD;
+	{
+	  payload += size + OVERHEAD;
+	  if (bloom != NULL)
+	    GNUNET_bloomfilter_add (bloom, key);
+	}
       if (SQLITE_OK != sqlite3_finalize (stmt))
         LOG_SQLITE (dbh,
                     GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
@@ -441,6 +447,9 @@ d_get (const GNUNET_HashCode * key,
   unsigned int size;
   const char *dat;
   unsigned int cnt;
+  unsigned int off;
+  unsigned int total;
+  char scratch[256];
 
   GNUNET_mutex_lock (lock);
   if ((bloom != NULL) && (GNUNET_NO == GNUNET_bloomfilter_test (bloom, key)))
@@ -461,7 +470,7 @@ d_get (const GNUNET_HashCode * key,
 #endif
   now = GNUNET_get_time ();
   if (sq_prepare (dbh,
-                  "SELECT size, value FROM ds071 WHERE key=? AND type=? AND expire >= ?",
+                  "SELECT count(*) FROM ds080 WHERE key=? AND type=? AND expire >= ?",
                   &stmt) != SQLITE_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
@@ -469,6 +478,7 @@ d_get (const GNUNET_HashCode * key,
                      _("`%s' failed at %s:%d with error: %s\n"),
                      "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
       sqlite3_close (dbh);
+      db_reset (dbh);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -476,22 +486,70 @@ d_get (const GNUNET_HashCode * key,
                      SQLITE_TRANSIENT);
   sqlite3_bind_int (stmt, 2, type);
   sqlite3_bind_int (stmt, 3, now);
-  cnt = 0;
-  while (sqlite3_step (stmt) == SQLITE_ROW)
+  if (SQLITE_ROW != sqlite3_step(stmt))
     {
-      size = sqlite3_column_int (stmt, 0);
-      if (size != sqlite3_column_bytes (stmt, 1))
-        {
-          GNUNET_GE_BREAK (NULL, 0);
-          continue;
-        }
-      dat = sqlite3_column_blob (stmt, 1);
-      cnt++;      
-      if ( (handler != NULL) &&
-	   (GNUNET_OK != handler (key, type, size, dat, closure)) )
-	break;
+      LOG_SQLITE (dbh,
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_step");
+      sqlite3_reset (stmt);
+      sqlite3_finalize (stmt);
+      db_reset (dbh);
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
+  total = sqlite3_column_int (stmt, 0);
+  sqlite3_reset (stmt);
   sqlite3_finalize (stmt);
+  if ( (total == 0) ||
+       (handler == NULL) )
+    {
+      sqlite3_close (dbh);
+      GNUNET_mutex_unlock (lock);
+      return total;
+    }
+
+  cnt = 0;
+  off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total);
+  while (cnt < total) {
+    off = (off + 1) % total;
+    GNUNET_snprintf(scratch, 256,
+		    "SELECT size, value FROM ds080 WHERE key=? AND type=? AND expire >= ? LIMIT 1 OFFSET %u",
+		    off);
+    if (sq_prepare (dbh,
+		    scratch,
+		    &stmt) != SQLITE_OK)
+      {
+	GNUNET_GE_LOG (coreAPI->ectx,
+		       GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+		       _("`%s' failed at %s:%d with error: %s\n"),
+		       "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+	sqlite3_close (dbh);
+	GNUNET_mutex_unlock (lock);
+	return GNUNET_SYSERR;
+      }
+    sqlite3_bind_blob (stmt, 1, key, sizeof (GNUNET_HashCode),
+		       SQLITE_TRANSIENT);
+    sqlite3_bind_int (stmt, 2, type);
+    sqlite3_bind_int (stmt, 3, now);
+    if (sqlite3_step (stmt) != SQLITE_ROW)
+      break;
+    size = sqlite3_column_int (stmt, 0);
+    if (size != sqlite3_column_bytes (stmt, 1))
+      {
+	GNUNET_GE_BREAK (NULL, 0);
+	sqlite3_finalize (stmt);
+	continue;
+      }
+    dat = sqlite3_column_blob (stmt, 1);
+    cnt++;      
+    if ( (handler != NULL) &&
+	 (GNUNET_OK != handler (key, type, size, dat, closure)) )
+      {
+	sqlite3_finalize (stmt);
+	break;
+      }
+    sqlite3_finalize (stmt);
+  }
   sqlite3_close (dbh);
   GNUNET_mutex_unlock (lock);
   return cnt;
@@ -508,6 +566,7 @@ provide_module_dstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "SQLite Dstore: initializing database\n");
 #endif
+  coreAPI = capi;
   if (GNUNET_OK != db_reset ())
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
@@ -516,7 +575,6 @@ provide_module_dstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
   lock = GNUNET_mutex_create (GNUNET_NO);
 
 
-  coreAPI = capi;
   api.get = &d_get;
   api.put = &d_put;
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
