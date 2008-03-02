@@ -66,6 +66,8 @@ static GNUNET_Stats_ServiceAPI *stats;
 
 static unsigned int stat_dstore_size;
 
+static unsigned int stat_dstore_quota;
+
 /**
  * Estimate of the per-entry overhead (including indices).
  */
@@ -484,8 +486,10 @@ d_get (const GNUNET_HashCode * key,
           continue;
         }
       dat = sqlite3_column_blob (stmt, 1);
-      handler (key, type, size, dat, closure);
-      cnt++;
+      cnt++;      
+      if ( (handler != NULL) &&
+	   (GNUNET_OK != handler (key, type, size, dat, closure)) )
+	break;
     }
   sqlite3_finalize (stmt);
   sqlite3_close (dbh);
@@ -532,7 +536,12 @@ provide_module_dstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
     }
   stats = capi->request_service ("stats");
   if (stats != NULL)
-    stat_dstore_size = stats->create (gettext_noop ("# bytes in dstore"));
+    {
+      stat_dstore_size = stats->create (gettext_noop ("# bytes in dstore"));
+      stat_dstore_quota = stats->create (gettext_noop ("# max bytes allowed in dstore"));
+      stats->set(stat_dstore_quota,
+		 quota);
+   }
   return &api;
 }
 
