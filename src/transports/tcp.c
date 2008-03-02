@@ -573,7 +573,13 @@ tcp_connect (const GNUNET_MessageHello * hello,
     }
   haddr = (const HostAddress *) &hello[1];
   available = ntohs (haddr->availability) & available_protocols;
-
+  if (available == (VERSION_AVAILABLE_IPV4 | VERSION_AVAILABLE_IPV6))
+    {
+      if (GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2) == 0)
+	available = VERSION_AVAILABLE_IPV4;
+      else
+	available = VERSION_AVAILABLE_IPV6;
+    }
   if ((available & VERSION_AVAILABLE_IPV4) > 0)
     sock = SOCKET (PF_INET, SOCK_STREAM, 0);
   else if ((available & VERSION_AVAILABLE_IPV6) > 0)
