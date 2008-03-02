@@ -51,10 +51,10 @@ static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'n', "nick", "NAME",
-   gettext_noop ("set the nickname to use (requred)"),
+   gettext_noop ("set the nickname to use (required)"),
    1, &GNUNET_getopt_configure_set_string, &nickname},
   {'r', "room", "NAME",
-   gettext_noop ("set the chat room to join (requred)"),
+   gettext_noop ("set the chat room to join (required)"),
    1, &GNUNET_getopt_configure_set_string, &room_name},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
@@ -132,13 +132,7 @@ main (int argc, char **argv)
   char *message;
   int ret = GNUNET_OK;
 
-  GNUNET_disable_entropy_gathering ();
-
-  fprintf (stderr, "Generating public/private key pair\n");
-  my_priv = GNUNET_RSA_create_key ();
-  GNUNET_RSA_get_public_key (my_priv, &my_pub);
-  message = GNUNET_malloc (MAX_MESSAGE_LENGTH + 1);
-
+  /* GNUNET_disable_entropy_gathering (); */
 
   if (GNUNET_SYSERR == GNUNET_init (argc,
                                     argv,
@@ -146,12 +140,17 @@ main (int argc, char **argv)
                                     &cfgFilename, gnunetchatOptions, &ectx,
                                     &cfg))
     ret = GNUNET_SYSERR;        /* parse error, --help, etc. */
+
+  fprintf (stderr, "Generating public/private key pair\n");
+  my_priv = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (my_priv, &my_pub);
+  message = GNUNET_malloc (MAX_MESSAGE_LENGTH + 1);
   if (nickname == NULL)
     {
       fprintf (stderr, _("You must specify a nickname\n"));
       ret = GNUNET_SYSERR;
     }
-
+  room = NULL;
   if (ret == GNUNET_OK)
     {
       room = GNUNET_CHAT_join_room (ectx,
