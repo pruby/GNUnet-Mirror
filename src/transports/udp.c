@@ -273,8 +273,9 @@ udp_create_socket ()
 
   available_protocols = VERSION_AVAILABLE_NONE;
   s = -1;
-  if (GNUNET_YES != GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
-							     GNUNET_YES)) 
+  if (GNUNET_YES !=
+      GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
+                                               GNUNET_YES))
     {
 #ifndef MINGW
       s = SOCKET (PF_INET6, SOCK_DGRAM, 17);

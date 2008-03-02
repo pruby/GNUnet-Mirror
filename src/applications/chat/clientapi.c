@@ -33,7 +33,7 @@
 
 /**
  * Listen for incoming messages on this chat room.  When received, call the client callback.
- * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)... 
+ * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)...
  */
 static void *
 poll_thread (void *rcls)

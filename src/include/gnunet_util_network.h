@@ -506,7 +506,7 @@ int GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
  * @param *sa should be of type "struct sockaddr*" and
  *        will be set to the IP address on success;
  *        if *sa is NULL, sufficient space will be
- *        allocated.        
+ *        allocated.
  * @param socklen will be set to the length of *sa.
  *        If *sa is not NULL, socklen will be checked
  *        to see if sufficient space is provided and

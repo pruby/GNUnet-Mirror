@@ -657,10 +657,12 @@ tcp_transport_server_start ()
   if (port != 0)
     {
       available_protocols = VERSION_AVAILABLE_NONE;
-      if ( (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "DISABLE-IPV6",
-								   GNUNET_YES)) ||
-	   (0 > (s = SOCKET (PF_INET6, SOCK_STREAM, 0)) ) ) 
-	{ 
+      if ((GNUNET_YES ==
+           GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD",
+                                                    "DISABLE-IPV6",
+                                                    GNUNET_YES))
+          || (0 > (s = SOCKET (PF_INET6, SOCK_STREAM, 0))))
+        {
           s = SOCKET (PF_INET, SOCK_STREAM, 0);
           if (s < 0)
             {
