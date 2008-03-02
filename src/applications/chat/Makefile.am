@@ -25,8 +25,8 @@ libgnunetchat_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 libgnunetmodule_chat_la_SOURCES = \
-  chat.c \
-  chat.h
+  chat.c chat.h \
+  chat_p2p.c chat_p2p.h
 libgnunetmodule_chat_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_chat_la_LDFLAGS = \

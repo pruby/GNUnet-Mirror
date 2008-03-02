@@ -20,42 +20,38 @@
 
 /**
  * @author Nathan Evans
- * @file applications/chat/chat_p2p.h
- *
- * TODO:
- * - change all GNUNET_MessageHandler arguments
- *   to the specific interesting values (chat_p2p.c
- *   should not have to parse them again -- chat.c already did!);
- *   Also, that way, this API becomes independent of
- *   changes to the CS-protocol!
- * - define callbacks for how the P2P code will notify CS
- *   about new messages / users joining the room, etc.
- * - instead of passing the ClientHandle, pass something useful
- *   like the private RSA key or so.
- *
+ * @file applications/chat/chat_p2p.c
  */
-#ifndef CHATP2P_H
-#define CHATP2P_H
-
-#include "chat.h"
+#include "chat_p2p.h"
 
 int
 p2pHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
-			  const GNUNET_MessageHeader * message);
+			  const GNUNET_MessageHeader * message)
+{
+	return GNUNET_SYSERR;
+}
 
 int
 p2pHandleChatMSG (struct GNUNET_ClientHandle *client,
-		  const GNUNET_MessageHeader * message);
+                 const GNUNET_MessageHeader * message)
+{
+	return GNUNET_SYSERR;
+}
 
 int
-p2pSendChatMSG (const GNUNET_MessageHeader *message);
+p2pSendChatMSG (const GNUNET_MessageHeader *message)
+{
+	return GNUNET_SYSERR;
+}
 
 int
-p2pGetRoomList(void);
+p2pGetRoomList()
+{	
+	return GNUNET_SYSERR;
+}
 
 int
-p2pSendRoomList(void);
-
-#endif
-
-/* end of chat_p2p.h */
+p2pSendRoomList()
+{
+	return GNUNET_SYSERR;
+}
