@@ -48,7 +48,7 @@ static PMap *maps;
 
 static unsigned int maps_size;
 
-static struct GNUNET_ThreadHandle *discovery;
+static struct GNUNET_ThreadHandle *discovery = NULL;
 
 static int discovery_socket;
 

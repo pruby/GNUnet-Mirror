@@ -579,7 +579,6 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
       GNUNET_get_ip_from_hostname (ectx,
                                    HTTPMU_HOST_ADDRESS, AF_INET, &sa, &avail))
     {
-      CLOSE (dd.sock);
       return GNUNET_SYSERR;
     }
   server.sin_port = htons (HTTPMU_HOST_PORT);
