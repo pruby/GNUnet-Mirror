@@ -197,7 +197,7 @@ LIBS="$PTHREAD_LIBS $LIBS"
 
 
 # some other checks for standard libs
-AC_CHECK_LIB(nsl, gethostbyname)
+AC_SEARCH_LIBS([gethostbyname], [nsl ws2_32])
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(m, log)
 AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
@@ -794,7 +794,7 @@ AC_FUNC_VPRINTF
 AC_HEADER_SYS_WAIT
 AC_TYPE_OFF_T
 AC_TYPE_UID_T
-AC_CHECK_FUNCS([floor gethostname memmove rmdir strncasecmp strrchr strtol atoll dup2 fdatasync ftruncate gethostbyname gettimeofday memset mkdir mkfifo select socket strcasecmp strchr strdup strerror strstr clock_gettime getrusage rand uname setlocale getcwd mktime gmtime_r gmtime strlcpy strlcat ftruncate stat64 sbrk mmap mremap setrlimit gethostbyaddr initgroups getifaddrs freeifaddrs getnameinfo getaddrinfo inet_ntoa localtime_r nl_langinfo putenv realpath strndup])
+AC_CHECK_FUNCS([floor gethostname memmove rmdir strncasecmp strrchr strtol atoll dup2 fdatasync ftruncate gettimeofday memset mkdir mkfifo select socket strcasecmp strchr strdup strerror strstr clock_gettime getrusage rand uname setlocale getcwd mktime gmtime_r gmtime strlcpy strlcat ftruncate stat64 sbrk mmap mremap setrlimit gethostbyaddr initgroups getifaddrs freeifaddrs getnameinfo getaddrinfo inet_ntoa localtime_r nl_langinfo putenv realpath strndup])
 
 # restore LIBS
 LIBS=$SAVE_LIBS
@@ -816,11 +816,11 @@ AC_ARG_ENABLE(ipv6,
         ipv6=0
 	;;
   *)    AC_MSG_RESULT(yes)
-  			AC_CHECK_LIB(resolv, gethostbyname2, ipv6=1, ipv6=0)
+  			AC_SEARCH_LIBS([gethostbyname2], [resolv plibc], ipv6=1, ipv6=0)
 	;;
   esac],
   [     AC_MSG_RESULT(yes)
-  			AC_CHECK_LIB(resolv, gethostbyname2, ipv6=1, ipv6=0)])
+  			AC_SEARCH_LIBS([gethostbyname2], [resolv plibc], ipv6=1, ipv6=0)
 AM_CONDITIONAL(HAVE_IPV6, test x$ipv6 != x0)
 AC_DEFINE_UNQUOTED(USE_IPV6, $ipv6, [IPV6 available])
 
