@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-03-02 16:08-0700\n"
+"POT-Creation-Date: 2008-03-02 19:05-0700\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -2191,34 +2191,34 @@ msgstr ""
 msgid "Error writing to socket.\n"
 msgstr "Ivugurura Verisiyo"
 
-#: src/applications/chat/gnunet-chat.c:53
+#: src/applications/chat/gnunet-chat.c:51
 msgid "Join a chat on GNUnet."
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:57
+#: src/applications/chat/gnunet-chat.c:55
 msgid "set the nickname to use (required)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:60
+#: src/applications/chat/gnunet-chat.c:58
 msgid "set the chat room to join"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:89
+#: src/applications/chat/gnunet-chat.c:87
 #, fuzzy, c-format
 msgid "`%s' said: %s\n"
 msgstr "'%s'%sByanze"
 
-#: src/applications/chat/gnunet-chat.c:145
+#: src/applications/chat/gnunet-chat.c:143
 #, fuzzy, c-format
 msgid "You must specify a nickname\n"
 msgstr "a Ijambo- banze"
 
-#: src/applications/chat/gnunet-chat.c:161
+#: src/applications/chat/gnunet-chat.c:159
 #, fuzzy, c-format
 msgid "Failed to join room `%s'\n"
 msgstr "Kuri Kuri Umuyoboro"
 
-#: src/applications/chat/gnunet-chat.c:168
+#: src/applications/chat/gnunet-chat.c:166
 #, c-format
 msgid ""
 "Joined room `%s'.\n"
@@ -2226,7 +2226,7 @@ msgid ""
 "Type `%s' when ready to quit.\n"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:187
+#: src/applications/chat/gnunet-chat.c:185
 #, fuzzy, c-format
 msgid "Failed to send message.\n"
 msgstr "Kuri Kohereza Ubutumwa Kuri"
