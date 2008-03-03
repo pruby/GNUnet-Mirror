@@ -33,7 +33,7 @@
 
 static int error;
 
-static void
+static int
 checkIt (const GNUNET_HashCode * key,
          unsigned int type, unsigned int size, const char *data, void *cls)
 {
@@ -47,6 +47,7 @@ checkIt (const GNUNET_HashCode * key,
       printf ("ERROR: Invalid data\n");
       error = 3;
     }
+  return GNUNET_OK;
 }
 
 /**
