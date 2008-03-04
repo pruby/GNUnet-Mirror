@@ -805,25 +805,6 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(EXT_LIB_PATH)
 AC_SUBST(EXT_LIBS)
 
-# check for IPv6
-ipv6=1
-AC_MSG_CHECKING([whether to enable ipv6])
-AC_ARG_ENABLE(ipv6,
- [AC_HELP_STRING([--enable-ipv6],[Enable ipv6 support])
-  AC_HELP_STRING([--disable-ipv6],[Disable ipv6 support])],
- [case "$enableval" in
-  no)	AC_MSG_RESULT(no)
-        ipv6=0
-	;;
-  *)    AC_MSG_RESULT(yes)
-  			AC_SEARCH_LIBS([gethostbyname2], [resolv plibc], ipv6=1, ipv6=0)
-	;;
-  esac],
-  [     AC_MSG_RESULT(yes)
-  			AC_SEARCH_LIBS([gethostbyname2], [resolv plibc], ipv6=1, ipv6=0)
-AM_CONDITIONAL(HAVE_IPV6, test x$ipv6 != x0)
-AC_DEFINE_UNQUOTED(USE_IPV6, $ipv6, [IPV6 available])
-
 # check for guile
 guile=0
 AC_MSG_CHECKING(for guile 1.8)
