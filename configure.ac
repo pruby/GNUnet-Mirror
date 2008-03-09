@@ -169,7 +169,7 @@ netbsd*)
      AC_PROG_CXX
      LIBPREFIX=lib
      DLLDIR=bin
-     QTLIBS="-L$QTDIR/lib -lopengl32 -lglu32 -lgdi32 -luser32 -lmingw32 -lqtmain -lQtOpenGL4 -lQtGui4 -lQtCore4 -mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-s -Wl,-subsystem,windows"
+     QTLIBS="-L$QTDIR/lib -lopengl32 -lglu32 -lgdi32 -luser32 -lqtmain -lQtOpenGL4 -lQtGui4 -lQtCore4 -mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-s -Wl,-subsystem,windows"
      QTINC="-I$QTDIR/include -I$QTDIR/include/QtCore -I$QTDIR/include/QtGui -I$QTDIR/include/QtOpenGL -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DQT_NEEDS_QMAIN -frtti -fexceptions"
      QTBIN="$QTDIR/bin"
      ;;
@@ -508,7 +508,7 @@ AC_ARG_WITH(qt,
         ;;
       yes)
         AC_CHECK_HEADERS([Qt/qpixmap.h],
-           AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+        	 AC_SEARCH_LIBS([_ZN7QPixmap12defaultDepthEv], [QtGui QtGui4],
               qt=1))
         ;;
       *)
@@ -517,7 +517,7 @@ AC_ARG_WITH(qt,
         QTINC="$QTINC -I$with_qt/include -I$with_qt/include/qt4"
         CPPFLAGS="$QTINC $CPPFLAGS"
         AC_CHECK_HEADERS([Qt/qpixmap.h],
-           AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+        	 AC_SEARCH_LIBS([_ZN7QPixmap12defaultDepthEv], [QtGui QtGui4],
            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
            qt=1))
         ;;
@@ -529,7 +529,7 @@ AC_ARG_WITH(qt,
     QTINC="$QTINC -I/usr/include -I/usr/include/qt4"
     CPPFLAGS="$QTINC $CPPFLAGS"
     AC_CHECK_HEADERS([Qt/qpixmap.h],
-          AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+       	  AC_SEARCH_LIBS([_ZN7QPixmap12defaultDepthEv], [QtGui QtGui4],
            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
               qt=1))])
 
