@@ -542,6 +542,7 @@ main (int argc, char *const *argv)
   char *dirname;
 
   errorCode = 0;
+  myout = stdout;
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-auto-share [OPTIONS] DIRECTORY",
@@ -559,11 +560,7 @@ main (int argc, char *const *argv)
       errorCode = -1;
       goto end;
     }
-  if (GNUNET_YES == debug_flag)
-    {
-      myout = stdout;
-    }
-  else
+  if (GNUNET_YES != debug_flag)
     {
       GNUNET_GC_get_configuration_value_filename (cfg,
                                                   "GNUNET-AUTO-SHARE",
