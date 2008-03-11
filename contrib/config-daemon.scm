@@ -213,7 +213,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
 "Unless you want to share the directory directly using a webserver, the default is most likely just fine." )
   '()
   #t
-  "/var/lib/gnunet/data/hosts/"
+  "$GNUNETD_HOME/data/hosts/"
   '()
   'rare) )
 
@@ -1113,7 +1113,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  (_ "Have a look at contrib/dot-procmailrc for an example .procmailrc file.")
  '()
  #t
- "/var/lib/gnunet/smtp-pipe"
+ "$GNUNETD_HOME/smtp-pipe"
  '()
  'smtp-loaded))
 
