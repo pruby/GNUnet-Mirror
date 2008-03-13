@@ -933,7 +933,7 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
                  __FUNCTION__, filename,
                  ret == GNUNET_OK ? "SUCCESS" : "INCOMPLETE");
 #endif
-  free_request_manager (rm, (ret == GNUNET_OK) ? GNUNET_YES : GNUNET_NO);
+  free_request_manager (rm, GNUNET_YES);
   return ret;
 }
 
