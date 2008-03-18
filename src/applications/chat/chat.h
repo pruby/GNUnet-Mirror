@@ -49,6 +49,13 @@ typedef struct
 
 } CS_chat_JOIN_MESSAGE;
 
+typedef struct
+{
+  GNUNET_MessageHeader header;
+  int nick_len;
+  char nick[1];
+
+} CS_chat_ROOM_MEMBER_MESSAGE;
 /**
  * Handle for a (joined) chat room.
  */
@@ -77,10 +84,14 @@ struct GNUNET_CHAT_Room
   char *memberInfo;
 
   GNUNET_CHAT_MessageCallback callback;
+  
+  GNUNET_CHAT_MessageCallback member_list_callback;
 
   int shutdown_flag;
 
   void *callback_cls;
+
+  void *member_list_callback_cls;
 
 };
 

@@ -88,6 +88,12 @@ receive_callback (void *cls,
   return GNUNET_OK;
 }
 
+static int
+member_list_callback (void *cls,const char *senderNick, GNUNET_CronTime timestamp)
+{
+  return GNUNET_OK;
+}
+
 /**
  * Message delivery confirmations.
  *
@@ -130,8 +136,6 @@ main (int argc, char **argv)
   GNUNET_RSA_PublicKey my_pub;
   char message[MAX_MESSAGE_LENGTH + 1];
 
-  /* GNUNET_disable_entropy_gathering (); */
-
   if (GNUNET_SYSERR == GNUNET_init (argc,
                                     argv,
                                     "gnunet-chat [OPTIONS]",
@@ -153,7 +157,7 @@ main (int argc, char **argv)
                                 cfg,
                                 nickname, room_name,
                                 &my_pub, my_priv, "", &receive_callback,
-                                NULL);
+                                NULL,&member_list_callback,NULL);
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join room `%s'\n"), room_name);

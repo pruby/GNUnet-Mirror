@@ -146,7 +146,8 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
                        const GNUNET_RSA_PublicKey * me,
                        const struct GNUNET_RSA_PrivateKey *key,
                        const char *memberInfo,
-                       GNUNET_CHAT_MessageCallback callback, void *cls)
+                       GNUNET_CHAT_MessageCallback callback, void *cls,
+                       GNUNET_CHAT_MemberListCallback memberCallback,void *membercls)
 {
   CS_chat_JOIN_MESSAGE *join_msg;
   GNUNET_HashCode hash_of_me;
@@ -196,6 +197,8 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   chat_room->my_private_key = key;
   chat_room->callback = callback;
   chat_room->callback_cls = cls;
+  chat_room->member_list_callback = memberCallback;
+  chat_room->member_list_callback_cls = membercls;
   chat_room->ectx = ectx;
   chat_room->cfg = cfg;
   chat_room->memberInfo = GNUNET_strdup(memberInfo);
