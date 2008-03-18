@@ -298,6 +298,13 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
   return;
 }
 
+static int
+csHandleChatRoomMemberRequest (struct GNUNET_ClientHandle *client,
+                 const GNUNET_MessageHeader * message)
+{
+	
+}
+
 
 int
 initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
