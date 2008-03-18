@@ -986,15 +986,9 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
   if (rm == NULL)
     return (length == 0) ? GNUNET_OK : GNUNET_SYSERR;
   while ((GNUNET_OK == tt (ttClosure)) &&
-         (GNUNET_YES != GNUNET_shutdown_test ())) {
-    GNUNET_mutex_lock(rm->lock);
-    if ((rm->abortFlag != GNUNET_NO) || (rm->head == NULL)) {
-      GNUNET_mutex_unlock(rm->lock);
-      break;
-    }
-    GNUNET_mutex_unlock(rm->lock);
+         (GNUNET_YES != GNUNET_shutdown_test ()) &&
+         (rm->abortFlag == GNUNET_NO) && (rm->head != NULL))
     GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
-  }
   return GNUNET_ECRS_file_download_partial_stop (rm);
 }
 
