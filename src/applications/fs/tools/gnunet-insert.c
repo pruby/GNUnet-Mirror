@@ -429,6 +429,7 @@ main (int argc, char *const *argv)
       GNUNET_free (dirname);
       EXTRACTOR_removeAll (l);
       GNUNET_ECRS_meta_data_destroy (meta);
+      meta = NULL;
 
       errorCode = 0;
       goto quit;
