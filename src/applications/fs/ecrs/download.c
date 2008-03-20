@@ -888,7 +888,6 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
   char *rdir;
   int len;
 
-  GNUNET_mutex_lock(rm->lock);
   if ((rm->head == NULL) &&
       ((rm->completed == rm->total) ||
        ((rm->total != rm->length) && (rm->completed >= rm->length))))
@@ -934,7 +933,6 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
                  __FUNCTION__, filename,
                  ret == GNUNET_OK ? "SUCCESS" : "INCOMPLETE");
 #endif
-  GNUNET_mutex_unlock(rm->lock);
   free_request_manager (rm, GNUNET_YES);
   return ret;
 }
