@@ -67,9 +67,9 @@ update_client_thread (void *cls)
 	{
 		fprintf(stderr,"Checking room members\n");
 		pos = client_list_head;
-		compare_pos = client_list_head;
 		while(pos != NULL)
 		{
+			compare_pos = client_list_head;
 			while(compare_pos != NULL)
 			{
 				if(memcmp(&pos->room_name_hash,&compare_pos->room_name_hash,sizeof(GNUNET_HashCode)) == 0)
