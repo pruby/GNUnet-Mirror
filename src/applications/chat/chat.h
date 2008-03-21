@@ -84,9 +84,9 @@ struct GNUNET_CHAT_Room
   char *memberInfo;
 
   GNUNET_CHAT_MessageCallback callback;
-  
+
   GNUNET_CHAT_MemberListCallback member_list_callback;
-  
+
   GNUNET_CHAT_MemberRemoveCallback member_remove_callback;
 
   int shutdown_flag;
@@ -94,7 +94,7 @@ struct GNUNET_CHAT_Room
   void *callback_cls;
 
   void *member_list_callback_cls;
-  
+
   void *member_remove_callback_cls;
 
 };
