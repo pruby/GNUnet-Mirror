@@ -132,6 +132,9 @@ typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
                                               const char *nick,
                                               GNUNET_CronTime timestamp);
 
+typedef int (*GNUNET_CHAT_MemberRemoveCallback) (void *cls,
+                                              const char *nick,
+                                              GNUNET_CronTime timestamp);
 /**
  * Join a chat room.
  *
@@ -155,7 +158,9 @@ struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
                                                 GNUNET_CHAT_MessageCallback
                                                 callback, void *cls,
                                                 GNUNET_CHAT_MemberListCallback memberCallback,
-                                                void *membercls);
+                                                void *membercls,
+                       													GNUNET_CHAT_MemberRemoveCallback removeCallback,
+                       													void *removecls);
 
 /**
  * Leave a chat room.

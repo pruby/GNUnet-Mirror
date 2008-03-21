@@ -262,7 +262,7 @@ extern "C"
 #define GNUNET_CS_PROTO_CHAT_JOIN_MSG 44
 #define GNUNET_CS_PROTO_CHAT_MSG 45
 #define GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE 46
-
+#define GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_LEAVE_MESSAGE 47
 
 /* ********** CS DHT application messages ********** */
 
