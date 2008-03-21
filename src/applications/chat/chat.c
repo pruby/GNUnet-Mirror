@@ -33,6 +33,8 @@
 #include "gnunet_core.h"
 #include "chat.h"
 
+static int shutdown_flag;
+
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static struct GNUNET_Mutex *chatMutex;
@@ -45,10 +47,54 @@ struct GNUNET_CS_chat_client
   struct GNUNET_CS_chat_client *next;
   struct GNUNET_CS_chat_client *prev;
   GNUNET_HashCode room_name_hash;
+  char *nick;
 
 };
 
 static struct GNUNET_CS_chat_client *client_list_head;
+
+/* Thread that tells clients about chat room members
+ */
+static void *
+update_client_thread (void *cls)
+{
+	struct GNUNET_CS_chat_client *pos;
+	struct GNUNET_CS_chat_client *compare_pos;
+	CS_chat_ROOM_MEMBER_MESSAGE *message;
+	int message_size;
+	
+	while(shutdown_flag != GNUNET_YES)
+	{
+		fprintf(stderr,"Checking room members\n");
+		pos = client_list_head;
+		compare_pos = client_list_head;
+		while(pos != NULL)
+		{
+			while(compare_pos != NULL)
+			{
+				if(memcmp(&pos->room_name_hash,&compare_pos->room_name_hash,sizeof(GNUNET_HashCode)) == 0)
+				{
+					/*Send nick to this client, so it knows who is in the same room! (Including itself...)*/
+					fprintf(stderr,"Found matching member %s length is %d\n",compare_pos->nick,strlen(compare_pos->nick));
+					
+					message_size = sizeof(CS_chat_ROOM_MEMBER_MESSAGE) + strlen(compare_pos->nick);
+					message = GNUNET_malloc(message_size);
+					message->header.size = htons(message_size);
+					message->header.type = htons(GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE);
+					message->nick_len = htons(strlen(compare_pos->nick));
+					memcpy(&message->nick[0],compare_pos->nick,strlen(compare_pos->nick));					
+					
+					coreAPI->cs_send_to_client (pos->client,&message->header,GNUNET_YES);
+				}
+				compare_pos = compare_pos->next;
+			}			
+			pos = pos->next;
+		}		
+		if(shutdown_flag == GNUNET_NO)
+			GNUNET_thread_sleep(30 * GNUNET_CRON_SECONDS);
+	}
+	return NULL;
+}
 
 static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
@@ -228,8 +274,11 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
     client_list_head->prev = tempClient;
   client_list_head = tempClient;
   tempClient->client = client;
+  tempClient->nick = GNUNET_malloc(nick_len + 1);
   memcpy (&tempClient->room_name_hash, &room_name_hash,
           sizeof (GNUNET_HashCode));
+  memcpy (tempClient->nick, nick,nick_len + 1);
+  
   tempCount = 0;
 
   while (tempClient != NULL)
@@ -255,18 +304,25 @@ static void
 chatClientExitHandler (struct GNUNET_ClientHandle *client)
 {
   int tempCount;
+  int message_size;
+  int found;
   struct GNUNET_CS_chat_client *tempClient;
   struct GNUNET_CS_chat_client *pos;
   struct GNUNET_CS_chat_client *prev;
+  char *nick_to_remove;
+  CS_chat_ROOM_MEMBER_MESSAGE *message;
 
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                  "Received leave chat room message from client.\n");
 
   GNUNET_mutex_lock (chatMutex);
-
+  
+  
   pos = client_list_head;
   prev = NULL;
+  found = GNUNET_NO;
+  nick_to_remove = NULL;
   while ((pos != NULL) && (pos->client != client))
     {
       prev = pos;
@@ -274,6 +330,9 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
     }
   if (pos != NULL)
     {
+    	found = GNUNET_YES;
+    	nick_to_remove = GNUNET_malloc(strlen(pos->nick));
+  		strcpy(nick_to_remove,pos->nick);
       if (prev == NULL)
         client_list_head = pos->next;
       else
@@ -293,27 +352,42 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
     }
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
   /*End of client count code */
-
+  
+  /*Send remove member message here*/
+	if(found == GNUNET_YES)
+	{
+		message_size = sizeof(CS_chat_ROOM_MEMBER_MESSAGE) + strlen(nick_to_remove);
+		message = GNUNET_malloc(message_size);
+		message->header.size = htons(message_size);
+		message->header.type = htons(GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_LEAVE_MESSAGE);
+		message->nick_len = htons(strlen(nick_to_remove));
+		memcpy(&message->nick[0],nick_to_remove,strlen(nick_to_remove));					
+		
+		pos = client_list_head;
+	  while (pos != NULL)
+	    {
+	  		coreAPI->cs_send_to_client (pos->client,&message->header,GNUNET_YES);    
+	      pos = pos->next;
+	    }
+		
+		GNUNET_free(message);
+	  GNUNET_free(nick_to_remove);
+	  
+	}
   GNUNET_mutex_unlock (chatMutex);
   return;
 }
-
-static int
-csHandleChatRoomMemberRequest (struct GNUNET_ClientHandle *client,
-                 const GNUNET_MessageHeader * message)
-{
-	
-}
-
 
 int
 initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
+  shutdown_flag = GNUNET_NO;
 
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
 
   coreAPI = capi;
+  GNUNET_thread_create(&update_client_thread,NULL,1024 * 128); /* What's a good stack size? */
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handlers %d and %d\n"),
                  "chat", GNUNET_P2P_PROTO_CHAT_MSG, GNUNET_CS_PROTO_CHAT_MSG);
@@ -347,6 +421,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_chat ()
 {
+	shutdown_flag = GNUNET_YES;
   /*coreAPI->unregisterHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG); */
   coreAPI->cs_exit_handler_unregister (&chatClientExitHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG,

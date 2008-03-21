@@ -94,6 +94,12 @@ member_list_callback (void *cls,const char *senderNick, GNUNET_CronTime timestam
   return GNUNET_OK;
 }
 
+static int
+member_remove_callback (void *cls,const char *senderNick, GNUNET_CronTime timestamp)
+{
+  return GNUNET_OK;
+}
+
 /**
  * Message delivery confirmations.
  *
@@ -157,7 +163,7 @@ main (int argc, char **argv)
                                 cfg,
                                 nickname, room_name,
                                 &my_pub, my_priv, "", &receive_callback,
-                                NULL,&member_list_callback,NULL);
+                                NULL,&member_list_callback,NULL,&member_remove_callback,NULL);
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join room `%s'\n"), room_name);
