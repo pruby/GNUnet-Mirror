@@ -755,7 +755,8 @@ struct GNUNET_ECRS_DownloadContext;
  * limit the download to exactly those bytes.
  *
  * @param uri the URI of the file (determines what to download)
- * @param filename where to store the file
+ * @param filename where to store the file, maybe NULL (then no file is
+ *        created on disk)
  * @param no_temporaries set to GNUNET_YES to disallow generation of temporary files
  * @param start starting offset
  * @param length length of the download (starting at offset)
@@ -774,7 +775,7 @@ struct GNUNET_ECRS_DownloadContext
                                             dpcb, void *dpcbClosure);
 
 /**
- * Stop a download (aborts if download is incomplete).
+ * Stop a download (aborts if download is incomplete). 
  */
 int
 GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext

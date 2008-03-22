@@ -901,8 +901,13 @@ int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI
 struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_ECRS_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload);    /* download.c */
 
 /**
- * Abort a download.  If the dl is for a recursive
- * download, all sub-downloads will also be aborted.
+ * Abort a download.  If the dl is for a recursive download, all
+ * sub-downloads will also be aborted.  This will also delete all of
+ * the files associated with the download (except if the download has
+ * already completed, in which case GNUNET_NO will be returned).  If
+ * this is a recursive download and some files have been completed,
+ * these files will not be removed (only incomplete downloads will be
+ * removed).
  *
  * @return GNUNET_SYSERR on error
  */

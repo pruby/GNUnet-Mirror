@@ -444,7 +444,7 @@ typedef struct
  * If, after finding local results, we abort a GET
  * iteration, we increment "have_more" by this value.
  */
-#define HAVE_MORE_INCREMENT 5
+#define HAVE_MORE_INCREMENT 32
 
 /**
  * What is the maximum number of local results
