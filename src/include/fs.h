@@ -444,7 +444,7 @@ typedef struct
  * If, after finding local results, we abort a GET
  * iteration, we increment "have_more" by this value.
  */
-#define HAVE_MORE_INCREMENT 32
+#define HAVE_MORE_INCREMENT 16
 
 /**
  * What is the maximum number of local results
@@ -454,9 +454,9 @@ typedef struct
 
 /**
  * What is the maximum number of local results
- * that we are willing to return synchronously?
+ * that we are willing to return asynchronously?
  */
-#define MAX_ASYNC_PROCESSED 128
+#define MAX_ASYNC_PROCESSED 32
 
 
 
