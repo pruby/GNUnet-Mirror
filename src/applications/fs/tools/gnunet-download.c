@@ -392,9 +392,8 @@ main (int argc, char *const *argv)
   GNUNET_FSUI_stop (ctx);
   GNUNET_mutex_destroy (lock);
 
-  if ( (errorCode == EC_COMPLETED) && 
-       (dl != NULL) && 
-       (try_rename == GNUNET_YES) )
+  if ((errorCode == EC_COMPLETED) &&
+      (dl != NULL) && (try_rename == GNUNET_YES))
     {
       char *newname = GNUNET_ECRS_suggest_better_filename (ectx,
                                                            filename);

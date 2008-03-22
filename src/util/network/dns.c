@@ -505,7 +505,7 @@ GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
     ret = gethostbyname_resolve (ectx, hostname, sa, socklen);
 #endif
 #if !defined(HAVE_GETADDRINFO) && !defined(HAVE_GETHOSTBYNAME2) && !defined(HAVE_GETHOSTBYNAME)
-  #error No resolver function available
+#error No resolver function available
 #endif
   GNUNET_mutex_unlock (lock);
   if (ret == GNUNET_NO)

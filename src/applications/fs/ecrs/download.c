@@ -250,8 +250,7 @@ read_from_files (struct GNUNET_ECRS_DownloadContext *self,
                  unsigned int level,
                  unsigned long long pos, void *buf, unsigned int len)
 {
-  if ( (level > 0) ||
-       (self->handle == -1) )
+  if ((level > 0) || (self->handle == -1))
     return GNUNET_SYSERR;
   LSEEK (self->handle, pos, SEEK_SET);
   return READ (self->handle, buf, len);
@@ -282,9 +281,8 @@ write_to_files (struct GNUNET_ECRS_DownloadContext *self,
   ret = WRITE (self->handle, buf, len);
   if (ret != len)
     GNUNET_GE_LOG_STRERROR_FILE (self->ectx,
-				 GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-				 "write",
-				 self->filename);
+                                 GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                 GNUNET_GE_USER, "write", self->filename);
   return ret;
 }
 
@@ -348,7 +346,7 @@ delete_node (struct Node *node)
   else
     node->next->prev = node->prev;
   GNUNET_free (node);
-  if (rm->head == NULL) 
+  if (rm->head == NULL)
     GNUNET_thread_stop_sleep (rm->main);
 }
 
@@ -402,9 +400,8 @@ get_node_size (const struct Node *node)
  * Notify client about progress.
  */
 static void
-notify_client_about_progress (const struct Node *node, 
-			      const char *data,
-                              unsigned int size)
+notify_client_about_progress (const struct Node *node,
+                              const char *data, unsigned int size)
 {
   struct GNUNET_ECRS_DownloadContext *rm = node->ctx;
   GNUNET_CronTime eta;
@@ -432,8 +429,7 @@ notify_client_about_progress (const struct Node *node,
  * @param size size of data
  */
 static void iblock_download_children (const struct Node *node,
-                                      const char *data,
-				      unsigned int size);
+                                      const char *data, unsigned int size);
 
 /**
  * Check if self block is already present on the drive.  If the block
@@ -490,9 +486,8 @@ check_node_present (const struct Node *node)
  * @param node the node that should be downloaded
  */
 static void
-iblock_download_children (const struct Node *node, 
-			  const char *data, 
-			  unsigned int size)
+iblock_download_children (const struct Node *node,
+                          const char *data, unsigned int size)
 {
   struct GNUNET_GE_Context *ectx = node->ctx->ectx;
   int i;
@@ -604,8 +599,9 @@ content_receive_callback (const GNUNET_HashCode * query,
     }
   size -= sizeof (DBlock);
   data = GNUNET_malloc (size);
-  if (GNUNET_SYSERR == decrypt_content ((const char *) &((const DBlock *) & reply[1])[1],
-                                        size, &node->chk.key, data))
+  if (GNUNET_SYSERR ==
+      decrypt_content ((const char *) &((const DBlock *) &reply[1])[1], size,
+                       &node->chk.key, data))
     GNUNET_GE_ASSERT (ectx, 0);
   GNUNET_hash (data, size, &hc);
   if (0 != memcmp (&hc, &node->chk.key, sizeof (GNUNET_HashCode)))
@@ -750,11 +746,12 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
   rm->dpcbClosure = dpcbClosure;
   rm->main = GNUNET_thread_get_self ();
   rm->total = GNUNET_ntohll (uri->data.fi.file_length);
-  rm->filename = filename != NULL ? get_real_download_filename (ectx, filename) : NULL;
+  rm->filename =
+    filename != NULL ? get_real_download_filename (ectx, filename) : NULL;
 
-  if ( (rm->filename != NULL) &&
-       (GNUNET_SYSERR ==
-	GNUNET_disk_directory_create_for_file (ectx, rm->filename)) )
+  if ((rm->filename != NULL) &&
+      (GNUNET_SYSERR ==
+       GNUNET_disk_directory_create_for_file (ectx, rm->filename)))
     {
       free_request_manager (rm);
       return NULL;
@@ -762,25 +759,26 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
   if (0 == rm->total)
     {
       if (rm->filename != NULL)
-	{
-	  ret = GNUNET_disk_file_open (ectx,
-				       rm->filename,
-				       O_CREAT | O_WRONLY | O_TRUNC,
-				       S_IRUSR | S_IWUSR);
-	  if (ret == -1)
-	    {
-	      free_request_manager (rm);
-	      return NULL;
-	    }
-	  CLOSE (ret);
-	}
+        {
+          ret = GNUNET_disk_file_open (ectx,
+                                       rm->filename,
+                                       O_CREAT | O_WRONLY | O_TRUNC,
+                                       S_IRUSR | S_IWUSR);
+          if (ret == -1)
+            {
+              free_request_manager (rm);
+              return NULL;
+            }
+          CLOSE (ret);
+        }
       dpcb (0, 0, rm->startTime, 0, NULL, 0, dpcbClosure);
       free_request_manager (rm);
       return NULL;
     }
   rm->treedepth = GNUNET_ECRS_compute_depth (rm->total);
-  if ( (NULL != rm->filename) &&
-       ((0 == STAT (rm->filename, &buf)) && ((size_t) buf.st_size > rm->total)) )
+  if ((NULL != rm->filename) &&
+      ((0 == STAT (rm->filename, &buf))
+       && ((size_t) buf.st_size > rm->total)))
     {
       /* if exists and oversized, truncate */
       if (truncate (rm->filename, rm->total) != 0)
@@ -802,14 +800,14 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
   if (rm->filename != NULL)
     {
       rm->handle = GNUNET_disk_file_open (ectx,
-					  rm->filename,
-					  O_CREAT | O_RDWR,
-					  S_IRUSR | S_IWUSR);
-      if (rm->handle < 0) 
-	{
-	  free_request_manager (rm);
-	  return NULL;
-	}
+                                          rm->filename,
+                                          O_CREAT | O_RDWR,
+                                          S_IRUSR | S_IWUSR);
+      if (rm->handle < 0)
+        {
+          free_request_manager (rm);
+          return NULL;
+        }
     }
   else
     rm->handle = -1;
@@ -841,12 +839,12 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
 {
   int ret;
 
-  GNUNET_mutex_lock(rm->lock);
+  GNUNET_mutex_lock (rm->lock);
   ret = rm->abortFlag;
-  GNUNET_mutex_unlock(rm->lock);
+  GNUNET_mutex_unlock (rm->lock);
   free_request_manager (rm);
   if (ret == GNUNET_NO)
-    ret = GNUNET_OK; /* normal termination */
+    ret = GNUNET_OK;            /* normal termination */
   return ret;
 }
 
@@ -900,8 +898,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
     return GNUNET_SYSERR;
   while ((GNUNET_OK == tt (ttClosure)) &&
          (GNUNET_YES != GNUNET_shutdown_test ()) &&
-         (rm->abortFlag == GNUNET_NO) && 
-         (rm->head != NULL))
+         (rm->abortFlag == GNUNET_NO) && (rm->head != NULL))
     GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
   return GNUNET_ECRS_file_download_partial_stop (rm);
 }

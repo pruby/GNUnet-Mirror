@@ -303,13 +303,12 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
       tv.tv_usec = 1000;
       sret = SELECT (max + 1, &rs, &ws, &es, &tv);
       if (sret == -1)
-	{
+        {
           GNUNET_GE_LOG_STRERROR (ectx,
-				  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-				  GNUNET_GE_BULK,
-				  "select");
-	  goto cleanup;
-	}
+                                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_USER | GNUNET_GE_BULK, "select");
+          goto cleanup;
+        }
       if (GNUNET_YES != termTest (targ))
         break;
       do

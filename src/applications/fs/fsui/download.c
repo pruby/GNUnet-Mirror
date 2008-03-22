@@ -591,11 +591,10 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx,
     {
       dl->state = GNUNET_FSUI_ABORTED_JOINED;
     }
-  if (0 != UNLINK(dl->filename))
-    GNUNET_GE_LOG_STRERROR_FILE(dl->ctx->ectx,
-				GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-				"unlink",
-				dl->filename);
+  if (0 != UNLINK (dl->filename))
+    GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
+                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                 GNUNET_GE_BULK, "unlink", dl->filename);
   return GNUNET_OK;
 }
 
