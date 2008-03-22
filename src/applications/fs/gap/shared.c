@@ -110,6 +110,7 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
   GNUNET_hash (data, size, hc);
   GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
   if ((rl->bloomfilter != NULL) &&
+      (rl->response_client == NULL) &&
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
     return GNUNET_NO;           /* not useful */
   /* bloomfilter should cover these already */
