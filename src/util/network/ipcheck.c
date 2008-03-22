@@ -333,12 +333,10 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
  * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
 int
-GNUNET_check_ipv4_listed (const CIDRNetwork * list, const struct in_addr *ip)
+GNUNET_check_ipv4_listed (const CIDRNetwork * list, const struct in_addr *add)
 {
   int i;
-  const struct in_addr *add;
 
-  add = ip;
   i = 0;
   if (list == NULL)
     return GNUNET_NO;

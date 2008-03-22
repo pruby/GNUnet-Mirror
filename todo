@@ -4,6 +4,8 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [4'08] (aka "advanced features"):
+- support ECRS NULL download file name
+- gtk: make sure abort works as spected (call abort + stop)
 - document gnunet-auto-share on webpage
 - disconnect issues ("other peer sent too much" - solved?)
 - clean up VPN code

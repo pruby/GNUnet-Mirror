@@ -39,6 +39,8 @@ static int do_recursive;
 
 static int do_directory;
 
+static int do_delete_incomplete;
+
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static char *filename;
@@ -50,6 +52,12 @@ static unsigned int parallelism = 32;
 static GNUNET_CronTime start_time;
 
 static struct GNUNET_FSUI_DownloadList *dl;
+
+#define EC_ARGUMENTS -1
+#define EC_COMPLETED 0
+#define EC_INCOMPLETE 1
+#define EC_ABORTED 2
+#define EC_DOWNLOAD_ERROR 3
 
 static int errorCode;
 
@@ -73,6 +81,9 @@ static struct GNUNET_CommandLineOption gnunetdownloadOptions[] = {
    gettext_noop
    ("download a GNUnet directory that has already been downloaded.  Requires that a filename of an existing file is specified instead of the URI.  The download will only download the top-level files in the directory unless the `-R' option is also specified."),
    0, &GNUNET_getopt_configure_set_one, &do_directory},
+  {'D', "delete-incomplete", NULL,
+   gettext_noop ("delete incomplete downloads (when aborted with CTRL-C)"),
+   0, &GNUNET_getopt_configure_set_one, &do_delete_incomplete},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Download files from GNUnet.")),       /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
@@ -120,14 +131,14 @@ progressModel (void *unused, const GNUNET_FSUI_Event * event)
         {
           /* top-download aborted */
           printf (_("Download aborted.\n"));
-          errorCode = 2;
+          errorCode = EC_ABORTED;
           GNUNET_shutdown_initiate ();
         }
       break;
     case GNUNET_FSUI_download_error:
       printf (_("Error downloading: %s\n"),
               event->data.DownloadError.message);
-      errorCode = 3;
+      errorCode = EC_DOWNLOAD_ERROR;
       GNUNET_shutdown_initiate ();
       break;
     case GNUNET_FSUI_download_completed:
@@ -218,7 +229,7 @@ main (int argc, char *const *argv)
                    &cfgFilename, gnunetdownloadOptions, &ectx, &cfg);
   if (i == -1)
     {
-      errorCode = -1;
+      errorCode = EC_ARGUMENTS;
       goto quit;
     }
   if (i == argc)
@@ -227,7 +238,7 @@ main (int argc, char *const *argv)
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Not enough arguments. "
                        "You must specify a GNUnet file URI\n"));
-      errorCode = -1;
+      errorCode = EC_ARGUMENTS;
       goto quit;
     }
   GNUNET_GC_get_configuration_value_number (cfg,
@@ -245,7 +256,7 @@ main (int argc, char *const *argv)
                          GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                          _("URI `%s' invalid for gnunet-download.\n"),
                          argv[i]);
-          errorCode = -1;
+          errorCode = EC_ARGUMENTS;
           goto quit;
         }
     }
@@ -299,7 +310,7 @@ main (int argc, char *const *argv)
                            parallelism == 0 ? 1 : parallelism,
                            GNUNET_NO, &progressModel, NULL);
   start_time = GNUNET_get_time ();
-  errorCode = 1;
+  errorCode = EC_INCOMPLETE;
   if (do_directory)
     {
       void *data;
@@ -370,7 +381,7 @@ main (int argc, char *const *argv)
         }
     }
   GNUNET_shutdown_wait_for ();
-  if (errorCode == 1)
+  if (do_delete_incomplete)
     {
       for (i = 0; i < downloads_size; i++)
         GNUNET_FSUI_download_abort (ctx, downloads[i]);
@@ -381,7 +392,9 @@ main (int argc, char *const *argv)
   GNUNET_FSUI_stop (ctx);
   GNUNET_mutex_destroy (lock);
 
-  if ((errorCode == 0) && (dl != NULL) && (try_rename == GNUNET_YES))
+  if ( (errorCode == EC_COMPLETED) && 
+       (dl != NULL) && 
+       (try_rename == GNUNET_YES) )
     {
       char *newname = GNUNET_ECRS_suggest_better_filename (ectx,
                                                            filename);

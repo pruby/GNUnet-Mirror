@@ -541,7 +541,13 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
 
 
 /**
- * Abort a download (and all child-downloads).
+ * Abort a download (and all child-downloads).  This will also
+ * delete all of the files associated with the download
+ * (except if the download has already completed, in which
+ * case GNUNET_NO will be returned).  If this is a recursive
+ * download and some files have been completed, these files
+ * will not be removed (only incomplete downloads will be
+ * removed).
  *
  * @return GNUNET_SYSERR if no such download is pending,
  *         GNUNET_NO if the download has already finished
@@ -585,6 +591,11 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx,
     {
       dl->state = GNUNET_FSUI_ABORTED_JOINED;
     }
+  if (0 != UNLINK(dl->filename))
+    GNUNET_GE_LOG_STRERROR_FILE(dl->ctx->ectx,
+				GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+				"unlink",
+				dl->filename);
   return GNUNET_OK;
 }
 
@@ -615,7 +626,7 @@ GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx,
       GNUNET_mutex_unlock (ctx->lock);
       GNUNET_GE_LOG (ctx->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "GNUNET_FSUI_stopDownload failed to locate download.\n");
+                     "GNUNET_FSUI_download_stop failed to locate download.\n");
       return GNUNET_SYSERR;
     }
   if (prev == dl)

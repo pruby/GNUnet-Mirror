@@ -201,9 +201,12 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
         GNUNET_hash (&buf[i], 42,
                      (GNUNET_HashCode *) & buf[i + sizeof (GNUNET_HashCode)]);
       if (size != READ (fd, in, size))
-        ret = GNUNET_SYSERR;
+	{
+	  GNUNET_GE_BREAK(NULL, 0);
+	  ret = GNUNET_SYSERR;
+	}
       else if (0 == memcmp (buf, in, size))
-        ret = GNUNET_OK;
+	ret = GNUNET_OK;
       GNUNET_free (buf);
       GNUNET_free (in);
       CLOSE (fd);
