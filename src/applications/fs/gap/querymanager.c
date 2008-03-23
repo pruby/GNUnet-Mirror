@@ -520,7 +520,7 @@ repeat_requests_job (void *unused)
   GNUNET_mutex_lock (GNUNET_FS_lock);
   if (clients == NULL)   
     {  
-      GNUNET_mutex_lock (GNUNET_FS_lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return;
     }
   now = GNUNET_get_time ();
@@ -537,7 +537,7 @@ repeat_requests_job (void *unused)
   request = client->requests;
   if (request == NULL)
     {
-      GNUNET_mutex_lock (GNUNET_FS_lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return;
     }
   if (client->request_tail != request)
@@ -555,7 +555,7 @@ repeat_requests_job (void *unused)
 					    GNUNET_GAP_ESTIMATED_DATA_SIZE,
 					    GNUNET_NO)))
     {
-      GNUNET_mutex_lock (GNUNET_FS_lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return;
     }
   if (request->have_more > 0)
