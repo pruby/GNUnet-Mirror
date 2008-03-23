@@ -1044,7 +1044,7 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
         (session->wapos - session->wspos + len > sh->memory_quota)) ||
        ((sh->memory_quota == 0) &&
         (session->wapos - session->wspos + len >
-         GNUNET_MAX_GNUNET_malloc_CHECKED / 2))))
+         GNUNET_MAX_GNUNET_malloc_CHECKED / 4))))
     {
       /* not enough free space, not allowed to grow that much */
       GNUNET_mutex_unlock (sh->lock);

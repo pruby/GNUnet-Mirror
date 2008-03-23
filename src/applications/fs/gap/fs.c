@@ -449,8 +449,10 @@ fast_path_processor (const GNUNET_HashCode * key,
                                     GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO :
                                     GNUNET_YES);
   GNUNET_free (msg);
+  if (ret == GNUNET_NO)
+    cls->have_more = GNUNET_YES; /* switch to async processing */
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) || (ret != GNUNET_OK))
-    return GNUNET_SYSERR;       /* unique response or client can take no more */
+    return GNUNET_SYSERR;       /* unique response or client can take no more */    
   rl = GNUNET_malloc (sizeof (struct ResponseList));
   GNUNET_hash (dblock, size, &rl->hash);
   rl->next = cls->seen;
