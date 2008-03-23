@@ -565,6 +565,7 @@ GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
 
   applicationCore.sendValueToClient = &GNUNET_CORE_cs_send_result_to_client;    /* tcpserver.c */
   applicationCore.cs_send_to_client = &GNUNET_CORE_cs_send_to_client;   /* tcpserver.c */
+  applicationCore.cs_test_send_to_client_now = &GNUNET_CORE_cs_test_send_to_client_now;   /* tcpserver.c */
   applicationCore.registerClientHandler = &GNUNET_CORE_register_handler;        /* tcpserver.c */
   applicationCore.unregisterClientHandler = &GNUNET_CORE_unregister_handler;    /* tcpserver.c */
   applicationCore.cs_exit_handler_register = &GNUNET_CORE_cs_register_exit_handler;     /* tcpserver.c */

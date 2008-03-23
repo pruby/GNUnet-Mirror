@@ -564,6 +564,15 @@ typedef struct
                             const GNUNET_MessageHeader * message, int force);
 
   /**
+   * Test if we could send a message to the client right now.
+   * @param client
+   * @return GNUNET_OK if we could, GNUNET_NO if not, GNUNET_SYSERR on error
+   */
+  int (*cs_test_send_to_client_now) (struct GNUNET_ClientHandle * handle,
+				     unsigned int size,
+				     int would_force);
+
+  /**
    * Send a message to the client identified by the handle.  Note that
    * the core will typically buffer these messages as much as possible
    * and only return GNUNET_SYSERR if it runs out of buffers.  Returning GNUNET_OK
@@ -626,7 +635,6 @@ typedef struct
    */
   struct GNUNET_GE_Context
     *(*cs_create_client_log_context) (struct GNUNET_ClientHandle * handle);
-
 
   /* ************************ MISC ************************ */
 

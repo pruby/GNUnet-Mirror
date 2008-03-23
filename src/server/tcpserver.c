@@ -241,8 +241,18 @@ GNUNET_CORE_cs_send_to_client (struct GNUNET_ClientHandle *handle,
                  GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                  "%s: sending reply to client\n", __FUNCTION__);
 #endif
-  return GNUNET_select_write (selector, handle->sock, message, GNUNET_YES,
+  return GNUNET_select_write (selector, handle->sock, message, GNUNET_NO,
                               force);
+}
+
+int
+GNUNET_CORE_cs_test_send_to_client_now (struct GNUNET_ClientHandle *handle,
+					unsigned int size,
+					int force)
+{
+  return GNUNET_select_test_write_now (selector, handle->sock, 
+				       size, GNUNET_NO, 
+				       force);
 }
 
 void

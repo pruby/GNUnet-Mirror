@@ -445,9 +445,7 @@ fast_path_processor (const GNUNET_HashCode * key,
   type = ntohl (dblock->type);
   GNUNET_free_non_null (enc);
   ret = coreAPI->cs_send_to_client (sock, &msg->header,
-                                    type !=
-                                    GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO :
-                                    GNUNET_YES);
+                                    GNUNET_NO);
   GNUNET_free (msg);
   if (ret == GNUNET_NO)
     cls->have_more = GNUNET_YES; /* switch to async processing */
@@ -500,17 +498,26 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   fpp.seen = NULL;
   fpp.have_more = GNUNET_NO;
   fpp.processed = 0;
-  if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
+  if (GNUNET_OK == 
+      coreAPI->cs_test_send_to_client_now(sock,
+					  GNUNET_GAP_ESTIMATED_DATA_SIZE,
+					  GNUNET_NO)) 
     {
-      if ((1 == datastore->get (&rs->query[0],
-                                type, &fast_path_processor, &fpp)) ||
-          (1 == datastore->get (&rs->query[0],
-                                GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                                &fast_path_processor, &fpp)))
-        goto CLEANUP;
-    }
+      if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
+	{
+	  if ( ((1 == datastore->get (&rs->query[0],
+				      type, &fast_path_processor, &fpp)) ||
+		(1 == datastore->get (&rs->query[0],
+				      GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+				      &fast_path_processor, &fpp))) &&
+	       (fpp.have_more == GNUNET_NO) )
+	    goto CLEANUP;
+	}
+      else
+	datastore->get (&rs->query[0], type, &fast_path_processor, &fpp);
+    } 
   else
-    datastore->get (&rs->query[0], type, &fast_path_processor, &fpp);
+    fpp.have_more = GNUNET_YES;
   anonymityLevel = ntohl (rs->anonymityLevel);
   keyCount =
     1 + (ntohs (req->size) -

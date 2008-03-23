@@ -1041,10 +1041,7 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
   GNUNET_GE_ASSERT (NULL, session->wapos >= session->wspos);
   if ((force == GNUNET_NO) &&
       (((sh->memory_quota > 0) &&
-        (session->wapos - session->wspos + len > sh->memory_quota)) ||
-       ((sh->memory_quota == 0) &&
-        (session->wapos - session->wspos + len >
-         GNUNET_MAX_GNUNET_malloc_CHECKED / 4))))
+        (session->wapos - session->wspos + len > sh->memory_quota)) ))
     {
       /* not enough free space, not allowed to grow that much */
       GNUNET_mutex_unlock (sh->lock);
@@ -1077,15 +1074,32 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
           if ((sh->memory_quota > 0) &&
               (newBufferSize > sh->memory_quota) && (force == GNUNET_NO))
             newBufferSize = sh->memory_quota;
+	  if (newBufferSize > GNUNET_MAX_GNUNET_malloc_CHECKED)
+	    {
+	      /* not enough free space, not allowed to grow that much,
+		 even with forcing! */
+	      GNUNET_mutex_unlock (sh->lock);
+	      return GNUNET_NO;
+ 	    }
           GNUNET_GE_ASSERT (NULL,
                             newBufferSize >=
                             len + session->wapos - session->wspos);
-          newBuffer = GNUNET_malloc (newBufferSize);
-          memcpy (newBuffer,
-                  &session->wbuff[session->wspos],
-                  session->wapos - session->wspos);
-          GNUNET_free_non_null (session->wbuff);
-          session->wbuff = newBuffer;
+	  if (newBufferSize != session->wsize)
+	    {
+	      newBuffer = GNUNET_malloc (newBufferSize);
+	      memcpy (newBuffer,
+		      &session->wbuff[session->wspos],
+		      session->wapos - session->wspos);
+	      GNUNET_free_non_null (session->wbuff);
+	      session->wbuff = newBuffer;
+	    }
+	  else
+	    {
+	      if (session->wspos != 0)
+		memmove(session->wbuff,
+			&session->wbuff[session->wspos],
+			session->wapos - session->wspos);
+	    }
           session->wsize = newBufferSize;
           session->wapos = session->wapos - session->wspos;
           session->wspos = 0;

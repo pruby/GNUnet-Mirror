@@ -39,7 +39,7 @@
 #include "pid_table.h"
 #include "shared.h"
 
-#define CHECK_REPEAT_FREQUENCY (2 * GNUNET_CRON_SECONDS)
+#define CHECK_REPEAT_FREQUENCY (150 * GNUNET_CRON_MILLISECONDS)
 
 /**
  * Linked list with information for each client.
@@ -62,6 +62,11 @@ struct ClientDataList
    */
   struct RequestList *requests;
 
+  /**
+   * Tail of the requests list.
+   */
+  struct RequestList *request_tail;
+
 };
 
 /**
@@ -69,6 +74,8 @@ struct ClientDataList
  * per-client information.
  */
 static struct ClientDataList *clients;
+
+static struct ClientDataList *clients_tail;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
@@ -193,9 +200,13 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
       cl->client = client;
       cl->next = clients;
       clients = cl;
+      if (clients_tail == NULL)
+	clients_tail = cl;
     }
   request->next = cl->requests;
   cl->requests = request;
+  if (cl->request_tail == NULL)
+    cl->request_tail = request;
   if ((GNUNET_YES == GNUNET_FS_PLAN_request (client, 0, request)) &&
       (stats != NULL))
     stats->change (stat_gap_client_query_injected, 1);
@@ -375,6 +386,8 @@ GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
                 prev->next = rl->next;
               else
                 cl->requests = rl->next;
+	      if (rl == cl->request_tail)
+		cl->request_tail = prev;
               GNUNET_FS_SHARED_free_request_list (rl);
               if (stats != NULL)
                 stats->change (stat_gap_client_query_tracked, -1);
@@ -416,6 +429,8 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
       prev = cl;
       cl = cl->next;
     }
+  if (cl == clients_tail)
+    clients_tail = prev;
   if (cl != NULL)
     {
       while (cl->requests != NULL)
@@ -503,51 +518,80 @@ repeat_requests_job (void *unused)
   GNUNET_CronTime now;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);
+  if (clients == NULL)   
+    {  
+      GNUNET_mutex_lock (GNUNET_FS_lock);
+      return;
+    }
   now = GNUNET_get_time ();
-  client = clients;
-  while (client != NULL)
+  client = clients;  
+  if (clients_tail != client)
     {
-      request = client->requests;
-      while (request != NULL)
-        {
-          if (request->have_more > 0)
-            {
-              request->have_more--;
-              hmc.request = request;
-              hmc.processed = 0;
-              hmc.have_more = GNUNET_NO;
-              datastore->get (&request->queries[0], request->type,
-                              &have_more_processor, &hmc);
-              if (hmc.have_more)
-                request->have_more += HAVE_MORE_INCREMENT;
-            }
-          else
-            {
-              if ((NULL == request->plan_entries) &&
-                  ((client->client != NULL) ||
-                   (request->expiration > now)) &&
-                  (request->last_ttl_used * GNUNET_CRON_SECONDS +
-                   request->last_request_time < now))
-                {
-                  if ((GNUNET_OK ==
-                       GNUNET_FS_PLAN_request (client->client, 0, request))
-                      && (stats != NULL))
-                    stats->change (stat_gap_client_query_injected, 1);
-                }
-
-              if ((request->anonymityLevel == 0) &&
-                  (request->last_dht_get + request->dht_back_off < now))
-                {
-                  if (request->dht_back_off * 2 > request->dht_back_off)
-                    request->dht_back_off *= 2;
-                  request->last_dht_get = now;
-                  GNUNET_FS_DHT_execute_query (request->type,
-                                               &request->queries[0]);
-                }
-            }
-          request = request->next;
-        }
-      client = client->next;
+      /* move client to tail of list */
+      GNUNET_GE_ASSERT(NULL, clients_tail->next == NULL);
+      clients = clients->next;
+      clients_tail->next = client;
+      clients_tail = client;
+      client->next = NULL;
+    }
+  request = client->requests;
+  if (request == NULL)
+    {
+      GNUNET_mutex_lock (GNUNET_FS_lock);
+      return;
+    }
+  if (client->request_tail != request)
+    {
+      /* move request to tail of list */
+      GNUNET_GE_ASSERT(NULL, client->request_tail->next == NULL);
+      client->requests = request->next;
+      client->request_tail->next = request;
+      client->request_tail = request;
+      request->next = NULL;
+    }
+  if ( (client->client != NULL) &&
+       (GNUNET_OK != 
+	coreAPI->cs_test_send_to_client_now(client->client,
+					    GNUNET_GAP_ESTIMATED_DATA_SIZE,
+					    GNUNET_NO)))
+    {
+      GNUNET_mutex_lock (GNUNET_FS_lock);
+      return;
+    }
+  if (request->have_more > 0)
+    {
+      request->have_more--;
+      hmc.request = request;
+      hmc.processed = 0;
+      hmc.have_more = GNUNET_NO;
+      datastore->get (&request->queries[0], request->type,
+		      &have_more_processor, &hmc);
+      if (hmc.have_more)
+	request->have_more += HAVE_MORE_INCREMENT;
+    }
+  else
+    {
+      if ((NULL == request->plan_entries) &&
+	  ((client->client != NULL) ||
+	   (request->expiration > now)) &&
+	  (request->last_ttl_used * GNUNET_CRON_SECONDS +
+	   request->last_request_time < now))
+	{
+	  if ((GNUNET_OK ==
+	       GNUNET_FS_PLAN_request (client->client, 0, request))
+	      && (stats != NULL))
+	    stats->change (stat_gap_client_query_injected, 1);
+	}
+      
+      if ((request->anonymityLevel == 0) &&
+	  (request->last_dht_get + request->dht_back_off < now))
+	{
+	  if (request->dht_back_off * 2 > request->dht_back_off)
+	    request->dht_back_off *= 2;
+	  request->last_dht_get = now;
+	  GNUNET_FS_DHT_execute_query (request->type,
+				       &request->queries[0]);
+	}
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
