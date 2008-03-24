@@ -515,6 +515,7 @@ repeat_requests_job (void *unused)
   struct HMClosure hmc;
   struct ClientDataList *client;
   struct RequestList *request;
+  struct RequestList *prev;
   GNUNET_CronTime now;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);
@@ -546,9 +547,16 @@ repeat_requests_job (void *unused)
       GNUNET_GE_ASSERT(NULL, client->request_tail->next == NULL);
       client->requests = request->next;
       client->request_tail->next = request;
+      prev = client->request_tail;
       client->request_tail = request;
       request->next = NULL;
     }
+  else
+    {
+      prev = NULL;
+    }
+  GNUNET_GE_ASSERT(NULL, request->next == NULL);
+  GNUNET_GE_ASSERT(NULL, client->request_tail->next == NULL);
   if ( (client->client != NULL) &&
        (GNUNET_OK != 
 	coreAPI->cs_test_send_to_client_now(client->client,
@@ -573,11 +581,28 @@ repeat_requests_job (void *unused)
 				      GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
 				      &have_more_processor, &hmc))) &&
 	       (hmc.have_more == GNUNET_NO) )
-	    request->have_more = 0;
+	    {
+	      if (prev == NULL)
+		{
+		  client->request_tail = NULL;
+		  client->requests = NULL;
+		}
+	      else
+		{
+		  prev->next = NULL;
+		  if (client->request_tail == request)
+		    client->request_tail = prev;
+		}
+	      GNUNET_FS_SHARED_free_request_list(request);              
+	      if (stats != NULL)
+                stats->change (stat_gap_client_query_tracked, -1);
+	    }
 	}
       else
-	datastore->get (&request->queries[0], request->type,
-			&have_more_processor, &hmc);
+	{
+	  datastore->get (&request->queries[0], request->type,
+			  &have_more_processor, &hmc);
+	}
       if (hmc.have_more)
 	request->have_more += HAVE_MORE_INCREMENT;
     }
