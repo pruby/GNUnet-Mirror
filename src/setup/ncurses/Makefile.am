@@ -19,8 +19,16 @@ libgnunetsetup_curses_la_SOURCES = \
  $(GUILE_SRC) \
  wizard_curs.c wizard_curs.h
 
+if HAVE_DIALOG
+DIALOG_LIBS = -ldialog
+endif
+
+if HAVE_CDIALOG
+DIALOG_LIBS = -lcdialog
+endif
+
 libgnunetsetup_curses_la_LDFLAGS = \
- -lncursesw -ldialog -lm \
+ -lncursesw $(DIALOG_LIBS) -lm \
  -export-dynamic -avoid-version -module
 
 libgnunetsetup_curses_la_LIBADD = \

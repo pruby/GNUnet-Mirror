@@ -9,6 +9,9 @@ endif
 if HAVE_DIALOG
  curses_dir = ncurses
 endif
+if HAVE_CDIALOG
+ curses_dir = ncurses
+endif
 
 if !MINGW
 if HAVE_GUILE

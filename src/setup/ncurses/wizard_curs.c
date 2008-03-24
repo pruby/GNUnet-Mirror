@@ -31,11 +31,19 @@
  * - share helper functions with mconf.c (refactoring)
  */
 
-#include <dialog.h>
-
-#undef _
-#undef GNUNET_OK
 #include "platform.h"
+
+#ifdef HAVE_CDIALOG_DIALOG_H
+# undef PACKAGE
+# undef _
+# include <cdialog/dialog.h>
+#else
+# ifdef HAVE_DIALOG_H
+#  include <dialog.h>
+# endif
+#endif
+
+#undef GNUNET_OK
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
 
