@@ -564,8 +564,20 @@ repeat_requests_job (void *unused)
       hmc.request = request;
       hmc.processed = 0;
       hmc.have_more = GNUNET_NO;
-      datastore->get (&request->queries[0], request->type,
-		      &have_more_processor, &hmc);
+      
+      if (request->type == GNUNET_ECRS_BLOCKTYPE_DATA)
+	{
+	  if ( ((1 == datastore->get (&request->queries[0], request->type,
+				      &have_more_processor, &hmc)) ||
+		(1 == datastore->get (&request->queries[0],
+				      GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+				      &have_more_processor, &hmc))) &&
+	       (hmc.have_more == GNUNET_NO) )
+	    request->have_more = 0;
+	}
+      else
+	datastore->get (&request->queries[0], request->type,
+			&have_more_processor, &hmc);
       if (hmc.have_more)
 	request->have_more += HAVE_MORE_INCREMENT;
     }
