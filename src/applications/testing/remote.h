@@ -44,10 +44,10 @@ typedef enum
 
 struct GNUNET_REMOTE_daemon_list
 {
-	struct GNUNET_REMOTE_daemon_list *next;
-	char *hostname;
-	unsigned long long port;
-	
+  struct GNUNET_REMOTE_daemon_list *next;
+  char *hostname;
+  unsigned long long port;
+
 };
 
 
@@ -63,15 +63,17 @@ struct GNUNET_REMOTE_daemon_list
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 int
-GNUNET_REMOTE_connect_daemons ( char * ip1, unsigned short port1, char * ip2, unsigned short port2);
+GNUNET_REMOTE_connect_daemons (char *ip1, unsigned short port1, char *ip2,
+                               unsigned short port2);
 
 /**
  * Create a topology (connect the running gnunetd's) that corresponds
  * to the type specified in t.
  */
-int 
-GNUNET_REMOTE_create_topology(GNUNET_REMOTE_TOPOLOGIES t,int number_of_daemons);
+int
+GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
+                               int number_of_daemons);
 
-#endif /*REMOTE_H_*/
+#endif /*REMOTE_H_ */
 
 /* end of remote.h */

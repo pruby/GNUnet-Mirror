@@ -41,7 +41,7 @@ static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
   {'n', "number_of_daemons", "NUMBER_OF_DAEMONS",
    gettext_noop ("set number of daemons to start"),
    1, &GNUNET_getopt_configure_set_ulong, &number_of_daemons},  /* -n */
-   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 

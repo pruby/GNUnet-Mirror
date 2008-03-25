@@ -39,33 +39,37 @@ printInfo (void *data,
            "%s: %llu - %u\n", (const char *) &oth, last_message, bpmFromPeer);
   return GNUNET_OK;
 }
- 
+
 int
-GNUNET_REMOTE_connect_clique(struct GNUNET_REMOTE_daemon_list *main_list)
+GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_daemon_list *main_list)
 {
-	struct GNUNET_REMOTE_daemon_list *pos = main_list;
-	struct GNUNET_REMOTE_daemon_list *iter_pos = main_list;
- 	
-	while((pos != NULL)&&(pos->next != NULL))
-		{
-			iter_pos = pos->next;
-			while(iter_pos != NULL)
-			{
-				GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port, iter_pos->hostname, iter_pos->port);
-				iter_pos = iter_pos->next;
-			}
-			pos = pos->next;
-		}
-		
-	return GNUNET_OK;
+  struct GNUNET_REMOTE_daemon_list *pos = main_list;
+  struct GNUNET_REMOTE_daemon_list *iter_pos = main_list;
+
+  while ((pos != NULL) && (pos->next != NULL))
+    {
+      iter_pos = pos->next;
+      while (iter_pos != NULL)
+        {
+          GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
+                                         iter_pos->hostname, iter_pos->port);
+          iter_pos = iter_pos->next;
+        }
+      pos = pos->next;
+    }
+
+  return GNUNET_OK;
 }
 
 int
-GNUNET_REMOTE_connect_2d_torus(int number_of_daemons,struct GNUNET_REMOTE_daemon_list **list_as_array)
+GNUNET_REMOTE_connect_2d_torus (int number_of_daemons,
+                                struct GNUNET_REMOTE_daemon_list
+                                **list_as_array)
 {
-  
+
   return GNUNET_SYSERR;
 }
+
 /**
 * Establish a connection between two GNUnet daemons
 *
@@ -77,7 +81,8 @@ GNUNET_REMOTE_connect_2d_torus(int number_of_daemons,struct GNUNET_REMOTE_daemon
 */
 
 int
-GNUNET_REMOTE_connect_daemons ( char * hostname1, unsigned short port1, char * hostname2, unsigned short port2)
+GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
+                               char *hostname2, unsigned short port2)
 {
   char host[128];
   struct GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
@@ -92,11 +97,11 @@ GNUNET_REMOTE_connect_daemons ( char * hostname1, unsigned short port1, char * h
   GNUNET_snprintf (host, 128, "%s:%u", hostname1, port1);
   GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
                                             host);
-	fprintf(stderr,"host1 is %s\n",host);                              
+  fprintf (stderr, "host1 is %s\n", host);
   GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
   GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
                                             host);
-  fprintf(stderr,"host2 is %s\n",host);
+  fprintf (stderr, "host2 is %s\n", host);
   if ((GNUNET_OK ==
        GNUNET_wait_for_daemon_running (NULL, cfg1, 300 * GNUNET_CRON_SECONDS))
       && (GNUNET_OK ==
@@ -159,7 +164,7 @@ GNUNET_REMOTE_connect_daemons ( char * hostname1, unsigned short port1, char * h
           GNUNET_IDENTITY_request_peer_infos (sock2, &printInfo, NULL);
 
         }
-      fprintf (stderr, "%s\n", ret == GNUNET_OK ? "!" : "?");
+      fprintf (stderr, "%s\n", ret == GNUNET_OK ? "Connected nodes." : "?");
       GNUNET_client_connection_destroy (sock1);
       GNUNET_client_connection_destroy (sock2);
     }
@@ -171,5 +176,5 @@ GNUNET_REMOTE_connect_daemons ( char * hostname1, unsigned short port1, char * h
   GNUNET_GC_free (cfg2);
   return ret;
 }
- 
+
 /* end of remotetopologies.c */
