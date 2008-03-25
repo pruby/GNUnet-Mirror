@@ -24,11 +24,8 @@
  * @author Nathan Evans
  */
 
-#include "platform.h"
-#include "gnunet_protocols.h"
-#include "gnunet_identity_lib.h"
-#include "gnunet_util.h"
-#include "gnunet_testing_lib.h"
+#include "remote.h"
+#include "remotetopologies.c"
 
 #define VERBOSE GNUNET_NO
 
@@ -39,29 +36,8 @@ const unsigned long long MAX_PORT_INCREMENT = -1;
 const unsigned long long MIN_NUMBER_DAEMONS = 1;
 const unsigned long long MAX_NUMBER_DAEMONS = -1;
 
-static void
-updatePort (struct GNUNET_GC_Configuration *cfg,
-            const char *section, unsigned short offset)
-{
-  unsigned long long old;
-
-  if ((GNUNET_YES == GNUNET_GC_have_configuration_value (cfg,
-                                                         section,
-                                                         "PORT")) &&
-      (0 == GNUNET_GC_get_configuration_value_number (cfg,
-                                                      section,
-                                                      "PORT",
-                                                      0, 65535, 65535, &old)))
-    {
-      old += offset;
-      GNUNET_GE_ASSERT (NULL,
-                        0 == GNUNET_GC_set_configuration_value_number (cfg,
-                                                                       NULL,
-                                                                       section,
-                                                                       "PORT",
-                                                                       old));
-    }
-}
+static struct GNUNET_REMOTE_daemon_list *head;
+static struct GNUNET_REMOTE_daemon_list **list_as_array;
 
 
 /**
@@ -90,7 +66,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
             configFileName, username, hostname, remote_config_path);
 
-  printf ("scp command is : %s \n", cmd);
+  fprintf (stderr,"scp command is : %s \n", cmd);
   system (cmd);
 
   GNUNET_free (cmd);
@@ -101,7 +77,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s", username,
             hostname, gnunetd_home, remote_config_path, configFileName);
 
-  printf ("ssh command is : %s \n", cmd);
+  fprintf (stderr,"ssh command is : %s \n", cmd);
 
   system (cmd);
 
@@ -114,7 +90,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                              unsigned int number_of_daemons)
 {
   struct GNUNET_GC_Configuration *basecfg;
-
+  struct GNUNET_REMOTE_daemon_list *array_of_pointers[number_of_daemons];
+	struct GNUNET_REMOTE_daemon_list *temp_pos;
+	list_as_array = &array_of_pointers[0];
+	
   char *ssh_username;
   char *control_host;
   char *remote_config_path;
@@ -125,21 +104,24 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   unsigned long long starting_port;
   unsigned long long port_increment;
   unsigned long long daemons_per_machine;
-
+  
   char *hostnames;
   char *temp;
   char *temp_path;
   char *temp_pid_file;
   char *curr_host;
+  char *temp_remote_config_path;
 
   unsigned int extra_daemons;
   unsigned int count;
+  unsigned int count_started;
   unsigned int length;
   unsigned int length_temp;
   unsigned int num_machines;
   unsigned int i;
   unsigned int j;
   unsigned int pos;
+  int temp_remote_config_path_length;
   int ret;
   char *ipk_dir;
 
@@ -194,6 +176,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   extra_daemons = number_of_daemons - (daemons_per_machine * num_machines);
 
   i = 0;
+  count_started = 0;
   pos = length;
   while (i < num_machines)
     {
@@ -207,6 +190,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 
       GNUNET_GC_set_configuration_value_number (basecfg, NULL, "NETWORK",
                                                 "PORT", starting_port);
+			GNUNET_GC_set_configuration_value_number (basecfg, NULL, "TCP",
+                                                "PORT", starting_port + 1);
+      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "UDP",
+                                                "PORT", starting_port + 1);                                          
       GNUNET_GC_set_configuration_value_string (basecfg, NULL, "NETWORK",
                                                 "TRUSTED", control_host);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL, "PATHS",
@@ -237,12 +224,26 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
           GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                     "GNUNETD", "PIDFILE",
                                                     temp_pid_file);
+
           GNUNET_free (temp_pid_file);
+          
+          temp_remote_config_path_length = snprintf(NULL,0,"%s%d",remote_config_path,j);
+          temp_remote_config_path = GNUNET_malloc(temp_remote_config_path_length + 1);
+          snprintf(temp_remote_config_path,temp_remote_config_path_length + 1,"%s%d",remote_config_path,j);
 
-          updatePort (basecfg, "NETWORK", j + port_increment);
-          updatePort (basecfg, "TCP", j + port_increment);
-          updatePort (basecfg, "UDP", j + port_increment);
+		      GNUNET_GC_set_configuration_value_string (basecfg, NULL, "PATHS",
+                                                "GNUNETD_HOME",
+                                                temp_remote_config_path);
+                                                
+					GNUNET_free(temp_remote_config_path);                                    
 
+		      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "NETWORK",
+                                                "PORT", starting_port + (j*port_increment));
+          GNUNET_GC_set_configuration_value_number (basecfg, NULL, "TCP",
+                                                "PORT", starting_port + (j*port_increment) + 1);
+      		GNUNET_GC_set_configuration_value_number (basecfg, NULL, "UDP",
+                                                "PORT", starting_port + (j*port_increment) + 1);                                                 
+				
           temp_path = GNUNET_strdup ("/tmp/gnunetd.conf.XXXXXX");
           ret = mkstemp (temp_path);
 
@@ -272,6 +273,17 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
                                           temp, remote_config_path,
                                           curr_host, ssh_username);
+              temp_pos = GNUNET_malloc(sizeof(struct GNUNET_REMOTE_daemon_list));
+              temp_pos->hostname = GNUNET_malloc(strlen(curr_host));
+              strcpy(temp_pos->hostname,curr_host);
+              GNUNET_GC_get_configuration_value_number (basecfg,
+                                                      "NETWORK",
+                                                      "PORT",
+                                                      0, 65535, 65535, &temp_pos->port);
+              temp_pos->next = head;
+              head = temp_pos;
+              array_of_pointers[count_started] = temp_pos;
+              count_started++;
             }
           GNUNET_free (temp);
           UNLINK (temp_path);
@@ -291,9 +303,13 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                         temp_pid_file);
               GNUNET_free (temp_pid_file);
 
-              updatePort (basecfg, "NETWORK", (j + 1) + port_increment);
-              updatePort (basecfg, "TCP", (j + 1) + port_increment);
-              updatePort (basecfg, "UDP", (j + 1) + port_increment);
+							GNUNET_GC_set_configuration_value_number (basecfg, NULL, "NETWORK",
+                                                "PORT", starting_port + ((j+1)*port_increment));
+          		GNUNET_GC_set_configuration_value_number (basecfg, NULL, "TCP",
+                                                "PORT", starting_port + ((j+1)*port_increment) + 1);
+      				GNUNET_GC_set_configuration_value_number (basecfg, NULL, "UDP",
+                                                "PORT", starting_port + ((j+1)*port_increment) + 1); 
+              
               temp_path = GNUNET_strdup ("/tmp/gnunetd.conf.XXXXXX");
               ret = mkstemp (temp_path);
 
@@ -322,11 +338,21 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               temp = GNUNET_malloc (32);
               if (1 == sscanf (temp_path, "/tmp/%s", temp))
                 {
-                  printf ("calling start on %s\n", curr_host);
                   GNUNET_REMOTE_start_daemon (remote_gnunetd_path,
                                               "/tmp/", temp,
                                               remote_config_path,
                                               curr_host, ssh_username);
+                	temp_pos = GNUNET_malloc(sizeof(struct GNUNET_REMOTE_daemon_list));
+                	temp_pos->hostname = GNUNET_malloc(strlen(curr_host));
+              		strcpy(temp_pos->hostname,curr_host);
+              		GNUNET_GC_get_configuration_value_number (basecfg,
+                                                      "NETWORK",
+                                                      "PORT",
+                                                      0, 65535, 65535, &temp_pos->port);
+              		temp_pos->next = head;
+              		head = temp_pos;
+              		array_of_pointers[count_started] = temp_pos;
+              		count_started++;
                 }
               UNLINK (temp_path);
               GNUNET_free (temp_path);
@@ -337,7 +363,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
       GNUNET_GC_free (basecfg);
       ++i;
     }
-
+	ret = GNUNET_REMOTE_create_topology(GNUNET_REMOTE_CLIQUE,number_of_daemons);
   GNUNET_free (base_config);
   GNUNET_free (remote_pid_path);
   GNUNET_free (data_dir);
@@ -347,7 +373,31 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   GNUNET_free (remote_config_path);
   GNUNET_free (remote_gnunetd_path);
 
-  return GNUNET_OK;
+  return ret;
 }
 
+int 
+GNUNET_REMOTE_create_topology(GNUNET_REMOTE_TOPOLOGIES t,int number_of_daemons)
+{
+	int ret;
+	
+	ret = GNUNET_OK;
+	switch (t)
+	{
+		case GNUNET_REMOTE_CLIQUE:
+			ret = GNUNET_REMOTE_connect_clique(head);
+			break;
+  	case GNUNET_REMOTE_SMALL_WORLD:
+  		break;
+		case GNUNET_REMOTE_RING:
+			break;
+  	case GNUNET_REMOTE_2D_TORUS:
+  	  ret = GNUNET_REMOTE_connect_2d_torus(number_of_daemons,list_as_array);
+  		break;
+		default:
+			break;	
+	}
+	
+	return ret;
+}
 /* end of remote.c */
