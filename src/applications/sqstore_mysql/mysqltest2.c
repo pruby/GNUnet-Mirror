@@ -141,9 +141,10 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i, int k)
   value = GNUNET_malloc (size);
   value->size = htonl (size);
   value->type = htonl (i);
-  value->prio = htonl (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100));
-  value->anonymityLevel = htonl (i);
-  value->expirationTime =
+  value->priority =
+    htonl (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100));
+  value->anonymity_level = htonl (i);
+  value->expiration_time =
     GNUNET_htonll (GNUNET_get_time () +
                    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
   memset (&value[1], i, size - sizeof (GNUNET_DatastoreValue));

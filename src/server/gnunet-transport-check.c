@@ -110,22 +110,23 @@ testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
   int ret;
 
   GNUNET_GE_ASSERT (ectx, tapi != NULL);
-  if (tapi->protocolNumber == GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT)
+  if (tapi->protocol_number == GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT)
     {
       *res = GNUNET_OK;
       return;                   /* NAT cannot be tested */
     }
-  helo = tapi->createhello ();
+  helo = tapi->hello_create ();
   if (helo == NULL)
     {
-      fprintf (stderr, _("`%s': Could not create hello.\n"), tapi->transName);
+      fprintf (stderr, _("`%s': Could not create hello.\n"),
+               tapi->transport_name);
       *res = GNUNET_SYSERR;
       return;
     }
   tsession = NULL;
   if (GNUNET_OK != tapi->connect (helo, &tsession, GNUNET_NO))
     {
-      fprintf (stderr, _("`%s': Could not connect.\n"), tapi->transName);
+      fprintf (stderr, _("`%s': Could not connect.\n"), tapi->transport_name);
       *res = GNUNET_SYSERR;
       GNUNET_free (helo);
       return;
@@ -159,7 +160,8 @@ testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
                                                  ntohs (noise->size));
       if (ret != GNUNET_OK)
         {
-          fprintf (stderr, _("`%s': Could not send.\n"), tapi->transName);
+          fprintf (stderr, _("`%s': Could not send.\n"),
+                   tapi->transport_name);
           *res = GNUNET_SYSERR;
           tapi->disconnect (tsession);
           GNUNET_semaphore_destroy (sem);
@@ -175,7 +177,7 @@ testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
         {
           FPRINTF (stderr,
                    _("`%s': Did not receive message within %llu ms.\n"),
-                   tapi->transName, timeout);
+                   tapi->transport_name, timeout);
           *res = GNUNET_SYSERR;
           tapi->disconnect (tsession);
           GNUNET_semaphore_destroy (sem);
@@ -187,7 +189,8 @@ testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
   end = GNUNET_get_time ();
   if (GNUNET_OK != tapi->disconnect (tsession))
     {
-      fprintf (stderr, _("`%s': Could not disconnect.\n"), tapi->transName);
+      fprintf (stderr, _("`%s': Could not disconnect.\n"),
+               tapi->transport_name);
       *res = GNUNET_SYSERR;
       GNUNET_semaphore_destroy (sem);
       return;
@@ -195,7 +198,7 @@ testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
   GNUNET_semaphore_destroy (sem);
   printf (_
           ("`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes each.\n"),
-          tapi->transName,
+          tapi->transport_name,
           (unsigned int) ((end - start) / GNUNET_CRON_MILLISECONDS), total,
           expectedSize);
 }
@@ -221,7 +224,7 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
   unsigned long long verbose;
 
   stats[0]++;                   /* one more seen */
-  if (GNUNET_NO == transport->isAvailable (ntohs (xhello->protocol)))
+  if (GNUNET_NO == transport->test_available (ntohs (xhello->protocol)))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -245,7 +248,7 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
       unsigned int addr_len;
       int have_addr;
 
-      have_addr = transport->helloToAddress (xhello, &addr, &addr_len);
+      have_addr = transport->hello_to_address (xhello, &addr, &addr_len);
       if (have_addr == GNUNET_NO)
         {
           str = GNUNET_strdup ("NAT");  /* most likely */
@@ -263,10 +266,10 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
   hello = GNUNET_malloc (ntohs (xhello->header.size));
   memcpy (hello, xhello, ntohs (xhello->header.size));
 
-  myHello = transport->createhello (ntohs (xhello->protocol));
+  myHello = transport->hello_create (ntohs (xhello->protocol));
   if (myHello == NULL)
     /* try NAT */
-    myHello = transport->createhello (GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
+    myHello = transport->hello_create (GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
   if (myHello == NULL)
     {
       GNUNET_free (hello);
@@ -497,7 +500,7 @@ main (int argc, char *const *argv)
   else
     {
       while ((Xrepeat-- > 0) && (GNUNET_shutdown_test () == GNUNET_NO))
-        transport->forEach (&testTAPI, &res);
+        transport->iterate_available (&testTAPI, &res);
     }
   GNUNET_cron_stop (cron);
   GNUNET_CORE_release_service (identity);

@@ -247,12 +247,10 @@ GNUNET_CORE_cs_send_to_client (struct GNUNET_ClientHandle *handle,
 
 int
 GNUNET_CORE_cs_test_send_to_client_now (struct GNUNET_ClientHandle *handle,
-					unsigned int size,
-					int force)
+                                        unsigned int size, int force)
 {
-  return GNUNET_select_test_write_now (selector, handle->sock, 
-				       size, GNUNET_NO, 
-				       force);
+  return GNUNET_select_test_write_now (selector, handle->sock,
+                                       size, GNUNET_NO, force);
 }
 
 void

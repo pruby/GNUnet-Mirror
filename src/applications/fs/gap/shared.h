@@ -314,7 +314,7 @@ int
 GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
                                           const GNUNET_HashCode * primary_key,
                                           unsigned int size,
-                                          const DBlock * data,
+                                          const GNUNET_EC_DBlock * data,
                                           GNUNET_HashCode * hc);
 
 /**
@@ -327,7 +327,7 @@ GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
 
 /**
  * If the data portion and type of the value match our value in the
- * closure, copy the header (prio, anonymityLevel, expirationTime) and
+ * closure, copy the header (priority, anonymity_level, expiration_time) and
  * abort the iteration: we found what we're looing for.  Otherwise
  * continue.
  */
@@ -357,7 +357,7 @@ GNUNET_FS_HELPER_mingle_hash (const GNUNET_HashCode * in,
  * value for the ttl that can be requested.
  *
  * @param ttl_in requested ttl
- * @param prio given priority
+ * @param priority given priority
  * @return ttl_in if ttl_in is below the limit,
  *         otherwise the ttl-limit for the given priority
  */
@@ -370,18 +370,18 @@ int GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio);
  * @param request used to check if the response is new and
  *        unique, maybe NULL (skip test in that case)
  * @param hc set to hash of the message by this function
- * 
+ *
  * @return GNUNET_OK on success,
  *         GNUNET_NO on temporary failure,
  *         GNUNET_SYSERR on serious error
  */
-int 
-GNUNET_FS_HELPER_send_to_client(GNUNET_CoreAPIForPlugins * coreAPI,
-				const GNUNET_HashCode * key,
-				const GNUNET_DatastoreValue * value,
-				struct GNUNET_ClientHandle * client,
-				struct RequestList * request,
-				GNUNET_HashCode * hc);
+int
+GNUNET_FS_HELPER_send_to_client (GNUNET_CoreAPIForPlugins * coreAPI,
+                                 const GNUNET_HashCode * key,
+                                 const GNUNET_DatastoreValue * value,
+                                 struct GNUNET_ClientHandle *client,
+                                 struct RequestList *request,
+                                 GNUNET_HashCode * hc);
 
 
 #endif

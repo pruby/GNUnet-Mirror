@@ -125,13 +125,13 @@ get_result (const GNUNET_HashCode * key,
                  __FUNCTION__, __FILE__, __LINE__, size, value);
 #endif
   if (GNUNET_OK !=
-      coreAPI->cs_send_to_client (record->client, &msg->header, GNUNET_YES))
+      coreAPI->cs_send_message (record->client, &msg->header, GNUNET_YES))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _("`%s' failed. Terminating connection to client.\n"),
                      "cs_send_to_client");
-      coreAPI->cs_terminate_client_connection (record->client);
+      coreAPI->cs_disconnect_now (record->client);
     }
   GNUNET_free (msg);
   return GNUNET_OK;
@@ -211,7 +211,7 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   int status;
 
-  dhtAPI = capi->request_service ("dht");
+  dhtAPI = capi->service_request ("dht");
   if (dhtAPI == NULL)
     return GNUNET_SYSERR;
   coreAPI = capi;
@@ -223,12 +223,12 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
   status = GNUNET_OK;
   lock = GNUNET_mutex_create (GNUNET_NO);
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_PUT, &csPut))
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_PUT, &csPut))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
     status = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->cs_exit_handler_register (&csClientExit))
+  if (GNUNET_SYSERR == capi->cs_disconnect_handler_register (&csClientExit))
     status = GNUNET_SYSERR;
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -288,19 +288,19 @@ done_module_dht ()
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "DHT: shutdown\n");
   if (GNUNET_OK !=
-      coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_PUT,
-                                        &csPut))
+      coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_DHT_REQUEST_PUT,
+                                      &csPut))
     status = GNUNET_SYSERR;
   if (GNUNET_OK !=
-      coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET,
-                                        &csGet))
+      coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_DHT_REQUEST_GET,
+                                      &csGet))
     status = GNUNET_SYSERR;
-  if (GNUNET_OK != coreAPI->cs_exit_handler_unregister (&csClientExit))
+  if (GNUNET_OK != coreAPI->cs_disconnect_handler_unregister (&csClientExit))
     status = GNUNET_SYSERR;
 
   while (getRecords != NULL)
     kill_record (getRecords);
-  coreAPI->release_service (dhtAPI);
+  coreAPI->service_release (dhtAPI);
   dhtAPI = NULL;
   coreAPI = NULL;
   GNUNET_mutex_destroy (lock);

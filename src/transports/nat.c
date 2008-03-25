@@ -90,7 +90,7 @@ verifyHello (const GNUNET_MessageHello * hello)
   if (((0 == strcmp (choice, "YES")) ||
        ((0 == strcmp (choice, "AUTO")) &&
         (lan_ip_detected ()))) &&
-      (0 != memcmp (&coreAPI->myIdentity->hashPubKey,
+      (0 != memcmp (&coreAPI->my_identity->hashPubKey,
                     &hello->senderIdentity.hashPubKey,
                     sizeof (GNUNET_HashCode))))
     {
@@ -232,19 +232,19 @@ GNUNET_TransportAPI *
 inittransport_nat (GNUNET_CoreAPIForTransport * core)
 {
   coreAPI = core;
-  natAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;
+  natAPI.protocol_number = GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;
   natAPI.mtu = 0;
   natAPI.cost = 30000;
-  natAPI.verifyHello = &verifyHello;
-  natAPI.createhello = &createhello;
+  natAPI.hello_verify = &verifyHello;
+  natAPI.hello_create = &createhello;
   natAPI.connect = &natConnect;
   natAPI.send = &natSend;
   natAPI.associate = &natAssociate;
   natAPI.disconnect = &natDisconnect;
-  natAPI.startTransportServer = &startTransportServer;
-  natAPI.stopTransportServer = &stopTransportServer;
-  natAPI.helloToAddress = &helloToAddress;
-  natAPI.testWouldTry = &testWouldTry;
+  natAPI.server_start = &startTransportServer;
+  natAPI.server_stop = &stopTransportServer;
+  natAPI.hello_to_address = &helloToAddress;
+  natAPI.send_now_test = &testWouldTry;
 
   return &natAPI;
 }

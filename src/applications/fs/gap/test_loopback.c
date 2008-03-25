@@ -99,7 +99,7 @@ uploadFile (unsigned int size)
   GNUNET_disk_file_close (ectx, name, fd);
   ret = GNUNET_ECRS_file_upload (ectx, cfg, name, GNUNET_YES,   /* index */
                                  0,     /* anon */
-                                 0,     /* prio */
+                                 0,     /* priority */
                                  GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
                                  &uprogress, NULL, &testTerminate, NULL,
                                  &uri);

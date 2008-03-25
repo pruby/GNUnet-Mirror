@@ -125,7 +125,7 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
   reply = GNUNET_malloc (ntohs (message->size));
   memcpy (reply, message, ntohs (message->size));
   reply->type = htons (GNUNET_P2P_PROTO_TBENCH_REPLY);
-  coreAPI->unicast (sender, reply, ntohl (msg->priority), 0);   /* no delay */
+  coreAPI->ciphertext_send (sender, reply, ntohl (msg->priority), 0);   /* no delay */
   GNUNET_free (reply);
   return GNUNET_OK;
 }
@@ -314,7 +314,7 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
                          "Sending message %u of size %u in iteration %u\n",
                          packetNum, size, iteration);
 #endif
-          coreAPI->unicast (&msg->receiverId, &p2p->header, ntohl (msg->priority), 0);  /* no delay */
+          coreAPI->ciphertext_send (&msg->receiverId, &p2p->header, ntohl (msg->priority), 0);  /* no delay */
           if ((delay != 0) &&
               (htonl (msg->trainSize) != 0) &&
               (packetNum % htonl (msg->trainSize)) == 0)
@@ -384,7 +384,7 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
   reply.variance_loss = sum_variance_loss / (iterations - 1);
   GNUNET_free (results);
   results = NULL;
-  return coreAPI->cs_send_to_client (client, &reply.header, GNUNET_YES);
+  return coreAPI->cs_send_message (client, &reply.header, GNUNET_YES);
 }
 
 /**
@@ -400,15 +400,17 @@ initialize_module_tbench (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
   lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
-  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TBENCH_REPLY,
-                                              &handleTBenchReply))
-    ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST,
-                                              &handleTBenchReq))
+  if (GNUNET_SYSERR ==
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_TBENCH_REPLY,
+                                             &handleTBenchReply))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
-                                   &csHandleTBenchRequest))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_TBENCH_REQUEST,
+                                             &handleTBenchReq))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->cs_handler_register (GNUNET_CS_PROTO_TBENCH_REQUEST,
+                                 &csHandleTBenchRequest))
     ok = GNUNET_SYSERR;
 
   GNUNET_GE_ASSERT (capi->ectx,
@@ -425,12 +427,12 @@ initialize_module_tbench (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_tbench ()
 {
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST,
-                              &handleTBenchReq);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REPLY,
-                              &handleTBenchReply);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
-                                    &csHandleTBenchRequest);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_TBENCH_REQUEST,
+                                              &handleTBenchReq);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_TBENCH_REPLY,
+                                              &handleTBenchReply);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_TBENCH_REQUEST,
+                                  &csHandleTBenchRequest);
   GNUNET_mutex_destroy (lock);
   lock = NULL;
   coreAPI = NULL;

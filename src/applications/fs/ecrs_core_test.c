@@ -33,15 +33,15 @@
 static int
 testEC ()
 {
-  DBlock *data;
+  GNUNET_EC_DBlock *data;
   GNUNET_DatastoreValue *value;
   GNUNET_HashCode query;
   GNUNET_HashCode key;
   unsigned int len;
 
-  len = sizeof (DBlock) + 42;
+  len = sizeof (GNUNET_EC_DBlock) + 42;
   data = GNUNET_malloc (len);
-  memset (&data[1], rand (), len - sizeof (DBlock));
+  memset (&data[1], rand (), len - sizeof (GNUNET_EC_DBlock));
   data->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   CHECK (GNUNET_ECRS_BLOCKTYPE_DATA ==
          GNUNET_EC_file_block_get_type (len, data), data);

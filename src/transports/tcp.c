@@ -166,8 +166,7 @@ tcp_session_free (TCPSession * tcpsession)
   GNUNET_mutex_unlock (lock);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_OK ==
-                    coreAPI->
-                    connection_assert_tsession_unused (tcpsession->tsession));
+                    coreAPI->tsession_assert_unused (tcpsession->tsession));
   GNUNET_mutex_lock (lock);
   GNUNET_free (tcpsession->tsession);
   GNUNET_free (tcpsession);
@@ -327,7 +326,7 @@ select_accept_handler (void *ah_cls,
   tcpSession->sock = sock;
   /* fill in placeholder identity to mark that we
      are waiting for the welcome message */
-  tcpSession->sender = *(coreAPI->myIdentity);
+  tcpSession->sender = *(coreAPI->my_identity);
   tcpSession->expectingWelcome = GNUNET_YES;
   tcpSession->users = 0;
   tcpSession->in_select = GNUNET_YES;
@@ -337,7 +336,7 @@ select_accept_handler (void *ah_cls,
   tsession->ttype = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
   tsession->internal = tcpSession;
   tcpSession->tsession = tsession;
-  tsession->peer = *(coreAPI->myIdentity);
+  tsession->peer = *(coreAPI->my_identity);
   if (addr_len > 0)
     {
       tcpSession->accept_addr = GNUNET_malloc (addr_len);
@@ -502,7 +501,7 @@ tcp_connect_helper (const GNUNET_MessageHello * hello,
      connection! */
   welcome.header.size = htons (sizeof (TCPWelcome));
   welcome.header.type = htons (0);
-  welcome.clientIdentity = *(coreAPI->myIdentity);
+  welcome.clientIdentity = *(coreAPI->my_identity);
   if (GNUNET_OK !=
       GNUNET_select_write (selector, s, &welcome.header, GNUNET_NO,
                            GNUNET_YES))
@@ -630,7 +629,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
-  return tcp_connect_helper (hello, s, myAPI.protocolNumber, tsessionPtr);
+  return tcp_connect_helper (hello, s, myAPI.protocol_number, tsessionPtr);
 }
 
 /**
@@ -783,7 +782,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
   if (GNUNET_GC_get_configuration_value_yesno (cfg, "TCP", "UPNP", GNUNET_YES)
       == GNUNET_YES)
     {
-      upnp = coreAPI->request_service ("upnp");
+      upnp = coreAPI->service_request ("upnp");
 
       if (upnp == NULL)
         {
@@ -796,7 +795,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
 
         }
     }
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -805,19 +804,19 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
       stat_bytesDropped
         = stats->create (gettext_noop ("# bytes dropped by TCP (outgoing)"));
     }
-  myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
+  myAPI.protocol_number = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
   myAPI.mtu = 0;
   myAPI.cost = 20000;           /* about equal to udp */
-  myAPI.verifyHello = &verify_hello;
-  myAPI.createhello = &create_hello;
+  myAPI.hello_verify = &verify_hello;
+  myAPI.hello_create = &create_hello;
   myAPI.connect = &tcp_connect;
   myAPI.associate = &tcp_associate;
   myAPI.send = &tcp_send;
   myAPI.disconnect = &tcp_disconnect;
-  myAPI.startTransportServer = &tcp_transport_server_start;
-  myAPI.stopTransportServer = &tcp_transport_server_stop;
-  myAPI.helloToAddress = &hello_to_address;
-  myAPI.testWouldTry = &tcp_test_would_try;
+  myAPI.server_start = &tcp_transport_server_start;
+  myAPI.server_stop = &tcp_transport_server_stop;
+  myAPI.hello_to_address = &hello_to_address;
+  myAPI.send_now_test = &tcp_test_would_try;
 
   return &myAPI;
 }

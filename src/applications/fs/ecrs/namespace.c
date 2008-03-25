@@ -94,16 +94,16 @@ GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
 
 /**
  * Create a new namespace (and publish an advertismement).
- * This publishes both an NBlock in the namespace itself
+ * This publishes both an GNUNET_EC_NBlock in the namespace itself
  * as well as KNBlocks under all keywords specified in
  * the advertisementURI.
  *
  * @param name the name for the namespace
- * @param anonymityLevel for the namespace advertismement
+ * @param anonymity_level for the namespace advertismement
  * @param priority for the namespace advertisement
  * @param expiration for the namespace advertisement
  * @param advertisementURI the keyword (!) URI to advertise the
- *        namespace under (KNBlock)
+ *        namespace under (GNUNET_EC_KNBlock)
  * @param meta meta-data for the namespace advertisement
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
@@ -136,8 +136,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   unsigned int size;
   unsigned int mdsize;
   struct GNUNET_RSA_PrivateKey *pk;
-  NBlock *nb;
-  KNBlock *knb;
+  GNUNET_EC_NBlock *nb;
+  GNUNET_EC_KNBlock *knb;
   char **keywords;
   unsigned int keywordCount;
   int i;
@@ -172,14 +172,14 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   mdsize =
     GNUNET_ECRS_meta_data_get_serialized_size (meta,
                                                GNUNET_ECRS_SERIALIZE_PART);
-  size = mdsize + sizeof (NBlock);
+  size = mdsize + sizeof (GNUNET_EC_NBlock);
   if (size > MAX_NBLOCK_SIZE)
     {
       size = MAX_NBLOCK_SIZE;
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
-      nb = (NBlock *) & value[1];
+      nb = (GNUNET_EC_NBlock *) & value[1];
       nb->type = htonl (GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
-      mdsize = size - sizeof (NBlock);
+      mdsize = size - sizeof (GNUNET_EC_NBlock);
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
                                                 meta,
                                                 (char *) &nb[1],
@@ -192,12 +192,12 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
           GNUNET_RSA_free_key (hk);
           return NULL;
         }
-      size = sizeof (NBlock) + mdsize;
+      size = sizeof (GNUNET_EC_NBlock) + mdsize;
     }
   else
     {
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
-      nb = (NBlock *) & value[1];
+      nb = (GNUNET_EC_NBlock *) & value[1];
       nb->type = htonl (GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
       GNUNET_ECRS_meta_data_serialize (ectx,
                                        meta,
@@ -206,12 +206,12 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
-  value->prio = htonl (priority);
-  value->anonymityLevel = htonl (anonymityLevel);
-  value->expirationTime = GNUNET_htonll (expiration);
+  value->priority = htonl (priority);
+  value->anonymity_level = htonl (anonymityLevel);
+  value->expiration_time = GNUNET_htonll (expiration);
   sock = GNUNET_client_connection_create (ectx, cfg);
 
-  /* publish NBlock */
+  /* publish GNUNET_EC_NBlock */
   memset (&nb->identifier, 0, sizeof (GNUNET_HashCode));
   GNUNET_RSA_get_public_key (hk, &nb->subspace);
   GNUNET_hash (&nb->subspace, sizeof (GNUNET_RSA_PublicKey), &nb->namespace);
@@ -242,37 +242,41 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
 
 
   /* publish KNBlocks */
-  size += sizeof (KNBlock) - sizeof (NBlock);
+  size += sizeof (GNUNET_EC_KNBlock) - sizeof (GNUNET_EC_NBlock);
   knvalue = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
   *knvalue = *value;
   knvalue->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE);
   knvalue->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
-  knb = (KNBlock *) & knvalue[1];
+  knb = (GNUNET_EC_KNBlock *) & knvalue[1];
   knb->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE);
-  memcpy (&knb->nblock, nb, sizeof (NBlock) + mdsize);
+  memcpy (&knb->nblock, nb, sizeof (GNUNET_EC_NBlock) + mdsize);
 
   if (advertisementURI != NULL)
     {
       keywords = advertisementURI->data.ksk.keywords;
       keywordCount = advertisementURI->data.ksk.keywordCount;
-      cpy = GNUNET_malloc (size - sizeof (KBlock) - sizeof (unsigned int));
-      memcpy (cpy,
-              &knb->nblock, size - sizeof (KBlock) - sizeof (unsigned int));
+      cpy =
+        GNUNET_malloc (size - sizeof (GNUNET_EC_KBlock) -
+                       sizeof (unsigned int));
+      memcpy (cpy, &knb->nblock,
+              size - sizeof (GNUNET_EC_KBlock) - sizeof (unsigned int));
       for (i = 0; i < keywordCount; i++)
         {
           GNUNET_hash (keywords[i], strlen (keywords[i]), &hc);
           pk = GNUNET_RSA_create_key_from_hash (&hc);
           GNUNET_RSA_get_public_key (pk, &knb->kblock.keyspace);
           GNUNET_GE_ASSERT (ectx,
-                            size - sizeof (KBlock) - sizeof (unsigned int) ==
-                            sizeof (NBlock) + mdsize);
+                            size - sizeof (GNUNET_EC_KBlock) -
+                            sizeof (unsigned int) ==
+                            sizeof (GNUNET_EC_NBlock) + mdsize);
           GNUNET_ECRS_encryptInPlace (&hc, &knb->nblock,
-                                      size - sizeof (KBlock) -
+                                      size - sizeof (GNUNET_EC_KBlock) -
                                       sizeof (unsigned int));
 
           GNUNET_GE_ASSERT (ectx,
                             GNUNET_OK == GNUNET_RSA_sign (pk,
-                                                          sizeof (NBlock) +
+                                                          sizeof
+                                                          (GNUNET_EC_NBlock) +
                                                           mdsize,
                                                           &knb->nblock,
                                                           &knb->kblock.
@@ -293,7 +297,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
             }
           /* restore nblock to avoid re-encryption! */
           memcpy (&knb->nblock,
-                  cpy, size - sizeof (KBlock) - sizeof (unsigned int));
+                  cpy,
+                  size - sizeof (GNUNET_EC_KBlock) - sizeof (unsigned int));
         }
       GNUNET_free (cpy);
     }
@@ -397,7 +402,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   unsigned int size;
   unsigned int mdsize;
   struct GNUNET_RSA_PrivateKey *hk;
-  SBlock *sb;
+  GNUNET_EC_SBlock *sb;
   GNUNET_HashCode namespace;
   char *dstURI;
   char *destPos;
@@ -439,21 +444,21 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   if (hk == NULL)
     return NULL;
 
-  /* THEN: construct SBlock */
+  /* THEN: construct GNUNET_EC_SBlock */
   dstURI = GNUNET_ECRS_uri_to_string (dstU);
   mdsize =
     GNUNET_ECRS_meta_data_get_serialized_size (md,
                                                GNUNET_ECRS_SERIALIZE_PART);
-  size = mdsize + sizeof (SBlock) + strlen (dstURI) + 1;
+  size = mdsize + sizeof (GNUNET_EC_SBlock) + strlen (dstURI) + 1;
   if (size > MAX_SBLOCK_SIZE)
     {
       size = MAX_SBLOCK_SIZE;
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
-      sb = (SBlock *) & value[1];
+      sb = (GNUNET_EC_SBlock *) & value[1];
       sb->type = htonl (GNUNET_ECRS_BLOCKTYPE_SIGNED);
       destPos = (char *) &sb[1];
       memcpy (destPos, dstURI, strlen (dstURI) + 1);
-      mdsize = size - sizeof (SBlock) - strlen (dstURI) - 1;
+      mdsize = size - sizeof (GNUNET_EC_SBlock) - strlen (dstURI) - 1;
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
                                                 md,
                                                 &destPos[strlen (dstURI) + 1],
@@ -467,12 +472,12 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
           GNUNET_free (value);
           return NULL;
         }
-      size = sizeof (SBlock) + mdsize + strlen (dstURI) + 1;
+      size = sizeof (GNUNET_EC_SBlock) + mdsize + strlen (dstURI) + 1;
     }
   else
     {
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
-      sb = (SBlock *) & value[1];
+      sb = (GNUNET_EC_SBlock *) & value[1];
       sb->type = htonl (GNUNET_ECRS_BLOCKTYPE_SIGNED);
       destPos = (char *) &sb[1];
       memcpy (destPos, dstURI, strlen (dstURI) + 1);
@@ -483,11 +488,11 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_ECRS_BLOCKTYPE_SIGNED);
-  value->prio = htonl (priority);
-  value->anonymityLevel = htonl (anonymityLevel);
-  value->expirationTime = GNUNET_htonll (expiration);
+  value->priority = htonl (priority);
+  value->anonymity_level = htonl (anonymityLevel);
+  value->expiration_time = GNUNET_htonll (expiration);
 
-  /* update SBlock specific data */
+  /* update GNUNET_EC_SBlock specific data */
   sb->creationTime = htonl (creationTime);
   sb->updateInterval = htonl (updateInterval);
   sb->nextIdentifier = *nextId;
@@ -510,7 +515,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
                               - sizeof (GNUNET_RSA_Signature)
                               - sizeof (GNUNET_RSA_PublicKey) -
                               sizeof (GNUNET_HashCode));
-  /* FINALLY: GNUNET_RSA_sign & publish SBlock */
+  /* FINALLY: GNUNET_RSA_sign & publish GNUNET_EC_SBlock */
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_OK == GNUNET_RSA_sign (hk,
                                                   size

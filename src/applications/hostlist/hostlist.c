@@ -125,7 +125,7 @@ access_handler_callback (void *cls,
     results.protocols = -1;
   for (i = GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX;
        i > GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT; i--)
-    host_processor (coreAPI->myIdentity, i, GNUNET_YES, &results);
+    host_processor (coreAPI->my_identity, i, GNUNET_YES, &results);
   identity->forEachHost (GNUNET_get_time (), &host_processor, &results);
   if (results.size == 0)
     return MHD_NO;              /* no known hosts!? */
@@ -151,14 +151,14 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
                                                       "PORT", 0, 65535, 8080,
                                                       &port))
     return GNUNET_SYSERR;
-  identity = capi->request_service ("identity");
+  identity = capi->service_request ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   coreAPI = capi;
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_request_count
@@ -183,10 +183,10 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
     {
       if (stats != NULL)
         {
-          coreAPI->release_service (stats);
+          coreAPI->service_release (stats);
           stats = NULL;
         }
-      coreAPI->release_service (identity);
+      coreAPI->service_release (identity);
       identity = NULL;
       return GNUNET_SYSERR;
     }
@@ -207,10 +207,10 @@ done_module_hostlist ()
   daemon_handle = NULL;
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
   coreAPI = NULL;
 }

@@ -29,7 +29,7 @@
  * TODO:
  * - integrate with migration submodule
  * - make sure we do an immediate PUSH for DHT stuff
- *   given to us with anonymityLevel zero.
+ *   given to us with anonymity_level zero.
  */
 
 #include "platform.h"
@@ -119,8 +119,8 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
        GNUNET_EC_file_block_check_and_get_query (ntohs (ri->header.size) -
                                                  sizeof
                                                  (CS_fs_request_insert_MESSAGE),
-                                                 (const DBlock *) &ri[1],
-                                                 GNUNET_YES, &query)))
+                                                 (const GNUNET_EC_DBlock *)
+                                                 &ri[1], GNUNET_YES, &query)))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
@@ -131,25 +131,25 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
   datum->size =
     htonl (sizeof (GNUNET_DatastoreValue) + ntohs (req->size) -
            sizeof (CS_fs_request_insert_MESSAGE));
-  datum->expirationTime = ri->expiration;
-  datum->prio = ri->prio;
-  datum->anonymityLevel = ri->anonymityLevel;
+  datum->expiration_time = ri->expiration;
+  datum->priority = ri->priority;
+  datum->anonymity_level = ri->anonymity_level;
   datum->type =
     htonl (GNUNET_EC_file_block_get_type
            (ntohs (ri->header.size) - sizeof (CS_fs_request_insert_MESSAGE),
-            (const DBlock *) &ri[1]));
+            (const GNUNET_EC_DBlock *) &ri[1]));
 #if DEBUG_FS
   IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&query, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
-                 &enc, ntohl (datum->type), ntohl (ri->prio));
+                 &enc, ntohl (datum->type), ntohl (ri->priority));
 #endif
   memcpy (&datum[1],
           &ri[1], ntohs (req->size) - sizeof (CS_fs_request_insert_MESSAGE));
   ret = datastore->putUpdate (&query, datum);
   GNUNET_free (datum);
-  return coreAPI->sendValueToClient (sock, ret);
+  return coreAPI->cs_send_value (sock, ret);
 }
 
 /**
@@ -179,7 +179,7 @@ handle_cs_init_index_request (struct GNUNET_ClientHandle *sock,
   fn = GNUNET_malloc (fnLen + 1);
   strncpy (fn, (const char *) &ri[1], fnLen + 1);
   fn[fnLen] = 0;
-  cectx = coreAPI->cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_log_context_create (sock);
   ret =
     GNUNET_FS_ONDEMAND_index_prepare_with_symlink (cectx, &ri->fileId, fn);
   GNUNET_GE_free_context (cectx);
@@ -190,7 +190,7 @@ handle_cs_init_index_request (struct GNUNET_ClientHandle *sock,
                  "Sending confirmation (%s) of index initialization request to client\n",
                  ret == GNUNET_OK ? "success" : "failure");
 #endif
-  return coreAPI->sendValueToClient (sock, ret);
+  return coreAPI->cs_send_value (sock, ret);
 }
 
 /**
@@ -215,31 +215,32 @@ handle_cs_index_request (struct GNUNET_ClientHandle *sock,
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  cectx = coreAPI->cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_log_context_create (sock);
   ri = (const CS_fs_request_index_MESSAGE *) req;
 #if DEBUG_FS
-  GNUNET_EC_file_block_get_query ((const DBlock *) &ri[1],
+  GNUNET_EC_file_block_get_query ((const GNUNET_EC_DBlock *) &ri[1],
                                   ntohs (ri->header.size) -
                                   sizeof (CS_fs_request_index_MESSAGE), &hc);
   IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&hc, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "FS received REQUEST INDEX (query: `%s', priority %u)\n",
-                 &enc, ntohl (ri->prio));
+                 &enc, ntohl (ri->priority));
 #endif
   ret = GNUNET_FS_ONDEMAND_add_indexed_content (cectx,
                                                 datastore,
-                                                ntohl (ri->prio),
+                                                ntohl (ri->priority),
                                                 GNUNET_ntohll (ri->
                                                                expiration),
                                                 GNUNET_ntohll (ri->
                                                                fileOffset),
-                                                ntohl (ri->anonymityLevel),
+                                                ntohl (ri->anonymity_level),
                                                 &ri->fileId,
                                                 ntohs (ri->header.size) -
                                                 sizeof
                                                 (CS_fs_request_index_MESSAGE),
-                                                (const DBlock *) &ri[1]);
+                                                (const GNUNET_EC_DBlock *)
+                                                &ri[1]);
   GNUNET_GE_free_context (cectx);
 #if DEBUG_FS
   GNUNET_GE_LOG (ectx,
@@ -247,7 +248,7 @@ handle_cs_index_request (struct GNUNET_ClientHandle *sock,
                  "Sending confirmation (%s) of index request to client\n",
                  ret == GNUNET_OK ? "success" : "failure");
 #endif
-  return coreAPI->sendValueToClient (sock, ret);
+  return coreAPI->cs_send_value (sock, ret);
 }
 
 /**
@@ -283,7 +284,7 @@ handle_cs_delete_request (struct GNUNET_ClientHandle *sock,
   type =
     GNUNET_EC_file_block_get_type (ntohs (rd->header.size) -
                                    sizeof (CS_fs_request_delete_MESSAGE),
-                                   (const DBlock *) &rd[1]);
+                                   (const GNUNET_EC_DBlock *) &rd[1]);
   value->type = htonl (type);
   memcpy (&value[1],
           &rd[1], ntohs (req->size) - sizeof (CS_fs_request_delete_MESSAGE));
@@ -291,8 +292,8 @@ handle_cs_delete_request (struct GNUNET_ClientHandle *sock,
       GNUNET_EC_file_block_check_and_get_query (ntohs (rd->header.size) -
                                                 sizeof
                                                 (CS_fs_request_delete_MESSAGE),
-                                                (const DBlock *) &rd[1],
-                                                GNUNET_NO, &query))
+                                                (const GNUNET_EC_DBlock *)
+                                                &rd[1], GNUNET_NO, &query))
     {
       GNUNET_free (value);
       GNUNET_GE_BREAK (ectx, 0);
@@ -326,7 +327,7 @@ handle_cs_delete_request (struct GNUNET_ClientHandle *sock,
                  "Sending confirmation (%s) of delete request to client\n",
                  ret != GNUNET_SYSERR ? "success" : "failure");
 #endif
-  return coreAPI->sendValueToClient (sock, ret);
+  return coreAPI->cs_send_value (sock, ret);
 }
 
 /**
@@ -340,7 +341,7 @@ handle_cs_unindex_request (struct GNUNET_ClientHandle *sock,
   const CS_fs_request_unindex_MESSAGE *ru;
   struct GNUNET_GE_Context *cectx;
 
-  cectx = coreAPI->cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_log_context_create (sock);
   if (ntohs (req->size) != sizeof (CS_fs_request_unindex_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -359,7 +360,7 @@ handle_cs_unindex_request (struct GNUNET_ClientHandle *sock,
                                                    ntohl (ru->blocksize),
                                                    &ru->fileId);
   GNUNET_GE_free_context (cectx);
-  return coreAPI->sendValueToClient (sock, ret);
+  return coreAPI->cs_send_value (sock, ret);
 }
 
 /**
@@ -385,7 +386,7 @@ handle_cs_test_indexed_request (struct GNUNET_ClientHandle *sock,
                  "FS received REQUEST TESTINDEXED\n");
 #endif
   ret = GNUNET_FS_ONDEMAND_test_indexed_file (datastore, &ru->fileId);
-  return coreAPI->sendValueToClient (sock, ret);
+  return coreAPI->cs_send_value (sock, ret);
 }
 
 struct FPPClosure
@@ -417,18 +418,14 @@ fast_path_processor (const GNUNET_HashCode * key,
       cls->have_more = GNUNET_YES;
       return GNUNET_SYSERR;
     }
-  type = ntohl(((const DBlock*) &value[1])->type);
-  ret = GNUNET_FS_HELPER_send_to_client(coreAPI,
-					key,
-					value,
-					cls->sock,
-					NULL,
-					&hc);
+  type = ntohl (((const GNUNET_EC_DBlock *) &value[1])->type);
+  ret = GNUNET_FS_HELPER_send_to_client (coreAPI,
+                                         key, value, cls->sock, NULL, &hc);
   if (ret == GNUNET_NO)
-    return GNUNET_NO; /* delete + continue */
+    return GNUNET_NO;           /* delete + continue */
   cls->processed++;
   if (ret != GNUNET_OK)
-    cls->have_more = GNUNET_YES; /* switch to async processing */
+    cls->have_more = GNUNET_YES;        /* switch to async processing */
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) || (ret != GNUNET_OK))
     return GNUNET_SYSERR;       /* unique response or client can take no more */
   rl = GNUNET_malloc (sizeof (struct ResponseList));
@@ -478,27 +475,27 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   fpp.seen = NULL;
   fpp.have_more = GNUNET_NO;
   fpp.processed = 0;
-  if (GNUNET_OK == 
-      coreAPI->cs_test_send_to_client_now(sock,
-					  GNUNET_GAP_ESTIMATED_DATA_SIZE,
-					  GNUNET_NO)) 
+  if (GNUNET_OK ==
+      coreAPI->cs_send_message_now_test (sock,
+                                         GNUNET_GAP_ESTIMATED_DATA_SIZE,
+                                         GNUNET_NO))
     {
       if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
-	{
-	  if ( ((1 == datastore->get (&rs->query[0],
-				      type, &fast_path_processor, &fpp)) ||
-		(1 == datastore->get (&rs->query[0],
-				      GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-				      &fast_path_processor, &fpp))) &&
-	       (fpp.have_more == GNUNET_NO) )
-	    goto CLEANUP;
-	}
+        {
+          if (((1 == datastore->get (&rs->query[0],
+                                     type, &fast_path_processor, &fpp)) ||
+               (1 == datastore->get (&rs->query[0],
+                                     GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+                                     &fast_path_processor, &fpp))) &&
+              (fpp.have_more == GNUNET_NO))
+            goto CLEANUP;
+        }
       else
-	datastore->get (&rs->query[0], type, &fast_path_processor, &fpp);
-    } 
+        datastore->get (&rs->query[0], type, &fast_path_processor, &fpp);
+    }
   else
     fpp.have_more = GNUNET_YES;
-  anonymityLevel = ntohl (rs->anonymityLevel);
+  anonymityLevel = ntohl (rs->anonymity_level);
   keyCount =
     1 + (ntohs (req->size) -
          sizeof (CS_fs_request_search_MESSAGE)) / sizeof (GNUNET_HashCode);
@@ -585,7 +582,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
        sizeof (P2P_gap_query_MESSAGE) + (query_count -
                                          1) * sizeof (GNUNET_HashCode))
       || (0 ==
-          memcmp (&req->returnTo, coreAPI->myIdentity,
+          memcmp (&req->returnTo, coreAPI->my_identity,
                   sizeof (GNUNET_PeerIdentity))))
     {
       GNUNET_GE_BREAK_OP (ectx, 0);
@@ -648,7 +645,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   preference = (double) prio;
   if (preference < QUERY_BANDWIDTH_VALUE)
     preference = QUERY_BANDWIDTH_VALUE;
-  coreAPI->preferTrafficFrom (sender, preference);
+  coreAPI->p2p_connection_preference_increase (sender, preference);
   GNUNET_FS_GAP_execute_query (sender,
                                prio,
                                ntohl (req->priority),
@@ -674,7 +671,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
                     const GNUNET_MessageHeader * pmsg)
 {
   const P2P_gap_reply_MESSAGE *msg;
-  const DBlock *dblock;
+  const GNUNET_EC_DBlock *dblock;
   GNUNET_DatastoreValue *value;
   GNUNET_HashCode query;
   unsigned short size;
@@ -691,7 +688,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
     }
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
   data_size = size - sizeof (P2P_gap_reply_MESSAGE);
-  dblock = (const DBlock *) &msg[1];
+  dblock = (const GNUNET_EC_DBlock *) &msg[1];
   if (GNUNET_OK !=
       GNUNET_EC_file_block_check_and_get_query (data_size,
                                                 dblock, GNUNET_YES, &query))
@@ -719,9 +716,10 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       value = GNUNET_malloc (data_size + sizeof (GNUNET_DatastoreValue));
       value->size = htonl (data_size + sizeof (GNUNET_DatastoreValue));
       value->type = dblock->type;
-      value->prio = htonl (prio);
-      value->anonymityLevel = htonl (1);
-      value->expirationTime = GNUNET_htonll (expiration + GNUNET_get_time ());
+      value->priority = htonl (prio);
+      value->anonymity_level = htonl (1);
+      value->expiration_time =
+        GNUNET_htonll (expiration + GNUNET_get_time ());
       memcpy (&value[1], dblock, data_size);
       datastore->putUpdate (&query, value);
       GNUNET_free (value);
@@ -734,7 +732,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       preference = (double) prio;
       if (preference < CONTENT_BANDWIDTH_VALUE)
         preference = CONTENT_BANDWIDTH_VALUE;
-      coreAPI->preferTrafficFrom (sender, preference);
+      coreAPI->p2p_connection_preference_increase (sender, preference);
     }
   return GNUNET_OK;
 }
@@ -751,13 +749,13 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
 {
   ectx = capi->ectx;
   coreAPI = capi;
-  GNUNET_GE_ASSERT (ectx, sizeof (CHK) == 128);
-  GNUNET_GE_ASSERT (ectx, sizeof (DBlock) == 4);
-  GNUNET_GE_ASSERT (ectx, sizeof (IBlock) == 132);
-  GNUNET_GE_ASSERT (ectx, sizeof (KBlock) == 524);
-  GNUNET_GE_ASSERT (ectx, sizeof (SBlock) == 724);
-  GNUNET_GE_ASSERT (ectx, sizeof (NBlock) == 716);
-  GNUNET_GE_ASSERT (ectx, sizeof (KNBlock) == 1244);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_ContentHashKey) == 128);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_DBlock) == 4);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_IBlock) == 132);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_KBlock) == 524);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_SBlock) == 724);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_NBlock) == 716);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_KNBlock) == 1244);
 
   if ((-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "LOAD", "HARDCPULIMIT", 0, 100000, /* 1000 CPUs!? */
                                                        0,       /* 0 == no limit */
@@ -768,7 +766,7 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
     = GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
                                                "FS",
                                                "ACTIVEMIGRATION", GNUNET_NO);
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_gap_query_received =
@@ -780,22 +778,22 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_trust_awarded =
         stats->create (gettext_noop ("# gap total trust awarded"));
     }
-  identity = capi->request_service ("identity");
+  identity = capi->service_request ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->release_service (stats);
+      capi->service_release (stats);
       return GNUNET_SYSERR;
     }
-  datastore = capi->request_service ("datastore");
+  datastore = capi->service_request ("datastore");
   if (datastore == NULL)
     {
-      capi->release_service (identity);
-      capi->release_service (stats);
+      capi->service_release (identity);
+      capi->service_release (stats);
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  GNUNET_FS_lock = capi->connection_get_lock ();        // GNUNET_mutex_create (GNUNET_YES);
+  GNUNET_FS_lock = capi->global_lock_get ();    // GNUNET_mutex_create (GNUNET_YES);
   GNUNET_FS_ANONYMITY_init (capi);
   GNUNET_FS_PLAN_init (capi);
   GNUNET_FS_ONDEMAND_init (capi);
@@ -815,43 +813,43 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_P2P_PROTO_GAP_QUERY, GNUNET_P2P_PROTO_GAP_RESULT);
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->registerHandler (GNUNET_P2P_PROTO_GAP_QUERY,
-                                           &handle_p2p_query));
-  GNUNET_GE_ASSERT (ectx,
-                    GNUNET_SYSERR !=
-                    capi->registerHandler (GNUNET_P2P_PROTO_GAP_RESULT,
-                                           &handle_p2p_content));
+                    capi->
+                    p2p_ciphertext_handler_register
+                    (GNUNET_P2P_PROTO_GAP_QUERY, &handle_p2p_query));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->
-                    registerClientHandler (GNUNET_CS_PROTO_GAP_QUERY_START,
-                                           &handle_cs_query_start_request));
-  GNUNET_GE_ASSERT (ectx,
-                    GNUNET_SYSERR !=
-                    capi->registerClientHandler (GNUNET_CS_PROTO_GAP_INSERT,
-                                                 &handle_cs_insert_request));
-  GNUNET_GE_ASSERT (ectx,
-                    GNUNET_SYSERR !=
-                    capi->registerClientHandler (GNUNET_CS_PROTO_GAP_INDEX,
-                                                 &handle_cs_index_request));
+                    p2p_ciphertext_handler_register
+                    (GNUNET_P2P_PROTO_GAP_RESULT, &handle_p2p_content));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->
-                    registerClientHandler (GNUNET_CS_PROTO_GAP_INIT_INDEX,
-                                           &handle_cs_init_index_request));
+                    cs_handler_register (GNUNET_CS_PROTO_GAP_QUERY_START,
+                                         &handle_cs_query_start_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->registerClientHandler (GNUNET_CS_PROTO_GAP_DELETE,
-                                                 &handle_cs_delete_request));
+                    capi->cs_handler_register (GNUNET_CS_PROTO_GAP_INSERT,
+                                               &handle_cs_insert_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->registerClientHandler (GNUNET_CS_PROTO_GAP_UNINDEX,
-                                                 &handle_cs_unindex_request));
+                    capi->cs_handler_register (GNUNET_CS_PROTO_GAP_INDEX,
+                                               &handle_cs_index_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    registerClientHandler (GNUNET_CS_PROTO_GAP_TESTINDEX,
-                                           &handle_cs_test_indexed_request));
+                    capi->cs_handler_register (GNUNET_CS_PROTO_GAP_INIT_INDEX,
+                                               &handle_cs_init_index_request));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    capi->cs_handler_register (GNUNET_CS_PROTO_GAP_DELETE,
+                                               &handle_cs_delete_request));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    capi->cs_handler_register (GNUNET_CS_PROTO_GAP_UNINDEX,
+                                               &handle_cs_unindex_request));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    capi->cs_handler_register (GNUNET_CS_PROTO_GAP_TESTINDEX,
+                                               &handle_cs_test_indexed_request));
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
@@ -870,49 +868,51 @@ done_module_fs ()
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->unregisterHandler (GNUNET_P2P_PROTO_GAP_QUERY,
-                                                &handle_p2p_query));
-
-  GNUNET_GE_ASSERT (ectx,
-                    GNUNET_SYSERR !=
-                    coreAPI->unregisterHandler (GNUNET_P2P_PROTO_GAP_RESULT,
-                                                &handle_p2p_content));
+                    coreAPI->
+                    p2p_ciphertext_handler_unregister
+                    (GNUNET_P2P_PROTO_GAP_QUERY, &handle_p2p_query));
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_QUERY_START,
-                                             &handle_cs_query_start_request));
+                    p2p_ciphertext_handler_unregister
+                    (GNUNET_P2P_PROTO_GAP_RESULT, &handle_p2p_content));
+
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_INSERT,
-                                             &handle_cs_insert_request));
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_QUERY_START,
+                                           &handle_cs_query_start_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_INDEX,
-                                             &handle_cs_index_request));
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_INSERT,
+                                           &handle_cs_insert_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_INIT_INDEX,
-                                             &handle_cs_init_index_request));
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_INDEX,
+                                           &handle_cs_index_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_DELETE,
-                                             &handle_cs_delete_request));
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_INIT_INDEX,
+                                           &handle_cs_init_index_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_UNINDEX,
-                                             &handle_cs_unindex_request));
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_DELETE,
+                                           &handle_cs_delete_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregisterClientHandler (GNUNET_CS_PROTO_GAP_TESTINDEX,
-                                             &handle_cs_test_indexed_request));
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_UNINDEX,
+                                           &handle_cs_unindex_request));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    coreAPI->
+                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_TESTINDEX,
+                                           &handle_cs_test_indexed_request));
   GNUNET_FS_MIGRATION_done ();
   GNUNET_FS_GAP_done ();
   GNUNET_FS_DHT_done ();
@@ -923,12 +923,12 @@ done_module_fs ()
   GNUNET_FS_PT_done ();
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
-  coreAPI->release_service (datastore);
+  coreAPI->service_release (datastore);
   datastore = NULL;
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
 
 

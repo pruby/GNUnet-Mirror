@@ -23,6 +23,9 @@
  * @brief plaform specifics
  *
  * @author Nils Durner
+ *
+ * This file should never be included by installed
+ * header files (thos starting with "gnunet_").
  */
 
 #ifndef PLATFORM_H

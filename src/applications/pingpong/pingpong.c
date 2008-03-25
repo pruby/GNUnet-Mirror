@@ -138,7 +138,7 @@ pingReceived (const GNUNET_PeerIdentity * sender,
   if (stats != NULL)
     stats->change (stat_pingReceived, 1);
   pmsg = (const P2P_pingpong_MESSAGE *) msg;
-  if (0 != memcmp (coreAPI->myIdentity,
+  if (0 != memcmp (coreAPI->my_identity,
                    &pmsg->receiver, sizeof (GNUNET_PeerIdentity)))
     {
       GNUNET_GE_LOG (ectx,
@@ -159,7 +159,7 @@ pingReceived (const GNUNET_PeerIdentity * sender,
   pong.header.type = htons (GNUNET_P2P_PROTO_PONG);
   if (stats != NULL)
     stats->change (stat_pingReceived, 1);
-  coreAPI->unicast (sender, &pong.header, GNUNET_EXTREME_PRIORITY, 0);  /* send now! */
+  coreAPI->ciphertext_send (sender, &pong.header, GNUNET_EXTREME_PRIORITY, 0);  /* send now! */
   if (stats != NULL)
     stats->change (stat_pongSent, 1);
   return GNUNET_OK;
@@ -172,12 +172,11 @@ connection_send_plaintext (const GNUNET_PeerIdentity * peer,
   GNUNET_TSession *mytsession;
   int ret;
 
-  mytsession = transport->connectFreely (peer, GNUNET_YES, __FILE__);
+  mytsession = transport->connect_freely (peer, GNUNET_YES, __FILE__);
   if (mytsession == NULL)
     return GNUNET_SYSERR;
-  ret = coreAPI->connection_send_plaintext (mytsession,
-                                            (char *) msg,
-                                            sizeof (P2P_pingpong_MESSAGE));
+  ret = coreAPI->plaintext_send (mytsession,
+                                 (char *) msg, sizeof (P2P_pingpong_MESSAGE));
   transport->disconnect (mytsession, __FILE__);
   return ret;
 }
@@ -207,7 +206,7 @@ plaintextPingReceived (const GNUNET_PeerIdentity * sender,
       return GNUNET_SYSERR;
     }
   pmsg = (const P2P_pingpong_MESSAGE *) hmsg;
-  if (0 != memcmp (coreAPI->myIdentity,
+  if (0 != memcmp (coreAPI->my_identity,
                    &pmsg->receiver, sizeof (GNUNET_PeerIdentity)))
     {
       GNUNET_hash_to_enc (&sender->hashPubKey, &enc);
@@ -231,9 +230,9 @@ plaintextPingReceived (const GNUNET_PeerIdentity * sender,
      transport may have been uni-directional! */
   ret = GNUNET_SYSERR;
   if (tsession != NULL)
-    ret = coreAPI->connection_send_plaintext (tsession,
-                                              (char *) &pong,
-                                              sizeof (P2P_pingpong_MESSAGE));
+    ret = coreAPI->plaintext_send (tsession,
+                                   (char *) &pong,
+                                   sizeof (P2P_pingpong_MESSAGE));
   if (ret != GNUNET_OK)
     ret = connection_send_plaintext (sender, &pong);
   if (ret == GNUNET_OK)
@@ -480,7 +479,7 @@ initiatePing (const GNUNET_PeerIdentity * receiver,
     }
   else
     {
-      coreAPI->unicast (receiver, pmsg, GNUNET_EXTREME_PRIORITY, 0);
+      coreAPI->ciphertext_send (receiver, pmsg, GNUNET_EXTREME_PRIORITY, 0);
       if (stats != NULL)
         stats->change (stat_ciphertextPingSent, 1);
     }
@@ -499,20 +498,20 @@ provide_module_pingpong (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_pingpong_MESSAGE) == 72);
   coreAPI = capi;
-  identity = capi->request_service ("identity");
+  identity = capi->service_request ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       return NULL;
     }
-  transport = capi->request_service ("transport");
+  transport = capi->service_request ("transport");
   if (transport == NULL)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
-      capi->release_service (identity);
+      capi->service_release (identity);
       return NULL;
     }
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_encryptedPongReceived
@@ -537,7 +536,7 @@ provide_module_pingpong (GNUNET_CoreAPIForPlugins * capi)
         create (gettext_noop ("# plaintext PONG transmissions failed"));
 
     }
-  pingPongLock = capi->connection_get_lock ();
+  pingPongLock = capi->global_lock_get ();
   pingPongs =
     (PingPongEntry *) GNUNET_malloc (sizeof (PingPongEntry) * MAX_PING_PONG);
   memset (pingPongs, 0, sizeof (PingPongEntry) * MAX_PING_PONG);
@@ -546,12 +545,14 @@ provide_module_pingpong (GNUNET_CoreAPIForPlugins * capi)
                  _
                  ("`%s' registering handlers %d %d (plaintext and ciphertext)\n"),
                  "pingpong", GNUNET_P2P_PROTO_PING, GNUNET_P2P_PROTO_PONG);
-  capi->registerHandler (GNUNET_P2P_PROTO_PING, &pingReceived);
-  capi->registerHandler (GNUNET_P2P_PROTO_PONG, &pongReceived);
-  capi->plaintext_register_handler (GNUNET_P2P_PROTO_PING,
-                                    &plaintextPingReceived);
-  capi->plaintext_register_handler (GNUNET_P2P_PROTO_PONG,
-                                    &plaintextPongReceived);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_PING,
+                                         &pingReceived);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_PONG,
+                                         &pongReceived);
+  capi->p2p_plaintext_handler_register (GNUNET_P2P_PROTO_PING,
+                                        &plaintextPingReceived);
+  capi->p2p_plaintext_handler_register (GNUNET_P2P_PROTO_PONG,
+                                        &plaintextPongReceived);
   ret.ping = &initiatePing;
   ret.pingUser = &createPing;
   ret.ping_size = sizeof (P2P_pingpong_MESSAGE);
@@ -566,21 +567,23 @@ release_module_pingpong ()
 {
   int i;
 
-  coreAPI->release_service (stats);
+  coreAPI->service_release (stats);
   stats = NULL;
-  coreAPI->release_service (transport);
+  coreAPI->service_release (transport);
   transport = NULL;
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
   for (i = 0; i < MAX_PING_PONG; i++)
     GNUNET_free_non_null (pingPongs[i].data);
   GNUNET_free (pingPongs);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_PING, &pingReceived);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_PONG, &pongReceived);
-  coreAPI->plaintext_unregister_handler (GNUNET_P2P_PROTO_PING,
-                                         &plaintextPingReceived);
-  coreAPI->plaintext_unregister_handler (GNUNET_P2P_PROTO_PONG,
-                                         &plaintextPongReceived);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_PING,
+                                              &pingReceived);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_PONG,
+                                              &pongReceived);
+  coreAPI->p2p_plaintext_handler_unregister (GNUNET_P2P_PROTO_PING,
+                                             &plaintextPingReceived);
+  coreAPI->p2p_plaintext_handler_unregister (GNUNET_P2P_PROTO_PONG,
+                                             &plaintextPongReceived);
   coreAPI = NULL;
   return GNUNET_OK;
 }

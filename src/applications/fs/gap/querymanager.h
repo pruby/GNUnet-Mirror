@@ -66,7 +66,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
  *        not yet been performed; checking the
  *        signature has already been done)
  * @param size size of the data
- * @param data the data itself (a DBlock)
+ * @param data the data itself (a GNUNET_EC_DBlock)
  * @return how much was this content worth to us?
  */
 unsigned int
@@ -74,7 +74,7 @@ GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
                                         const GNUNET_HashCode * primary_query,
                                         GNUNET_CronTime expirationTime,
                                         unsigned int size,
-                                        const DBlock * data);
+                                        const GNUNET_EC_DBlock * data);
 
 
 #endif

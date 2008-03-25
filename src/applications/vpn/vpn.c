@@ -433,7 +433,7 @@ setup_tunnel (int n, const GNUNET_PeerIdentity * them)
       (store1 + n)->ifindex = ifr.ifr_ifindex;
       ifr6.ifr6_prefixlen = 64;
       ifr6.ifr6_ifindex = ifr.ifr_ifindex;
-      id2net (&ifr6.ifr6_addr, coreAPI->myIdentity);
+      id2net (&ifr6.ifr6_addr, coreAPI->my_identity);
       ifr6.ifr6_addr.s6_addr16[3] = htons (n + VC_START);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
@@ -540,9 +540,9 @@ checkensure_peer (const GNUNET_PeerIdentity * them, void *callerinfo)
 
 /* make new thread...
  * repeat {
- *   call forAllConnectedNodes, create/destroy tunnels to match connected peers, 1 per peer.
+ *   call p2p_connections_iterate, create/destroy tunnels to match connected peers, 1 per peer.
  *  Give new tunnels their IPv6 addresses like "ifconfig gnu0 add fdXX:XXXX:XXXX::/48"
- *   SELECT for incoming packets, unicast those thru gnunet, or (pipe activity = exit this thread) or timeout.
+ *   SELECT for incoming packets, ciphertext_send those thru gnunet, or (pipe activity = exit this thread) or timeout.
  * }
  * own IPv6 addr is fdXX:XXXX:XXXX::P/48 where X= 40 bits own key, P = gnu0 + 2
  * route add -net fdXX(remote key) dev gnu0 is then used.
@@ -643,9 +643,11 @@ tunThread (void *arg)
                   gp->size =
                     htons (sizeof (GNUNET_MessageHeader) + ret -
                            sizeof (struct tun_pi));
-                  coreAPI->unicast (&((store1 + i)->peer), gp,
-                                    GNUNET_EXTREME_PRIORITY, 1);
-                  coreAPI->preferTrafficFrom (&((store1 + i)->peer), 1000);
+                  coreAPI->ciphertext_send (&((store1 + i)->peer), gp,
+                                            GNUNET_EXTREME_PRIORITY, 1);
+                  coreAPI->
+                    p2p_connection_preference_increase (&((store1 + i)->peer),
+                                                        1000);
                 }
             }
           /* we do this here as we get a race if the p2p handler tries it */
@@ -899,7 +901,7 @@ initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                  _("RFC4193 my First 4 hex digits of host id are %x\n"),
-                 capi->myIdentity->hashPubKey.bits[0]);
+                 capi->my_identity->hashPubKey.bits[0]);
 
   /* core calls us to receive messages */
   /* get a PONG = peer is online */
@@ -907,9 +909,9 @@ initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_VPN_p2p_handler_init (capi);
   GNUNET_VPN_cs_handler_init (capi);
 
-  identity = coreAPI->request_service ("identity");
+  identity = coreAPI->service_request ("identity");
   GNUNET_GE_ASSERT (ectx, identity != NULL);
-  session = coreAPI->request_service ("session");
+  session = coreAPI->service_request ("session");
 
   GNUNET_GE_ASSERT (ectx, session != NULL);
 
@@ -930,7 +932,7 @@ initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
                        &realise,
                        5 * GNUNET_CRON_MINUTES,
                        5 * GNUNET_CRON_MINUTES, NULL);
-  /* use capi->unicast to send messages to connected peers */
+  /* use capi->ciphertext_send to send messages to connected peers */
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
@@ -975,9 +977,9 @@ done_module_vpn ()
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 The tun thread has ended\n"));
 
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
-  coreAPI->release_service (session);
+  coreAPI->service_release (session);
   session = NULL;
 
   CLOSE (signalingPipe[0]);

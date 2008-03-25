@@ -346,9 +346,9 @@ getContentDatastoreSize (const GNUNET_DatastoreValue * value)
 {
   return sizeof (GNUNET_HashCode) * 2 + ntohl (value->size) -
     sizeof (GNUNET_DatastoreValue) + getIntSize (ntohl (value->size)) +
-    getIntSize (ntohl (value->type)) + getIntSize (ntohl (value->prio)) +
-    getIntSize (ntohl (value->anonymityLevel)) +
-    getIntSize (GNUNET_ntohll (value->expirationTime)) + 7 + 245 + 1;
+    getIntSize (ntohl (value->type)) + getIntSize (ntohl (value->priority)) +
+    getIntSize (ntohl (value->anonymity_level)) +
+    getIntSize (GNUNET_ntohll (value->expiration_time)) + 7 + 245 + 1;
 }
 
 
@@ -400,7 +400,7 @@ delete_by_rowid (sqliteHandle * handle, unsigned long long rid)
 }
 
 /**
- * Given a full row from gn080 table (size,type,prio,anonLevel,expire,GNUNET_hash,value),
+ * Given a full row from gn080 table (size,type,priority,anonLevel,expire,GNUNET_hash,value),
  * assemble it into a GNUNET_DatastoreValue representation.
  */
 static GNUNET_DatastoreValue *
@@ -497,9 +497,9 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
   value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + contentSize);
   value->size = htonl (contentSize + sizeof (GNUNET_DatastoreValue));
   value->type = htonl (type);
-  value->prio = htonl (sqlite3_column_int (stmt, 2));
-  value->anonymityLevel = htonl (sqlite3_column_int (stmt, 3));
-  value->expirationTime = GNUNET_htonll (sqlite3_column_int64 (stmt, 4));
+  value->priority = htonl (sqlite3_column_int (stmt, 2));
+  value->anonymity_level = htonl (sqlite3_column_int (stmt, 3));
+  value->expiration_time = GNUNET_htonll (sqlite3_column_int64 (stmt, 4));
   memcpy (key, sqlite3_column_blob (stmt, 5), sizeof (GNUNET_HashCode));
   memcpy (&value[1], sqlite3_column_blob (stmt, 6), contentSize);
   return value;
@@ -778,7 +778,8 @@ sqlite_iterate (unsigned int type,
           /* have to pick between 1 and 2 */
           if (is_prio)
             {
-              if ((ntohl (datum_1->prio) < ntohl (datum_2->prio)) == is_asc)
+              if ((ntohl (datum_1->priority) < ntohl (datum_2->priority)) ==
+                  is_asc)
                 {
                   datum = datum_1;
                   rowid = rowid_1;
@@ -795,8 +796,8 @@ sqlite_iterate (unsigned int type,
             }
           else
             {
-              if ((GNUNET_ntohll (datum_1->expirationTime) <
-                   GNUNET_ntohll (datum_2->expirationTime)) == is_asc)
+              if ((GNUNET_ntohll (datum_1->expiration_time) <
+                   GNUNET_ntohll (datum_2->expiration_time)) == is_asc)
                 {
                   datum = datum_1;
                   rowid = rowid_1;
@@ -817,11 +818,11 @@ sqlite_iterate (unsigned int type,
 #if 0
       printf ("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
               (ntohl (datum->size) - sizeof (GNUNET_DatastoreValue)),
-              ntohl (datum->prio),
-              GNUNET_ntohll (datum->expirationTime), lastPrio, lastExp);
+              ntohl (datum->priority),
+              GNUNET_ntohll (datum->expiration_time), lastPrio, lastExp);
 #endif
       if (((GNUNET_NO == limit_nonanonymous) ||
-           (ntohl (datum->anonymityLevel) == 0)) &&
+           (ntohl (datum->anonymity_level) == 0)) &&
           ((type == GNUNET_ECRS_BLOCKTYPE_ANY) ||
            (type == ntohl (datum->type))))
         {
@@ -843,8 +844,8 @@ sqlite_iterate (unsigned int type,
                 }
             }
         }
-      lastPrio = ntohl (datum->prio);
-      lastExp = GNUNET_ntohll (datum->expirationTime);
+      lastPrio = ntohl (datum->priority);
+      lastExp = GNUNET_ntohll (datum->expiration_time);
       GNUNET_free (datum);
     }
   sqlite3_finalize (stmt_1);
@@ -977,8 +978,8 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
 #if 0
       printf ("IA-FOUND %4u prio %4u exp %20llu RID %llu old-RID: %llu\n",
               (ntohl (datum->size) - sizeof (GNUNET_DatastoreValue)),
-              ntohl (datum->prio),
-              GNUNET_ntohll (datum->expirationTime), rowid, last_rowid);
+              ntohl (datum->priority),
+              GNUNET_ntohll (datum->expiration_time), rowid, last_rowid);
 #endif
       last_rowid = rowid;
       sqlite3_reset (stmt);
@@ -1280,8 +1281,8 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
             GNUNET_hash_to_enc (key, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
                  "Storing in database block with type %u/key `%s'/priority %u/expiration %llu.\n",
-                 ntohl (*(int *) &value[1]), &enc, ntohl (value->prio),
-                 GNUNET_ntohll (value->expirationTime));
+                 ntohl (*(int *) &value[1]), &enc, ntohl (value->priority),
+                 GNUNET_ntohll (value->expiration_time));
 #endif
 
   if ((ntohl (value->size) < sizeof (GNUNET_DatastoreValue)))
@@ -1291,9 +1292,9 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
     }
   size = ntohl (value->size);
   type = ntohl (value->type);
-  prio = ntohl (value->prio);
-  anon = ntohl (value->anonymityLevel);
-  expir = GNUNET_ntohll (value->expirationTime);
+  prio = ntohl (value->priority);
+  anon = ntohl (value->anonymity_level);
+  expir = GNUNET_ntohll (value->expiration_time);
   contentSize = size - sizeof (GNUNET_DatastoreValue);
   GNUNET_hash (&value[1], contentSize, &vhash);
   GNUNET_mutex_lock (lock);
@@ -1450,7 +1451,7 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
     }
   lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats)
     stat_size = stats->create (gettext_noop ("# bytes in datastore"));
 
@@ -1474,7 +1475,7 @@ void
 release_module_sqstore_sqlite ()
 {
   if (stats != NULL)
-    coreAPI->release_service (stats);
+    coreAPI->service_release (stats);
   sqlite_shutdown ();
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,

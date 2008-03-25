@@ -214,7 +214,7 @@ verify_hello (const GNUNET_MessageHello * hello)
       GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;     /* invalid (external error) */
     }
-  if ((ntohs (hello->protocol) != myAPI.protocolNumber) ||
+  if ((ntohs (hello->protocol) != myAPI.protocol_number) ||
       (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO))
     {
       GNUNET_GE_BREAK (NULL, 0);
@@ -439,7 +439,7 @@ create_hello ()
   haddr->port = htons (port);
   haddr->availability = htons (available);
   msg->senderAddressSize = htons (sizeof (HostAddress));
-  msg->protocol = htons (myAPI.protocolNumber);
+  msg->protocol = htons (myAPI.protocol_number);
   msg->MTU = htonl (myAPI.mtu);
   return msg;
 }
@@ -490,12 +490,12 @@ do_shutdown ()
   GNUNET_GC_detach_change_listener (cfg, &reload_configuration, NULL);
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   if (upnp != NULL)
     {
-      coreAPI->release_service (upnp);
+      coreAPI->service_release (upnp);
       upnp = NULL;
     }
   GNUNET_free_non_null (filteredNetworksIPv4);

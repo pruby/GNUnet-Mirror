@@ -51,7 +51,7 @@ int GNUNET_DHT_get_stop (const GNUNET_HashCode * key,
  * expire after a period of time and the client is responsible for
  * doing periodic refreshs.
  *
- * @param expirationTime absolute expiration time
+ * @param expiration_time absolute expiration time
  */
 int GNUNET_DHT_put (const GNUNET_HashCode * key,
                     unsigned int type, unsigned int size, const char *data);

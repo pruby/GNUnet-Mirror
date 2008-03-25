@@ -49,6 +49,11 @@ typedef void (*GNUNET_TransportCallback) (GNUNET_TransportAPI * tapi,
 typedef struct
 {
 
+          /**
+	   * Add an implementation of a transport protocol.
+	   */
+  int (*add) (GNUNET_TransportAPI * tapi);
+
   /**
    * Actually start the transport services and begin
    * receiving messages.
@@ -64,12 +69,7 @@ typedef struct
    * Is this transport mechanism available (for sending)?
    * @return GNUNET_YES or GNUNET_NO
    */
-  int (*isAvailable) (unsigned short ttype);
-
-  /**
-   * Add an implementation of a transport protocol.
-   */
-  int (*add) (GNUNET_TransportAPI * tapi);
+  int (*test_available) (unsigned short ttype);
 
   /**
    * Iterate over all available transport mechanisms.
@@ -77,7 +77,18 @@ typedef struct
    * @param data second argument to callback
    * @return number of transports, GNUNET_SYSERR on error
    */
-  int (*forEach) (GNUNET_TransportCallback callback, void *data);
+  int (*iterate_available) (GNUNET_TransportCallback callback, void *data);
+
+  /**
+   * Get the cost of a message in for the given transport mechanism.
+   */
+  unsigned int (*cost_get) (int ttype);
+
+  /**
+   * Get the MTU for a given transport type.
+   */
+  int (*mtu_get) (unsigned short ttype);
+
 
   /**
    * Connect to a remote host using the advertised transport
@@ -105,8 +116,8 @@ typedef struct
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  GNUNET_TSession *(*connectFreely) (const GNUNET_PeerIdentity * peer,
-                                     int allowTempList, const char *token);
+  GNUNET_TSession *(*connect_freely) (const GNUNET_PeerIdentity * peer,
+                                      int allowTempList, const char *token);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -126,9 +137,14 @@ typedef struct
   int (*associate) (GNUNET_TSession * tsession, const char *token);
 
   /**
-   * Get the cost of a message in for the given transport mechanism.
+   * Close the session with the remote node. May only be called on
+   * either connected or associated sessions.
+   * @param token string identifying who is holding the reference
+   *              (must match when connect/assciate call)
+   *
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  unsigned int (*getCost) (int ttype);
+  int (*disconnect) (GNUNET_TSession * session, const char *token);
 
   /**
    * Send a message.  Drop if the operation would block.
@@ -144,14 +160,20 @@ typedef struct
                const void *msg, unsigned int size, int important);
 
   /**
-   * Close the session with the remote node. May only be called on
-   * either connected or associated sessions.
-   * @param token string identifying who is holding the reference
-   *              (must match when connect/assciate call)
+   * Test if the transport would even try to send
+   * a message of the given size and importance
+   * for the given session.<br>
+   * This function is used to check if the core should
+   * even bother to construct (and encrypt) this kind
+   * of message.
    *
-   * @return GNUNET_OK on success, GNUNET_SYSERR on error
+   * @return GNUNET_YES if the transport would try (i.e. queue
+   *         the message or call the OS to send),
+   *         GNUNET_NO if the transport would just drop the message,
+   *         GNUNET_SYSERR if the size/session is invalid
    */
-  int (*disconnect) (GNUNET_TSession * session, const char *token);
+  int (*send_now_test) (GNUNET_TSession * tsession, unsigned int size,
+                        int important);
 
   /**
    * Verify that a hello is ok. Call a method
@@ -159,26 +181,21 @@ typedef struct
    * @return GNUNET_OK if the attempt to verify is on the way,
    *        GNUNET_SYSERR if the transport mechanism is not supported
    */
-  int (*verifyhello) (const GNUNET_MessageHello * hello);
+  int (*hello_verify) (const GNUNET_MessageHello * hello);
 
   /**
    * Get the network address from a HELLO.
    *
    * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*helloToAddress) (const GNUNET_MessageHello * hello,
-                         void **sa, unsigned int *sa_len);
-
-  /**
-   * Get the MTU for a given transport type.
-   */
-  int (*getMTU) (unsigned short ttype);
+  int (*hello_to_address) (const GNUNET_MessageHello * hello,
+                           void **sa, unsigned int *sa_len);
 
   /**
    * Create a hello advertisement for the given
    * transport type for this node.
    */
-  GNUNET_MessageHello *(*createhello) (unsigned short ttype);
+  GNUNET_MessageHello *(*hello_create) (unsigned short ttype);
 
   /**
    * Get a message consisting of (if possible) all addresses that this
@@ -193,29 +210,13 @@ typedef struct
    * @param buff where to write the hello messages
    * @return the number of bytes written to buff, -1 on error
    */
-  int (*getAdvertisedhellos) (unsigned int maxLen, char *buff);
-
-  /**
-   * Test if the transport would even try to send
-   * a message of the given size and importance
-   * for the given session.<br>
-   * This function is used to check if the core should
-   * even bother to construct (and encrypt) this kind
-   * of message.
-   *
-   * @return GNUNET_YES if the transport would try (i.e. queue
-   *         the message or call the OS to send),
-   *         GNUNET_NO if the transport would just drop the message,
-   *         GNUNET_SYSERR if the size/session is invalid
-   */
-  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size,
-                       int important);
+  int (*hello_advertisements_get) (unsigned int maxLen, char *buff);
 
   /**
    * Verify that this session is associated (with the given
    * token).
    */
-  int (*assertAssociated) (GNUNET_TSession * tsession, const char *token);
+  int (*assert_associated) (GNUNET_TSession * tsession, const char *token);
 
 } GNUNET_Transport_ServiceAPI;
 

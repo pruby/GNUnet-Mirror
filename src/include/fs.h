@@ -22,6 +22,9 @@
  * @file applications/fs/module/fs.h
  * @brief FS Client-Server and P2P message formats
  * @author Christian Grothoff
+ *
+ * Applications should use the FSLIB, ECRS or FSUI libraries.
+ * Only code in src/applications/fs/ should refer to this file!
  */
 #ifndef FS_H
 #define FS_H
@@ -54,7 +57,7 @@ typedef struct
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
-  unsigned int anonymityLevel;
+  unsigned int anonymity_level;
 
   /**
    * Identity of the peer that is known to have the
@@ -72,7 +75,7 @@ typedef struct
 
 /**
  * Server to client: content (in response to a CS_fs_request_search_MESSAGE).  The
- * header is followed by the variable size data of a DBlock (as
+ * header is followed by the variable size data of a GNUNET_EC_DBlock (as
  * defined in ecrs_core.h).
  */
 typedef struct
@@ -83,12 +86,12 @@ typedef struct
    * Anonymity level for the content, maybe
    * 0 if not known.
    */
-  unsigned int anonymityLevel;
+  unsigned int anonymity_level;
 
   /**
    * Expiration time of the response (relative to now).
    */
-  GNUNET_CronTime expirationTime;
+  GNUNET_CronTime expiration_time;
 
 } CS_fs_reply_content_MESSAGE;
 
@@ -96,7 +99,7 @@ typedef struct
 /**
  * Client to server: insert content.
  * This struct is followed by a variable
- * number of bytes of content (a DBlock).
+ * number of bytes of content (a GNUNET_EC_DBlock).
  */
 typedef struct
 {
@@ -110,14 +113,14 @@ typedef struct
   /**
    * Priority for the on-demand encoded entry.
    */
-  unsigned int prio;
+  unsigned int priority;
 
   /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
-  unsigned int anonymityLevel;
+  unsigned int anonymity_level;
 
   /**
    * At what time does the entry expire?
@@ -162,14 +165,14 @@ typedef struct
   /**
    * Priority for the on-demand encoded entry.
    */
-  unsigned int prio;
+  unsigned int priority;
 
   /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
-  unsigned int anonymityLevel;
+  unsigned int anonymity_level;
 
   /**
    * At what time does the entry expire?
@@ -193,7 +196,7 @@ typedef struct
 
 /**
  * Client to server: delete content.  This struct is followed by
- * the DBlock (of variable size) of the content that is to be deleted.
+ * the GNUNET_EC_DBlock (of variable size) of the content that is to be deleted.
  */
 typedef struct
 {
@@ -300,7 +303,7 @@ typedef struct
 
 /**
  * Return message for search result.  This struct
- * is always followed by a DBlock (see ecrs_core.h)
+ * is always followed by a GNUNET_EC_DBlock (see ecrs_core.h)
  * which contains the GNUNET_ECRS_BLOCKTYPE followed
  * by the actual (encrypted) data.
  */

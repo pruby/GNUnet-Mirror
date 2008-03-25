@@ -47,7 +47,7 @@ typedef struct
    *
    * @param peer the recipient of the message
    * @param mtu maximum size of a fragment
-   * @param prio priority of the message
+   * @param priority priority of the message
    * @param targetTime desired transmission time
    * @param len size of the message
    * @param bmc callback to construct the message
@@ -55,7 +55,7 @@ typedef struct
    */
   void (*fragment) (const GNUNET_PeerIdentity * peer,
                     unsigned int mtu,
-                    unsigned int prio,
+                    unsigned int priority,
                     unsigned int targetTime,
                     unsigned int len,
                     GNUNET_BuildMessageCallback bmc, void *bmcClosure);

@@ -220,7 +220,7 @@ checkExists (const GNUNET_HashCode * key,
                     ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
     return GNUNET_OK;           /* found another value, but different content! */
   ce->uid = uid;
-  ce->expiration = GNUNET_ntohll (value->expirationTime);
+  ce->expiration = GNUNET_ntohll (value->expiration_time);
   ce->exists = GNUNET_YES;
   return GNUNET_SYSERR;         /* abort iteration! */
 }
@@ -255,15 +255,16 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
     sq->get (key, &vhc, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
   if (cls.exists)
     {
-      if ((ntohl (value->prio) == 0) &&
-          (GNUNET_ntohll (value->expirationTime) <= cls.expiration))
+      if ((ntohl (value->priority) == 0) &&
+          (GNUNET_ntohll (value->expiration_time) <= cls.expiration))
         {
           GNUNET_mutex_unlock (lock);
           return GNUNET_OK;
         }
-      /* update prio */
+      /* update priority */
       sq->update (cls.uid,
-                  ntohl (value->prio), GNUNET_ntohll (value->expirationTime));
+                  ntohl (value->priority),
+                  GNUNET_ntohll (value->expiration_time));
       GNUNET_mutex_unlock (lock);
       return GNUNET_OK;
     }
@@ -273,22 +274,22 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Migration: available %llu (need %u), min priority %u have %u\n",
                  available, ntohl (value->size), minPriority,
-                 ntohl (value->prio) + comp_prio);
+                 ntohl (value->priority) + comp_prio);
 #endif
   /* check if we have enough space / priority */
   if ((available < ntohl (value->size)) &&
-      (minPriority > ntohl (value->prio) + comp_prio))
+      (minPriority > ntohl (value->priority) + comp_prio))
     {
       GNUNET_mutex_unlock (lock);
       return GNUNET_NO;         /* new content has such a low priority that
                                    we should not even bother! */
     }
-  if (ntohl (value->prio) + comp_prio < minPriority)
-    minPriority = ntohl (value->prio) + comp_prio;
+  if (ntohl (value->priority) + comp_prio < minPriority)
+    minPriority = ntohl (value->priority) + comp_prio;
   /* construct new value with comp'ed priority */
   nvalue = GNUNET_malloc (ntohl (value->size));
   memcpy (nvalue, value, ntohl (value->size));
-  nvalue->prio = htonl (comp_priority () + ntohl (value->prio));
+  nvalue->priority = htonl (comp_priority () + ntohl (value->priority));
   /* add the content */
   ok = sq->put (key, nvalue);
   GNUNET_free (nvalue);
@@ -313,7 +314,7 @@ freeSpaceExpired (const GNUNET_HashCode * key,
 {
   if ((available > 0) && (available >= MIN_GNUNET_free))
     return GNUNET_SYSERR;
-  if (GNUNET_get_time () < GNUNET_ntohll (value->expirationTime))
+  if (GNUNET_get_time () < GNUNET_ntohll (value->expiration_time))
     return GNUNET_SYSERR;       /* not expired */
   available += ntohl (value->size);
   return GNUNET_NO;
@@ -326,7 +327,7 @@ freeSpaceLow (const GNUNET_HashCode * key,
 {
   if ((available > 0) && (available >= MIN_GNUNET_free))
     return GNUNET_SYSERR;
-  minPriority = ntohl (value->prio);
+  minPriority = ntohl (value->priority);
   available += ntohl (value->size);
   return GNUNET_NO;
 }
@@ -380,7 +381,7 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
       return NULL;              /* OOPS */
     }
   quota = lquota * 1024 * 1024; /* MB to bytes */
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_filtered =
@@ -392,13 +393,13 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
                   create (gettext_noop ("# bytes allowed in datastore")),
                   quota);
     }
-  state = capi->request_service ("state");
+  state = capi->service_request ("state");
   if (state != NULL)
     {
       sqot = GNUNET_htonll (lquota);
       state->write (capi->ectx,
                     "FS-LAST-QUOTA", sizeof (unsigned long long), &sqot);
-      capi->release_service (state);
+      capi->service_release (state);
     }
   else
     {
@@ -408,12 +409,12 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
                      _
                      ("Failed to load state service. Trying to do without.\n"));
     }
-  sq = capi->request_service ("sqstore");
+  sq = capi->service_request ("sqstore");
   if (sq == NULL)
     {
       if (stats != NULL)
         {
-          capi->release_service (stats);
+          capi->service_release (stats);
           stats = NULL;
         }
       GNUNET_GE_BREAK (capi->ectx, 0);
@@ -425,10 +426,10 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       donePrefetch ();
-      capi->release_service (sq);
+      capi->service_release (sq);
       if (stats != NULL)
         {
-          capi->release_service (stats);
+          capi->service_release (stats);
           stats = NULL;
         }
       return NULL;
@@ -475,10 +476,10 @@ release_module_datastore ()
   cron = NULL;
   donePrefetch ();
   doneFilters ();
-  coreAPI->release_service (sq);
+  coreAPI->service_release (sq);
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (lock);
@@ -520,7 +521,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
                                                        -1) / 1024 / 1024,
                                                       1024, &quota))
     return;                     /* OOPS */
-  state = uapi->request_service ("state");
+  state = uapi->service_request ("state");
   lq = NULL;
   if ((state != NULL) &&
       (sizeof (unsigned long long) == state->read (uapi->ectx,
@@ -528,7 +529,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
                                                    (void **) &lq)) &&
       (GNUNET_ntohll (*lq) == quota))
     {
-      uapi->release_service (state);
+      uapi->service_release (state);
       GNUNET_free (lq);
       return;                   /* no change */
     }
@@ -536,11 +537,11 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   /* ok, need to convert! */
   deleteFilter (uapi->ectx, uapi->cfg);
   initFilters (uapi->ectx, uapi->cfg);
-  sq = uapi->request_service ("sqstore");
+  sq = uapi->service_request ("sqstore");
   if (sq != NULL)
     {
       sq->iterateAllNow (&filterAddAll, NULL);
-      uapi->release_service (sq);
+      uapi->service_release (sq);
     }
   else
     {
@@ -557,7 +558,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
       lastQuota = GNUNET_htonll (quota);
       state->write (uapi->ectx,
                     "FS-LAST-QUOTA", sizeof (unsigned long long), &lastQuota);
-      uapi->release_service (state);
+      uapi->service_release (state);
     }
 }
 

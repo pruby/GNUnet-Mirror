@@ -394,10 +394,10 @@ main (int argc, char *argv[])
 
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cron = GNUNET_cron_create (NULL);
-  capi.p2p_inject_message = &handleHelper;
-  capi.request_service = &request_service;
-  capi.registerHandler = &p2p_register_handler;
-  capi.unregisterHandler = &p2p_unregister_handler;
+  capi.loopback_send = &handleHelper;
+  capi.service_request = &request_service;
+  capi.p2p_ciphertext_handler_register = &p2p_register_handler;
+  capi.p2p_ciphertext_handler_unregister = &p2p_unregister_handler;
   provide_module_fragmentation (&capi);
 
   fprintf (stderr, ".");

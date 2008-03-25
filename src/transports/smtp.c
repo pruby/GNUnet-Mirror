@@ -620,7 +620,7 @@ api_send (GNUNET_TSession * tsession,
   mp = (SMTPMessage *) & m[size];
   mp->header.size = htons (size + sizeof (SMTPMessage));
   mp->header.type = htons (0);
-  mp->sender = *coreAPI->myIdentity;
+  mp->sender = *coreAPI->my_identity;
   gm_cls.ebody = NULL;
   gm_cls.pos = 0;
   gm_cls.esize =
@@ -703,7 +703,7 @@ api_connect (const GNUNET_MessageHello * hello,
   tsession->internal = GNUNET_malloc (GNUNET_sizeof_hello (hello));
   tsession->peer = hello->senderIdentity;
   memcpy (tsession->internal, hello, GNUNET_sizeof_hello (hello));
-  tsession->ttype = smtpAPI.protocolNumber;
+  tsession->ttype = smtpAPI.protocol_number;
   (*tsessionPtr) = tsession;
   return GNUNET_OK;
 }
@@ -824,7 +824,7 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
                                             "SMTP",
                                             "RATELIMIT",
                                             0, 0, 1024 * 1024, &rate_limit);
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -845,7 +845,7 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
                               GNUNET_GE_ADMIN | GNUNET_GE_BULK |
                               GNUNET_GE_FATAL, "mkfifo");
       GNUNET_free (pipename);
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
       return NULL;
     }
@@ -868,19 +868,19 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
   sa.sa_flags = 0;
   sigaction (SIGPIPE, &sa, &old_handler);
 
-  smtpAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_SMTP;
+  smtpAPI.protocol_number = GNUNET_TRANSPORT_PROTOCOL_NUMBER_SMTP;
   smtpAPI.mtu = mtu - sizeof (SMTPMessage);
   smtpAPI.cost = 50;
-  smtpAPI.verifyHello = &api_verify_hello;
-  smtpAPI.createhello = &api_create_hello;
+  smtpAPI.hello_verify = &api_verify_hello;
+  smtpAPI.hello_create = &api_create_hello;
   smtpAPI.connect = &api_connect;
   smtpAPI.send = &api_send;
   smtpAPI.associate = &api_associate;
   smtpAPI.disconnect = &api_disconnect;
-  smtpAPI.startTransportServer = &api_start_transport_server;
-  smtpAPI.stopTransportServer = &api_stop_transport_server;
-  smtpAPI.helloToAddress = &api_hello_to_address;
-  smtpAPI.testWouldTry = &api_test_would_try;
+  smtpAPI.server_start = &api_start_transport_server;
+  smtpAPI.server_stop = &api_stop_transport_server;
+  smtpAPI.hello_to_address = &api_hello_to_address;
+  smtpAPI.send_now_test = &api_test_would_try;
   return &smtpAPI;
 }
 
@@ -891,7 +891,7 @@ donetransport_smtp ()
   GNUNET_free (smtp_server_name);
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (lock);

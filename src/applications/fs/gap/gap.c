@@ -106,9 +106,9 @@ send_delayed (void *cls)
 
   if (stats != NULL)
     stats->change (stat_gap_content_found_locally, 1);
-  coreAPI->p2p_inject_message (NULL,
-                               (const char *) msg,
-                               ntohs (msg->size), GNUNET_YES, NULL);
+  coreAPI->loopback_send (NULL,
+                          (const char *) msg,
+                          ntohs (msg->size), GNUNET_YES, NULL);
   GNUNET_free (msg);
 }
 
@@ -178,7 +178,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
       if (GNUNET_YES == GNUNET_bloomfilter_test (req->bloomfilter, &mhc))
         return want_more;       /* not useful */
     }
-  et = GNUNET_ntohll (value->expirationTime);
+  et = GNUNET_ntohll (value->expiration_time);
   now = GNUNET_get_time ();
   if (now > et)
     et -= now;
@@ -424,7 +424,8 @@ unsigned int
 GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                                const GNUNET_HashCode * primary_query,
                                GNUNET_CronTime expiration,
-                               unsigned int size, const DBlock * data)
+                               unsigned int size,
+                               const GNUNET_EC_DBlock * data)
 {
   GNUNET_HashCode hc;
   GNUNET_PeerIdentity target;
@@ -473,10 +474,10 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           msg->reserved = 0;
           msg->expiration = GNUNET_htonll (expiration);
           memcpy (&msg[1], data, size);
-          coreAPI->unicast (&target,
-                            &msg->header,
-                            BASE_REPLY_PRIORITY * (1 + rl->value),
-                            MAX_GAP_DELAY);
+          coreAPI->ciphertext_send (&target,
+                                    &msg->header,
+                                    BASE_REPLY_PRIORITY * (1 + rl->value),
+                                    MAX_GAP_DELAY);
           GNUNET_free (msg);
           if (stats != NULL)
             {
@@ -635,7 +636,7 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
   unsigned long long ts;
 
   coreAPI = capi;
-  datastore = capi->request_service ("datastore");
+  datastore = capi->service_request ("datastore");
   random_qsel = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 0xFFFF);
   if (-1 ==
       GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "GAP",
@@ -653,13 +654,13 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    register_notify_peer_disconnect
+                    peer_disconnect_notification_register
                     (&cleanup_on_peer_disconnect, NULL));
   GNUNET_cron_add_job (capi->cron,
                        &have_more_processor,
                        HAVE_MORE_FREQUENCY, HAVE_MORE_FREQUENCY, NULL);
 
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_gap_query_dropped =
@@ -702,15 +703,15 @@ GNUNET_FS_GAP_done ()
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregister_notify_peer_disconnect
+                    peer_disconnect_notification_unregister
                     (&cleanup_on_peer_disconnect, NULL));
-  coreAPI->release_service (datastore);
+  coreAPI->service_release (datastore);
   datastore = NULL;
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   return 0;

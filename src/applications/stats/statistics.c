@@ -265,7 +265,7 @@ immediateUpdates ()
   if (load == -1)
     load = 0;
   statSet (stat_handle_network_load_down, load);
-  statSet (stat_connected, coreAPI->forAllConnectedNodes (NULL, NULL));
+  statSet (stat_connected, coreAPI->p2p_connections_iterate (NULL, NULL));
 #ifdef MINGW
   statSet (stat_handles, plibc_get_handle_count ());
 #endif
@@ -337,7 +337,7 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
          ntohs(statMsg->header.size),
          start, end, statCounters); */
       if (GNUNET_SYSERR ==
-          coreAPI->cs_send_to_client (sock, &statMsg->header, GNUNET_YES))
+          coreAPI->cs_send_message (sock, &statMsg->header, GNUNET_YES))
         break;                  /* abort, socket error! */
       start = end;
     }
@@ -365,8 +365,8 @@ handleMessageSupported (struct GNUNET_ClientHandle *sock,
   cmsg = (CS_stats_get_supported_MESSAGE *) message;
   type = ntohs (cmsg->type);
   htype = ntohs (cmsg->handlerType);
-  supported = coreAPI->p2p_test_handler_registered (type, htype);
-  return coreAPI->sendValueToClient (sock, supported);
+  supported = coreAPI->p2p_message_handler_registered_test (type, htype);
+  return coreAPI->cs_send_value (sock, supported);
 }
 
 /**
@@ -386,8 +386,8 @@ processGetConnectionCountRequest (struct GNUNET_ClientHandle *client,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  return coreAPI->sendValueToClient
-    (client, coreAPI->forAllConnectedNodes (NULL, NULL));
+  return coreAPI->cs_send_value
+    (client, coreAPI->p2p_connections_iterate (NULL, NULL));
 }
 
 /**
@@ -407,7 +407,7 @@ initialize_module_stats (GNUNET_CoreAPIForPlugins * capi)
 {
   GNUNET_GE_ASSERT (capi->ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats == NULL)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
@@ -423,18 +423,19 @@ initialize_module_stats (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_CS_PROTO_STATS_GET_STATISTICS,
                  GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
                  GNUNET_P2P_PROTO_NOISE);
-  capi->registerClientHandler (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
-                               &sendStatistics);
+  capi->cs_handler_register (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
+                             &sendStatistics);
   capi->
-    registerClientHandler
+    cs_handler_register
     (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
      &handleMessageSupported);
   capi->
-    registerClientHandler
+    cs_handler_register
     (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED, &handleMessageSupported);
-  capi->registerClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
-                               &processGetConnectionCountRequest);
-  capi->registerHandler (GNUNET_P2P_PROTO_NOISE, &processNoise);
+  capi->cs_handler_register (GNUNET_CS_PROTO_TRAFFIC_COUNT,
+                             &processGetConnectionCountRequest);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_NOISE,
+                                         &processNoise);
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
@@ -456,19 +457,20 @@ done_module_stats ()
   done_sqstore_stats ();
 #endif
   GNUNET_GE_ASSERT (NULL, myCoreAPI != NULL);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
-                                    &sendStatistics);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
+                                  &sendStatistics);
   coreAPI->
-    unregisterClientHandler
+    cs_handler_unregister
     (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
      &handleMessageSupported);
   coreAPI->
-    unregisterClientHandler
+    cs_handler_unregister
     (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED, &handleMessageSupported);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
-                                    &processGetConnectionCountRequest);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_NOISE, &processNoise);
-  myCoreAPI->release_service (stats);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_TRAFFIC_COUNT,
+                                  &processGetConnectionCountRequest);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_NOISE,
+                                              &processNoise);
+  myCoreAPI->service_release (stats);
   stats = NULL;
   myCoreAPI = NULL;
   return GNUNET_OK;

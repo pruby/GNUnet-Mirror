@@ -53,7 +53,7 @@ cprintf (struct GNUNET_ClientHandle *c, unsigned short t, const char *format,
     {
       b->type = htons (t);
       b->size = htons (sizeof (GNUNET_MessageHeader) + size);
-      coreAPI->cs_send_to_client (c, b, GNUNET_YES);
+      coreAPI->cs_send_message (c, b, GNUNET_YES);
     }
   GNUNET_free (b);
 }
@@ -84,7 +84,7 @@ cs_handle_vpn_tunnels (struct GNUNET_ClientHandle *c,
   int i;
 
   GNUNET_mutex_lock (lock);
-  id2ip (c, coreAPI->myIdentity);
+  id2ip (c, coreAPI->my_identity);
   cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "::/48 This Node\n");
   for (i = 0; i < entries1; i++)
     {
@@ -183,8 +183,8 @@ cs_handle_vpn_reset (struct GNUNET_ClientHandle *c,
                (store1 + i)->route_entry, i);
       id2ip (c, &((store1 + i)->peer));
       cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "\n");
-      coreAPI->unicast (&((store1 + i)->peer), rgp,
-                        GNUNET_EXTREME_PRIORITY, 60);
+      coreAPI->ciphertext_send (&((store1 + i)->peer), rgp,
+                                GNUNET_EXTREME_PRIORITY, 60);
       GNUNET_free (rgp);
     }
   GNUNET_mutex_unlock (lock);
@@ -270,8 +270,8 @@ cs_handle_vpn_add (struct GNUNET_ClientHandle *c,
       rgp->type = htons (GNUNET_P2P_PROTO_AIP_GETROUTE);
       rgp->size = htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
       *((int *) &rgp[1]) = 0;
-      coreAPI->unicast (&id, rgp, GNUNET_EXTREME_PRIORITY,
-                        4 * GNUNET_CRON_MILLISECONDS);
+      coreAPI->ciphertext_send (&id, rgp, GNUNET_EXTREME_PRIORITY,
+                                4 * GNUNET_CRON_MILLISECONDS);
       cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " Sent");
       GNUNET_free (rgp);
     }
@@ -284,28 +284,27 @@ int
 GNUNET_VPN_cs_handler_init (GNUNET_CoreAPIForPlugins * capi)
 {
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS,
-                                   &cs_handle_vpn_tunnels))
+      capi->cs_handler_register (GNUNET_CS_PROTO_VPN_TUNNELS,
+                                 &cs_handle_vpn_tunnels))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ROUTES,
-                                   &cs_handle_vpn_routes))
+      capi->cs_handler_register (GNUNET_CS_PROTO_VPN_ROUTES,
+                                 &cs_handle_vpn_routes))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REALISED,
-                                   &cs_handle_vpn_realised))
+      capi->cs_handler_register (GNUNET_CS_PROTO_VPN_REALISED,
+                                 &cs_handle_vpn_realised))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_RESET,
-                                   &cs_handle_vpn_reset))
+      capi->cs_handler_register (GNUNET_CS_PROTO_VPN_RESET,
+                                 &cs_handle_vpn_reset))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TRUST,
-                                   &cs_handle_vpn_trust))
+      capi->cs_handler_register (GNUNET_CS_PROTO_VPN_TRUST,
+                                 &cs_handle_vpn_trust))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ADD,
-                                   &cs_handle_vpn_add))
+      capi->cs_handler_register (GNUNET_CS_PROTO_VPN_ADD, &cs_handle_vpn_add))
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
@@ -313,18 +312,18 @@ GNUNET_VPN_cs_handler_init (GNUNET_CoreAPIForPlugins * capi)
 int
 GNUNET_VPN_cs_handler_done ()
 {
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS,
-                                    &cs_handle_vpn_tunnels);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ROUTES,
-                                    &cs_handle_vpn_routes);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REALISED,
-                                    &cs_handle_vpn_realised);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_RESET,
-                                    &cs_handle_vpn_reset);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST,
-                                    &cs_handle_vpn_trust);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD,
-                                    &cs_handle_vpn_add);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_VPN_TUNNELS,
+                                  &cs_handle_vpn_tunnels);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_VPN_ROUTES,
+                                  &cs_handle_vpn_routes);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_VPN_REALISED,
+                                  &cs_handle_vpn_realised);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_VPN_RESET,
+                                  &cs_handle_vpn_reset);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_VPN_TRUST,
+                                  &cs_handle_vpn_trust);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_VPN_ADD,
+                                  &cs_handle_vpn_add);
   return GNUNET_OK;
 }
 

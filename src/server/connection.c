@@ -314,7 +314,7 @@ typedef struct
 
 /**
  * Entry in the send buffer.  Contains the size of the message, the
- * priority, when the message was passed to unicast, a callback to
+ * priority, when the message was passed to ciphertext_send, a callback to
  * fill in the actual message and a closure (argument to the
  * callback).
  */
@@ -721,9 +721,9 @@ check_invariants ()
           if (root->session.tsession != NULL)
             GNUNET_GE_ASSERT (NULL,
                               GNUNET_OK ==
-                              transport->assertAssociated (root->session.
-                                                           tsession,
-                                                           __FILE__));
+                              transport->assert_associated (root->session.
+                                                            tsession,
+                                                            __FILE__));
           root = root->overflowChain;
         }
     }
@@ -1626,14 +1626,14 @@ ensureTransportConnected (BufferEntry * be)
   if (be->session.tsession != NULL)
     return GNUNET_OK;
   be->session.tsession =
-    transport->connectFreely (&be->session.sender, GNUNET_NO, __FILE__);
+    transport->connect_freely (&be->session.sender, GNUNET_NO, __FILE__);
   if (be->session.tsession == NULL)
     {
       be->status = STAT_DOWN;
       be->time_established = 0;
       return GNUNET_NO;
     }
-  be->session.mtu = transport->getMTU (be->session.tsession->ttype);
+  be->session.mtu = transport->mtu_get (be->session.tsession->ttype);
   fragmentIfNecessary (be);
   return GNUNET_OK;
 }
@@ -1708,11 +1708,11 @@ sendBuffer (BufferEntry * be)
       be->inSendBuffer = GNUNET_NO;
       return GNUNET_NO;
     }
-  ret = transport->testWouldTry (be->session.tsession,
-                                 totalMessageSize,
-                                 (priority >=
-                                  GNUNET_EXTREME_PRIORITY) ? GNUNET_YES :
-                                 GNUNET_NO);
+  ret = transport->send_now_test (be->session.tsession,
+                                  totalMessageSize,
+                                  (priority >=
+                                   GNUNET_EXTREME_PRIORITY) ? GNUNET_YES :
+                                  GNUNET_NO);
   /* ret: GNUNET_YES: ok to send, GNUNET_NO: not ready yet, GNUNET_SYSERR: session down
      or serious internal error */
   if (ret == GNUNET_SYSERR)
@@ -2930,10 +2930,10 @@ cronDecreaseLiveness (void *unused)
 
                   GNUNET_GE_BREAK (NULL, root->session.mtu != 0);
                   alternative =
-                    transport->connectFreely (&root->session.sender,
-                                              GNUNET_NO, __FILE__);
+                    transport->connect_freely (&root->session.sender,
+                                               GNUNET_NO, __FILE__);
                   if ((alternative != NULL)
-                      && (transport->getMTU (alternative->ttype) == 0))
+                      && (transport->mtu_get (alternative->ttype) == 0))
                     {
                       tsession = root->session.tsession;
                       root->session.mtu = 0;
@@ -3541,7 +3541,7 @@ GNUNET_CORE_connection_consider_takeover (const GNUNET_PeerIdentity * sender,
     }
   cost = -1;
   if (be->session.tsession != NULL)
-    cost = transport->getCost (be->session.tsession->ttype);
+    cost = transport->cost_get (be->session.tsession->ttype);
   /* Question: doesn't this always do takeover in tcp/udp
      case, which have the same costs? Should it? -IW
 
@@ -3553,14 +3553,14 @@ GNUNET_CORE_connection_consider_takeover (const GNUNET_PeerIdentity * sender,
      to get to know each other). See also transport paper and the
      data on throughput. - CG
    */
-  if (((transport->getCost (tsession->ttype) < cost) ||
+  if (((transport->cost_get (tsession->ttype) < cost) ||
        ((be->consider_transport_switch == GNUNET_YES) &&
-        (transport->getMTU (tsession->ttype) == 0))) &&
+        (transport->mtu_get (tsession->ttype) == 0))) &&
       (GNUNET_OK == transport->associate (tsession, __FILE__)))
     {
       GNUNET_GE_ASSERT (NULL,
-                        GNUNET_OK == transport->assertAssociated (tsession,
-                                                                  __FILE__));
+                        GNUNET_OK == transport->assert_associated (tsession,
+                                                                   __FILE__));
       ts = be->session.tsession;
       if (ts != NULL)
         {
@@ -3568,9 +3568,9 @@ GNUNET_CORE_connection_consider_takeover (const GNUNET_PeerIdentity * sender,
           transport->disconnect (ts, __FILE__);
         }
       be->session.tsession = tsession;
-      be->session.mtu = transport->getMTU (tsession->ttype);
+      be->session.mtu = transport->mtu_get (tsession->ttype);
       if ((be->consider_transport_switch == GNUNET_YES) &&
-          (transport->getMTU (tsession->ttype) == 0))
+          (transport->mtu_get (tsession->ttype) == 0))
         be->consider_transport_switch = GNUNET_NO;
       check_invariants ();
       fragmentIfNecessary (be);
@@ -3958,7 +3958,7 @@ GNUNET_CORE_connection_print_buffer ()
  * @param priority the higher the priority, the higher preference
  *        will be given to polling this callback (compared to
  *        other callbacks).  Note that polling will always
- *        only be done after all push requests (unicast) have
+ *        only be done after all push requests (ciphertext_send) have
  *        been considered
  * @param callback the method to invoke. The receiver is the
  *   receiver of the message, position is the reference to the
@@ -4072,8 +4072,8 @@ GNUNET_CORE_connection_send_plaintext (GNUNET_TSession * tsession,
 
   ENTRY ();
   GNUNET_GE_ASSERT (ectx, tsession != NULL);
-  if ((transport->getMTU (tsession->ttype) > 0) &&
-      (transport->getMTU (tsession->ttype) <
+  if ((transport->mtu_get (tsession->ttype) > 0) &&
+      (transport->mtu_get (tsession->ttype) <
        size + sizeof (GNUNET_TransportPacket_HEADER)))
     {
       GNUNET_GE_BREAK (ectx, 0);

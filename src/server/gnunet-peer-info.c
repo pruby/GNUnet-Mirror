@@ -79,7 +79,7 @@ resolveHostInfo (const GNUNET_PeerIdentity * id,
     return GNUNET_OK;
   addr = NULL;
   addr_len = 0;
-  have_addr = transport->helloToAddress (hello, &addr, &addr_len);
+  have_addr = transport->hello_to_address (hello, &addr, &addr_len);
   GNUNET_free (hello);
   if (have_addr == GNUNET_OK)
     {
@@ -134,7 +134,7 @@ printHostInfo (const GNUNET_PeerIdentity * id,
     }
   addr = NULL;
   addr_len = 0;
-  have_addr = transport->helloToAddress (hello, &addr, &addr_len);
+  have_addr = transport->hello_to_address (hello, &addr, &addr_len);
   GNUNET_free (hello);
   if (have_addr != GNUNET_OK)
     {

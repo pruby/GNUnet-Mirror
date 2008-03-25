@@ -90,7 +90,8 @@ unsigned int
 GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                                const GNUNET_HashCode * primary_query,
                                GNUNET_CronTime expiration,
-                               unsigned int size, const DBlock * data);
+                               unsigned int size,
+                               const GNUNET_EC_DBlock * data);
 
 /**
  * Compute the average priority of inbound requests

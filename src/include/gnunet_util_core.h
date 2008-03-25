@@ -80,7 +80,7 @@ typedef struct
   /**
    * time this address expires  (network byte order)
    */
-  GNUNET_Int32Time expirationTime;
+  GNUNET_Int32Time expiration_time;
 
   /**
    * advertised MTU for sending (replies can have a different

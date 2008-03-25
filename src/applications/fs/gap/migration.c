@@ -294,13 +294,13 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       return 0;
     }
   msg = position;
-  et = GNUNET_ntohll (value->expirationTime);
+  et = GNUNET_ntohll (value->expiration_time);
   if (et > now)
     et -= now;
   else
     et = 0;
   et %= MAX_MIGRATION_EXP;
-  anonymity = ntohl (value->anonymityLevel);
+  anonymity = ntohl (value->anonymity_level);
   ret = 0;
   if ((anonymity == 0) ||
       (GNUNET_OK == GNUNET_FS_ANONYMITY_check (anonymity,
@@ -357,7 +357,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
 void
 GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
                             unsigned int size,
-                            const DBlock * value,
+                            const GNUNET_EC_DBlock * value,
                             GNUNET_CronTime expiration,
                             unsigned int blocked_size,
                             const PID_INDEX * blocked)
@@ -402,8 +402,8 @@ GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
   record->key = *key;
   record->value = GNUNET_malloc (size + sizeof (GNUNET_DatastoreValue));
   record->value->size = htonl (size + sizeof (GNUNET_DatastoreValue));
-  record->value->expirationTime = GNUNET_htonll (expiration);
-  record->value->anonymityLevel = 0;
+  record->value->expiration_time = GNUNET_htonll (expiration);
+  record->value->anonymity_level = 0;
   record->value->type = value->type;
   memcpy (&record->value[1], value, size);
   for (i = 0; i < blocked_size; i++)
@@ -424,11 +424,11 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
 
   coreAPI = capi;
   coreAPI->
-    connection_register_send_callback
+    send_callback_register
     (GNUNET_GAP_ESTIMATED_DATA_SIZE,
      GNUNET_FS_GAP_CONTENT_MIGRATION_PRIORITY, &activeMigrationCallback);
-  datastore = capi->request_service ("datastore");
-  stats = capi->request_service ("stats");
+  datastore = capi->service_request ("datastore");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_migration_count
@@ -457,14 +457,14 @@ GNUNET_FS_MIGRATION_done ()
   struct MigrationRecord *record;
 
   coreAPI->
-    connection_unregister_send_callback
+    send_callback_unregister
     (GNUNET_GAP_ESTIMATED_DATA_SIZE, &activeMigrationCallback);
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
-  coreAPI->release_service (datastore);
+  coreAPI->service_release (datastore);
   datastore = NULL;
   coreAPI = NULL;
   for (i = 0; i < content_size; i++)

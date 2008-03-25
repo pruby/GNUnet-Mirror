@@ -150,7 +150,7 @@ notifyPONG (void *arg)
   GNUNET_GE_ASSERT (ectx, hostId != NULL);
   if (stats != NULL)
     stats->change (stat_sessionEstablished, 1);
-  coreAPI->connection_mark_session_as_confirmed (hostId);
+  coreAPI->p2p_connection_confirm (hostId);
   GNUNET_free (hostId);
 }
 
@@ -345,7 +345,7 @@ makeSessionKeySigned (const GNUNET_PeerIdentity * hostId,
 #if EXTRA_CHECKS
   /* verify signature/SKS */
   GNUNET_GE_ASSERT (ectx,
-                    GNUNET_SYSERR != verifySKS (coreAPI->myIdentity, msg));
+                    GNUNET_SYSERR != verifySKS (coreAPI->my_identity, msg));
 #endif
 
   size = 0;
@@ -424,7 +424,7 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
   /* then try to connect on the transport level */
   if ((tsession == NULL)
       || (transport->associate (tsession, __FILE__) == GNUNET_SYSERR))
-    tsession = transport->connectFreely (receiver, GNUNET_YES, __FILE__);
+    tsession = transport->connect_freely (receiver, GNUNET_YES, __FILE__);
   if (tsession == NULL)
     {
 #if DEBUG_SESSION
@@ -449,13 +449,11 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
 
   /* get or create our session key */
   if (GNUNET_OK !=
-      coreAPI->connection_get_session_key_of_peer (receiver, &sk,
-                                                   &age, GNUNET_YES))
+      coreAPI->p2p_session_key_get (receiver, &sk, &age, GNUNET_YES))
     {
       age = GNUNET_get_time_int32 (NULL);
       GNUNET_AES_create_session_key (&sk);
-      coreAPI->connection_assign_session_key_to_peer (&sk, receiver,
-                                                      age, GNUNET_YES);
+      coreAPI->p2p_session_key_set (&sk, receiver, age, GNUNET_YES);
 #if DEBUG_SESSION
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
@@ -474,9 +472,9 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
     }
 
   /* create hello */
-  hello = transport->createhello (tsession->ttype);
+  hello = transport->hello_create (tsession->ttype);
   if (NULL == hello)
-    hello = transport->createhello (GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY);
+    hello = transport->hello_create (GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY);
   if (NULL == hello)
     {
       char *tports;
@@ -506,14 +504,14 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
     }
   if (hello != NULL)
     {
-      coreAPI->connection_send_plaintext (tsession,
-                                          (const char *) hello,
-                                          GNUNET_sizeof_hello (hello));
+      coreAPI->plaintext_send (tsession,
+                               (const char *) hello,
+                               GNUNET_sizeof_hello (hello));
       GNUNET_free (hello);
       hello = NULL;
-      coreAPI->connection_send_plaintext (tsession,
-                                          (const char *) skey,
-                                          ntohs (skey->header.size));
+      coreAPI->plaintext_send (tsession,
+                               (const char *) skey,
+                               ntohs (skey->header.size));
     }
   GNUNET_free (skey);
   if (0 != memcmp (receiver, &tsession->peer, sizeof (GNUNET_PeerIdentity)))
@@ -522,7 +520,7 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
     }
   else
     {
-      coreAPI->offerTSessionFor (receiver, tsession);
+      coreAPI->p2p_transport_session_offer (receiver, tsession);
     }
   transport->disconnect (tsession, __FILE__);
   return GNUNET_OK;
@@ -575,7 +573,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
       return GNUNET_SYSERR;
     }
   if (0 == memcmp (&sender->hashPubKey,
-                   &coreAPI->myIdentity->hashPubKey,
+                   &coreAPI->my_identity->hashPubKey,
                    sizeof (GNUNET_HashCode)))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -604,11 +602,11 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
     }
   load = GNUNET_cpu_get_load (ectx, coreAPI->cfg);
   if ((GNUNET_OK !=
-       coreAPI->connection_get_session_key_of_peer (sender, NULL,
-                                                    NULL,
-                                                    GNUNET_YES))
+       coreAPI->p2p_session_key_get (sender, NULL,
+                                     NULL,
+                                     GNUNET_YES))
       && ((GNUNET_YES == identity->isBlacklisted (sender, GNUNET_NO))
-          || ((coreAPI->forAllConnectedNodes (NULL, NULL) >= 3)
+          || ((coreAPI->p2p_connections_iterate (NULL, NULL) >= 3)
               && (load > GNUNET_IDLE_LOAD_THRESHOLD))))
     {
 #if DEBUG_SESSION
@@ -622,7 +620,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
     }
 
   newMsg = (const P2P_setkey_MESSAGE *) msg;
-  if (0 != memcmp (&coreAPI->myIdentity->hashPubKey,
+  if (0 != memcmp (&coreAPI->my_identity->hashPubKey,
                    &newMsg->target.hashPubKey, sizeof (GNUNET_HashCode)))
     {
       GNUNET_EncName ta;
@@ -687,11 +685,9 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
   if (stats != NULL)
     stats->change (stat_skeyAccepted, 1);
   /* notify core about session key */
-  coreAPI->connection_assign_session_key_to_peer (&key,
-                                                  sender,
-                                                  ntohl
-                                                  (newMsg->
-                                                   creationTime), GNUNET_NO);
+  coreAPI->p2p_session_key_set (&key,
+                                sender,
+                                ntohl (newMsg->creationTime), GNUNET_NO);
   pos = sizeof (P2P_setkey_MESSAGE);
   ping = NULL;
   pong = NULL;
@@ -757,9 +753,9 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      "Received PONG in session key from `%s', injecting!\n",
                      &enc);
 #endif
-      coreAPI->p2p_inject_message (sender,
-                                   (char *) pong,
-                                   ntohs (pong->size), GNUNET_YES, tsession);
+      coreAPI->loopback_send (sender,
+                              (char *) pong,
+                              ntohs (pong->size), GNUNET_YES, tsession);
       if (ping != NULL)
         {                       /* should always be true for well-behaved peers */
           /* pong can go out over ordinary channels */
@@ -773,7 +769,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
           ping->type = htons (GNUNET_P2P_PROTO_PONG);
           if (stats != NULL)
             stats->change (stat_pongSent, 1);
-          coreAPI->unicast (sender, ping, GNUNET_EXTREME_PRIORITY, 0);
+          coreAPI->ciphertext_send (sender, ping, GNUNET_EXTREME_PRIORITY, 0);
         }
     }
   else
@@ -831,7 +827,7 @@ tryConnect (const GNUNET_PeerIdentity * peer)
 #endif
       return GNUNET_SYSERR;
     }
-  if (coreAPI->queryPeerStatus (peer, NULL, NULL) == GNUNET_OK)
+  if (coreAPI->p2p_connection_status_check (peer, NULL, NULL) == GNUNET_OK)
     {
 #if DEBUG_SESSION
       GNUNET_GE_LOG (ectx,
@@ -889,32 +885,32 @@ provide_module_session (GNUNET_CoreAPIForPlugins * capi)
 
   ectx = capi->ectx;
   coreAPI = capi;
-  identity = capi->request_service ("identity");
+  identity = capi->service_request ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
     }
-  transport = capi->request_service ("transport");
+  transport = capi->service_request ("transport");
   if (transport == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      coreAPI->release_service (identity);
+      coreAPI->service_release (identity);
       identity = NULL;
       return NULL;
     }
-  pingpong = capi->request_service ("pingpong");
+  pingpong = capi->service_request ("pingpong");
   if (pingpong == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      coreAPI->release_service (transport);
+      coreAPI->service_release (transport);
       transport = NULL;
-      coreAPI->release_service (identity);
+      coreAPI->service_release (identity);
       identity = NULL;
       return NULL;
     }
-  topology = capi->request_service ("topology");
-  stats = capi->request_service ("stats");
+  topology = capi->service_request ("topology");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_skeySent = stats->create (gettext_noop ("# session keys sent"));
@@ -929,16 +925,16 @@ provide_module_session (GNUNET_CoreAPIForPlugins * capi)
       stat_pongSent
         = stats->create (gettext_noop ("# encrypted PONG messages sent"));
     }
-  lock = capi->connection_get_lock ();
+  lock = capi->global_lock_get ();
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _
                  ("`%s' registering handler %d (plaintext and ciphertext)\n"),
                  "session", GNUNET_P2P_PROTO_SET_KEY);
-  coreAPI->plaintext_register_handler (GNUNET_P2P_PROTO_SET_KEY,
-                                       &acceptSessionKey);
-  coreAPI->registerHandler (GNUNET_P2P_PROTO_SET_KEY,
-                            &acceptSessionKeyUpdate);
+  coreAPI->p2p_plaintext_handler_register (GNUNET_P2P_PROTO_SET_KEY,
+                                           &acceptSessionKey);
+  coreAPI->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_SET_KEY,
+                                            &acceptSessionKeyUpdate);
   ret.tryConnect = &tryConnect;
   return &ret;
 }
@@ -949,22 +945,22 @@ provide_module_session (GNUNET_CoreAPIForPlugins * capi)
 int
 release_module_session ()
 {
-  coreAPI->plaintext_unregister_handler (GNUNET_P2P_PROTO_SET_KEY,
-                                         &acceptSessionKey);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_SET_KEY,
-                              &acceptSessionKeyUpdate);
+  coreAPI->p2p_plaintext_handler_unregister (GNUNET_P2P_PROTO_SET_KEY,
+                                             &acceptSessionKey);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_SET_KEY,
+                                              &acceptSessionKeyUpdate);
   if (topology != NULL)
     {
-      coreAPI->release_service (topology);
+      coreAPI->service_release (topology);
       topology = NULL;
     }
-  coreAPI->release_service (stats);
+  coreAPI->service_release (stats);
   stats = NULL;
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
-  coreAPI->release_service (transport);
+  coreAPI->service_release (transport);
   transport = NULL;
-  coreAPI->release_service (pingpong);
+  coreAPI->service_release (pingpong);
   pingpong = NULL;
   coreAPI = NULL;
   lock = NULL;

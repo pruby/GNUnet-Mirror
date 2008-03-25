@@ -35,7 +35,7 @@
 
 
 /**
- * Fixed SBlock updateInterval codes. Positive values
+ * Fixed GNUNET_EC_SBlock updateInterval codes. Positive values
  * are interpreted as durations (in seconds) for periodical
  * updates.
  */
@@ -50,7 +50,7 @@ typedef struct Location
   /**
    * Information about the shared file.
    */
-  FileIdentifier fi;
+  GNUNET_EC_FileIdentifier fi;
 
   /**
    * Identity of the peer sharing the file.
@@ -64,7 +64,7 @@ typedef struct Location
   GNUNET_Int32Time expirationTime;
 
   /**
-   * RSA signature over the FileIdentifier,
+   * RSA signature over the GNUNET_EC_FileIdentifier,
    * GNUNET_hash of the peer and expiration time.
    */
   GNUNET_RSA_Signature contentSignature;
@@ -89,7 +89,7 @@ typedef struct GNUNET_ECRS_URI
       GNUNET_HashCode namespace;
       GNUNET_HashCode identifier;
     } sks;
-    FileIdentifier fi;
+    GNUNET_EC_FileIdentifier fi;
     Location loc;
   } data;
 } URI;

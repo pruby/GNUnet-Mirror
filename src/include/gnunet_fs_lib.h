@@ -63,7 +63,7 @@ void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
  *
  * @param target identity of host known to have the
  *        content, NULL if no such identity is known
- * @param anonymityLevel what are the anonymity
+ * @param anonymity_level what are the anonymity
  *        requirements for this request? 0 for no
  *        anonymity (DHT/direct transfer ok)
  * @param callback method to call for each result

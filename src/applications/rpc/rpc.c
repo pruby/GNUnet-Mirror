@@ -461,7 +461,7 @@ RPC_send_ack (const GNUNET_PeerIdentity * receiver,
   msg.header.size = htons (sizeof (RPC_ACK_Message));
   msg.header.type = htons (GNUNET_P2P_PROTO_RPC_ACK);
   msg.sequenceNumber = htonl (sequenceNumber);
-  coreAPI->unicast (receiver, &msg.header, importance, maxDelay);
+  coreAPI->ciphertext_send (receiver, &msg.header, importance, maxDelay);
 }
 
 /**
@@ -542,9 +542,10 @@ RPC_complete (const struct GNUNET_RPC_CallParameters *results,
   call->repetitionFrequency = RPC_INITIAL_ROUND_TRIP_TIME;
   call->attempts = 1;
   call->errorCode = errorCode;
-  coreAPI->unicast (&call->initiator,
-                    &call->msg->header,
-                    call->importance, RPC_INITIAL_ROUND_TRIP_TIME / 2);
+  coreAPI->ciphertext_send (&call->initiator,
+                            &call->msg->header,
+                            call->importance,
+                            RPC_INITIAL_ROUND_TRIP_TIME / 2);
   GNUNET_mutex_unlock (lock);
 }
 
@@ -795,9 +796,9 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
   if (ret->next != NULL)
     ret->next->prev = ret;
   GNUNET_mutex_unlock (lock);
-  coreAPI->unicast (receiver,
-                    &ret->msg->header,
-                    importance, RPC_INITIAL_ROUND_TRIP_TIME / 2);
+  coreAPI->ciphertext_send (receiver,
+                            &ret->msg->header,
+                            importance, RPC_INITIAL_ROUND_TRIP_TIME / 2);
   return ret;
 }
 
@@ -867,9 +868,10 @@ RPC_retry_job (void *unused)
           ipos->lastAttempt = now;
           ipos->attempts++;
           ipos->repetitionFrequency *= 2;
-          coreAPI->unicast (&ipos->initiator,
-                            &ipos->msg->header,
-                            ipos->repetitionFrequency / 2, ipos->importance);
+          coreAPI->ciphertext_send (&ipos->initiator,
+                                    &ipos->msg->header,
+                                    ipos->repetitionFrequency / 2,
+                                    ipos->importance);
         }
       ipos = ipos->next;
     }
@@ -900,9 +902,10 @@ RPC_retry_job (void *unused)
           opos->lastAttempt = now;
           opos->attempts++;
           opos->repetitionFrequency *= 2;
-          coreAPI->unicast (&opos->receiver,
-                            &opos->msg->header,
-                            opos->repetitionFrequency / 2, opos->importance);
+          coreAPI->ciphertext_send (&opos->receiver,
+                                    &opos->msg->header,
+                                    opos->repetitionFrequency / 2,
+                                    opos->importance);
         }
       opos = opos->next;
     }
@@ -917,9 +920,12 @@ RPC_retry_job (void *unused)
 void
 release_module_rpc ()
 {
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_REQ, &handleRPCMessageReq);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_RES, &handleRPCMessageRes);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_ACK, &handleRPCMessageAck);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_RPC_REQ,
+                                              &handleRPCMessageReq);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_RPC_RES,
+                                              &handleRPCMessageRes);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_RPC_ACK,
+                                              &handleRPCMessageAck);
   GNUNET_GE_ASSERT (NULL, NULL == incomingCalls);
   GNUNET_GE_ASSERT (NULL, NULL == outgoingCalls);
   GNUNET_GE_ASSERT (NULL, NULL == list_of_callbacks);
@@ -938,7 +944,7 @@ provide_module_rpc (GNUNET_CoreAPIForPlugins * capi)
   static GNUNET_RPC_ServiceAPI rpcAPI;
   int rvalue;
 
-  lock = capi->connection_get_lock ();
+  lock = capi->global_lock_get ();
   coreAPI = capi;
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -946,14 +952,17 @@ provide_module_rpc (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_P2P_PROTO_RPC_REQ, GNUNET_P2P_PROTO_RPC_RES,
                  GNUNET_P2P_PROTO_RPC_ACK);
   rvalue = GNUNET_OK;
-  if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_REQ,
-                             &handleRPCMessageReq) == GNUNET_SYSERR)
+  if (capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_RPC_REQ,
+                                             &handleRPCMessageReq) ==
+      GNUNET_SYSERR)
     rvalue = GNUNET_SYSERR;
-  if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_RES,
-                             &handleRPCMessageRes) == GNUNET_SYSERR)
+  if (capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_RPC_RES,
+                                             &handleRPCMessageRes) ==
+      GNUNET_SYSERR)
     rvalue = GNUNET_SYSERR;
-  if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_ACK,
-                             &handleRPCMessageAck) == GNUNET_SYSERR)
+  if (capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_RPC_ACK,
+                                             &handleRPCMessageAck) ==
+      GNUNET_SYSERR)
     rvalue = GNUNET_SYSERR;
   if (rvalue == GNUNET_SYSERR)
     {

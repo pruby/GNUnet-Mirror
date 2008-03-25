@@ -40,7 +40,28 @@ typedef struct
 {
   GNUNET_HashCode key;
   GNUNET_HashCode query;
-} CHK;
+} GNUNET_EC_ContentHashKey;
+
+/**
+ * @brief information required to download a file from GNUnet
+ *
+ * A GNUNET_EC_FileIdentifier groups the information
+ * required to download (and check) a file.
+ */
+typedef struct
+{
+
+  /**
+   * Total size of the file in bytes. (network byte order (!))
+   */
+  unsigned long long file_length;
+
+  /**
+   * Query and key of the top GNUNET_EC_IBlock.
+   */
+  GNUNET_EC_ContentHashKey chk;
+
+} GNUNET_EC_FileIdentifier;
 
 /**
  * @brief data block
@@ -55,7 +76,7 @@ typedef struct
 
   /* data follows here */
 
-} DBlock;
+} GNUNET_EC_DBlock;
 
 typedef struct
 {
@@ -63,32 +84,11 @@ typedef struct
   /**
    * Type of the block (IBLOCK), in network byte order.
    */
-  DBlock iblock;
+  GNUNET_EC_DBlock iblock;
 
-  CHK data[1];
+  GNUNET_EC_ContentHashKey data[1];
 
-} IBlock;
-
-/**
- * @brief information required to download a file from GNUnet
- *
- * A FileIdentifier groups the information
- * required to download (and check) a file.
- */
-typedef struct
-{
-
-  /**
-   * Total size of the file in bytes. (network byte order (!))
-   */
-  unsigned long long file_length;
-
-  /**
-   * Query and key of the top IBlock.
-   */
-  CHK chk;
-
-} FileIdentifier;
+} GNUNET_EC_IBlock;
 
 /**
  * @brief keyword block (advertising data under a keyword)
@@ -115,7 +115,7 @@ typedef struct
 
   /* variable-size Meta-Data follows here! */
 
-} KBlock;
+} GNUNET_EC_KBlock;
 
 typedef struct
 {
@@ -144,14 +144,14 @@ typedef struct
   /* from here on encrypted */
 
   /**
-   * Time at which this SBlock was created;
+   * Time at which this GNUNET_EC_SBlock was created;
    * in network byte order
    */
   GNUNET_Int32Time creationTime;
 
   /**
    * Interval (in seconds) how often the publisher intends to produce
-   * an updated SBlock; GNUNET_ECRS_SBLOCK_UPDATE_NONE(0) is used for
+   * an updated GNUNET_EC_SBlock; GNUNET_ECRS_SBLOCK_UPDATE_NONE(0) is used for
    * non-updateable SBlocks, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC(-1) is used
    * for entries without a fixed update frequency; in network byte
    * order
@@ -160,7 +160,7 @@ typedef struct
 
   /**
    * N, the identifier that will be used for the
-   * next revision of this SBlock.
+   * next revision of this GNUNET_EC_SBlock.
    */
   GNUNET_HashCode nextIdentifier;
 
@@ -173,7 +173,7 @@ typedef struct
   /* 0-terminated URI follows here! */
 
   /* variable-size Meta-Data follows here! */
-} SBlock;
+} GNUNET_EC_SBlock;
 
 typedef struct
 {
@@ -206,10 +206,10 @@ typedef struct
   GNUNET_HashCode rootEntry;
 
   /* variable-size Meta-Data follows here! */
-} NBlock;
+} GNUNET_EC_NBlock;
 
 /**
- * @brief keyword-NBlock (advertising namespace under a keyword)
+ * @brief keyword-GNUNET_EC_NBlock (advertising namespace under a keyword)
  */
 typedef struct
 {
@@ -219,10 +219,10 @@ typedef struct
    */
   unsigned int type;
 
-  KBlock kblock;
+  GNUNET_EC_KBlock kblock;
 
-  NBlock nblock;
-} KNBlock;
+  GNUNET_EC_NBlock nblock;
+} GNUNET_EC_KNBlock;
 
 /**
  * Perform on-demand content encoding.
@@ -233,13 +233,13 @@ typedef struct
  *  for the content (verified that it matches
  *  data)
  * @param value the encoded data (set);
- *        the anonymityLevel is to be set to 0
+ *        the anonymity_level is to be set to 0
  *        (caller should have checked before calling
  *        this method).
  * @return GNUNET_OK on success, GNUNET_SYSERR if data does not
  *  match the query
  */
-int GNUNET_EC_file_block_encode (const DBlock * data,
+int GNUNET_EC_file_block_encode (const GNUNET_EC_DBlock * data,
                                  unsigned int len,
                                  const GNUNET_HashCode * query,
                                  GNUNET_DatastoreValue ** value);
@@ -250,7 +250,7 @@ int GNUNET_EC_file_block_encode (const DBlock * data,
  *
  * @param db the block in plaintext
  */
-void GNUNET_EC_file_block_get_query (const DBlock * data,
+void GNUNET_EC_file_block_get_query (const GNUNET_EC_DBlock * data,
                                      unsigned int len,
                                      GNUNET_HashCode * query);
 
@@ -259,14 +259,14 @@ void GNUNET_EC_file_block_get_query (const DBlock * data,
  * Get the key that will be used to decrypt
  * a certain block of data.
  */
-void GNUNET_EC_file_block_get_key (const DBlock * data,
+void GNUNET_EC_file_block_get_key (const GNUNET_EC_DBlock * data,
                                    unsigned int len, GNUNET_HashCode * key);
 
 /**
  * What is the type of the given block of data?
  */
 unsigned int GNUNET_EC_file_block_get_type (unsigned int size,
-                                            const DBlock * data);
+                                            const GNUNET_EC_DBlock * data);
 
 /**
  * What is the main query (the one that is used in
@@ -282,7 +282,8 @@ unsigned int GNUNET_EC_file_block_get_type (unsigned int size,
  *   the content type is not known
  */
 int GNUNET_EC_file_block_check_and_get_query (unsigned int size,
-                                              const DBlock * data, int verify,
+                                              const GNUNET_EC_DBlock * data,
+                                              int verify,
                                               GNUNET_HashCode * query);
 
 /**
@@ -301,7 +302,7 @@ int GNUNET_EC_file_block_check_and_get_query (unsigned int size,
  */
 int GNUNET_EC_is_block_applicable_for_query (unsigned int type,
                                              unsigned int size,
-                                             const DBlock * data,
+                                             const GNUNET_EC_DBlock * data,
                                              const GNUNET_HashCode *
                                              knownDatumQuery,
                                              unsigned int keyCount,

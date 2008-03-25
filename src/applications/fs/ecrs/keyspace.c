@@ -59,23 +59,24 @@ verifyKBlock (struct GNUNET_GE_Context *ectx,
   GNUNET_ECRS_FileInfo fi;
   unsigned int size;
   GNUNET_HashCode query;
-  KBlock *kb;
+  GNUNET_EC_KBlock *kb;
   const char *dstURI;
   int j;
 
   type = ntohl (value->type);
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   if (GNUNET_OK !=
-      GNUNET_EC_file_block_check_and_get_query (size, (DBlock *) & value[1],
-                                                GNUNET_YES, &query))
+      GNUNET_EC_file_block_check_and_get_query (size,
+                                                (GNUNET_EC_DBlock *) &
+                                                value[1], GNUNET_YES, &query))
     return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (ectx, type == GNUNET_ECRS_BLOCKTYPE_KEYWORD);
 
-  if (size < sizeof (KBlock))
+  if (size < sizeof (GNUNET_EC_KBlock))
     return GNUNET_SYSERR;
-  kb = (KBlock *) & value[1];
-  GNUNET_ECRS_decryptInPlace (key, &kb[1], size - sizeof (KBlock));
-  j = sizeof (KBlock);
+  kb = (GNUNET_EC_KBlock *) & value[1];
+  GNUNET_ECRS_decryptInPlace (key, &kb[1], size - sizeof (GNUNET_EC_KBlock));
+  j = sizeof (GNUNET_EC_KBlock);
   while ((j < size) && (((const char *) kb)[j] != '\0'))
     j++;
   if (j == size)
@@ -134,7 +135,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
   unsigned int mdsize;
   struct GNUNET_RSA_PrivateKey *pk;
   char *dstURI;
-  KBlock *kb;
+  GNUNET_EC_KBlock *kb;
   char **keywords;
   unsigned int keywordCount;
   int i;
@@ -157,15 +158,15 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
     GNUNET_ECRS_meta_data_get_serialized_size (md,
                                                GNUNET_ECRS_SERIALIZE_PART);
   dstURI = GNUNET_ECRS_uri_to_string (dst);
-  size = mdsize + sizeof (KBlock) + strlen (dstURI) + 1;
+  size = mdsize + sizeof (GNUNET_EC_KBlock) + strlen (dstURI) + 1;
   if (size > MAX_KBLOCK_SIZE)
     {
       size = MAX_KBLOCK_SIZE;
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
-      kb = (KBlock *) & value[1];
+      kb = (GNUNET_EC_KBlock *) & value[1];
       kb->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
       memcpy (&kb[1], dstURI, strlen (dstURI) + 1);
-      mdsize = size - sizeof (KBlock) - strlen (dstURI) - 1;
+      mdsize = size - sizeof (GNUNET_EC_KBlock) - strlen (dstURI) - 1;
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
                                                 md,
                                                 &((char *)
@@ -179,12 +180,12 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
           GNUNET_free (value);
           return GNUNET_SYSERR;
         }
-      size = sizeof (KBlock) + strlen (dstURI) + 1 + mdsize;
+      size = sizeof (GNUNET_EC_KBlock) + strlen (dstURI) + 1 + mdsize;
     }
   else
     {
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
-      kb = (KBlock *) & value[1];
+      kb = (GNUNET_EC_KBlock *) & value[1];
       kb->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
       memcpy (&kb[1], dstURI, strlen (dstURI) + 1);
       GNUNET_GE_ASSERT (ectx,
@@ -199,9 +200,9 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
-  value->prio = htonl (priority);
-  value->anonymityLevel = htonl (anonymityLevel);
-  value->expirationTime = GNUNET_htonll (expirationTime);
+  value->priority = htonl (priority);
+  value->anonymity_level = htonl (anonymityLevel);
+  value->expiration_time = GNUNET_htonll (expirationTime);
   sock = GNUNET_client_connection_create (ectx, cfg);
   ret = GNUNET_OK;
 
@@ -241,8 +242,8 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_ASSERT (ectx,
                         GNUNET_OK ==
                         GNUNET_EC_file_block_check_and_get_query (size,
-                                                                  (DBlock *)
-                                                                  kb,
+                                                                  (GNUNET_EC_DBlock
+                                                                   *) kb,
                                                                   GNUNET_YES,
                                                                   &hc));
 #endif

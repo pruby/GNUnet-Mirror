@@ -24,8 +24,8 @@
 #include "ecrs_core.h"
 
 /**
- * Size of a DBlock.  Should be a multiple of 8 and larger than
- * sizeof(CHK).
+ * Size of a GNUNET_EC_DBlock.  Should be a multiple of 8 and larger than
+ * sizeof(GNUNET_EC_ContentHashKey).
  */
 #define DBLOCK_SIZE 32768
 
@@ -43,7 +43,7 @@
  * CHK_PER_INODE is chosen such that
  * IBLOCK_SIZE == DBLOCK_SIZE.
  */
-#define IBLOCK_SIZE (CHK_PER_INODE * sizeof(CHK))
+#define IBLOCK_SIZE (CHK_PER_INODE * sizeof(GNUNET_EC_ContentHashKey))
 
 /**
  * Compute the depth of the tree.

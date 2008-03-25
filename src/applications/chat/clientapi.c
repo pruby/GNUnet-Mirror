@@ -107,7 +107,8 @@ poll_thread (void *rcls)
 
           if (GNUNET_OK !=
               room->member_list_callback (room->member_list_callback_cls,
-                                          nick, GNUNET_get_time ()))
+                                          nick, GNUNET_YES,
+                                          GNUNET_get_time ()))
             {
               GNUNET_GE_BREAK (NULL, 0);
               GNUNET_client_connection_close_temporarily (room->sock);
@@ -186,9 +187,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
                        const char *memberInfo,
                        GNUNET_CHAT_MessageCallback callback, void *cls,
                        GNUNET_CHAT_MemberListCallback memberCallback,
-                       void *membercls,
-                       GNUNET_CHAT_MemberRemoveCallback removeCallback,
-                       void *removecls)
+                       void *membercls)
 {
   CS_chat_JOIN_MESSAGE *join_msg;
   GNUNET_HashCode hash_of_me;
@@ -240,8 +239,6 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   chat_room->callback_cls = cls;
   chat_room->member_list_callback = memberCallback;
   chat_room->member_list_callback_cls = membercls;
-  chat_room->member_remove_callback = removeCallback;
-  chat_room->member_remove_callback_cls = removecls;
   chat_room->ectx = ectx;
   chat_room->cfg = cfg;
   chat_room->memberInfo = GNUNET_strdup (memberInfo);
@@ -351,17 +348,6 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
     }
 
   return ret;
-}
-
-/**
- * List all of the (known) chat members.
- * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
- */
-int
-GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
-                          GNUNET_CHAT_MemberIterator it, void *cls)
-{
-  return GNUNET_SYSERR;
 }
 
 /* end of clientapi.c */

@@ -45,7 +45,7 @@ extern "C"
  *
  * 1.x.x: initial version with triple GNUNET_hash and merkle tree
  * 2.x.x: root node with mime-type, filename and version number
- * 2.1.x: combined CHK/3HASH encoding with 25:1 super-nodes
+ * 2.1.x: combined GNUNET_EC_ContentHashKey/3HASH encoding with 25:1 super-nodes
  * 2.2.x: with directories
  * 3.0.x: with namespaces
  * 3.1.x: with namespace meta-data
@@ -70,7 +70,7 @@ extern "C"
 
 
 /**
- * Fixed SBlock updateInterval codes. Positive values
+ * Fixed GNUNET_EC_SBlock updateInterval codes. Positive values
  * are interpreted as durations (in seconds) for periodical
  * updates.
  */
@@ -333,7 +333,7 @@ typedef int (*GNUNET_ECRS_SignFunction) (void *cls,
  *
  * @param baseURI content offered by the sender
  * @param sender identity of the peer with the content
- * @param expirationTime how long will the content be offered?
+ * @param expiration_time how long will the content be offered?
  * @param signer function to call for obtaining
  *        RSA signatures for "sender".
  * @return the location URI
@@ -592,16 +592,16 @@ int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_C
 
 /**
  * Create a new namespace (and publish an advertismement).
- * This publishes both an NBlock in the namespace itself
+ * This publishes both an GNUNET_EC_NBlock in the namespace itself
  * as well as KNBlocks under all keywords specified in
  * the advertisementURI.
  *
  * @param name the name for the namespace
- * @param anonymityLevel for the namespace advertismement
+ * @param anonymity_level for the namespace advertismement
  * @param priority for the namespace advertisement
  * @param expiration for the namespace advertisement
  * @param advertisementURI the keyword (!) URI to advertise the
- *        namespace under (KNBlock)
+ *        namespace under (GNUNET_EC_KNBlock)
  * @param meta meta-data for the namespace advertisement
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
@@ -775,7 +775,7 @@ struct GNUNET_ECRS_DownloadContext
                                             dpcb, void *dpcbClosure);
 
 /**
- * Stop a download (aborts if download is incomplete). 
+ * Stop a download (aborts if download is incomplete).
  */
 int
 GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext

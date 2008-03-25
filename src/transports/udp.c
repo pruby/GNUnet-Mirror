@@ -162,7 +162,7 @@ udp_connect (const GNUNET_MessageHello * hello,
   memset (tsession, 0, sizeof (GNUNET_TSession));
   tsession->internal = GNUNET_malloc (GNUNET_sizeof_hello (hello));
   memcpy (tsession->internal, hello, GNUNET_sizeof_hello (hello));
-  tsession->ttype = myAPI.protocolNumber;
+  tsession->ttype = myAPI.protocol_number;
   tsession->peer = hello->senderIdentity;
   *tsessionPtr = tsession;
   if (stats != NULL)
@@ -362,7 +362,7 @@ udp_send (GNUNET_TSession * tsession,
   mp = GNUNET_malloc (ssize);
   mp->header.size = htons (ssize);
   mp->header.type = 0;
-  mp->sender = *(coreAPI->myIdentity);
+  mp->sender = *(coreAPI->my_identity);
   memcpy (&mp[1], message, size);
   ok = GNUNET_SYSERR;
 
@@ -546,14 +546,14 @@ inittransport_udp (GNUNET_CoreAPIForTransport * core)
   if (GNUNET_GC_get_configuration_value_yesno (cfg, "UDP", "UPNP", GNUNET_YES)
       == GNUNET_YES)
     {
-      upnp = coreAPI->request_service ("upnp");
+      upnp = coreAPI->service_request ("upnp");
       if (upnp == NULL)
         GNUNET_GE_LOG (coreAPI->ectx,
                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                        "The UPnP service could not be loaded. To disable UPnP, set the "
                        "configuration option \"UPNP\" in section \"UDP\" to \"NO\"\n");
     }
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -564,19 +564,19 @@ inittransport_udp (GNUNET_CoreAPIForTransport * core)
       stat_udpConnected
         = stats->create (gettext_noop ("# UDP connections (right now)"));
     }
-  myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP;
+  myAPI.protocol_number = GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP;
   myAPI.mtu = mtu - sizeof (UDPMessage);
   myAPI.cost = 20000;
-  myAPI.verifyHello = &verify_hello;
-  myAPI.createhello = &create_hello;
+  myAPI.hello_verify = &verify_hello;
+  myAPI.hello_create = &create_hello;
   myAPI.connect = &udp_connect;
   myAPI.send = &udp_send;
   myAPI.associate = &udp_associate;
   myAPI.disconnect = &udp_disconnect;
-  myAPI.startTransportServer = &udp_transport_server_start;
-  myAPI.stopTransportServer = &udp_transport_server_stop;
-  myAPI.helloToAddress = &hello_to_address;
-  myAPI.testWouldTry = &udp_test_would_try;
+  myAPI.server_start = &udp_transport_server_start;
+  myAPI.server_stop = &udp_transport_server_stop;
+  myAPI.hello_to_address = &hello_to_address;
+  myAPI.send_now_test = &udp_test_would_try;
 
   return &myAPI;
 }

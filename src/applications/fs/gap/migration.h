@@ -51,7 +51,7 @@ void GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi);
  */
 void GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
                                  unsigned int size,
-                                 const DBlock * value,
+                                 const GNUNET_EC_DBlock * value,
                                  GNUNET_CronTime expiration,
                                  unsigned int blocked_size,
                                  const PID_INDEX * blocked);

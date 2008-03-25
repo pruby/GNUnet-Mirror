@@ -22,6 +22,9 @@
  * @file include/core.h
  * @brief Implementation of the APIs to the GNUnet core
  * @author Christian Grothoff
+ *
+ * This code should only be used in src/server/ and by
+ * testcases that need to setup parts of a gnunetd daemon.
  */
 
 #ifndef CORE_H

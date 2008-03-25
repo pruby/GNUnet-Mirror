@@ -108,7 +108,7 @@ typedef struct
   /**
    * The identity of the local node.
    */
-  GNUNET_PeerIdentity *myIdentity;
+  GNUNET_PeerIdentity *my_identity;
 
   /**
    * System error context
@@ -144,7 +144,7 @@ typedef struct
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void *(*request_service) (const char *name);
+  void *(*service_request) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -156,9 +156,9 @@ typedef struct
    *
    * @return GNUNET_OK if service was successfully released, GNUNET_SYSERR on error
    */
-  int (*release_service) (void *service);
+  int (*service_release) (void *service);
 
-  int (*connection_assert_tsession_unused) (GNUNET_TSession * tsession);
+  int (*tsession_assert_unused) (GNUNET_TSession * tsession);
 
 
 } GNUNET_CoreAPIForTransport;
@@ -191,13 +191,13 @@ typedef struct
    * the transport should never do ANYTHING
    * with it.
    */
-  struct GNUNET_PluginHandle *libHandle;
+  struct GNUNET_PluginHandle *library_handle;
 
   /**
    * The name of the transport, set by the
    * core. Read only for the service itself!
    */
-  char *transName;
+  char *transport_name;
 
   /**
    * This field holds a cached hello for this
@@ -212,7 +212,7 @@ typedef struct
    * The number of the protocol that is supported by this transport
    * API (i.e. 6 tcp, 17 udp, 80 http, 25 smtp, etc.)
    */
-  unsigned short protocolNumber;
+  unsigned short protocol_number;
 
   /**
    * The MTU for the protocol (e.g. 1472 for UDP).
@@ -237,7 +237,7 @@ typedef struct
    *        (the signature/crc have been verified before)
    * @return GNUNET_OK if the helo is well-formed
    */
-  int (*verifyHello) (const GNUNET_MessageHello * hello);
+  int (*hello_verify) (const GNUNET_MessageHello * hello);
 
   /**
    * Create a hello-Message for the current node. The hello is
@@ -250,7 +250,14 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR on error (e.g. send-only
    *  transports return GNUNET_SYSERR here)
    */
-  GNUNET_MessageHello *(*createhello) (void);
+  GNUNET_MessageHello *(*hello_create) (void);
+
+  /**
+   * Convert hello to network address.
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
+   */
+  int (*hello_to_address) (const GNUNET_MessageHello * hello,
+                           void **sa, unsigned int *sa_len);
 
   /**
    * Establish a connection to a remote node.
@@ -262,23 +269,6 @@ typedef struct
    */
   int (*connect) (const GNUNET_MessageHello * hello,
                   GNUNET_TSession ** tsession, int may_reuse);
-
-  /**
-   * Send a message to the specified remote node.
-   * @param tsession an opaque session handle (e.g. a socket
-   *        or the hello_message from connect)
-   * @param msg the message
-   * @param size the size of the message, <= mtu
-   * @param important GNUNET_YES if message is important (i.e. grow
-   *        buffers to queue if needed)
-   * @return GNUNET_SYSERR on error, GNUNET_NO on temporary error (retry),
-   *         GNUNET_YES/GNUNET_OK on success; after any persistent error,
-   *         the caller must call "disconnect" and not continue
-   *         using the session afterwards (useful if the other
-   *         side closed the connection).
-   */
-  int (*send) (GNUNET_TSession * tsession,
-               const void *msg, unsigned int size, int important);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -317,23 +307,21 @@ typedef struct
   int (*disconnect) (GNUNET_TSession * tsession);
 
   /**
-   * Start the server process to receive inbound traffic.
-   * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
+   * Send a message to the specified remote node.
+   * @param tsession an opaque session handle (e.g. a socket
+   *        or the hello_message from connect)
+   * @param msg the message
+   * @param size the size of the message, <= mtu
+   * @param important GNUNET_YES if message is important (i.e. grow
+   *        buffers to queue if needed)
+   * @return GNUNET_SYSERR on error, GNUNET_NO on temporary error (retry),
+   *         GNUNET_YES/GNUNET_OK on success; after any persistent error,
+   *         the caller must call "disconnect" and not continue
+   *         using the session afterwards (useful if the other
+   *         side closed the connection).
    */
-  int (*startTransportServer) (void);
-
-  /**
-   * Shutdown the server process (stop receiving inbound
-   * traffic). Maybe restarted later!
-   */
-  int (*stopTransportServer) (void);
-
-  /**
-   * Convert hello to network address.
-   * @return GNUNET_OK on success, GNUNET_SYSERR on error
-   */
-  int (*helloToAddress) (const GNUNET_MessageHello * hello,
-                         void **sa, unsigned int *sa_len);
+  int (*send) (GNUNET_TSession * tsession,
+               const void *msg, unsigned int size, int important);
 
   /**
    * Test if the transport would even try to send
@@ -348,8 +336,20 @@ typedef struct
    *         GNUNET_NO if the transport would just drop the message,
    *         GNUNET_SYSERR if the size/session is invalid
    */
-  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size,
-                       int important);
+  int (*send_now_test) (GNUNET_TSession * tsession, unsigned int size,
+                        int important);
+
+  /**
+   * Start the server process to receive inbound traffic.
+   * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
+   */
+  int (*server_start) (void);
+
+  /**
+   * Shutdown the server process (stop receiving inbound
+   * traffic). Maybe restarted later!
+   */
+  int (*server_stop) (void);
 
 } GNUNET_TransportAPI;
 

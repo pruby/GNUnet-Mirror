@@ -96,9 +96,9 @@ int GNUNET_CORE_cs_send_to_client (struct GNUNET_ClientHandle *handle,
  * Test if we would be able to queue a message for delivery to this
  * client right now.
  */
-int GNUNET_CORE_cs_test_send_to_client_now (struct GNUNET_ClientHandle *handle,
-					    unsigned int size,
-					    int would_force);
+int GNUNET_CORE_cs_test_send_to_client_now (struct GNUNET_ClientHandle
+                                            *handle, unsigned int size,
+                                            int would_force);
 
 
 /**

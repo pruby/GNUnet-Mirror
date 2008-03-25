@@ -308,7 +308,7 @@ count_query_plan_entries (struct QueryPlanList *qpl)
  * @param target what peer to send the request to
  * @param request the request to send
  * @param ttl time-to-live for the request
- * @param prio priority to use for the request
+ * @param priority priority to use for the request
  */
 static void
 queue_request (PID_INDEX target,
@@ -406,8 +406,9 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   rank = GNUNET_malloc (sizeof (struct PeerRankings));
   memset (rank, 0, sizeof (struct PeerRankings));
   rank->peer = peer;
-  rank->reserved_bandwidth = coreAPI->reserve_downstream_bandwidth (identity,
-                                                                    GNUNET_GAP_ESTIMATED_DATA_SIZE);
+  rank->reserved_bandwidth =
+    coreAPI->p2p_bandwidth_downstream_reserve (identity,
+                                               GNUNET_GAP_ESTIMATED_DATA_SIZE);
   history = NULL;
   if (rpc->info != NULL)
     {
@@ -433,8 +434,8 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
                                                      (now - last));
       if (history->response_count == 0)
         history_score =
-          -history->request_count * coreAPI->forAllConnectedNodes (NULL,
-                                                                   NULL);
+          -history->request_count * coreAPI->p2p_connections_iterate (NULL,
+                                                                      NULL);
       if (history_score > (1 << 30))
         history_score = (1 << 30);
     }
@@ -458,7 +459,7 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
     prio = rpc->request->remaining_value;
   if (prio > 0)
     {
-      ttl = (1 << 30);          /* bound only by prio */
+      ttl = (1 << 30);          /* bound only by priority */
     }
   else
     {
@@ -549,7 +550,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   rpc.info = info;
   rpc.request = request;
   rpc.rankings = NULL;
-  total_peers = coreAPI->forAllConnectedNodes (rank_peers, &rpc);
+  total_peers = coreAPI->p2p_connections_iterate (rank_peers, &rpc);
   /* use request type, priority, system load and
      entropy of ranking to determine number of peers
      to queue */
@@ -630,8 +631,8 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       rpc.rankings = rank->next;
       GNUNET_FS_PT_resolve (rank->peer, &peerId);
       if (rank->score != 0)
-        coreAPI->reserve_downstream_bandwidth (&peerId,
-                                               -rank->reserved_bandwidth);
+        coreAPI->p2p_bandwidth_downstream_reserve (&peerId,
+                                                   -rank->reserved_bandwidth);
       GNUNET_FS_PT_change_rc (rank->peer, -1);
       GNUNET_free (rank);
     }
@@ -670,7 +671,7 @@ try_add_request (struct RequestList *req,
   msg->filter_mutator = htonl (req->bloomfilter_mutator);
   msg->number_of_queries = htonl (req->key_count);
   if (0 != (req->policy & GNUNET_FS_RoutingPolicy_INDIRECT))
-    msg->returnTo = *coreAPI->myIdentity;
+    msg->returnTo = *coreAPI->my_identity;
   else
     GNUNET_FS_PT_resolve (req->response_target, &msg->returnTo);
   memcpy (&msg->queries[0],
@@ -948,20 +949,20 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
-                    capi->cs_exit_handler_register (&handle_client_exit));
+                    capi->
+                    cs_disconnect_handler_register (&handle_client_exit));
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
                     capi->
-                    register_notify_peer_disconnect (&peer_disconnect_handler,
-                                                     NULL));
+                    peer_disconnect_notification_register
+                    (&peer_disconnect_handler, NULL));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    connection_register_send_callback (sizeof
-                                                       (P2P_gap_query_MESSAGE),
-                                                       GNUNET_FS_GAP_QUERY_POLL_PRIORITY,
-                                                       &query_fill_callback));
-  stats = capi->request_service ("stats");
+                    send_callback_register (sizeof (P2P_gap_query_MESSAGE),
+                                            GNUNET_FS_GAP_QUERY_POLL_PRIORITY,
+                                            &query_fill_callback));
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_gap_query_sent =
@@ -992,21 +993,21 @@ GNUNET_FS_PLAN_done ()
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    cs_exit_handler_unregister (&handle_client_exit));
+                    cs_disconnect_handler_unregister (&handle_client_exit));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    unregister_notify_peer_disconnect
+                    peer_disconnect_notification_unregister
                     (&peer_disconnect_handler, NULL));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
-                    connection_unregister_send_callback (sizeof
-                                                         (P2P_gap_query_MESSAGE),
-                                                         &query_fill_callback));
+                    send_callback_unregister (sizeof
+                                              (P2P_gap_query_MESSAGE),
+                                              &query_fill_callback));
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   return 0;

@@ -196,7 +196,7 @@ receivedhello (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* message invalid */
     }
-  if ((GNUNET_Int32Time) ntohl (msg->expirationTime) >
+  if ((GNUNET_Int32Time) ntohl (msg->expiration_time) >
       GNUNET_get_time_int32 (NULL) + GNUNET_MAX_HELLO_EXPIRES)
     {
       GNUNET_GE_LOG (ectx,
@@ -206,7 +206,7 @@ receivedhello (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;
     }
-  if (GNUNET_SYSERR == transport->verifyhello (msg))
+  if (GNUNET_SYSERR == transport->hello_verify (msg))
     {
 #if DEBUG_ADVERTISING
       IF_GELOG (ectx,
@@ -385,7 +385,7 @@ receivedhello (const GNUNET_PeerIdentity * sender,
 
   /* build message to send, ping must contain return-information,
      such as a selection of our hellos... */
-  mtu = transport->getMTU (tsession->ttype);
+  mtu = transport->mtu_get (tsession->ttype);
   if (mtu == 0)
     {
       mtu = 2048;               /* bound size */
@@ -413,8 +413,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
   buffer = GNUNET_malloc (mtu);
   if (mtu > ntohs (ping->size))
     {
-      helloEnd = transport->getAdvertisedhellos (mtu - ntohs (ping->size),
-                                                 buffer);
+      helloEnd =
+        transport->hello_advertisements_get (mtu - ntohs (ping->size),
+                                             buffer);
       GNUNET_GE_ASSERT (ectx, mtu - ntohs (ping->size) >= helloEnd);
     }
   else
@@ -449,8 +450,7 @@ receivedhello (const GNUNET_PeerIdentity * sender,
 
   /* ok, finally we can send! */
   if ((res == GNUNET_OK) &&
-      (GNUNET_SYSERR ==
-       coreAPI->connection_send_plaintext (tsession, buffer, helloEnd)))
+      (GNUNET_SYSERR == coreAPI->plaintext_send (tsession, buffer, helloEnd)))
     {
 
       if (stats != NULL)
@@ -515,14 +515,15 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Entering `%s' with target `%s'.\n", __FUNCTION__, &other);
 #endif
-  if (0 == memcmp (hi, coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity)))
+  if (0 == memcmp (hi, coreAPI->my_identity, sizeof (GNUNET_PeerIdentity)))
     return GNUNET_OK;           /* never advertise to myself... */
   prio = (int) getConnectPriority ();
   if (prio >= GNUNET_EXTREME_PRIORITY)
     prio = GNUNET_EXTREME_PRIORITY / 4;
-  if (GNUNET_OK == coreAPI->queryPeerStatus (hi, NULL, NULL))
+  if (GNUNET_OK == coreAPI->p2p_connection_status_check (hi, NULL, NULL))
     {
-      coreAPI->unicast (hi, &sd->m->header, prio, HELLO_BROADCAST_FREQUENCY);
+      coreAPI->ciphertext_send (hi, &sd->m->header, prio,
+                                HELLO_BROADCAST_FREQUENCY);
       if (stats != NULL)
         stats->change (stat_hello_out, 1);
       return GNUNET_OK;
@@ -562,9 +563,9 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
     }
   if (stats != NULL)
     stats->change (stat_hello_out, 1);
-  coreAPI->connection_send_plaintext (tsession,
-                                      (char *) &sd->m->header,
-                                      GNUNET_sizeof_hello (sd->m));
+  coreAPI->plaintext_send (tsession,
+                           (char *) &sd->m->header,
+                           GNUNET_sizeof_hello (sd->m));
   transport->disconnect (tsession, __FILE__);
 #if DEBUG_ADVERTISING
   GNUNET_GE_LOG (ectx,
@@ -593,14 +594,14 @@ broadcasthelloTransport (GNUNET_TransportAPI * tapi, void *cls)
     return;                     /* ignore */
   now = GNUNET_get_time ();
   sd.n = identity->forEachHost (now, NULL, NULL);       /* just count */
-  sd.m = transport->createhello (tapi->protocolNumber);
+  sd.m = transport->hello_create (tapi->protocol_number);
   if (sd.m == NULL)
     return;
 #if DEBUG_ADVERTISING
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("Advertising my transport %d to selected peers.\n"),
-                 tapi->protocolNumber);
+                 tapi->protocol_number);
 #endif
   identity->addHost (sd.m);
   if (sd.n < 1)
@@ -631,9 +632,9 @@ broadcasthello (void *unused)
     return;                     /* network load too high... */
   if (GNUNET_cpu_get_load (coreAPI->ectx, coreAPI->cfg) > 100)
     return;                     /* CPU load too high... */
-  i = transport->forEach (NULL, NULL);
+  i = transport->iterate_available (NULL, NULL);
   if (i > 0)
-    transport->forEach (&broadcasthelloTransport, &i);
+    transport->iterate_available (&broadcasthelloTransport, &i);
 }
 
 typedef struct
@@ -659,8 +660,8 @@ forwardCallback (const GNUNET_PeerIdentity * peer, void *cls)
                                    to the same peer! */
   if (stats != NULL)
     stats->change (stat_hello_fwd, 1);
-  coreAPI->unicast (peer, &fcc->msg->header, 0, /* priority */
-                    HELLO_BROADCAST_FREQUENCY);
+  coreAPI->ciphertext_send (peer, &fcc->msg->header, 0, /* priority */
+                            HELLO_BROADCAST_FREQUENCY);
 }
 
 /**
@@ -688,7 +689,7 @@ forwardhelloHelper (const GNUNET_PeerIdentity * peer,
     return GNUNET_OK;           /* this should not happen */
   /* do not forward expired hellos */
   GNUNET_get_time_int32 (&now);
-  if ((GNUNET_Int32Time) ntohl (hello->expirationTime) < now)
+  if ((GNUNET_Int32Time) ntohl (hello->expiration_time) < now)
     {
 #if DEBUG_ADVERTISING
       GNUNET_EncName enc;
@@ -699,7 +700,7 @@ forwardhelloHelper (const GNUNET_PeerIdentity * peer,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Removing HELLO from peer `%s' (expired %ds ago).\n",
-                     &enc, now - ntohl (hello->expirationTime));
+                     &enc, now - ntohl (hello->expiration_time));
 #endif
       identity->delHostFromKnown (peer, protocol);
       GNUNET_free (hello);
@@ -712,12 +713,12 @@ forwardhelloHelper (const GNUNET_PeerIdentity * peer,
       return GNUNET_OK;         /* only forward with a certain chance,
                                    (on average: 1 peer per run!) */
     }
-  count = coreAPI->forAllConnectedNodes (NULL, NULL);
+  count = coreAPI->p2p_connections_iterate (NULL, NULL);
   if (count > 0)
     {
       fcc.msg = hello;
       fcc.prob = count;
-      coreAPI->forAllConnectedNodes (&forwardCallback, &fcc);
+      coreAPI->p2p_connections_iterate (&forwardCallback, &fcc);
     }
   GNUNET_free (hello);
   return GNUNET_OK;
@@ -756,7 +757,8 @@ ehelloHandler (const GNUNET_PeerIdentity * sender,
       /* if the hello was ok, update traffic preference
          for the peer (depending on how much we like
          to learn about other peers) */
-      coreAPI->preferTrafficFrom (sender, getConnectPriority ());
+      coreAPI->p2p_connection_preference_increase (sender,
+                                                   getConnectPriority ());
     }
   return GNUNET_OK;             /* even if we had errors processing the hello, keep going */
 }
@@ -845,43 +847,43 @@ initialize_module_advertising (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
   ectx = capi->ectx;
-  identity = capi->request_service ("identity");
+  identity = capi->service_request ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  transport = capi->request_service ("transport");
+  transport = capi->service_request ("transport");
   if (transport == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->release_service (identity);
+      capi->service_release (identity);
       identity = NULL;
       return GNUNET_SYSERR;
     }
-  pingpong = capi->request_service ("pingpong");
+  pingpong = capi->service_request ("pingpong");
   if (pingpong == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->release_service (identity);
+      capi->service_release (identity);
       identity = NULL;
-      capi->release_service (transport);
+      capi->service_release (transport);
       transport = NULL;
       return GNUNET_SYSERR;
     }
-  topology = capi->request_service ("topology");
+  topology = capi->service_request ("topology");
   if (topology == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->release_service (identity);
+      capi->service_release (identity);
       identity = NULL;
-      capi->release_service (transport);
+      capi->service_release (transport);
       transport = NULL;
-      capi->release_service (pingpong);
+      capi->service_release (pingpong);
       pingpong = NULL;
       return GNUNET_SYSERR;
     }
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_hello_in =
@@ -929,8 +931,10 @@ initialize_module_advertising (GNUNET_CoreAPIForPlugins * capi)
                  ("`%s' registering handler %d (plaintext and ciphertext)\n"),
                  "advertising", GNUNET_P2P_PROTO_HELLO);
 
-  capi->registerHandler (GNUNET_P2P_PROTO_HELLO, &ehelloHandler);
-  capi->plaintext_register_handler (GNUNET_P2P_PROTO_HELLO, &phelloHandler);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_HELLO,
+                                         &ehelloHandler);
+  capi->p2p_plaintext_handler_register (GNUNET_P2P_PROTO_HELLO,
+                                        &phelloHandler);
   if (0 !=
       GNUNET_GC_attach_change_listener (capi->cfg,
                                         &configurationUpdateCallback, NULL))
@@ -967,20 +971,21 @@ done_module_advertising ()
       GNUNET_cron_del_job (coreAPI->cron, &forwardhello, HELLO_FORWARD_FREQUENCY, NULL);        /* seven minutes: exchange */
       activeCronJobs -= ACJ_FORWARD;
     }
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HELLO, &ehelloHandler);
-  coreAPI->plaintext_unregister_handler (GNUNET_P2P_PROTO_HELLO,
-                                         &phelloHandler);
-  coreAPI->release_service (transport);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_HELLO,
+                                              &ehelloHandler);
+  coreAPI->p2p_plaintext_handler_unregister (GNUNET_P2P_PROTO_HELLO,
+                                             &phelloHandler);
+  coreAPI->service_release (transport);
   transport = NULL;
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
-  coreAPI->release_service (pingpong);
+  coreAPI->service_release (pingpong);
   pingpong = NULL;
-  coreAPI->release_service (topology);
+  coreAPI->service_release (topology);
   topology = NULL;
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   coreAPI = NULL;

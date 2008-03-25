@@ -92,8 +92,8 @@ update_client_thread (void *cls)
                   memcpy (&message->nick[0], compare_pos->nick,
                           strlen (compare_pos->nick));
 
-                  coreAPI->cs_send_to_client (pos->client, &message->header,
-                                              GNUNET_YES);
+                  coreAPI->cs_send_message (pos->client, &message->header,
+                                            GNUNET_YES);
                 }
               compare_pos = compare_pos->next;
             }
@@ -181,8 +181,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
         {
           fprintf (stderr,
                    "room names match, must send message to others!!\n");
-          coreAPI->cs_send_to_client (tempClient->client, message,
-                                      GNUNET_YES);
+          coreAPI->cs_send_message (tempClient->client, message, GNUNET_YES);
         }
 
       tempClient = tempClient->next;
@@ -378,8 +377,8 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
       pos = client_list_head;
       while (pos != NULL)
         {
-          coreAPI->cs_send_to_client (pos->client, &message->header,
-                                      GNUNET_YES);
+          coreAPI->cs_send_message (pos->client, &message->header,
+                                    GNUNET_YES);
           pos = pos->next;
         }
 
@@ -406,19 +405,19 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
                  "chat", GNUNET_P2P_PROTO_CHAT_MSG, GNUNET_CS_PROTO_CHAT_MSG);
 
   /*if (GNUNET_SYSERR ==
-     capi->registerHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
+     capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
      ok = GNUNET_SYSERR; */
   if (GNUNET_SYSERR ==
-      capi->cs_exit_handler_register (&chatClientExitHandler))
+      capi->cs_disconnect_handler_register (&chatClientExitHandler))
     ok = GNUNET_SYSERR;
 
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
-                                   &csHandleChatJoinRequest))
+      capi->cs_handler_register (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
+                                 &csHandleChatJoinRequest))
     ok = GNUNET_SYSERR;
 
-  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
-                                                    &csHandleChatMSG))
+  if (GNUNET_SYSERR == capi->cs_handler_register (GNUNET_CS_PROTO_CHAT_MSG,
+                                                  &csHandleChatMSG))
     ok = GNUNET_SYSERR;
 
   GNUNET_GE_ASSERT (capi->ectx,
@@ -435,12 +434,11 @@ void
 done_module_chat ()
 {
   shutdown_flag = GNUNET_YES;
-  /*coreAPI->unregisterHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG); */
-  coreAPI->cs_exit_handler_unregister (&chatClientExitHandler);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
-                                    &csHandleChatMSG);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
-                                    &csHandleChatJoinRequest);
+  /*coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG); */
+  coreAPI->cs_disconnect_handler_unregister (&chatClientExitHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_CHAT_MSG, &csHandleChatMSG);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
+                                  &csHandleChatJoinRequest);
 
   GNUNET_mutex_destroy (chatMutex);
   coreAPI = NULL;

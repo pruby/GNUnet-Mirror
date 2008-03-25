@@ -41,9 +41,9 @@ initValue (int i)
   value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + 8 * i);
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + 8 * i);
   value->type = htonl (i);
-  value->prio = htonl (i + 1);
-  value->anonymityLevel = htonl (i);
-  value->expirationTime = GNUNET_htonll (now - i * GNUNET_CRON_SECONDS);
+  value->priority = htonl (i + 1);
+  value->anonymity_level = htonl (i);
+  value->expiration_time = GNUNET_htonll (now - i * GNUNET_CRON_SECONDS);
   memset (&value[1], i, 8 * i);
   return value;
 }
@@ -66,8 +66,8 @@ checkValue (const GNUNET_HashCode * key,
     {
       /*
          printf("Wanted: %u, %llu; got %u, %llu - %d\n",
-         ntohl(value->size), GNUNET_ntohll(value->expirationTime),
-         ntohl(val->size), GNUNET_ntohll(val->expirationTime),
+         ntohl(value->size), GNUNET_ntohll(value->expiration_time),
+         ntohl(val->size), GNUNET_ntohll(val->expiration_time),
          memcmp(val, value, ntohl(val->size))); */
       ret = GNUNET_SYSERR;
     }
@@ -123,7 +123,7 @@ priorityCheck (const GNUNET_HashCode * key,
   int id;
 
   id = (*closure);
-  if (id + 1 == ntohl (val->prio))
+  if (id + 1 == ntohl (val->priority))
     return GNUNET_OK;
   else
     return GNUNET_SYSERR;

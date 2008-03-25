@@ -85,7 +85,7 @@ iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value,
       data->stat_block[7]++;
       break;
     }
-  switch (ntohl (value->anonymityLevel))
+  switch (ntohl (value->anonymity_level))
     {
     case 0:
       data->stat_anon[0]++;
@@ -97,7 +97,7 @@ iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value,
       data->stat_anon[2]++;
       break;
     }
-  switch (ntohl (value->prio))
+  switch (ntohl (value->priority))
     {
     case 0:
       data->stat_prio[0]++;
@@ -109,7 +109,7 @@ iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value,
       data->stat_prio[2]++;
       break;
     }
-  expire = GNUNET_ntohll (value->expirationTime);
+  expire = GNUNET_ntohll (value->expiration_time);
   now = GNUNET_get_time ();
   if (expire <= now)
     data->stat_expire[0]++;
@@ -145,7 +145,7 @@ update_sqstore_stats ()
 static int
 init_sqstore_stats ()
 {
-  sq = myCoreAPI->request_service ("sqstore");
+  sq = myCoreAPI->service_request ("sqstore");
   if (sq == NULL)
     return GNUNET_SYSERR;
   stat_block[0] = stats->create (gettext_noop ("# Any-Blocks"));
@@ -175,6 +175,6 @@ done_sqstore_stats ()
 {
   if (sq == NULL)
     return;
-  myCoreAPI->release_service (sq);
+  myCoreAPI->service_release (sq);
   sq = NULL;
 }

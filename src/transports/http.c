@@ -1145,7 +1145,7 @@ create_session_url (HTTPSession * httpSession)
   url = httpSession->cs.client.url;
   if (url == NULL)
     {
-      GNUNET_hash_to_enc (&coreAPI->myIdentity->hashPubKey, &enc);
+      GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &enc);
       available = ntohs (haddr->availability) & available_protocols;
       if (available == (VERSION_AVAILABLE_IPV4 | VERSION_AVAILABLE_IPV6))
         {
@@ -2128,7 +2128,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
                                                "HTTP", "UPNP",
                                                GNUNET_YES) == GNUNET_YES)
     {
-      upnp = coreAPI->request_service ("upnp");
+      upnp = coreAPI->service_request ("upnp");
 
       if (upnp == NULL)
         {
@@ -2141,7 +2141,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
         }
     }
 
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -2177,19 +2177,19 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
                                             "GNUNETD", "HTTP-PROXY", "",
                                             &proxy);
 
-  myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP;
+  myAPI.protocol_number = GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP;
   myAPI.mtu = 0;
   myAPI.cost = 20000;           /* about equal to udp */
-  myAPI.verifyHello = &verify_hello;
-  myAPI.createhello = &create_hello;
+  myAPI.hello_verify = &verify_hello;
+  myAPI.hello_create = &create_hello;
   myAPI.connect = &httpConnect;
   myAPI.associate = &httpAssociate;
   myAPI.send = &httpSend;
   myAPI.disconnect = &httpDisconnect;
-  myAPI.startTransportServer = &startTransportServer;
-  myAPI.stopTransportServer = &stopTransportServer;
-  myAPI.helloToAddress = &hello_to_address;
-  myAPI.testWouldTry = &httpTestWouldTry;
+  myAPI.server_start = &startTransportServer;
+  myAPI.server_stop = &stopTransportServer;
+  myAPI.hello_to_address = &hello_to_address;
+  myAPI.send_now_test = &httpTestWouldTry;
   EXIT ();
 
   return &myAPI;

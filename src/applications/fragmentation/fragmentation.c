@@ -229,7 +229,7 @@ checkComplete (FC * pep)
   printf ("Finished defragmentation!\n");
 #endif
   /* handle message! */
-  coreAPI->p2p_inject_message (&pep->sender, msg, len, GNUNET_YES, NULL);
+  coreAPI->loopback_send (&pep->sender, msg, len, GNUNET_YES, NULL);
   GNUNET_free (msg);
 CLEANUP:
   /* free fragment buffers */
@@ -508,10 +508,10 @@ fragmentBMC (void *buf, void *cls, unsigned short len)
       memcpy (&frag[1],
               &((char *) (&ctx[1]))[pos],
               mlen - sizeof (P2P_fragmentation_MESSAGE));
-      coreAPI->unicast (&ctx->sender,
-                        &frag->header,
-                        GNUNET_EXTREME_PRIORITY,
-                        ctx->transmissionTime - GNUNET_get_time ());
+      coreAPI->ciphertext_send (&ctx->sender,
+                                &frag->header,
+                                GNUNET_EXTREME_PRIORITY,
+                                ctx->transmissionTime - GNUNET_get_time ());
       pos += mlen - sizeof (P2P_fragmentation_MESSAGE);
     }
   GNUNET_GE_ASSERT (NULL, pos == ctx->len);
@@ -557,8 +557,8 @@ fragment (const GNUNET_PeerIdentity * peer,
         }
     }
   xlen = mtu - sizeof (P2P_fragmentation_MESSAGE);
-  coreAPI->connection_send_using_callback (peer, &fragmentBMC, fbmc, mtu, prio * xlen / len,    /* compute new prio */
-                                           targetTime);
+  coreAPI->ciphertext_send_with_callback (peer, &fragmentBMC, fbmc, mtu, prio * xlen / len,     /* compute new priority */
+                                          targetTime);
 }
 
 /**
@@ -571,7 +571,7 @@ provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
   int i;
 
   coreAPI = capi;
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats != NULL)
     {
       stat_defragmented =
@@ -591,7 +591,8 @@ provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _("`%s' registering handler %d\n"), "fragmentation",
                  GNUNET_P2P_PROTO_MESSAGE_FRAGMENT);
-  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT, &processFragment);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
+                                         &processFragment);
 
   ret.fragment = &fragment;
   return &ret;
@@ -605,8 +606,9 @@ release_module_fragmentation ()
 {
   int i;
 
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
-                              &processFragment);
+  coreAPI->
+    p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
+                                       &processFragment);
   GNUNET_cron_del_job (coreAPI->cron, &defragmentationPurgeCron,
                        60 * GNUNET_CRON_SECONDS, NULL);
   for (i = 0; i < DEFRAG_BUCKET_COUNT; i++)
@@ -622,7 +624,7 @@ release_module_fragmentation ()
     }
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (defragCacheLock);

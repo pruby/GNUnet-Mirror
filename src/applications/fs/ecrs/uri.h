@@ -26,6 +26,6 @@
 /**
  * Generate a file URI.
  */
-char *createFileURI (const FileIdentifier * fi);
+char *createFileURI (const GNUNET_EC_FileIdentifier * fi);
 
 #endif

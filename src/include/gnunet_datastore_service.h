@@ -66,20 +66,20 @@ typedef struct
    * priority are discarded if the datastore is full.  In network
    * byte order.
    */
-  unsigned int prio;
+  unsigned int priority;
 
   /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).  In network byte order.
    */
-  unsigned int anonymityLevel;
+  unsigned int anonymity_level;
 
   /**
    * Expiration time for this item, in NBO (use GNUNET_htonll to read!).  Use
    * "-1" for items that never expire.
    */
-  GNUNET_CronTime expirationTime;
+  GNUNET_CronTime expiration_time;
 
 } GNUNET_DatastoreValue;
 

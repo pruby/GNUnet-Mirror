@@ -272,10 +272,10 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
   unsigned int index;
   int i;
 
-  if (0 == memcmp (peer, coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity)))
+  if (0 == memcmp (peer, coreAPI->my_identity, sizeof (GNUNET_PeerIdentity)))
     return NULL;                /* myself! */
   index = get_bit_distance (&peer->hashPubKey,
-                            &coreAPI->myIdentity->hashPubKey);
+                            &coreAPI->my_identity->hashPubKey);
   i = bucketCount - 1;
   while ((buckets[i].bstart >= index) && (i > 0))
     i--;
@@ -447,10 +447,10 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     stats->change (stat_dht_advertisements, 1);
   if (disco != NULL)
     {
-      coreAPI->unicast (other,
-                        &disco->header,
-                        GNUNET_EXTREME_PRIORITY / 4,
-                        MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+      coreAPI->ciphertext_send (other,
+                                &disco->header,
+                                GNUNET_EXTREME_PRIORITY / 4,
+                                MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
       return;
     }
   pc = total_peers;
@@ -469,7 +469,7 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     {
       /* put in our own identity (otherwise we get into a
          storm of empty discovery messages) */
-      pos[0] = *coreAPI->myIdentity;
+      pos[0] = *coreAPI->my_identity;
       i = 1;
     }
   while (i < pc)
@@ -482,8 +482,8 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     }
   disco->header.size =
     htons (pc * sizeof (GNUNET_PeerIdentity) + sizeof (P2P_DHT_Discovery));
-  coreAPI->unicast (other, &disco->header, 0,
-                    MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+  coreAPI->ciphertext_send (other, &disco->header, 0,
+                            MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
   GNUNET_free (disco);
 }
 
@@ -508,11 +508,11 @@ maintain_dht_job (void *unused)
       disc.header.size = htons (sizeof (P2P_DHT_Discovery));
       disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
       disc.space_available = -1;        /* FIXME */
-      coreAPI->forAllConnectedNodes (&broadcast_dht_discovery_prob, &disc);
+      coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, &disc);
     }
   else
     {
-      coreAPI->forAllConnectedNodes (&broadcast_dht_discovery_prob, NULL);
+      coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, NULL);
     }
 }
 
@@ -633,13 +633,13 @@ considerPeer (const GNUNET_PeerIdentity * sender,
       ask.header.type = htons (sizeof (GNUNET_P2P_PROTO_DHT_ASK_HELLO));
       ask.reserved = 0;
       ask.peer = *peer;
-      coreAPI->unicast (sender, &ask.header, 0, /* FIXME: priority */
-                        5 * GNUNET_CRON_SECONDS);
+      coreAPI->ciphertext_send (sender, &ask.header, 0, /* FIXME: priority */
+                                5 * GNUNET_CRON_SECONDS);
       return;
     }
   GNUNET_free (hello);
   /* check if connected, if not, send discovery */
-  if (GNUNET_OK != coreAPI->queryPeerStatus (peer, NULL, NULL))
+  if (GNUNET_OK != coreAPI->p2p_connection_status_check (peer, NULL, NULL))
     {
       /* not yet connected; connect sending DISCOVERY */
       broadcast_dht_discovery (peer, NULL);
@@ -725,7 +725,8 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
                               GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
-  coreAPI->unicast (sender, &hello->header, 0, 5 * GNUNET_CRON_SECONDS);
+  coreAPI->ciphertext_send (sender, &hello->header, 0,
+                            5 * GNUNET_CRON_SECONDS);
   GNUNET_free (hello);
   return GNUNET_OK;
 }
@@ -764,7 +765,7 @@ GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   /* use less than 50% of peer's ideal number of
      connections for DHT table size */
-  i = coreAPI->connection_get_slot_count () / MAINTAIN_BUCKET_SIZE / 2;
+  i = coreAPI->core_slots_count () / MAINTAIN_BUCKET_SIZE / 2;
   if (i < 4)
     i = 4;
   GNUNET_array_grow (buckets, bucketCount, i);
@@ -773,8 +774,8 @@ GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
       buckets[i].bstart = 512 * i / bucketCount;
       buckets[i].bend = 512 * (i + 1) / bucketCount;
     }
-  lock = capi->connection_get_lock ();
-  stats = capi->request_service ("stats");
+  lock = capi->global_lock_get ();
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_dht_total_peers =
@@ -786,16 +787,18 @@ GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
       stat_dht_advertisements =
         stats->create (gettext_noop ("# dht discovery messages sent"));
     }
-  identity = coreAPI->request_service ("identity");
+  identity = coreAPI->service_request ("identity");
   GNUNET_GE_ASSERT (coreAPI->ectx, identity != NULL);
-  pingpong = coreAPI->request_service ("pingpong");
+  pingpong = coreAPI->service_request ("pingpong");
   GNUNET_GE_ASSERT (coreAPI->ectx, pingpong != NULL);
-  capi->registerHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY, &handleDiscovery);
-  capi->registerHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO, &handleAskHello);
-  capi->register_notify_peer_disconnect (&peer_disconnect_handler, NULL);
-  GNUNET_cron_add_job (coreAPI->cron,
-                       &maintain_dht_job,
-                       MAINTAIN_FREQUENCY, MAINTAIN_FREQUENCY, NULL);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DHT_DISCOVERY,
+                                         &handleDiscovery);
+  capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DHT_ASK_HELLO,
+                                         &handleAskHello);
+  capi->peer_disconnect_notification_register (&peer_disconnect_handler,
+                                               NULL);
+  GNUNET_cron_add_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,
+                       MAINTAIN_FREQUENCY, NULL);
   return GNUNET_OK;
 }
 
@@ -810,21 +813,22 @@ GNUNET_DHT_table_done ()
   unsigned int i;
   unsigned int j;
 
-  coreAPI->unregister_notify_peer_disconnect (&peer_disconnect_handler, NULL);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY,
-                              &handleDiscovery);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO,
-                              &handleAskHello);
+  coreAPI->peer_disconnect_notification_unregister (&peer_disconnect_handler,
+                                                    NULL);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_DISCOVERY,
+                                              &handleDiscovery);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_ASK_HELLO,
+                                              &handleAskHello);
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,
                        NULL);
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
-  coreAPI->release_service (pingpong);
+  coreAPI->service_release (pingpong);
   pingpong = NULL;
   for (i = 0; i < bucketCount; i++)
     {

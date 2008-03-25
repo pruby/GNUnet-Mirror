@@ -97,7 +97,7 @@ void
 GNUNET_FS_ANONYMITY_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  traffic = capi->request_service ("traffic");
+  traffic = capi->service_request ("traffic");
 }
 
 void
@@ -105,7 +105,7 @@ GNUNET_FS_ANONYMITY_done ()
 {
   if (traffic != NULL)
     {
-      coreAPI->release_service (traffic);
+      coreAPI->service_release (traffic);
       traffic = NULL;
     }
   coreAPI = NULL;

@@ -63,7 +63,7 @@ handleGetOption (struct GNUNET_ClientHandle *sock,
   rep->header.size = htons (sizeof (GNUNET_MessageHeader) + strlen (val) + 1);
   memcpy (rep->value, val, strlen (val) + 1);
   rep->header.type = htons (GNUNET_CS_PROTO_GET_OPTION_REPLY);
-  ret = coreAPI->cs_send_to_client (sock, &rep->header, GNUNET_YES);
+  ret = coreAPI->cs_send_message (sock, &rep->header, GNUNET_YES);
   GNUNET_free (rep);
   GNUNET_free (val);
   return ret;
@@ -77,8 +77,8 @@ initialize_module_getoption (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _("`%s' registering client handler %d\n"),
                  "getoption", GNUNET_CS_PROTO_GET_OPTION_REQUEST);
-  capi->registerClientHandler (GNUNET_CS_PROTO_GET_OPTION_REQUEST,
-                               &handleGetOption);
+  capi->cs_handler_register (GNUNET_CS_PROTO_GET_OPTION_REQUEST,
+                             &handleGetOption);
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
@@ -93,7 +93,7 @@ initialize_module_getoption (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_getoption ()
 {
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_GET_OPTION_REQUEST,
-                                    &handleGetOption);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_GET_OPTION_REQUEST,
+                                  &handleGetOption);
   coreAPI = NULL;
 }

@@ -678,9 +678,9 @@ assembleDatum (MYSQL_BIND * result)
   datum = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + contentSize);
   datum->size = htonl (contentSize + sizeof (GNUNET_DatastoreValue));
   datum->type = htonl (type);
-  datum->prio = htonl (prio);
-  datum->anonymityLevel = htonl (level);
-  datum->expirationTime = GNUNET_htonll (exp);
+  datum->priority = htonl (prio);
+  datum->anonymity_level = htonl (level);
+  datum->expiration_time = GNUNET_htonll (exp);
 
   /* now do query on gn072 */
   length = contentSize;
@@ -796,9 +796,9 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   hashSize2 = sizeof (GNUNET_HashCode);
   size = ntohl (value->size);
   type = ntohl (value->type);
-  prio = ntohl (value->prio);
-  level = ntohl (value->anonymityLevel);
-  expiration = GNUNET_ntohll (value->expirationTime);
+  prio = ntohl (value->priority);
+  level = ntohl (value->anonymity_level);
+  expiration = GNUNET_ntohll (value->expiration_time);
   contentSize = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   GNUNET_hash (&value[1], contentSize, &vhash);
   GNUNET_mutex_lock (lock);
@@ -830,7 +830,7 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   qbind[1].buffer_type = MYSQL_TYPE_LONG;       /* type */
   qbind[1].is_unsigned = 1;
   qbind[1].buffer = &type;
-  qbind[2].buffer_type = MYSQL_TYPE_LONG;       /* prio */
+  qbind[2].buffer_type = MYSQL_TYPE_LONG;       /* priority */
   qbind[2].is_unsigned = 1;
   qbind[2].buffer = &prio;
   qbind[3].buffer_type = MYSQL_TYPE_LONG;       /* anon level */
@@ -1541,7 +1541,7 @@ update (unsigned long long vkey, int delta, GNUNET_CronTime expire)
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  /* NOTE: as the table entry for 'prio' is defined as unsigned,
+  /* NOTE: as the table entry for 'priority' is defined as unsigned,
    * mysql will zero the value if its about to go negative. (This
    * will generate a warning though, but its probably not seen
    * at all in this context.)
@@ -1644,7 +1644,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
 
   ectx = capi->ectx;
   coreAPI = capi;
-  stats = coreAPI->request_service ("stats");
+  stats = coreAPI->service_request ("stats");
   if (stats)
     stat_size = stats->create (gettext_noop ("# bytes in datastore"));
 
@@ -1680,7 +1680,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
                                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                                    GNUNET_GE_BULK, "fopen", cnffile);
       if (stats != NULL)
-        coreAPI->release_service (stats);
+        coreAPI->service_release (stats);
       GNUNET_free (cnffile);
       return NULL;
     }
@@ -1701,12 +1701,12 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
                      ("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
       dbh = NULL;
       if (stats != NULL)
-        coreAPI->release_service (stats);
+        coreAPI->service_release (stats);
       return NULL;
     }
 
   lock = GNUNET_mutex_create (GNUNET_NO);
-  state = coreAPI->request_service ("state");
+  state = coreAPI->service_request ("state");
   sb = NULL;
   if (sizeof (unsigned long long)
       != state->read (ectx, "mysql-size", (void *) &sb))
@@ -1750,7 +1750,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
          the outdated state file! */
       state->unlink (ectx, "mysql-size");
     }
-  coreAPI->release_service (state);
+  coreAPI->service_release (state);
   api.getSize = &getSize;
   api.put = &put;
   api.get = &get;
@@ -1777,12 +1777,12 @@ release_module_sqstore_mysql ()
   GNUNET_free (dbh);
   dbh = NULL;
   if (stats != NULL)
-    coreAPI->release_service (stats);
+    coreAPI->service_release (stats);
   GNUNET_mutex_destroy (lock);
-  state = coreAPI->request_service ("state");
+  state = coreAPI->service_request ("state");
   state->write (ectx,
                 "mysql-size", sizeof (unsigned long long), &content_size);
-  coreAPI->release_service (state);
+  coreAPI->service_release (state);
   mysql_library_end ();
   ectx = NULL;
   coreAPI = NULL;

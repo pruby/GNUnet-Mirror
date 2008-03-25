@@ -584,8 +584,8 @@ bindAddress (const GNUNET_MessageHello * msg)
           oldMsg = (GNUNET_MessageHello *) buffer;
           if ((unsigned int) size == GNUNET_sizeof_hello (oldMsg))
             {
-              if (ntohl (oldMsg->expirationTime) >
-                  ntohl (msg->expirationTime))
+              if (ntohl (oldMsg->expiration_time) >
+                  ntohl (msg->expiration_time))
                 {
                   GNUNET_free (fn);
                   GNUNET_free (buffer);
@@ -1193,11 +1193,10 @@ identityRequestConnectHandler (struct GNUNET_ClientHandle *sock,
     return GNUNET_SYSERR;
   msg = (const CS_identity_connect_MESSAGE *) message;
   whitelistHost (&msg->other);
-  coreAPI->unicast (&msg->other, NULL, 0, 0);
-  ret = coreAPI->queryPeerStatus (&msg->other, NULL, NULL);
-  return coreAPI->sendValueToClient (sock,
-                                     ret !=
-                                     GNUNET_OK ? GNUNET_NO : GNUNET_YES);
+  coreAPI->ciphertext_send (&msg->other, NULL, 0, 0);
+  ret = coreAPI->p2p_connection_status_check (&msg->other, NULL, NULL);
+  return coreAPI->cs_send_value (sock,
+                                 ret != GNUNET_OK ? GNUNET_NO : GNUNET_YES);
 }
 
 static int
@@ -1221,9 +1220,9 @@ identityHelloHandler (struct GNUNET_ClientHandle *sock,
   hello = GNUNET_malloc (ntohs (msg->header.size));
   memcpy (hello, msg, ntohs (msg->header.size));
   hello->header.type = htons (GNUNET_P2P_PROTO_HELLO);
-  coreAPI->p2p_inject_message (NULL,
-                               (const char *) hello,
-                               ntohs (msg->header.size), GNUNET_NO, NULL);
+  coreAPI->loopback_send (NULL,
+                          (const char *) hello,
+                          ntohs (msg->header.size), GNUNET_NO, NULL);
   GNUNET_free (hello);
   return GNUNET_OK;
 }
@@ -1251,18 +1250,18 @@ identityRequestHelloHandler (struct GNUNET_ClientHandle *sock,
   /* we cannot permanently load transport
      since that would cause a cyclic dependency;
      however, we can request it briefly here */
-  tapi = coreAPI->request_service ("transport");
+  tapi = coreAPI->service_request ("transport");
   if (tapi == NULL)
     return GNUNET_SYSERR;
   hello = NULL;
   pos = 0;
   while ((hello == NULL) && (types[pos] != 0))
-    hello = tapi->createhello (types[pos++]);
-  coreAPI->release_service (tapi);
+    hello = tapi->hello_create (types[pos++]);
+  coreAPI->service_release (tapi);
   if (hello == NULL)
     return GNUNET_SYSERR;
   hello->header.type = htons (GNUNET_CS_PROTO_IDENTITY_HELLO);
-  ret = coreAPI->cs_send_to_client (sock, &hello->header, GNUNET_YES);
+  ret = coreAPI->cs_send_message (sock, &hello->header, GNUNET_YES);
   GNUNET_free (hello);
   return ret;
 }
@@ -1281,7 +1280,7 @@ identityRequestSignatureHandler (struct GNUNET_ClientHandle *sock,
                              ntohs (message->size) -
                              sizeof (GNUNET_MessageHeader), &reply.sig))
     return GNUNET_SYSERR;
-  return coreAPI->cs_send_to_client (sock, &reply.header, GNUNET_YES);
+  return coreAPI->cs_send_message (sock, &reply.header, GNUNET_YES);
 }
 
 static int
@@ -1303,7 +1302,7 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
   hello = identity2Hello (identity, protocol, GNUNET_YES);
   if (hello == NULL)
     return GNUNET_OK;           /* ignore -- happens if HELLO just expired */
-  transport = coreAPI->request_service ("transport");
+  transport = coreAPI->service_request ("transport");
   if (transport == NULL)
     {
       GNUNET_free (hello);
@@ -1312,16 +1311,17 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
 
   len = 0;
   address = NULL;
-  transport->helloToAddress (hello, &address, &len);
+  transport->hello_to_address (hello, &address, &len);
   GNUNET_free (hello);
-  coreAPI->release_service (transport);
+  coreAPI->service_release (transport);
   if (len >= GNUNET_MAX_BUFFER_SIZE - sizeof (CS_identity_peer_info_MESSAGE))
     {
       GNUNET_free (address);
       address = NULL;
       len = 0;
     }
-  if (GNUNET_OK != coreAPI->queryPeerStatus (identity, &bpm, &last))
+  if (GNUNET_OK !=
+      coreAPI->p2p_connection_status_check (identity, &bpm, &last))
     {
       last = 0;
       bpm = 0;
@@ -1335,7 +1335,7 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
   reply->bpm = htonl (bpm);
   memcpy (&reply[1], address, len);
   GNUNET_free_non_null (address);
-  ret = coreAPI->cs_send_to_client (sock, &reply->header, GNUNET_YES);
+  ret = coreAPI->cs_send_message (sock, &reply->header, GNUNET_YES);
   GNUNET_free (reply);
   return ret;
 }
@@ -1345,7 +1345,7 @@ identityRequestInfoHandler (struct GNUNET_ClientHandle *sock,
                             const GNUNET_MessageHeader * message)
 {
   forEachHost (0, &hostInfoIterator, sock);
-  return coreAPI->sendValueToClient (sock, GNUNET_OK);
+  return coreAPI->cs_send_value (sock, GNUNET_OK);
 }
 
 
@@ -1429,16 +1429,16 @@ provide_module_identity (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_cron_add_job (coreAPI->cron,
                        &cronDiscardHosts, 0, CRON_DISCARD_HOSTS_INTERVAL,
                        NULL);
-  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_CONNECT,
-                                  &identityRequestConnectHandler);
-  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_HELLO,
-                                  &identityHelloHandler);
-  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
-                                  &identityRequestHelloHandler);
-  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
-                                  &identityRequestSignatureHandler);
-  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
-                                  &identityRequestInfoHandler);
+  coreAPI->cs_handler_register (GNUNET_CS_PROTO_IDENTITY_CONNECT,
+                                &identityRequestConnectHandler);
+  coreAPI->cs_handler_register (GNUNET_CS_PROTO_IDENTITY_HELLO,
+                                &identityHelloHandler);
+  coreAPI->cs_handler_register (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
+                                &identityRequestHelloHandler);
+  coreAPI->cs_handler_register (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
+                                &identityRequestSignatureHandler);
+  coreAPI->cs_handler_register (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
+                                &identityRequestInfoHandler);
   return &id;
 }
 
@@ -1452,17 +1452,17 @@ release_module_identity ()
   int j;
   HostEntry *entry;
 
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_CONNECT,
-                                    &identityRequestConnectHandler);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_HELLO,
-                                    &identityHelloHandler);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
-                                    &identityRequestHelloHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_CONNECT,
+                                  &identityRequestConnectHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_HELLO,
+                                  &identityHelloHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
+                                  &identityRequestHelloHandler);
   coreAPI->
-    unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
-                             &identityRequestSignatureHandler);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
-                                    &identityRequestInfoHandler);
+    cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
+                           &identityRequestSignatureHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
+                                  &identityRequestInfoHandler);
   for (i = 0; i < MAX_TEMP_HOSTS; i++)
     {
       entry = &tempHosts[i];

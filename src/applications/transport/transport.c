@@ -110,7 +110,7 @@ createSignedhello (void *cls)
   GNUNET_TransportAPI *tapi = cls;
   GNUNET_mutex_lock (tapis_lock);
   GNUNET_free_non_null (tapi->hello);
-  tapi->hello = tapi->createhello ();
+  tapi->hello = tapi->hello_create ();
   if (NULL == tapi->hello)
     {
       GNUNET_mutex_unlock (tapis_lock);
@@ -119,8 +119,8 @@ createSignedhello (void *cls)
   memcpy (&tapi->hello->publicKey,
           identity->getPublicPrivateKey (), sizeof (GNUNET_RSA_PublicKey));
   memcpy (&tapi->hello->senderIdentity,
-          coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity));
-  tapi->hello->expirationTime =
+          coreAPI->my_identity, sizeof (GNUNET_PeerIdentity));
+  tapi->hello->expiration_time =
     htonl (GNUNET_get_time_int32 (NULL) + hello_live);
   tapi->hello->header.type = htons (GNUNET_P2P_PROTO_HELLO);
   tapi->hello->header.size = htons (GNUNET_sizeof_hello (tapi->hello));
@@ -159,14 +159,14 @@ isTransportAvailable (unsigned short ttype)
 static int
 addTransport (GNUNET_TransportAPI * tapi)
 {
-  if (tapi->protocolNumber >= tapis_count)
-    GNUNET_array_grow (tapis, tapis_count, tapi->protocolNumber + 1);
-  if (tapis[tapi->protocolNumber] != NULL)
+  if (tapi->protocol_number >= tapis_count)
+    GNUNET_array_grow (tapis, tapis_count, tapi->protocol_number + 1);
+  if (tapis[tapi->protocol_number] != NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  tapis[tapi->protocolNumber] = tapi;
+  tapis[tapi->protocol_number] = tapi;
   tapi->hello = NULL;
   GNUNET_cron_add_job (coreAPI->cron,
                        &createSignedhello,
@@ -193,7 +193,7 @@ helloToAddress (const GNUNET_MessageHello * hello,
                      ntohs (hello->protocol));
       return GNUNET_SYSERR;
     }
-  return tapis[prot]->helloToAddress (hello, sa, sa_len);
+  return tapis[prot]->hello_to_address (hello, sa, sa_len);
 }
 
 /**
@@ -448,7 +448,7 @@ transportVerifyHello (const GNUNET_MessageHello * hello)
   prot = ntohs (hello->protocol);
   if ((prot >= tapis_count) || (tapis[prot] == NULL))
     return GNUNET_SYSERR;       /* not supported */
-  return tapis[prot]->verifyHello (hello);
+  return tapis[prot]->hello_verify (hello);
 }
 
 /**
@@ -591,7 +591,7 @@ initHello (void *cls)
   GNUNET_MessageHello *hello;
 
   createSignedhello (tapi);
-  hello = transportCreatehello (tapi->protocolNumber);
+  hello = transportCreatehello (tapi->protocol_number);
   if (NULL != hello)
     {
       identity->addHost (hello);
@@ -617,14 +617,14 @@ unloadTransport (int i)
   doneHelper (tapis[i], NULL);
   GNUNET_cron_del_job (coreAPI->cron,
                        &createSignedhello, HELLO_RECREATE_FREQ, tapis[i]);
-  ptr = GNUNET_plugin_resolve_function (tapis[i]->libHandle,
+  ptr = GNUNET_plugin_resolve_function (tapis[i]->library_handle,
                                         "donetransport_", GNUNET_NO);
   if (ptr != NULL)
     ptr ();
-  GNUNET_free (tapis[i]->transName);
+  GNUNET_free (tapis[i]->transport_name);
   GNUNET_free_non_null (tapis[i]->hello);
   tapis[i]->hello = NULL;
-  GNUNET_plugin_unload (tapis[i]->libHandle);
+  GNUNET_plugin_unload (tapis[i]->library_handle);
   tapis[i] = NULL;
 }
 
@@ -642,7 +642,7 @@ startTransports (GNUNET_TransportPacketProcessor mpp)
   for (i = 0; i < tapis_count; i++)
     if (tapis[i] != NULL)
       {
-        if (GNUNET_OK != tapis[i]->startTransportServer ())
+        if (GNUNET_OK != tapis[i]->server_start ())
           unloadTransport (i);
       }
 }
@@ -657,7 +657,7 @@ stopTransports ()
 
   for (i = 0; i < tapis_count; i++)
     if (tapis[i] != NULL)
-      tapis[i]->stopTransportServer ();
+      tapis[i]->server_stop ();
   ctapi.receive = NULL;
 }
 
@@ -694,7 +694,7 @@ testWouldTry (GNUNET_TSession * tsession, unsigned int size, int important)
     return GNUNET_SYSERR;
   if ((tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     return GNUNET_SYSERR;
-  return tapis[tsession->ttype]->testWouldTry (tsession, size, important);
+  return tapis[tsession->ttype]->send_now_test (tsession, size, important);
 }
 
 /**
@@ -723,7 +723,7 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
   hello_live *= 60;
 
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_MessageHello) == 600);
-  identity = capi->request_service ("identity");
+  identity = capi->service_request ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -731,16 +731,15 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
     }
   coreAPI = capi;
   ctapi.version = 1;
-  ctapi.myIdentity = coreAPI->myIdentity;
+  ctapi.my_identity = coreAPI->my_identity;
   ctapi.ectx = coreAPI->ectx;
   ctapi.cfg = coreAPI->cfg;
   ctapi.load_monitor = coreAPI->load_monitor;
   ctapi.cron = coreAPI->cron;
   ctapi.receive = NULL;         /* initialized LATER! */
-  ctapi.request_service = coreAPI->request_service;
-  ctapi.release_service = coreAPI->release_service;
-  ctapi.connection_assert_tsession_unused =
-    coreAPI->connection_assert_tsession_unused;
+  ctapi.service_request = coreAPI->service_request;
+  ctapi.service_release = coreAPI->service_release;
+  ctapi.tsession_assert_unused = coreAPI->tsession_assert_unused;
 
   GNUNET_array_grow (tapis, tapis_count,
                      GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP + 1);
@@ -805,13 +804,13 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
               GNUNET_plugin_unload (lib);
               continue;
             }
-          tapi->libHandle = lib;
-          tapi->transName = GNUNET_strdup (pos);
+          tapi->library_handle = lib;
+          tapi->transport_name = GNUNET_strdup (pos);
           if (GNUNET_OK != addTransport (tapi))
             {
               void (*ptr) ();
 
-              GNUNET_free (tapi->transName);
+              GNUNET_free (tapi->transport_name);
               ptr =
                 GNUNET_plugin_resolve_function (lib, "donetransport_",
                                                 GNUNET_NO);
@@ -832,7 +831,7 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
 
   IF_GELOG (ectx,
             GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-            GNUNET_hash_to_enc (&coreAPI->myIdentity->hashPubKey, &myself));
+            GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &myself));
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("I am peer `%s'.\n"), &myself);
@@ -840,22 +839,22 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
 
   ret.start = &startTransports;
   ret.stop = &stopTransports;
-  ret.isAvailable = &isTransportAvailable;
+  ret.test_available = &isTransportAvailable;
   ret.add = &addTransport;
-  ret.forEach = &forEachTransport;
+  ret.iterate_available = &forEachTransport;
   ret.connect = &transportConnect;
-  ret.connectFreely = &transportConnectFreely;
+  ret.connect_freely = &transportConnectFreely;
   ret.associate = &transportAssociate;
-  ret.getCost = &transportGetCost;
+  ret.cost_get = &transportGetCost;
   ret.send = &transportSend;
   ret.disconnect = &transportDisconnect;
-  ret.verifyhello = &transportVerifyHello;
-  ret.helloToAddress = &helloToAddress;
-  ret.getMTU = &transportGetMTU;
-  ret.createhello = &transportCreatehello;
-  ret.getAdvertisedhellos = &getAdvertisedhellos;
-  ret.testWouldTry = &testWouldTry;
-  ret.assertAssociated = &assertAssociated;
+  ret.hello_verify = &transportVerifyHello;
+  ret.hello_to_address = &helloToAddress;
+  ret.mtu_get = &transportGetMTU;
+  ret.hello_create = &transportCreatehello;
+  ret.hello_advertisements_get = &getAdvertisedhellos;
+  ret.send_now_test = &testWouldTry;
+  ret.assert_associated = &assertAssociated;
 
   return &ret;
 }
@@ -878,7 +877,7 @@ release_module_transport ()
   tapis_lock = NULL;
   GNUNET_array_grow (tapis, tapis_count, 0);
 
-  coreAPI->release_service (identity);
+  coreAPI->service_release (identity);
   identity = NULL;
   coreAPI = NULL;
   return GNUNET_OK;

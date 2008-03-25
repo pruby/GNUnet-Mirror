@@ -134,10 +134,10 @@ response_callback (const GNUNET_HashCode * key,
                    unsigned int size, const char *value, void *cls)
 {
   struct ActiveRequestRecords *record = cls;
-  const DBlock *dblock;
+  const GNUNET_EC_DBlock *dblock;
   GNUNET_HashCode hc;
 
-  dblock = (const DBlock *) value;
+  dblock = (const GNUNET_EC_DBlock *) value;
   if ((GNUNET_SYSERR ==
        GNUNET_EC_file_block_check_and_get_query (size,
                                                  dblock,
@@ -243,9 +243,9 @@ int
 GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  dht = capi->request_service ("dht");
-  sqstore = capi->request_service ("sqstore");
-  stats = capi->request_service ("stats");
+  dht = capi->service_request ("dht");
+  sqstore = capi->service_request ("sqstore");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     stat_push_count
       = stats->create (gettext_noop ("# blocks pushed into DHT"));
@@ -271,14 +271,14 @@ GNUNET_FS_DHT_done ()
     }
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
   if (dht != NULL)
-    coreAPI->release_service (dht);
+    coreAPI->service_release (dht);
   dht = NULL;
   if (sqstore != NULL)
-    coreAPI->release_service (sqstore);
+    coreAPI->service_release (sqstore);
   sqstore = NULL;
   coreAPI = NULL;
   return 0;

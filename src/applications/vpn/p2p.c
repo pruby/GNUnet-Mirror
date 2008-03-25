@@ -123,7 +123,8 @@ p2p_handle_vpn_aip_ip (const GNUNET_PeerIdentity * sender,
           write (fd, tp,
                  ntohs (gp->size) + sizeof (struct tun_pi) -
                  sizeof (GNUNET_MessageHeader));
-          coreAPI->preferTrafficFrom (&((store1 + i)->peer), 1000);
+          coreAPI->p2p_connection_preference_increase (&((store1 + i)->peer),
+                                                       1000);
           GNUNET_mutex_unlock (lock);
           return GNUNET_OK;
         }
@@ -207,7 +208,7 @@ p2p_handle_vpn_aip_getroute (const GNUNET_PeerIdentity * sender,
                          ("Send route announcement %d with route announce\n"),
                          i);
           /* it must be delivered if possible, but it can wait longer than IP */
-          coreAPI->unicast (sender, rgp, GNUNET_EXTREME_PRIORITY, 15);
+          coreAPI->ciphertext_send (sender, rgp, GNUNET_EXTREME_PRIORITY, 15);
           GNUNET_free (rgp);
           return GNUNET_OK;
         }
@@ -219,7 +220,7 @@ p2p_handle_vpn_aip_getroute (const GNUNET_PeerIdentity * sender,
       rgp->type = htons (GNUNET_P2P_PROTO_AIP_ROUTES);
       *((int *) (rgp + 1)) = htonl (realised_entries);
       GNUNET_mutex_unlock (lock);
-      coreAPI->unicast (sender, rgp, GNUNET_EXTREME_PRIORITY, 15);
+      coreAPI->ciphertext_send (sender, rgp, GNUNET_EXTREME_PRIORITY, 15);
       GNUNET_free (rgp);
       return GNUNET_OK;
     }
@@ -271,8 +272,8 @@ p2p_handle_vpn_aip_route (const GNUNET_PeerIdentity * sender,
                                  GNUNET_GE_ADMIN,
                                  _("Request level %d from peer %d\n"),
                                  (store1 + i)->route_entry, i);
-                  coreAPI->unicast (&((store1 + i)->peer), rgp,
-                                    GNUNET_EXTREME_PRIORITY, 60);
+                  coreAPI->ciphertext_send (&((store1 + i)->peer), rgp,
+                                            GNUNET_EXTREME_PRIORITY, 60);
                   GNUNET_free (rgp);
                 }
               break;
@@ -318,25 +319,28 @@ int
 GNUNET_VPN_p2p_handler_init (GNUNET_CoreAPIForPlugins * capi)
 {
   if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_IP, &p2p_handle_vpn_aip_ip))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_AIP_IP,
+                                             &p2p_handle_vpn_aip_ip))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_GETROUTE,
-                             &p2p_handle_vpn_aip_getroute))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_AIP_GETROUTE,
+                                             &p2p_handle_vpn_aip_getroute))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_ROUTE,
-                             &p2p_handle_vpn_aip_route))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_AIP_ROUTE,
+                                             &p2p_handle_vpn_aip_route))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_ROUTES,
-                             &p2p_handle_vpn_aip_routes))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_AIP_ROUTES,
+                                             &p2p_handle_vpn_aip_routes))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_PONG, &p2p_handle_pong))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_PONG,
+                                             &p2p_handle_pong))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_HANG_UP, &p2p_handle_hang_up))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_HANG_UP,
+                                             &p2p_handle_hang_up))
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
@@ -344,16 +348,18 @@ GNUNET_VPN_p2p_handler_init (GNUNET_CoreAPIForPlugins * capi)
 int
 GNUNET_VPN_p2p_handler_done ()
 {
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_IP,
-                              &p2p_handle_vpn_aip_ip);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_GETROUTE,
-                              &p2p_handle_vpn_aip_getroute);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTE,
-                              &p2p_handle_vpn_aip_route);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTES,
-                              &p2p_handle_vpn_aip_routes);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_PONG, &p2p_handle_pong);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HANG_UP, &p2p_handle_hang_up);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_AIP_IP,
+                                              &p2p_handle_vpn_aip_ip);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_AIP_GETROUTE,
+                                              &p2p_handle_vpn_aip_getroute);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_AIP_ROUTE,
+                                              &p2p_handle_vpn_aip_route);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_AIP_ROUTES,
+                                              &p2p_handle_vpn_aip_routes);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_PONG,
+                                              &p2p_handle_pong);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_HANG_UP,
+                                              &p2p_handle_hang_up);
   return GNUNET_OK;
 }
 

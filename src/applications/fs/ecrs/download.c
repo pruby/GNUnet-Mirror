@@ -57,9 +57,9 @@ struct Node
   struct Node *next;
 
   /**
-   * What is the CHK for this block?
+   * What is the GNUNET_EC_ContentHashKey for this block?
    */
-  CHK chk;
+  GNUNET_EC_ContentHashKey chk;
 
   /**
    * At what offset (on the respective level!) is this
@@ -175,7 +175,7 @@ struct GNUNET_ECRS_DownloadContext
    * Abort?  Flag that can be set at any time
    * to abort the RM as soon as possible.  Set
    * to GNUNET_YES during orderly shutdown,
-   * set to GNUNET_SYSERR on error.  
+   * set to GNUNET_SYSERR on error.
    */
   int abortFlag;
 
@@ -380,7 +380,7 @@ get_node_size (const struct Node *node)
   rsize = DBLOCK_SIZE;
   for (i = 0; i < node->level - 1; i++)
     rsize *= CHK_PER_INODE;
-  spos = rsize * (node->offset / sizeof (CHK));
+  spos = rsize * (node->offset / sizeof (GNUNET_EC_ContentHashKey));
   epos = spos + rsize * CHK_PER_INODE;
   if (epos > node->ctx->total)
     epos = node->ctx->total;
@@ -391,9 +391,10 @@ get_node_size (const struct Node *node)
   GNUNET_GE_LOG (node->ctx->rm->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Node at offset %llu and level %d has size %u\n",
-                 node->offset, node->level, ret * sizeof (CHK));
+                 node->offset, node->level,
+                 ret * sizeof (GNUNET_EC_ContentHashKey));
 #endif
-  return ret * sizeof (CHK);
+  return ret * sizeof (GNUNET_EC_ContentHashKey);
 }
 
 /**
@@ -422,7 +423,7 @@ notify_client_about_progress (const struct Node *node,
 
 
 /**
- * DOWNLOAD children of this IBlock.
+ * DOWNLOAD children of this GNUNET_EC_IBlock.
  *
  * @param node the node for which the children should be downloaded
  * @param data data for the node
@@ -481,7 +482,7 @@ check_node_present (const struct Node *node)
 }
 
 /**
- * DOWNLOAD children of this IBlock.
+ * DOWNLOAD children of this GNUNET_EC_IBlock.
  *
  * @param node the node that should be downloaded
  */
@@ -493,13 +494,13 @@ iblock_download_children (const struct Node *node,
   int i;
   struct Node *child;
   unsigned int childcount;
-  const CHK *chks;
+  const GNUNET_EC_ContentHashKey *chks;
   unsigned int levelSize;
   unsigned long long baseOffset;
 
   GNUNET_GE_ASSERT (ectx, node->level > 0);
-  childcount = size / sizeof (CHK);
-  if (size != childcount * sizeof (CHK))
+  childcount = size / sizeof (GNUNET_EC_ContentHashKey);
+  if (size != childcount * sizeof (GNUNET_EC_ContentHashKey))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return;
@@ -507,14 +508,15 @@ iblock_download_children (const struct Node *node,
   if (node->level == 1)
     {
       levelSize = DBLOCK_SIZE;
-      baseOffset = node->offset / sizeof (CHK) * DBLOCK_SIZE;
+      baseOffset =
+        node->offset / sizeof (GNUNET_EC_ContentHashKey) * DBLOCK_SIZE;
     }
   else
     {
-      levelSize = sizeof (CHK) * CHK_PER_INODE;
+      levelSize = sizeof (GNUNET_EC_ContentHashKey) * CHK_PER_INODE;
       baseOffset = node->offset * CHK_PER_INODE;
     }
-  chks = (const CHK *) data;
+  chks = (const GNUNET_EC_ContentHashKey *) data;
   for (i = 0; i < childcount; i++)
     {
       child = GNUNET_malloc (sizeof (struct Node));
@@ -556,7 +558,7 @@ decrypt_content (const char *data,
 }
 
 /**
- * We received a CHK reply for a block. Decrypt.  Note
+ * We received a GNUNET_EC_ContentHashKey reply for a block. Decrypt.  Note
  * that the caller (fslib) has already aquired the
  * RM lock (we sometimes aquire it again in callees,
  * mostly because our callees could be also be theoretically
@@ -590,17 +592,18 @@ content_receive_callback (const GNUNET_HashCode * query,
                     0 == memcmp (query, &node->chk.query,
                                  sizeof (GNUNET_HashCode)));
   size = ntohl (reply->size) - sizeof (GNUNET_DatastoreValue);
-  if ((size <= sizeof (DBlock)) ||
-      (size - sizeof (DBlock) != get_node_size (node)))
+  if ((size <= sizeof (GNUNET_EC_DBlock)) ||
+      (size - sizeof (GNUNET_EC_DBlock) != get_node_size (node)))
     {
       GNUNET_GE_BREAK (ectx, 0);
       GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;     /* invalid size! */
     }
-  size -= sizeof (DBlock);
+  size -= sizeof (GNUNET_EC_DBlock);
   data = GNUNET_malloc (size);
   if (GNUNET_SYSERR ==
-      decrypt_content ((const char *) &((const DBlock *) &reply[1])[1], size,
+      decrypt_content ((const char *)
+                       &((const GNUNET_EC_DBlock *) &reply[1])[1], size,
                        &node->chk.key, data))
     GNUNET_GE_ASSERT (ectx, 0);
   GNUNET_hash (data, size, &hc);

@@ -25,6 +25,7 @@
  *
  * Typical clients are likely to prefer using the synchronous
  * gnunet_dht_lib instead of sending these messages manually.
+ * Only code in src/applications/dht/ should refer to this file!
  */
 
 #ifndef GNUNET_DHT_H

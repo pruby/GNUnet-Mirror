@@ -529,65 +529,65 @@ GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
   applicationCore.load_monitor = monitor;
   applicationCore.cron = cron;
   applicationCore.version = 0;
-  applicationCore.myIdentity = NULL;    /* for now */
-  applicationCore.request_service = &GNUNET_CORE_request_service;       /* core.c */
-  applicationCore.release_service = &GNUNET_CORE_release_service;       /* core.c */
+  applicationCore.my_identity = NULL;   /* for now */
+  applicationCore.service_request = &GNUNET_CORE_request_service;       /* core.c */
+  applicationCore.service_release = &GNUNET_CORE_release_service;       /* core.c */
 
-  applicationCore.connection_send_plaintext = &GNUNET_CORE_connection_send_plaintext;   /* connection.c */
-  applicationCore.unicast = &GNUNET_CORE_connection_unicast;    /* connection.c */
-  applicationCore.connection_send_using_callback = &GNUNET_CORE_connection_send_using_callback; /* connection.c */
-  applicationCore.forAllConnectedNodes = &GNUNET_CORE_connection_iterate_peers; /* connection.c */
-  applicationCore.connection_register_send_callback = &GNUNET_CORE_connection_register_send_callback;   /* connection.c */
-  applicationCore.connection_unregister_send_callback = &GNUNET_CORE_connection_unregister_send_callback;       /* connection.c */
-  applicationCore.reserve_downstream_bandwidth = &GNUNET_CORE_connection_reserve_downstream_bandwidth;  /* connection.c */
-  applicationCore.register_notify_peer_disconnect = &GNUNET_CORE_connection_register_notify_peer_disconnect;    /* connection .c */
-  applicationCore.unregister_notify_peer_disconnect = &GNUNET_CORE_connection_unregister_notify_peer_disconnect;        /* connection .c */
+  applicationCore.plaintext_send = &GNUNET_CORE_connection_send_plaintext;      /* connection.c */
+  applicationCore.ciphertext_send = &GNUNET_CORE_connection_unicast;    /* connection.c */
+  applicationCore.ciphertext_send_with_callback = &GNUNET_CORE_connection_send_using_callback;  /* connection.c */
+  applicationCore.p2p_connections_iterate = &GNUNET_CORE_connection_iterate_peers;      /* connection.c */
+  applicationCore.send_callback_register = &GNUNET_CORE_connection_register_send_callback;      /* connection.c */
+  applicationCore.send_callback_unregister = &GNUNET_CORE_connection_unregister_send_callback;  /* connection.c */
+  applicationCore.p2p_bandwidth_downstream_reserve = &GNUNET_CORE_connection_reserve_downstream_bandwidth;      /* connection.c */
+  applicationCore.peer_disconnect_notification_register = &GNUNET_CORE_connection_register_notify_peer_disconnect;      /* connection .c */
+  applicationCore.peer_disconnect_notification_unregister = &GNUNET_CORE_connection_unregister_notify_peer_disconnect;  /* connection .c */
 
 
-  applicationCore.connection_register_send_notification_callback =
+  applicationCore.peer_send_notification_register =
     &GNUNET_CORE_connection_register_send_notification_callback;
   applicationCore.
-    connection_unregister_send_notification_callback =
+    peer_send_notification_unregister =
     &GNUNET_CORE_connection_unregister_send_notification_callback;
-  applicationCore.registerHandler = &GNUNET_CORE_p2p_register_handler;  /* handler.c */
-  applicationCore.unregisterHandler = &GNUNET_CORE_p2p_unregister_handler;      /* handler.c */
-  applicationCore.plaintext_register_handler = &GNUNET_CORE_plaintext_register_handler; /* handler.c */
-  applicationCore.plaintext_unregister_handler = &GNUNET_CORE_plaintext_unregister_handler;     /* handler.c */
-  applicationCore.p2p_test_handler_registered = &GNUNET_CORE_p2p_test_handler_registered;       /* handler.c */
+  applicationCore.p2p_ciphertext_handler_register = &GNUNET_CORE_p2p_register_handler;  /* handler.c */
+  applicationCore.p2p_ciphertext_handler_unregister = &GNUNET_CORE_p2p_unregister_handler;      /* handler.c */
+  applicationCore.p2p_plaintext_handler_register = &GNUNET_CORE_plaintext_register_handler;     /* handler.c */
+  applicationCore.p2p_plaintext_handler_unregister = &GNUNET_CORE_plaintext_unregister_handler; /* handler.c */
+  applicationCore.p2p_message_handler_registered_test = &GNUNET_CORE_p2p_test_handler_registered;       /* handler.c */
 
-  applicationCore.offerTSessionFor = &GNUNET_CORE_connection_consider_takeover; /* connection.c */
-  applicationCore.connection_assign_session_key_to_peer = &GNUNET_CORE_connection_assign_session_key_to_peer;   /* connection.c */
-  applicationCore.connection_get_session_key_of_peer = &GNUNET_CORE_connection_get_session_key_of_peer; /* connection.c */
-  applicationCore.connection_mark_session_as_confirmed = &GNUNET_CORE_connection_mark_session_as_confirmed;     /* connection.c */
-  applicationCore.preferTrafficFrom = &GNUNET_CORE_connection_update_traffic_preference_for_peer;       /* connection.c */
-  applicationCore.queryPeerStatus = &GNUNET_CORE_connection_get_bandwidth_assigned_to_peer;     /* connection.c */
-  applicationCore.connection_disconnect_from_peer = &GNUNET_CORE_connection_disconnect_from_peer;       /* connection.c */
+  applicationCore.p2p_transport_session_offer = &GNUNET_CORE_connection_consider_takeover;      /* connection.c */
+  applicationCore.p2p_session_key_set = &GNUNET_CORE_connection_assign_session_key_to_peer;     /* connection.c */
+  applicationCore.p2p_session_key_get = &GNUNET_CORE_connection_get_session_key_of_peer;        /* connection.c */
+  applicationCore.p2p_connection_confirm = &GNUNET_CORE_connection_mark_session_as_confirmed;   /* connection.c */
+  applicationCore.p2p_connection_preference_increase = &GNUNET_CORE_connection_update_traffic_preference_for_peer;      /* connection.c */
+  applicationCore.p2p_connection_status_check = &GNUNET_CORE_connection_get_bandwidth_assigned_to_peer; /* connection.c */
+  applicationCore.p2p_connection_close = &GNUNET_CORE_connection_disconnect_from_peer;  /* connection.c */
 
-  applicationCore.sendValueToClient = &GNUNET_CORE_cs_send_result_to_client;    /* tcpserver.c */
-  applicationCore.cs_send_to_client = &GNUNET_CORE_cs_send_to_client;   /* tcpserver.c */
-  applicationCore.cs_test_send_to_client_now = &GNUNET_CORE_cs_test_send_to_client_now;   /* tcpserver.c */
-  applicationCore.registerClientHandler = &GNUNET_CORE_register_handler;        /* tcpserver.c */
-  applicationCore.unregisterClientHandler = &GNUNET_CORE_unregister_handler;    /* tcpserver.c */
-  applicationCore.cs_exit_handler_register = &GNUNET_CORE_cs_register_exit_handler;     /* tcpserver.c */
-  applicationCore.cs_exit_handler_unregister = &GNUNET_CORE_cs_exit_handler_unregister; /* tcpserver.c */
-  applicationCore.cs_terminate_client_connection = &GNUNET_CORE_cs_terminate_client_connection; /* tcpserver.c */
+  applicationCore.cs_send_value = &GNUNET_CORE_cs_send_result_to_client;        /* tcpserver.c */
+  applicationCore.cs_send_message = &GNUNET_CORE_cs_send_to_client;     /* tcpserver.c */
+  applicationCore.cs_send_message_now_test = &GNUNET_CORE_cs_test_send_to_client_now;   /* tcpserver.c */
+  applicationCore.cs_handler_register = &GNUNET_CORE_register_handler;  /* tcpserver.c */
+  applicationCore.cs_handler_unregister = &GNUNET_CORE_unregister_handler;      /* tcpserver.c */
+  applicationCore.cs_disconnect_handler_register = &GNUNET_CORE_cs_register_exit_handler;       /* tcpserver.c */
+  applicationCore.cs_disconnect_handler_unregister = &GNUNET_CORE_cs_exit_handler_unregister;   /* tcpserver.c */
+  applicationCore.cs_disconnect_now = &GNUNET_CORE_cs_terminate_client_connection;      /* tcpserver.c */
 
-  applicationCore.p2p_inject_message = &GNUNET_CORE_p2p_inject_message; /* handler.c */
-  applicationCore.connection_compute_index_of_peer = &GNUNET_CORE_connection_compute_index_of_peer;     /* connection.c */
-  applicationCore.connection_get_lock = &GNUNET_CORE_connection_get_lock;       /* connection.c */
-  applicationCore.connection_get_slot_count = &GNUNET_CORE_connection_get_slot_count;   /* connection.c */
-  applicationCore.connection_is_slot_used = &GNUNET_CORE_connection_is_slot_used;       /* connection.c */
-  applicationCore.connection_get_last_activity_of_peer = &GNUNET_CORE_connection_get_last_activity_of_peer;     /* connection.c */
-  applicationCore.connection_assert_tsession_unused = &GNUNET_CORE_connection_assert_tsession_unused;   /* connection.c */
+  applicationCore.loopback_send = &GNUNET_CORE_p2p_inject_message;      /* handler.c */
+  applicationCore.core_slot_index_get = &GNUNET_CORE_connection_compute_index_of_peer;  /* connection.c */
+  applicationCore.global_lock_get = &GNUNET_CORE_connection_get_lock;   /* connection.c */
+  applicationCore.core_slots_count = &GNUNET_CORE_connection_get_slot_count;    /* connection.c */
+  applicationCore.core_slot_test_used = &GNUNET_CORE_connection_is_slot_used;   /* connection.c */
+  applicationCore.p2p_connection_last_activity_get = &GNUNET_CORE_connection_get_last_activity_of_peer; /* connection.c */
+  applicationCore.tsession_assert_unused = &GNUNET_CORE_connection_assert_tsession_unused;      /* connection.c */
 
-  applicationCore.sendErrorMessageToClient = &GNUNET_CORE_cs_send_error_to_client;      /* tcpserver.c */
-  applicationCore.cs_create_client_log_context = &GNUNET_CORE_cs_create_client_log_context;     /* tcpserver.c */
+  applicationCore.cs_send_error = &GNUNET_CORE_cs_send_error_to_client; /* tcpserver.c */
+  applicationCore.cs_log_context_create = &GNUNET_CORE_cs_create_client_log_context;    /* tcpserver.c */
 
   identity = GNUNET_CORE_request_service ("identity");
   if (identity == NULL)
     return GNUNET_SYSERR;
   identity->getPeerIdentity (identity->getPublicPrivateKey (), &myIdentity);
-  applicationCore.myIdentity = &myIdentity;     /* core.c */
+  applicationCore.my_identity = &myIdentity;    /* core.c */
   if (GNUNET_CORE_cs_init (ectx, cfg) != GNUNET_OK)
     {
       GNUNET_CORE_release_service (identity);

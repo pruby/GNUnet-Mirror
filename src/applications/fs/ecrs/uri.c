@@ -141,7 +141,7 @@ createSubspaceURI (const GNUNET_HashCode * namespace,
  * Generate a file URI.
  */
 static char *
-createFileURI (const FileIdentifier * fi)
+createFileURI (const GNUNET_EC_FileIdentifier * fi)
 {
   char *ret;
   GNUNET_EncName keyhash;
@@ -359,7 +359,7 @@ parseSubspaceURI (struct GNUNET_GE_Context *ectx,
  */
 static int
 parseFileURI (struct GNUNET_GE_Context *ectx, const char *uri,
-              FileIdentifier * fi)
+              GNUNET_EC_FileIdentifier * fi)
 {
   unsigned int pos;
   size_t slen;
@@ -472,7 +472,7 @@ parseLocationURI (struct GNUNET_GE_Context *ectx, const char *uri,
     goto ERR;
   /* Finally: verify sigs! */
   if (GNUNET_OK != GNUNET_RSA_verify (&loc->fi,
-                                      sizeof (FileIdentifier) +
+                                      sizeof (GNUNET_EC_FileIdentifier) +
                                       sizeof (GNUNET_PeerIdentity) +
                                       sizeof (GNUNET_Int32Time),
                                       &loc->contentSignature, &loc->peer))
@@ -907,7 +907,7 @@ GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *uri1,
     {
     case chk:
       if (0 == memcmp (&uri1->data.fi,
-                       &uri2->data.fi, sizeof (FileIdentifier)))
+                       &uri2->data.fi, sizeof (GNUNET_EC_FileIdentifier)))
         return GNUNET_YES;
       return GNUNET_NO;
     case sks:
@@ -942,7 +942,7 @@ GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *uri1,
     case loc:
       if (memcmp (&uri1->data.loc,
                   &uri2->data.loc,
-                  sizeof (FileIdentifier) +
+                  sizeof (GNUNET_EC_FileIdentifier) +
                   sizeof (GNUNET_RSA_PublicKey) +
                   sizeof (GNUNET_Int32Time) +
                   sizeof (unsigned short) + sizeof (unsigned short)) != 0)
@@ -991,7 +991,7 @@ GNUNET_ECRS_uri_get_content_uri_from_loc (const struct GNUNET_ECRS_URI *uri)
  *
  * @param baseURI content offered by the sender
  * @param sender identity of the peer with the content
- * @param expirationTime how long will the content be offered?
+ * @param expiration_time how long will the content be offered?
  * @param proto transport protocol to reach the peer
  * @param sas sender address size (for HELLO)
  * @param address sas bytes of address information
@@ -1017,7 +1017,7 @@ GNUNET_ECRS_location_to_uri (const struct GNUNET_ECRS_URI *baseUri,
   uri->data.loc.peer = *sender;
   uri->data.loc.expirationTime = expirationTime;
   signer (signer_cls,
-          sizeof (FileIdentifier) +
+          sizeof (GNUNET_EC_FileIdentifier) +
           sizeof (GNUNET_PeerIdentity) +
           sizeof (GNUNET_Int32Time),
           &uri->data.loc.fi, &uri->data.loc.contentSignature);

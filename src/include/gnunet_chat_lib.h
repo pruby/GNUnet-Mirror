@@ -128,13 +128,14 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
                                             GNUNET_CronTime timestamp,
                                             GNUNET_CHAT_MSG_OPTIONS options);
 
+/**
+ * @param is_joining will be GNUNET_YES if the member is joining, GNUNET_NO if he is leaving
+ */
 typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
                                                const char *nick,
+                                               int is_joining,
                                                GNUNET_CronTime timestamp);
 
-typedef int (*GNUNET_CHAT_MemberRemoveCallback) (void *cls,
-                                                 const char *nick,
-                                                 GNUNET_CronTime timestamp);
 /**
  * Join a chat room.
  *
@@ -159,10 +160,7 @@ struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
                                                 callback, void *cls,
                                                 GNUNET_CHAT_MemberListCallback
                                                 memberCallback,
-                                                void *membercls,
-                                                GNUNET_CHAT_MemberRemoveCallback
-                                                removeCallback,
-                                                void *removecls);
+                                                void *member_cls);
 
 /**
  * Leave a chat room.
@@ -197,7 +195,6 @@ typedef int (*GNUNET_CHAT_MessageConfirmation) (void *cls,
                                                 const GNUNET_RSA_Signature *
                                                 receipt);
 
-
 /**
  * Send a message.
  *
@@ -211,25 +208,6 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           void *cls,
                           GNUNET_CHAT_MSG_OPTIONS options,
                           const GNUNET_RSA_PublicKey * receiver);
-
-
-/**
- * Callback function to iterate over room members.
- */
-typedef int (*GNUNET_CHAT_MemberIterator) (const char *nickname,
-                                           const GNUNET_RSA_PublicKey *
-                                           owner, const char *memberInfo,
-                                           GNUNET_CronTime lastConfirmed,
-                                           void *cls);
-
-/**
- * List all of the (known) chat members.
- * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
- */
-int GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
-                              GNUNET_CHAT_MemberIterator it, void *cls);
-
-
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

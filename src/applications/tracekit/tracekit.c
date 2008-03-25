@@ -105,7 +105,7 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                          "TRACEKIT: found matching entry in routing table\n");
 #endif
-          if (0 == memcmp (coreAPI->myIdentity,
+          if (0 == memcmp (coreAPI->my_identity,
                            &rte->replyTo, sizeof (GNUNET_HashCode)))
             {
               idx = ntohl (reply->clientId);
@@ -128,8 +128,8 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
               csReply->responderId = reply->responderId;
               memcpy (&csReply[1],
                       &reply[1], hostCount * sizeof (GNUNET_PeerIdentity));
-              coreAPI->cs_send_to_client (clients[idx],
-                                          &csReply->header, GNUNET_YES);
+              coreAPI->cs_send_message (clients[idx],
+                                        &csReply->header, GNUNET_YES);
               GNUNET_free (csReply);
             }
           else
@@ -141,7 +141,8 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
                              GNUNET_GE_USER,
                              "TRACEKIT: forwarding to next hop `%s'\n", &enc);
 #endif
-              coreAPI->unicast (&rte->replyTo, message, rte->priority, 0);
+              coreAPI->ciphertext_send (&rte->replyTo, message, rte->priority,
+                                        0);
             }
         }
     }
@@ -169,7 +170,8 @@ transmit (const GNUNET_PeerIdentity * id, void *cls)
 
   if ((0 != memcmp (id, &ttc->pro->initiatorId, sizeof (GNUNET_PeerIdentity)))
       && (0 != memcmp (id, &ttc->sender, sizeof (GNUNET_PeerIdentity))))
-    coreAPI->unicast (id, &ttc->pro->header, ntohl (ttc->pro->priority), 0);
+    coreAPI->ciphertext_send (id, &ttc->pro->header,
+                              ntohl (ttc->pro->priority), 0);
 }
 
 typedef struct
@@ -286,13 +288,13 @@ handlep2pProbe (const GNUNET_PeerIdentity * sender,
       amsg.hopsToGo = htonl (hops - 1);
       ttc.pro = &amsg;
       ttc.sender = sender;
-      coreAPI->forAllConnectedNodes (&transmit, &ttc);
+      coreAPI->p2p_connections_iterate (&transmit, &ttc);
     }
   /* build local reply */
   closure.peers = NULL;
   closure.max = 0;
   closure.pos = 0;
-  coreAPI->forAllConnectedNodes (&getPeerCallback, &closure);
+  coreAPI->p2p_connections_iterate (&getPeerCallback, &closure);
   while (closure.pos > 0)
     {
       count = closure.pos;
@@ -305,17 +307,18 @@ handlep2pProbe (const GNUNET_PeerIdentity * sender,
       reply->header.size = htons (size);
       reply->header.type = htons (GNUNET_P2P_PROTO_TRACEKIT_REPLY);
       reply->initiatorId = msg->initiatorId;
-      reply->responderId = *(coreAPI->myIdentity);
+      reply->responderId = *(coreAPI->my_identity);
       reply->initiatorTimestamp = msg->timestamp;
       reply->clientId = msg->clientId;
       memcpy (&reply[1],
               &closure.peers[closure.pos - count],
               count * sizeof (GNUNET_PeerIdentity));
-      if (0 == memcmp (&coreAPI->myIdentity->hashPubKey,
+      if (0 == memcmp (&coreAPI->my_identity->hashPubKey,
                        &sender->hashPubKey, sizeof (GNUNET_HashCode)))
-        handlep2pReply (coreAPI->myIdentity, &reply->header);
+        handlep2pReply (coreAPI->my_identity, &reply->header);
       else
-        coreAPI->unicast (sender, &reply->header, ntohl (msg->priority), 0);
+        coreAPI->ciphertext_send (sender, &reply->header,
+                                  ntohl (msg->priority), 0);
       closure.pos -= count;
       GNUNET_free (reply);
     }
@@ -371,9 +374,9 @@ csHandle (struct GNUNET_ClientHandle *client,
   p2pProbe.hopsToGo = csProbe->hops;
   p2pProbe.timestamp = htonl (GNUNET_get_time_int32 (NULL));
   p2pProbe.priority = csProbe->priority;
-  memcpy (&p2pProbe.initiatorId, coreAPI->myIdentity,
+  memcpy (&p2pProbe.initiatorId, coreAPI->my_identity,
           sizeof (GNUNET_PeerIdentity));
-  handlep2pProbe (coreAPI->myIdentity, &p2pProbe.header);       /* FIRST send to myself! */
+  handlep2pProbe (coreAPI->my_identity, &p2pProbe.header);      /* FIRST send to myself! */
   return GNUNET_OK;
 }
 
@@ -413,17 +416,20 @@ initialize_module_tracekit (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_P2P_PROTO_TRACEKIT_PROBE,
                  GNUNET_P2P_PROTO_TRACEKIT_REPLY,
                  GNUNET_CS_PROTO_TRACEKIT_PROBE);
-  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TRACEKIT_PROBE,
-                                              &handlep2pProbe))
-    ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TRACEKIT_REPLY,
-                                              &handlep2pReply))
-    ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->cs_exit_handler_register (&clientExitHandler))
+  if (GNUNET_SYSERR ==
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_TRACEKIT_PROBE,
+                                             &handlep2pProbe))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_TRACEKIT_PROBE,
-                                   (GNUNET_ClientRequestHandler) & csHandle))
+      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_TRACEKIT_REPLY,
+                                             &handlep2pReply))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->cs_disconnect_handler_register (&clientExitHandler))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->cs_handler_register (GNUNET_CS_PROTO_TRACEKIT_PROBE,
+                                 (GNUNET_ClientRequestHandler) & csHandle))
     ok = GNUNET_SYSERR;
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -438,13 +444,12 @@ initialize_module_tracekit (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_tracekit ()
 {
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TRACEKIT_PROBE,
-                              &handlep2pProbe);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TRACEKIT_REPLY,
-                              &handlep2pReply);
-  coreAPI->cs_exit_handler_unregister (&clientExitHandler);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRACEKIT_PROBE,
-                                    &csHandle);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_TRACEKIT_PROBE,
+                                              &handlep2pProbe);
+  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_TRACEKIT_REPLY,
+                                              &handlep2pReply);
+  coreAPI->cs_disconnect_handler_unregister (&clientExitHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_TRACEKIT_PROBE, &csHandle);
   GNUNET_array_grow (clients, clientCount, 0);
   GNUNET_mutex_destroy (lock);
   lock = NULL;

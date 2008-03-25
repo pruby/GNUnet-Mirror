@@ -95,8 +95,8 @@ main (int argc, char **argv)
                                             "http://gnunet.org/hostlist.php");
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
-  capi.request_service = &rs;
-  capi.release_service = &rsx;
+  capi.service_request = &rs;
+  capi.service_release = &rsx;
   plugin = GNUNET_plugin_load (NULL, "libgnunetmodule_", "bootstrap");
   init =
     GNUNET_plugin_resolve_function (plugin, "provide_module_", GNUNET_YES);

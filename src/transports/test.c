@@ -114,7 +114,7 @@ receive (GNUNET_TransportPacket * mp)
       tsession = mp->tsession;
       if (tsession == NULL)
         {
-          hello = transport->createhello ();
+          hello = transport->hello_create ();
           /* HACK hello -- change port! */
           ((HostAddress *) & hello[1])->port =
             htons (ntohs (((HostAddress *) & hello[1])->port) - OFFSET);
@@ -239,11 +239,11 @@ main (int argc, char *const *argv)
       goto cleanup;
     }
   api.cron = GNUNET_cron_create (api.ectx);
-  api.myIdentity = &me;
+  api.my_identity = &me;
   api.receive = &receive;
-  api.request_service = &request_service;
-  api.release_service = NULL;   /* not needed */
-  api.connection_assert_tsession_unused = &connection_assert_tsession_unused;
+  api.service_request = &request_service;
+  api.service_release = NULL;   /* not needed */
+  api.tsession_assert_unused = &connection_assert_tsession_unused;
   GNUNET_cron_start (api.cron);
   res = GNUNET_OK;
   transport = init (&api);
@@ -253,7 +253,7 @@ main (int argc, char *const *argv)
       GNUNET_plugin_unload (plugin);
       goto cleanup;
     }
-  transport->startTransportServer ();
+  transport->server_start ();
   GNUNET_GE_ASSERT (NULL, (transport->mtu >= expectedSize)
                     || (transport->mtu == 0));
   GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);  /* give other process time to start */
@@ -265,14 +265,14 @@ main (int argc, char *const *argv)
   else
     {
       /* client - initiate requests */
-      hello = transport->createhello ();
+      hello = transport->hello_create ();
       /* HACK hello -- change port! */
       ((HostAddress *) & hello[1])->port =
         htons (ntohs (((HostAddress *) & hello[1])->port) + OFFSET);
       if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
         {
           GNUNET_free (hello);
-          transport->stopTransportServer ();
+          transport->server_stop ();
           GNUNET_plugin_unload (plugin);
           goto cleanup;
         }
@@ -303,7 +303,7 @@ main (int argc, char *const *argv)
       transport->disconnect (tsession);
     }
 
-  transport->stopTransportServer ();
+  transport->server_stop ();
   done = GNUNET_plugin_resolve_function (plugin, "donetransport_", GNUNET_NO);
   if (done != NULL)
     done ();

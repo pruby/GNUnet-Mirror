@@ -41,14 +41,30 @@ extern "C"
 /**
  * Linked list of information about daemon processes.
  */
-struct GNUNET_remote_host
+struct GNUNET_REMOTE_HostInfo
 {
-  GNUNET_PeerIdentity identity;
-  struct GNUNET_remote_host *next;
+  struct GNUNET_REMOTE_HostInfo *next;
 
+          /**
+	   * Identity of the peer running on that host and port.
+	   */
+  GNUNET_PeerIdentity identity;
+
+          /**
+	   * Name of the host.
+	   */
   char *hostname;
-  unsigned long long controlPort;
+
+          /**
+	   * Process ID.
+	   */
   pid_t pid;
+
+          /**
+	   * Port used by clients to talk to the daemon on
+	   * that machine.
+	   */
+  unsigned short port;
 
 };
 

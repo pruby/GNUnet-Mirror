@@ -593,7 +593,7 @@ provide_module_dstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
                                        5);
       CLOSE (fd);
     }
-  stats = capi->request_service ("stats");
+  stats = capi->service_request ("stats");
   if (stats != NULL)
     {
       stat_dstore_size = stats->create (gettext_noop ("# bytes in dstore"));
@@ -623,7 +623,7 @@ release_module_dstore_sqlite ()
   bloom_name = NULL;
   if (stats != NULL)
     {
-      coreAPI->release_service (stats);
+      coreAPI->service_release (stats);
       stats = NULL;
     }
 #if DEBUG_SQLITE

@@ -47,16 +47,18 @@ static GNUNET_DatastoreValue *
 makeBlock (int i)
 {
   GNUNET_DatastoreValue *block;
-  DBlock *db;
+  GNUNET_EC_DBlock *db;
 
   block =
-    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock) + i);
-  block->size = htonl (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock) + i);
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) +
+                   sizeof (GNUNET_EC_DBlock) + i);
+  block->size =
+    htonl (sizeof (GNUNET_DatastoreValue) + sizeof (GNUNET_EC_DBlock) + i);
   block->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
-  block->prio = htonl (0);
-  block->anonymityLevel = htonl (0);
-  block->expirationTime = GNUNET_htonll (now + 1 * GNUNET_CRON_HOURS);
-  db = (DBlock *) & block[1];
+  block->priority = htonl (0);
+  block->anonymity_level = htonl (0);
+  block->expiration_time = GNUNET_htonll (now + 1 * GNUNET_CRON_HOURS);
+  db = (GNUNET_EC_DBlock *) & block[1];
   db->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   memset (&db[1], i + (i / 253), i);
   return block;
@@ -67,17 +69,19 @@ makeKBlock (unsigned int i, const GNUNET_HashCode * key,
             GNUNET_HashCode * query)
 {
   GNUNET_DatastoreValue *block;
-  KBlock *db;
+  GNUNET_EC_KBlock *db;
   struct GNUNET_RSA_PrivateKey *kkey;
 
   block =
-    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + sizeof (KBlock) + i);
-  block->size = htonl (sizeof (GNUNET_DatastoreValue) + sizeof (KBlock) + i);
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) +
+                   sizeof (GNUNET_EC_KBlock) + i);
+  block->size =
+    htonl (sizeof (GNUNET_DatastoreValue) + sizeof (GNUNET_EC_KBlock) + i);
   block->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
-  block->prio = htonl (0);
-  block->anonymityLevel = htonl (0);
-  block->expirationTime = GNUNET_htonll (now + 1 * GNUNET_CRON_HOURS);
-  db = (KBlock *) & block[1];
+  block->priority = htonl (0);
+  block->anonymity_level = htonl (0);
+  block->expiration_time = GNUNET_htonll (now + 1 * GNUNET_CRON_HOURS);
+  db = (GNUNET_EC_KBlock *) & block[1];
   db->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
   memset (&db[1], i + (i / 253), i);
   kkey = GNUNET_RSA_create_key_from_hash (key);
@@ -133,12 +137,13 @@ searchResultCB (const GNUNET_HashCode * key,
   int ret;
 
   blk = makeBlock (cls->i);
-  GNUNET_EC_file_block_get_query ((DBlock *) & blk[1],
+  GNUNET_EC_file_block_get_query ((GNUNET_EC_DBlock *) & blk[1],
                                   ntohl (blk->size) -
                                   sizeof (GNUNET_DatastoreValue), &ekey);
   GNUNET_GE_ASSERT (NULL,
                     GNUNET_OK ==
-                    GNUNET_EC_file_block_encode ((DBlock *) & blk[1],
+                    GNUNET_EC_file_block_encode ((GNUNET_EC_DBlock *) &
+                                                 blk[1],
                                                  ntohl (blk->size) -
                                                  sizeof
                                                  (GNUNET_DatastoreValue),
@@ -171,12 +176,12 @@ trySearch (int i)
   GNUNET_HashCode query;
   TSC closure;
   GNUNET_DatastoreValue *dv;
-  DBlock *db;
+  GNUNET_EC_DBlock *db;
   struct GNUNET_FS_SearchContext *ctx;
 
   ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
   dv = makeBlock (i);
-  db = (DBlock *) & dv[1];
+  db = (GNUNET_EC_DBlock *) & dv[1];
   GNUNET_EC_file_block_get_query (db,
                                   ntohl (dv->size) -
                                   sizeof (GNUNET_DatastoreValue), &query);
@@ -249,23 +254,23 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, ".");
       block = makeBlock (i);
-      GNUNET_EC_file_block_get_query ((DBlock *) & block[1],
+      GNUNET_EC_file_block_get_query ((GNUNET_EC_DBlock *) & block[1],
                                       ntohl (block->size) -
                                       sizeof (GNUNET_DatastoreValue), &query);
       CHECK (GNUNET_OK ==
-             GNUNET_EC_file_block_encode ((DBlock *) & block[1],
+             GNUNET_EC_file_block_encode ((GNUNET_EC_DBlock *) & block[1],
                                           ntohl (block->size) -
                                           sizeof (GNUNET_DatastoreValue),
                                           &query, &eblock));
-      eblock->expirationTime = block->expirationTime;
-      eblock->prio = block->prio;
+      eblock->expiration_time = block->expiration_time;
+      eblock->priority = block->priority;
       CHECK (GNUNET_OK == GNUNET_FS_insert (sock, eblock));
       CHECK (GNUNET_OK == trySearch (i));
       CHECK (GNUNET_SYSERR != GNUNET_FS_delete (sock, eblock));
       GNUNET_free (eblock);
-      GNUNET_hash (&((DBlock *) & block[1])[1],
+      GNUNET_hash (&((GNUNET_EC_DBlock *) & block[1])[1],
                    ntohl (block->size) - sizeof (GNUNET_DatastoreValue) -
-                   sizeof (DBlock), &hc);
+                   sizeof (GNUNET_EC_DBlock), &hc);
       /* indexing without symlink */
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
       CHECK (GNUNET_OK == trySearch (i));
@@ -275,9 +280,10 @@ main (int argc, char *argv[])
       tmpName = GNUNET_strdup ("/tmp/symlinkTestXXXXXX");
       CHECK (-1 != (fd = mkstemp (tmpName)));
       CHECK (-1 != WRITE (fd,
-                          &((DBlock *) & block[1])[1],
+                          &((GNUNET_EC_DBlock *) & block[1])[1],
                           ntohl (block->size) -
-                          sizeof (GNUNET_DatastoreValue) - sizeof (DBlock)));
+                          sizeof (GNUNET_DatastoreValue) -
+                          sizeof (GNUNET_EC_DBlock)));
       CLOSE (fd);
       CHECK (GNUNET_FS_prepare_to_index (sock, &hc, tmpName) == GNUNET_YES);
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
@@ -294,23 +300,23 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, ".");
       block = makeBlock (i);
-      GNUNET_EC_file_block_get_query ((DBlock *) & block[1],
+      GNUNET_EC_file_block_get_query ((GNUNET_EC_DBlock *) & block[1],
                                       ntohl (block->size) -
                                       sizeof (GNUNET_DatastoreValue), &query);
       CHECK (GNUNET_OK ==
-             GNUNET_EC_file_block_encode ((DBlock *) & block[1],
+             GNUNET_EC_file_block_encode ((GNUNET_EC_DBlock *) & block[1],
                                           ntohl (block->size) -
                                           sizeof (GNUNET_DatastoreValue),
                                           &query, &eblock));
-      eblock->expirationTime = block->expirationTime;
-      eblock->prio = block->prio;
+      eblock->expiration_time = block->expiration_time;
+      eblock->priority = block->priority;
       CHECK (GNUNET_OK == GNUNET_FS_insert (sock, eblock));
       CHECK (GNUNET_OK == trySearch (i));
       CHECK (1 == GNUNET_FS_delete (sock, eblock));
       GNUNET_free (eblock);
-      GNUNET_hash (&((DBlock *) & block[1])[1],
+      GNUNET_hash (&((GNUNET_EC_DBlock *) & block[1])[1],
                    ntohl (block->size) - sizeof (GNUNET_DatastoreValue) -
-                   sizeof (DBlock), &hc);
+                   sizeof (GNUNET_EC_DBlock), &hc);
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
       CHECK (GNUNET_OK == trySearch (i));
       CHECK (GNUNET_OK ==

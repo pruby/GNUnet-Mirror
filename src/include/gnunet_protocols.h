@@ -130,7 +130,7 @@ extern "C"
 #define GNUNET_CS_PROTO_GAP_RESULT 9
 
 /**
- * client to gnunetd: insert CHK content (no index)
+ * client to gnunetd: insert GNUNET_EC_ContentHashKey content (no index)
  */
 #define GNUNET_CS_PROTO_GAP_INSERT 10
 

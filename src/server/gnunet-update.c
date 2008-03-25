@@ -186,9 +186,9 @@ work ()
   struct GNUNET_CronManager *cron;
   char *topo;
 
-  uapi.updateModule = &updateModule;
-  uapi.request_service = &GNUNET_CORE_request_service;
-  uapi.release_service = &GNUNET_CORE_release_service;
+  uapi.service_update = &updateModule;
+  uapi.service_request = &GNUNET_CORE_request_service;
+  uapi.service_release = &GNUNET_CORE_release_service;
   uapi.ectx = ectx;
   uapi.cfg = cfg;
 

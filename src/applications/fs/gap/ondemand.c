@@ -245,7 +245,7 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *ectx,
                                         unsigned int anonymityLevel,
                                         const GNUNET_HashCode * fileId,
                                         unsigned int size,
-                                        const DBlock * content)
+                                        const GNUNET_EC_DBlock * content)
 {
   int ret;
   OnDemandBlock odb;
@@ -254,7 +254,7 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *ectx,
   char *fn;
   int fd;
 
-  if (size <= sizeof (DBlock))
+  if (size <= sizeof (GNUNET_EC_DBlock))
     {
       GNUNET_GE_BREAK (coreAPI->ectx, 0);
       return GNUNET_SYSERR;
@@ -274,8 +274,8 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *ectx,
           return GNUNET_SYSERR;
         }
       LSEEK (fd, fileOffset, SEEK_SET);
-      ret = WRITE (fd, &content[1], size - sizeof (DBlock));
-      if (ret == size - sizeof (DBlock))
+      ret = WRITE (fd, &content[1], size - sizeof (GNUNET_EC_DBlock));
+      if (ret == size - sizeof (GNUNET_EC_DBlock))
         {
           ret = GNUNET_OK;
         }
@@ -298,12 +298,12 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *ectx,
 
   odb.header.size = htonl (sizeof (OnDemandBlock));
   odb.header.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
-  odb.header.prio = htonl (prio);
-  odb.header.anonymityLevel = htonl (anonymityLevel);
-  odb.header.expirationTime = GNUNET_htonll (expiration);
+  odb.header.priority = htonl (prio);
+  odb.header.anonymity_level = htonl (anonymityLevel);
+  odb.header.expiration_time = GNUNET_htonll (expiration);
   odb.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
   odb.fileOffset = GNUNET_htonll (fileOffset);
-  odb.blockSize = htonl (size - sizeof (DBlock));
+  odb.blockSize = htonl (size - sizeof (GNUNET_EC_DBlock));
   odb.fileId = *fileId;
   /* compute the primary key */
   GNUNET_EC_file_block_get_query (content, size, &key);
@@ -377,7 +377,7 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
   int fileHandle;
   int ret;
   const OnDemandBlock *odb;
-  DBlock *db;
+  GNUNET_EC_DBlock *db;
   struct stat linkStat;
 
 
@@ -422,7 +422,7 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
       delete_content_asynchronously (dbv, query);
       return GNUNET_SYSERR;
     }
-  db = GNUNET_malloc (sizeof (DBlock) + ntohl (odb->blockSize));
+  db = GNUNET_malloc (sizeof (GNUNET_EC_DBlock) + ntohl (odb->blockSize));
   db->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   iobuf = (char *) &db[1];
   blen = READ (fileHandle, iobuf, ntohl (odb->blockSize));
@@ -440,8 +440,8 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
     }
   CLOSE (fileHandle);
   ret = GNUNET_EC_file_block_encode (db,
-                                     ntohl (odb->blockSize) + sizeof (DBlock),
-                                     query, enc);
+                                     ntohl (odb->blockSize) +
+                                     sizeof (GNUNET_EC_DBlock), query, enc);
   GNUNET_free (db);
   GNUNET_free (fn);
   if (ret == GNUNET_SYSERR)
@@ -453,9 +453,9 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
       delete_content_asynchronously (dbv, query);
       return GNUNET_SYSERR;
     }
-  (*enc)->anonymityLevel = dbv->anonymityLevel;
-  (*enc)->expirationTime = dbv->expirationTime;
-  (*enc)->prio = dbv->prio;
+  (*enc)->anonymity_level = dbv->anonymity_level;
+  (*enc)->expiration_time = dbv->expiration_time;
+  (*enc)->priority = dbv->priority;
   return GNUNET_OK;
 }
 
@@ -505,7 +505,7 @@ GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context *ectx,
   unsigned long long pos;
   unsigned long long size;
   unsigned long long delta;
-  DBlock *block;
+  GNUNET_EC_DBlock *block;
   GNUNET_EncName enc;
 
   fn = get_indexed_filename (fileId);
@@ -521,7 +521,7 @@ GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context *ectx,
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
-  block = GNUNET_malloc (sizeof (DBlock) + blocksize);
+  block = GNUNET_malloc (sizeof (GNUNET_EC_DBlock) + blocksize);
   block->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   while (pos < size)
     {
@@ -541,20 +541,21 @@ GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context *ectx,
         }
       odb.header.size = htonl (sizeof (OnDemandBlock));
       odb.header.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
-      odb.header.prio = 0;
-      odb.header.anonymityLevel = 0;
-      odb.header.expirationTime = 0;
+      odb.header.priority = 0;
+      odb.header.anonymity_level = 0;
+      odb.header.expiration_time = 0;
       odb.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
       odb.fileOffset = GNUNET_htonll (pos);
       odb.blockSize = htonl (delta);
       odb.fileId = *fileId;
       /* compute the primary key */
-      GNUNET_EC_file_block_get_query (block, delta + sizeof (DBlock), &key);
-      if ((0 < datastore->get (&key,
-                               GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                               &GNUNET_FS_HELPER_complete_value_from_database_callback,
-                               &odb.header))
-          && (odb.header.expirationTime != 0))
+      GNUNET_EC_file_block_get_query (block,
+                                      delta + sizeof (GNUNET_EC_DBlock),
+                                      &key);
+      if ((0 <
+           datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+                           &GNUNET_FS_HELPER_complete_value_from_database_callback,
+                           &odb.header)) && (odb.header.expiration_time != 0))
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
         ret = GNUNET_SYSERR;
@@ -601,18 +602,18 @@ GNUNET_FS_ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_free (tmp);
   GNUNET_disk_directory_create (coreAPI->ectx, index_directory);        /* just in case */
 
-  state = capi->request_service ("state");
+  state = capi->service_request ("state");
   if (state == NULL)
     {
       GNUNET_GE_BREAK (coreAPI->ectx, 0);
       GNUNET_free (index_directory);
       return GNUNET_SYSERR;
     }
-  datastore = capi->request_service ("datastore");
+  datastore = capi->service_request ("datastore");
   if (datastore == NULL)
     {
       GNUNET_GE_BREAK (coreAPI->ectx, 0);
-      coreAPI->release_service (state);
+      coreAPI->service_release (state);
       state = NULL;
       GNUNET_free (index_directory);
       return GNUNET_SYSERR;
@@ -624,9 +625,9 @@ GNUNET_FS_ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
 int
 GNUNET_FS_ONDEMAND_done ()
 {
-  coreAPI->release_service (state);
+  coreAPI->service_release (state);
   state = NULL;
-  coreAPI->release_service (datastore);
+  coreAPI->service_release (datastore);
   datastore = NULL;
   GNUNET_free (index_directory);
   index_directory = NULL;

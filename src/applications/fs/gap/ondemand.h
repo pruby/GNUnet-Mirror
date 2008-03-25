@@ -75,7 +75,7 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *cectx,
                                         unsigned int anonymityLevel,
                                         const GNUNET_HashCode * fileId,
                                         unsigned int size,
-                                        const DBlock * content);
+                                        const GNUNET_EC_DBlock * content);
 
 /**
  * Test if the file with the given ID is

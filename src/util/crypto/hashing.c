@@ -424,11 +424,11 @@ GNUNET_hash_file (struct GNUNET_GE_Context *ectx, const char *filename,
           GNUNET_free (buf);
           return GNUNET_SYSERR;
         }
-      if (GNUNET_YES == GNUNET_shutdown_test())
-	{  
+      if (GNUNET_YES == GNUNET_shutdown_test ())
+        {
           GNUNET_free (buf);
           return GNUNET_SYSERR;
-	}
+        }
       sha512_update (&ctx, buf, delta);
       if (pos + delta > pos)
         pos += delta;
