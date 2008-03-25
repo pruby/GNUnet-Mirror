@@ -1,3 +1,8 @@
+Mon Mar 24 21:15:36 MDT 2008
+	Fixed various problems with downloading locally
+	indexed large files (downloading large files from
+	other peers should not have been a problem).
+	
 Sun Mar  2 15:33:41 MST 2008
 	Added option to allow user to disable IPv6 support.
 	Releasing 0.8.0pre0.
