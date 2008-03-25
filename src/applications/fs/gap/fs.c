@@ -407,13 +407,8 @@ fast_path_processor (const GNUNET_HashCode * key,
                      value, void *closure, unsigned long long uid)
 {
   struct FPPClosure *cls = closure;
-  struct GNUNET_ClientHandle *sock = cls->sock;
+  GNUNET_HashCode hc;
   struct ResponseList *rl;
-  const DBlock *dblock;
-  CS_fs_reply_content_MESSAGE *msg;
-  unsigned int size;
-  GNUNET_DatastoreValue *enc;
-  const GNUNET_DatastoreValue *use;
   unsigned int type;
   int ret;
 
@@ -422,37 +417,22 @@ fast_path_processor (const GNUNET_HashCode * key,
       cls->have_more = GNUNET_YES;
       return GNUNET_SYSERR;
     }
-  cls->processed++;
-  size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
-  dblock = (const DBlock *) &value[1];
-  enc = NULL;
-  if ((ntohl (dblock->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND) &&
-      (GNUNET_OK != GNUNET_FS_ONDEMAND_get_indexed_content (value,
-                                                            key, &enc)))
-    return GNUNET_OK;           /* data corrupt, continue to search */
-  if (enc == NULL)
-    use = value;
-  else
-    use = enc;
-  size = ntohl (use->size) - sizeof (GNUNET_DatastoreValue);
-  dblock = (const DBlock *) &use[1];
-  msg = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) + size);
-  msg->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
-  msg->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) + size);
-  msg->anonymityLevel = use->anonymityLevel;
-  msg->expirationTime = use->expirationTime;
-  memcpy (&msg[1], dblock, size);
-  type = ntohl (dblock->type);
-  GNUNET_free_non_null (enc);
-  ret = coreAPI->cs_send_to_client (sock, &msg->header,
-                                    GNUNET_NO);
-  GNUNET_free (msg);
+  type = ntohl(((const DBlock*) &value[1])->type);
+  ret = GNUNET_FS_HELPER_send_to_client(coreAPI,
+					key,
+					value,
+					cls->sock,
+					NULL,
+					&hc);
   if (ret == GNUNET_NO)
+    return GNUNET_NO; /* delete + continue */
+  cls->processed++;
+  if (ret != GNUNET_OK)
     cls->have_more = GNUNET_YES; /* switch to async processing */
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) || (ret != GNUNET_OK))
-    return GNUNET_SYSERR;       /* unique response or client can take no more */    
+    return GNUNET_SYSERR;       /* unique response or client can take no more */
   rl = GNUNET_malloc (sizeof (struct ResponseList));
-  GNUNET_hash (dblock, size, &rl->hash);
+  rl->hash = hc;
   rl->next = cls->seen;
   cls->seen = rl;
   return GNUNET_OK;

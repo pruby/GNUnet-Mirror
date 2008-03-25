@@ -27,6 +27,7 @@
 #define SHARED_H
 
 #include "gnunet_util.h"
+#include "gnunet_core.h"
 #include "ecrs_core.h"
 #include "pid_table.h"
 #include "gap.h"
@@ -361,5 +362,26 @@ GNUNET_FS_HELPER_mingle_hash (const GNUNET_HashCode * in,
  *         otherwise the ttl-limit for the given priority
  */
 int GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio);
+
+
+/**
+ * Send a response to a local client.
+ *
+ * @param request used to check if the response is new and
+ *        unique, maybe NULL (skip test in that case)
+ * @param hc set to hash of the message by this function
+ * 
+ * @return GNUNET_OK on success,
+ *         GNUNET_NO on temporary failure,
+ *         GNUNET_SYSERR on serious error
+ */
+int 
+GNUNET_FS_HELPER_send_to_client(GNUNET_CoreAPIForPlugins * coreAPI,
+				const GNUNET_HashCode * key,
+				const GNUNET_DatastoreValue * value,
+				struct GNUNET_ClientHandle * client,
+				struct RequestList * request,
+				GNUNET_HashCode * hc);
+
 
 #endif

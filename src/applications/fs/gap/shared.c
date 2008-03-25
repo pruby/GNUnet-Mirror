@@ -27,6 +27,7 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "shared.h"
+#include "ondemand.h"
 #include "fs.h"
 
 /**
@@ -218,5 +219,75 @@ GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio)
   return ttl_in;
 }
 
+/**
+ * Send a response to a local client.
+ *
+ * @param request used to check if the response is new and
+ *        unique, maybe NULL (skip test in that case)
+ * @param hc set to hash of the message by this function
+ * 
+ * @return GNUNET_OK on success,
+ *         GNUNET_NO if the block should be deleted
+ *         GNUNET_SYSERR to retry later
+ */
+int 
+GNUNET_FS_HELPER_send_to_client(GNUNET_CoreAPIForPlugins * coreAPI,
+				const GNUNET_HashCode * key,
+				const GNUNET_DatastoreValue * value,
+				struct GNUNET_ClientHandle * client,
+				struct RequestList * request,
+				GNUNET_HashCode * hc) 
+{
+  const DBlock *dblock;
+  CS_fs_reply_content_MESSAGE *msg;
+  unsigned int size;
+  GNUNET_DatastoreValue *enc;
+  const GNUNET_DatastoreValue *use;
+  int ret;
+
+  size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
+  dblock = (const DBlock *) &value[1];
+  enc = NULL;
+  if ((ntohl (dblock->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND) &&
+      (GNUNET_OK != GNUNET_FS_ONDEMAND_get_indexed_content (value,
+                                                            key, &enc)))
+    {
+      return GNUNET_NO; /* data corrupt: delete block! */
+    }
+  if (enc == NULL)
+    use = value;
+  else
+    use = enc;
+  size = ntohl (use->size) - sizeof (GNUNET_DatastoreValue);
+  dblock = (const DBlock *) &use[1];
+  if (request != NULL) 
+    {
+      if (GNUNET_OK != GNUNET_FS_SHARED_test_valid_new_response (request,
+								 key,
+								 size,
+								 dblock, hc))
+	{
+	  GNUNET_free_non_null (enc);
+	  return GNUNET_SYSERR; /* duplicate or invalid */
+	}
+    } 
+  else
+    {
+      GNUNET_hash (dblock, size, hc);
+    } 
+  msg = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) + size);
+  msg->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
+  msg->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) + size);
+  msg->anonymityLevel = use->anonymityLevel;
+  msg->expirationTime = use->expirationTime;
+  memcpy (&msg[1], dblock, size);
+  GNUNET_free_non_null (enc);
+  ret = coreAPI->cs_send_to_client (client, &msg->header,
+                                    GNUNET_NO);
+  GNUNET_free (msg);
+  if (ret == GNUNET_OK)
+    return GNUNET_OK;
+  return GNUNET_SYSERR;
+}
 
 /* end of shared.c */

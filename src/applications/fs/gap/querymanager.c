@@ -289,13 +289,15 @@ handle_response (PID_INDEX sender,
   msg->anonymityLevel = htonl (0);      /* unknown */
   msg->expirationTime = GNUNET_htonll (expirationTime);
   memcpy (&msg[1], data, size);
-  coreAPI->cs_send_to_client (client,
-                              &msg->header,
-                              (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
-                              ? GNUNET_NO : GNUNET_YES);
+  ret = coreAPI->cs_send_to_client (client,
+				    &msg->header,
+				    (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
+				    ? GNUNET_NO : GNUNET_YES);
+  GNUNET_free (msg);
+  if (ret != GNUNET_OK)
+    return GNUNET_NO;    
   if (stats != NULL)
     stats->change (stat_gap_client_response_sent, 1);
-  GNUNET_free (msg);
 
   /* update *value */
   *value += 1 + rl->value;
@@ -469,32 +471,21 @@ have_more_processor (const GNUNET_HashCode * key,
                      value, void *closure, unsigned long long uid)
 {
   struct HMClosure *cls = closure;
-  const DBlock *dblock;
   GNUNET_HashCode hc;
-  CS_fs_reply_content_MESSAGE *msg;
-  unsigned int size;
   int ret;
 
-  size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
-  dblock = (const DBlock *) &value[1];
-  if (GNUNET_OK == GNUNET_FS_SHARED_test_valid_new_response (cls->request,
-                                                             key,
-                                                             size,
-                                                             dblock, &hc))
+  ret = GNUNET_FS_HELPER_send_to_client(coreAPI,
+					key, value,
+					cls->request->response_client,
+					cls->request,
+					&hc);
+  if (ret != GNUNET_OK)
     {
-      msg = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) + size);
-      msg->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
-      msg->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) + size);
-      msg->anonymityLevel = value->anonymityLevel;
-      msg->expirationTime = value->expirationTime;
-      memcpy (&msg[1], dblock, size);
-      ret = coreAPI->cs_send_to_client (cls->request->response_client,
-                                        &msg->header, GNUNET_YES);
-      GNUNET_free (msg);
-      if (ret != GNUNET_OK)
-        return GNUNET_SYSERR;   /* client can take no more */
-      GNUNET_FS_SHARED_mark_response_seen (cls->request, &hc);
+      /* client can take no more right now */
+      cls->have_more = GNUNET_YES;      
+      return ret; /* NO: delete, SYSERR: abort */
     }
+  GNUNET_FS_SHARED_mark_response_seen (cls->request, &hc);
   cls->processed++;
   if (cls->processed > MAX_ASYNC_PROCESSED)
     {
