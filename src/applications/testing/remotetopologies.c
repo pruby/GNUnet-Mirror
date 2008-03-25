@@ -77,7 +77,7 @@ GNUNET_REMOTE_connect_2d_torus(int number_of_daemons,struct GNUNET_REMOTE_daemon
 */
 
 int
-GNUNET_REMOTE_connect_daemons ( char * ip1, unsigned short port1, char * ip2, unsigned short port2)
+GNUNET_REMOTE_connect_daemons ( char * hostname1, unsigned short port1, char * hostname2, unsigned short port2)
 {
   char host[128];
   struct GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
@@ -89,11 +89,11 @@ GNUNET_REMOTE_connect_daemons ( char * ip1, unsigned short port1, char * ip2, un
   GNUNET_MessageHello *h2;
 
   ret = GNUNET_SYSERR;
-  GNUNET_snprintf (host, 128, "%s:%u", ip1, port1);
+  GNUNET_snprintf (host, 128, "%s:%u", hostname1, port1);
   GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
                                             host);
 	fprintf(stderr,"host1 is %s\n",host);                              
-  GNUNET_snprintf (host, 128, "%s:%u", ip2, port2);
+  GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
   GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
                                             host);
   fprintf(stderr,"host2 is %s\n",host);
