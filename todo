@@ -5,7 +5,6 @@ Annotations:
 
 0.8.0 [4'08] (aka "advanced features"):
 - support ECRS NULL download file name
-- gtk: make sure abort works as spected (call abort + stop)
 - document gnunet-auto-share on webpage
 - disconnect issues ("other peer sent too much" - solved?)
 - clean up VPN code
@@ -14,29 +13,6 @@ Annotations:
 - test new asynchronous ECRS API (and resulting FSUI changes);
   make sure error handling & reporting are nice [RC]
 - test RPC code (write a small demo)
-- test GAP code in general; still have one unexplained crazy crash (not seen in a while):
-  Program terminated with signal 11, Segmentation fault.
- #0  0xb4e8e73a in GNUNET_FS_SHARED_test_valid_new_response (rl=0x8060,
-     primary_key=0xb343f1c8, size=820, data=0xb0b8f0e8, hc=0xb343f134) at shared.c:94
- 94        if (((rl->type != GNUNET_ECRS_BLOCKTYPE_ANY) &&
- (gdb) ba
- #0  0xb4e8e73a in GNUNET_FS_SHARED_test_valid_new_response (rl=0x8060,
-     primary_key=0xb343f1c8, size=820, data=0xb0b8f0e8, hc=0xb343f134) at shared.c:94
- #1  0xb4e876f9 in GNUNET_FS_GAP_handle_response (sender=0x0, primary_query=0xb343f1c8,
-      expiration=12012449401453674496, size=820, data=0xb0b8f0e8) at gap.c:433
- #2  0xb4e852ec in handle_p2p_content (sender=0x0, pmsg=0xb0b8f0d8) at fs.c:702
- #3  0xb7f0911b in GNUNET_CORE_p2p_inject_message (sender=0x0, msg=0xb0b8f0d8 "\003D",
-     size=836, wasEncrypted=1, session=0x0) at handler.c:499
- #4  0xb4e86bc5 in send_delayed (cls=0xb0b8f0d8) at gap.c:101
- #5  0xb7c72ec3 in runJob (cron=0x8099438) at cron.c:529
- #6  0xb7c72fad in cron_main_method (ctx=0x8099438) at cron.c:569
- #7  0xb7de9383 in start_thread () from /lib/libpthread.so.0
- #8  0xb7d6d73e in clone () from /lib/libc.so.6
-  Analysis shows that "prev->next" was set to rl in the previous
-  iteration in #1.  "prev" was not zero'ed out.  table[index] points
-  to a valid entry, and table[index]->next is NULL at the time of the
-  crash.
-
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074
