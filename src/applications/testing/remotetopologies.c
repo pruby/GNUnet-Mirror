@@ -97,9 +97,93 @@ GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list)
 }
 
 int
+GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list)
+{
+  struct GNUNET_REMOTE_host_list *pos = main_list;
+  struct GNUNET_REMOTE_host_list *iter_pos = main_list;
+  GNUNET_EncName *node1;
+  GNUNET_EncName *node2;
+  struct GNUNET_REMOTE_friends_list *node1temp;
+  struct GNUNET_REMOTE_friends_list *node2temp;
+
+  node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
+  node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
+
+  while (pos->next != NULL)
+    {
+      iter_pos = pos->next;
+      if (GNUNET_OK ==
+          GNUNET_REMOTE_get_daemons_information (pos->hostname, pos->port,
+                                                 iter_pos->hostname,
+                                                 iter_pos->port, &node1,
+                                                 &node2))
+        {
+          node1temp =
+            GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+          node2temp =
+            GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+
+          node2temp->hostentry = pos;
+          node1temp->hostentry = iter_pos;
+
+          node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+          node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+
+          memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
+          memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
+
+          node1temp->next = pos->friend_entries;
+          node2temp->next = iter_pos->friend_entries;
+
+          pos->friend_entries = node1temp;
+          iter_pos->friend_entries = node2temp;
+        }
+      pos = pos->next;
+    }
+  iter_pos = main_list;
+  if (GNUNET_OK ==
+      GNUNET_REMOTE_get_daemons_information (pos->hostname, pos->port,
+                                             iter_pos->hostname,
+                                             iter_pos->port, &node1, &node2))
+    {
+      node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+      node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+
+      node2temp->hostentry = pos;
+      node1temp->hostentry = iter_pos;
+
+      node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+      node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+
+      memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
+      memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
+
+      node1temp->next = pos->friend_entries;
+      node2temp->next = iter_pos->friend_entries;
+
+      pos->friend_entries = node1temp;
+      iter_pos->friend_entries = node2temp;
+    }
+
+  GNUNET_free (node1);
+  GNUNET_free (node2);
+
+  return GNUNET_OK;
+}
+
+int
 GNUNET_REMOTE_connect_2d_torus (int number_of_daemons,
                                 struct GNUNET_REMOTE_host_list
                                 **list_as_array)
+{
+
+  return GNUNET_SYSERR;
+}
+
+int
+GNUNET_REMOTE_connect_small_world (int number_of_daemons,
+                                   struct GNUNET_REMOTE_host_list
+                                   **list_as_array)
 {
 
   return GNUNET_SYSERR;
