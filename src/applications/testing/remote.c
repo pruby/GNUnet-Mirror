@@ -513,16 +513,38 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
           fprintf (stderr, "scp command for friend file copy is : %s \n",
                    cmd);
           system (cmd);
-
+          GNUNET_free (cmd);
           pos = pos->next;
         }
 
       system ("rm friend.temp");
+
+      pos = head;
+      while (pos != NULL)
+        {
+          friend_pos = pos->friend_entries;
+          while (friend_pos != NULL)
+            {
+              fprintf (stderr, "connecting %s:%lld to %s:%lld\n",
+                       pos->hostname, pos->port,
+                       friend_pos->hostentry->hostname,
+                       friend_pos->hostentry->port);
+              fprintf (stderr, "or %s:%lld to %s\n", pos->hostname, pos->port,
+                       (const char *) friend_pos->nodeid);
+              GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
+                                             friend_pos->hostentry->hostname,
+                                             friend_pos->hostentry->port);
+              friend_pos = friend_pos->next;
+            }
+          pos = pos->next;
+        }
     }
   else
     {
       fprintf (stderr, "connect didn't return well!\n");
     }
+
+
   return ret;
 }
 

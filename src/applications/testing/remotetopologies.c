@@ -65,12 +65,13 @@ GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list)
                                                      iter_pos->port, &node1,
                                                      &node2))
             {
-              fprintf (stderr, "node1's id is %s\n", (const char *) node1);
-              fprintf (stderr, "node2's id is %s\n", (const char *) node2);
               node1temp =
                 GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
               node2temp =
                 GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+
+              node2temp->hostentry = pos;
+              node1temp->hostentry = iter_pos;
 
               node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
               node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
@@ -196,12 +197,12 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
         {
           fprintf (stderr,
                    "\nFailed to connect `%s' and `%s'\n",
-                   (const char *) &host1entry, (const char *) &host2entry);
+                   (const char *) host1entry, (const char *) host2entry);
           fprintf (stderr, "Connections of `%s':\n",
-                   (const char *) &host1entry);
+                   (const char *) host1entry);
           GNUNET_IDENTITY_request_peer_infos (sock1, &printInfo, NULL);
           fprintf (stderr, "Connections of `%s':\n",
-                   (const char *) &host2entry);
+                   (const char *) host2entry);
           GNUNET_IDENTITY_request_peer_infos (sock2, &printInfo, NULL);
 
         }
