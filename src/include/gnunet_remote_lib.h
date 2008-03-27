@@ -37,35 +37,35 @@ extern "C"
 #endif
 #endif
 
+typedef enum
+{
+  GNUNET_REMOTE_CLIQUE = 0,
+  GNUNET_REMOTE_SMALL_WORLD = 1,
+  GNUNET_REMOTE_RING = 2,
+  GNUNET_REMOTE_2D_TORUS,
+
+} GNUNET_REMOTE_TOPOLOGIES;
 
 /**
  * Linked list of information about daemon processes.
  */
-struct GNUNET_REMOTE_HostInfo
+struct GNUNET_REMOTE_host_list
 {
-  struct GNUNET_REMOTE_HostInfo *next;
-
-          /**
-	   * Identity of the peer running on that host and port.
-	   */
-  GNUNET_PeerIdentity identity;
-
-          /**
-	   * Name of the host.
-	   */
+  struct GNUNET_REMOTE_host_list *next;
+  struct GNUNET_REMOTE_friends_list *friend_entries;
   char *hostname;
+  char *remote_friend_file_path;
+  char *username;
+  unsigned long long port;
+};
 
-          /**
-	   * Process ID.
-	   */
-  pid_t pid;
-
-          /**
-	   * Port used by clients to talk to the daemon on
-	   * that machine.
-	   */
-  unsigned short port;
-
+/* Simple linked list to store friends lists for each node, 
+ * for writing to the friends file
+ */
+struct GNUNET_REMOTE_friends_list
+{
+	struct GNUNET_REMOTE_friends_list *next;
+	GNUNET_EncName *nodeid;		
 };
 
 /**
@@ -81,10 +81,15 @@ struct GNUNET_REMOTE_HostInfo
 int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                                 char *localConfigPath, char *configFileName,
                                 char *remote_config_path, char *ip_address,
-                                char *username);
+                                char *username,char *remote_friend_file_path);
 
+/**
+ * Main start function to be called.  Needs a remote config specified, as well
+ * as the number of daemons to start and the type of topology.  Available topology
+ * types are defined in gnunet_remote_lib.h
+ */
 int GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
-                                 unsigned long long number_of_daemons);
+                                 unsigned long long number_of_daemons, GNUNET_REMOTE_TOPOLOGIES type_of_topology);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
