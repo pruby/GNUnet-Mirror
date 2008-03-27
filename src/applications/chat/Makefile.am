@@ -31,3 +31,18 @@ libgnunetmodule_chat_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_chat_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
+
+
+
+check_PROGRAMS = \
+  chattest
+
+TESTS = $(check_PROGRAMS)
+
+chattest_SOURCES = \
+  chattest.c 
+chattest_LDADD = \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/chat/libgnunetchat_api.la \
+  $(top_builddir)/src/util/libgnunetutil.la 

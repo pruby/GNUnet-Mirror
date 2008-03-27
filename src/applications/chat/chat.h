@@ -42,11 +42,11 @@ typedef struct
 typedef struct
 {
   GNUNET_MessageHeader header;
+  /*  GNUNET_RSA_PublicKey pkey; */
   int nick_len;
   int pubkey_len;
   /*int room_name_len; */
   char nick[1];
-
 } CS_chat_JOIN_MESSAGE;
 
 typedef struct

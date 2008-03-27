@@ -92,6 +92,10 @@ static int
 member_list_callback (void *cls, const char *senderNick,
                       int is_joining, GNUNET_CronTime timestamp)
 {
+  fprintf (stdout, is_joining 
+	   ? _("`%s' entered the room\n") 
+	   : _("`%s' left the room\n"),
+	   senderNick);
   return GNUNET_OK;
 }
 

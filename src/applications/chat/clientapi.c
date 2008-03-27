@@ -92,7 +92,9 @@ poll_thread (void *rcls)
           disconnected = GNUNET_YES;
           continue;
         }
-      if (reply->type == ntohs (GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE))
+      switch (ntohs(reply->type)) {
+      case GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE:
+      case GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_LEAVE_MESSAGE:
         {
           size = ntohs (reply->size);
           received_room_member_msg = (CS_chat_ROOM_MEMBER_MESSAGE *) reply;
@@ -111,16 +113,18 @@ poll_thread (void *rcls)
 
           if (GNUNET_OK !=
               room->member_list_callback (room->member_list_callback_cls,
-                                          nick, GNUNET_YES,
+                                          nick, ntohs(reply->type) == GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE,
                                           GNUNET_get_time ()))
             {
               GNUNET_GE_BREAK (NULL, 0);
               GNUNET_client_connection_close_temporarily (room->sock);
               disconnected = GNUNET_YES;
               continue;
-            }
+            }	 
         }
-      else
+	GNUNET_free (nick);
+	break;
+      case GNUNET_CS_PROTO_CHAT_MSG:
         {
           size = ntohs (reply->size);
           received_msg = (CS_chat_MESSAGE *) reply;
@@ -153,7 +157,12 @@ poll_thread (void *rcls)
             }
           GNUNET_free (message_content);
         }
-      GNUNET_free (nick);
+	GNUNET_free (nick);
+	break;
+      default:
+	GNUNET_GE_BREAK(NULL, 0);
+	break;
+      }
     }
   return NULL;
 }
@@ -275,6 +284,15 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
   join_msg = GNUNET_malloc (size_of_join);
   join_msg->nick_len = htons (strlen (chat_room->nickname));
   join_msg->pubkey_len = htons (sizeof (GNUNET_RSA_PublicKey));
+
+#if FIXED
+  char * nick = (char*) &join_msg[1];
+  memcpy (nick, chat_room->nickname,
+          strlen (chat_room->nickname));
+  memcpy (&nick[strlen (chat_room->nickname)],
+          chat_room->my_public_key, sizeof (GNUNET_RSA_PublicKey));
+#endif
+
   memcpy (&join_msg->nick[0], chat_room->nickname,
           strlen (chat_room->nickname));
   memcpy (&join_msg->nick[strlen (chat_room->nickname)],

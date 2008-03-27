@@ -55,7 +55,7 @@ static struct GNUNET_CS_chat_client *client_list_head;
 
 /* Thread that tells clients about chat room members
  */
-static void *
+static void 
 update_client_thread (void *cls)
 {
   struct GNUNET_CS_chat_client *pos;
@@ -63,11 +63,9 @@ update_client_thread (void *cls)
   CS_chat_ROOM_MEMBER_MESSAGE *message;
   int message_size;
 
-  while (shutdown_flag != GNUNET_YES)
-    {
       fprintf (stderr, "Checking room members\n");
-      pos = client_list_head;
       GNUNET_mutex_lock (chatMutex);
+      pos = client_list_head;
       while (pos != NULL)
         {
           compare_pos = client_list_head;
@@ -100,11 +98,9 @@ update_client_thread (void *cls)
           pos = pos->next;
         }
       GNUNET_mutex_unlock (chatMutex);
-      if (shutdown_flag == GNUNET_NO)
-        GNUNET_thread_sleep (30 * GNUNET_CRON_SECONDS);
-    }
-  return NULL;
 }
+
+
 
 static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
@@ -399,7 +395,11 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
 
   coreAPI = capi;
-  GNUNET_thread_create (&update_client_thread, NULL, 1024 * 128);       /* What's a good stack size? */
+  GNUNET_cron_add_job(coreAPI->cron,
+		      &update_client_thread,
+		      30 * GNUNET_CRON_SECONDS,
+		      30 * GNUNET_CRON_SECONDS,
+		      NULL);
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handlers %d and %d\n"),
                  "chat", GNUNET_P2P_PROTO_CHAT_MSG, GNUNET_CS_PROTO_CHAT_MSG);
@@ -433,6 +433,10 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_chat ()
 {
+  GNUNET_cron_del_job(coreAPI->cron,
+		      &update_client_thread,
+		      30 * GNUNET_CRON_SECONDS,
+		      NULL);
   shutdown_flag = GNUNET_YES;
   /*coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG); */
   coreAPI->cs_disconnect_handler_unregister (&chatClientExitHandler);
