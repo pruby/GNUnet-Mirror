@@ -34,32 +34,7 @@
 #include "gnunet_remote_lib.h"
 
 
-/**
- * Establish a connection between two GNUnet daemons
- *
- * @param port1 client port of the first daemon
- * @param port2 client port of the second daemon
- * @param ip1 client ip or hostname for the first daemon
- * @param ip2 client ip or hostname for the second daemon
- * @return GNUNET_OK on success, GNUNET_SYSERR on failure
- */
-int
-GNUNET_REMOTE_connect_daemons (char *ip1, unsigned short port1, char *ip2,
-                               unsigned short port2);
 
-int
-GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
-                                       char *hostname2, unsigned short port2,
-                                       GNUNET_EncName ** host1entry,
-                                       GNUNET_EncName ** host2entry);
-
-/**
- * Create a topology (connect the running gnunetd's) that corresponds
- * to the type specified in t.
- */
-int
-GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
-                               int number_of_daemons);
 
 #endif /*REMOTE_H_ */
 
