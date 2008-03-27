@@ -65,6 +65,7 @@ struct GNUNET_REMOTE_host_list
 struct GNUNET_REMOTE_friends_list
 {
   struct GNUNET_REMOTE_friends_list *next;
+  struct GNUNET_REMOTE_host_list *hostentry;
   GNUNET_EncName *nodeid;
 };
 
