@@ -31,26 +31,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_identity_lib.h"
 #include "gnunet_util.h"
-#include "gnunet_testing_lib.h"
-
-typedef enum
-{
-  GNUNET_REMOTE_CLIQUE = 0,
-  GNUNET_REMOTE_SMALL_WORLD = 1,
-  GNUNET_REMOTE_RING = 2,
-  GNUNET_REMOTE_2D_TORUS,
-
-} GNUNET_REMOTE_TOPOLOGIES;
-
-struct GNUNET_REMOTE_daemon_list
-{
-  struct GNUNET_REMOTE_daemon_list *next;
-  char *hostname;
-  unsigned long long port;
-
-};
-
-
+#include "gnunet_remote_lib.h"
 
 
 /**
@@ -65,6 +46,10 @@ struct GNUNET_REMOTE_daemon_list
 int
 GNUNET_REMOTE_connect_daemons (char *ip1, unsigned short port1, char *ip2,
                                unsigned short port2);
+                               
+int
+GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
+                               char *hostname2, unsigned short port2, GNUNET_EncName **host1entry, GNUNET_EncName **host2entry);
 
 /**
  * Create a topology (connect the running gnunetd's) that corresponds

@@ -28,6 +28,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_remote_lib.h"
 #include "gnunet_directories.h"
+#include "remote.h"
 
 static char *configFile = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 static unsigned long long number_of_daemons;
@@ -77,7 +78,7 @@ main (int argc, char *const *argv)
       return -1;
     }
 
-  GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons);
+  GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons, GNUNET_REMOTE_CLIQUE);
 
   GNUNET_GC_free (hostConfig);
   GNUNET_fini (ectx, cfg);

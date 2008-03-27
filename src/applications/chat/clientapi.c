@@ -58,7 +58,7 @@ poll_thread (void *rcls)
   ret = GNUNET_OK;
   while ((ret == GNUNET_OK) && (room->shutdown_flag != GNUNET_YES))
     {
-    	
+
       if (disconnected)
         {
           GNUNET_thread_sleep (15 * GNUNET_CRON_SECONDS);
@@ -73,14 +73,14 @@ poll_thread (void *rcls)
           else
             break;
         }
-      
+
       reply = NULL;
       if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
         {
           disconnected = GNUNET_YES;
           continue;
         }
-			
+
       if (((reply->size < ntohs (sizeof (CS_chat_MESSAGE)))
            || (reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
           && ((reply->size < ntohs (sizeof (CS_chat_ROOM_MEMBER_MESSAGE)))
@@ -301,7 +301,7 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
 void
 GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
-	GNUNET_mutex_lock(chatMutex);
+  GNUNET_mutex_lock (chatMutex);
   void *unused;
   chat_room->shutdown_flag = GNUNET_YES;
   GNUNET_client_connection_close_forever (chat_room->sock);
@@ -312,7 +312,7 @@ GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
   GNUNET_free (chat_room->memberInfo);
   GNUNET_client_connection_destroy (chat_room->sock);
   GNUNET_free (chat_room);
-  GNUNET_mutex_unlock(chatMutex);
+  GNUNET_mutex_unlock (chatMutex);
 }
 
 /**

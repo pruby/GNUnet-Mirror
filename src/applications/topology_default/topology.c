@@ -523,6 +523,11 @@ rereadConfiguration (void *ctx,
                                               "FRIENDS",
                                               GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
                                               "/friends", &fn);
+	/**Nate change, don't beat me up if it's not pretty!*/
+	if(GNUNET_OK != GNUNET_disk_file_test (ectx, fn))
+	{
+		GNUNET_disk_file_write (ectx,fn,NULL, 0,"600");
+	}
   if ((0 == GNUNET_disk_file_test (ectx, fn))
       || (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
     {
