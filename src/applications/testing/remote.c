@@ -53,7 +53,7 @@ int
 GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                             char *localConfigPath, char *configFileName,
                             char *remote_config_path, char *hostname,
-                            char *username,char *remote_friend_file_path)
+                            char *username, char *remote_friend_file_path)
 {
   char *cmd;
   int length;
@@ -69,19 +69,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   system (cmd);
 
   GNUNET_free (cmd);
-  length =
-    snprintf (NULL, 0, "ssh %s@%s touch %s", username, hostname,
-              remote_friend_file_path);
-  cmd = GNUNET_malloc (length + 1);
-  snprintf (cmd, length + 1, "ssh %s@%s touch %s", username, hostname,
-              remote_friend_file_path);
 
-  fprintf (stderr, "ssh command is : %s \n", cmd);
-
-  system (cmd);
-
-  GNUNET_free (cmd);
-  
   length =
     snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s", username, hostname,
               gnunetd_home, remote_config_path, configFileName);
@@ -94,14 +82,15 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   system (cmd);
 
   GNUNET_free (cmd);
-  
-  
+
+
   return GNUNET_OK;
 }
 
 int
 GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
-                             unsigned long long number_of_daemons, GNUNET_REMOTE_TOPOLOGIES type_of_topology)
+                             unsigned long long number_of_daemons,
+                             GNUNET_REMOTE_TOPOLOGIES type_of_topology)
 {
   struct GNUNET_GC_Configuration *basecfg;
   struct GNUNET_REMOTE_host_list *array_of_pointers[number_of_daemons];
@@ -297,18 +286,23 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                 GNUNET_malloc (sizeof (struct GNUNET_REMOTE_host_list));
               temp_pos->hostname = GNUNET_malloc (strlen (curr_host));
               strcpy (temp_pos->hostname, curr_host);
-              
-              temp_pos->username = GNUNET_malloc(strlen(ssh_username));
-              strcpy (temp_pos->username,ssh_username);
 
-              friend_location_length = snprintf(NULL,0,"%s/friends",temp_remote_config_path);
-              temp_pos->remote_friend_file_path = GNUNET_malloc(friend_location_length + 1);
-              snprintf(temp_pos->remote_friend_file_path,friend_location_length + 1,"%s/friends",temp_remote_config_path);
-              
+              temp_pos->username = GNUNET_malloc (strlen (ssh_username));
+              strcpy (temp_pos->username, ssh_username);
+
+              friend_location_length =
+                snprintf (NULL, 0, "%s/friends", temp_remote_config_path);
+              temp_pos->remote_friend_file_path =
+                GNUNET_malloc (friend_location_length + 1);
+              snprintf (temp_pos->remote_friend_file_path,
+                        friend_location_length + 1, "%s/friends",
+                        temp_remote_config_path);
+
               GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
                                           temp, remote_config_path,
-                                          curr_host, ssh_username,temp_pos->remote_friend_file_path);
-              
+                                          curr_host, ssh_username,
+                                          temp_pos->remote_friend_file_path);
+
               GNUNET_GC_get_configuration_value_number (basecfg,
                                                         "NETWORK",
                                                         "PORT",
@@ -319,7 +313,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               array_of_pointers[count_started] = temp_pos;
               count_started++;
             }
-          
+
           GNUNET_free (temp_remote_config_path);
           GNUNET_free (temp);
           UNLINK (temp_path);
@@ -338,20 +332,21 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                         "PIDFILE",
                                                         temp_pid_file);
               GNUNET_free (temp_pid_file);
-              
+
               temp_remote_config_path_length =
-          		snprintf (NULL, 0, "%s%d", remote_config_path, j);
-          		temp_remote_config_path =
-            	GNUNET_malloc (temp_remote_config_path_length + 1);
-          		snprintf (temp_remote_config_path,
-                    temp_remote_config_path_length + 1, "%s%d",
-                    remote_config_path, j);
+                snprintf (NULL, 0, "%s%d", remote_config_path, j);
+              temp_remote_config_path =
+                GNUNET_malloc (temp_remote_config_path_length + 1);
+              snprintf (temp_remote_config_path,
+                        temp_remote_config_path_length + 1, "%s%d",
+                        remote_config_path, j);
 
-          		GNUNET_GC_set_configuration_value_string (basecfg, NULL, "PATHS",
-                                                    "GNUNETD_HOME",
-                                                    temp_remote_config_path);
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "PATHS",
+                                                        "GNUNETD_HOME",
+                                                        temp_remote_config_path);
 
-          		
+
 
               GNUNET_GC_set_configuration_value_number (basecfg, NULL,
                                                         "NETWORK", "PORT",
@@ -404,18 +399,24 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                     GNUNET_malloc (sizeof (struct GNUNET_REMOTE_host_list));
                   temp_pos->hostname = GNUNET_malloc (strlen (curr_host));
                   strcpy (temp_pos->hostname, curr_host);
-                  
-                 	temp_pos->username = GNUNET_malloc(strlen(ssh_username));
-              		strcpy (temp_pos->username,ssh_username);
 
-              		friend_location_length = snprintf(NULL,0,"%s/friends",temp_remote_config_path);
-              		temp_pos->remote_friend_file_path = GNUNET_malloc(friend_location_length + 1);
-              		snprintf(temp_pos->remote_friend_file_path,friend_location_length + 1,"%s/friends",temp_remote_config_path);
-                  
+                  temp_pos->username = GNUNET_malloc (strlen (ssh_username));
+                  strcpy (temp_pos->username, ssh_username);
+
+                  friend_location_length =
+                    snprintf (NULL, 0, "%s/friends", temp_remote_config_path);
+                  temp_pos->remote_friend_file_path =
+                    GNUNET_malloc (friend_location_length + 1);
+                  snprintf (temp_pos->remote_friend_file_path,
+                            friend_location_length + 1, "%s/friends",
+                            temp_remote_config_path);
+
                   GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
-                                          temp, remote_config_path,
-                                          curr_host, ssh_username,temp_pos->remote_friend_file_path);
-                  
+                                              temp, remote_config_path,
+                                              curr_host, ssh_username,
+                                              temp_pos->
+                                              remote_friend_file_path);
+
                   GNUNET_GC_get_configuration_value_number (basecfg,
                                                             "NETWORK",
                                                             "PORT",
@@ -436,9 +437,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
       GNUNET_GC_free (basecfg);
       ++i;
     }
-  ret =
-    GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons);
-  
+  ret = GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons);
+
   GNUNET_free (base_config);
   GNUNET_free (remote_pid_path);
   GNUNET_free (data_dir);
@@ -455,14 +455,14 @@ int
 GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
                                int number_of_daemons)
 {
-	FILE *temp_friend_handle;
+  FILE *temp_friend_handle;
   int ret;
   struct GNUNET_REMOTE_host_list *pos;
   struct GNUNET_REMOTE_friends_list *friend_pos;
-  
+
   char *cmd;
   int length;
-  
+
   ret = GNUNET_OK;
   switch (t)
     {
@@ -470,51 +470,59 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
       ret = GNUNET_REMOTE_connect_clique (head);
       break;
     case GNUNET_REMOTE_SMALL_WORLD:
-    	ret = GNUNET_SYSERR;
+      ret = GNUNET_SYSERR;
       break;
     case GNUNET_REMOTE_RING:
-    	ret = GNUNET_SYSERR;
+      ret = GNUNET_SYSERR;
       break;
     case GNUNET_REMOTE_2D_TORUS:
       ret = GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array);
       break;
     default:
-    	ret = GNUNET_SYSERR;
+      ret = GNUNET_SYSERR;
       break;
     }
-	
-	if(ret == GNUNET_OK)
-	{
-		pos = head;
-		while(pos != NULL)
-		{
-			fprintf(stderr,"Friend list of %s:%lld\n",pos->hostname,pos->port);
-			temp_friend_handle = fopen ("friend.temp", "wt");
-			friend_pos = pos->friend_entries;
-			while(friend_pos != NULL)
-			{
-				fprintf(stderr,"\t%s\n",(const char *)friend_pos->nodeid);
-				fprintf(temp_friend_handle,"%s\n",(const char *)friend_pos->nodeid);
-				friend_pos = friend_pos->next; 			
-			}
-			
-			fclose(temp_friend_handle);
-			length = snprintf (NULL, 0, "scp %s %s@%s:%s", "friend.temp", pos->username, pos->hostname, pos->remote_friend_file_path);
-			cmd = GNUNET_malloc (length + 1);
-			snprintf (cmd, length + 1, "scp %s %s@%s:%s", "friend.temp", pos->username, pos->hostname, pos->remote_friend_file_path);
 
-			fprintf (stderr, "scp command for friend file copy is : %s \n", cmd);
-			system (cmd);
-			
-			pos = pos->next;
-		}
-		
-		system("rm friend.temp");
-	}
-	else
-	{
-		fprintf(stderr,"connect didn't return well!\n");
-	}
+  if (ret == GNUNET_OK)
+    {
+      pos = head;
+      while (pos != NULL)
+        {
+          fprintf (stderr, "Friend list of %s:%lld\n", pos->hostname,
+                   pos->port);
+          temp_friend_handle = fopen ("friend.temp", "wt");
+          friend_pos = pos->friend_entries;
+          while (friend_pos != NULL)
+            {
+              fprintf (stderr, "\t%s\n", (const char *) friend_pos->nodeid);
+              fprintf (temp_friend_handle, "%s\n",
+                       (const char *) friend_pos->nodeid);
+              friend_pos = friend_pos->next;
+            }
+
+          fclose (temp_friend_handle);
+          length =
+            snprintf (NULL, 0, "scp %s %s@%s:%s", "friend.temp",
+                      pos->username, pos->hostname,
+                      pos->remote_friend_file_path);
+          cmd = GNUNET_malloc (length + 1);
+          snprintf (cmd, length + 1, "scp %s %s@%s:%s", "friend.temp",
+                    pos->username, pos->hostname,
+                    pos->remote_friend_file_path);
+
+          fprintf (stderr, "scp command for friend file copy is : %s \n",
+                   cmd);
+          system (cmd);
+
+          pos = pos->next;
+        }
+
+      system ("rm friend.temp");
+    }
+  else
+    {
+      fprintf (stderr, "connect didn't return well!\n");
+    }
   return ret;
 }
 

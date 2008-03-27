@@ -78,7 +78,8 @@ main (int argc, char *const *argv)
       return -1;
     }
 
-  GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons, GNUNET_REMOTE_CLIQUE);
+  GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons,
+                               GNUNET_REMOTE_CLIQUE);
 
   GNUNET_GC_free (hostConfig);
   GNUNET_fini (ectx, cfg);

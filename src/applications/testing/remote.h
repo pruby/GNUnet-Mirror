@@ -46,10 +46,12 @@
 int
 GNUNET_REMOTE_connect_daemons (char *ip1, unsigned short port1, char *ip2,
                                unsigned short port2);
-                               
+
 int
 GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
-                               char *hostname2, unsigned short port2, GNUNET_EncName **host1entry, GNUNET_EncName **host2entry);
+                                       char *hostname2, unsigned short port2,
+                                       GNUNET_EncName ** host1entry,
+                                       GNUNET_EncName ** host2entry);
 
 /**
  * Create a topology (connect the running gnunetd's) that corresponds

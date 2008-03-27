@@ -64,8 +64,8 @@ struct GNUNET_REMOTE_host_list
  */
 struct GNUNET_REMOTE_friends_list
 {
-	struct GNUNET_REMOTE_friends_list *next;
-	GNUNET_EncName *nodeid;		
+  struct GNUNET_REMOTE_friends_list *next;
+  GNUNET_EncName *nodeid;
 };
 
 /**
@@ -81,7 +81,8 @@ struct GNUNET_REMOTE_friends_list
 int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                                 char *localConfigPath, char *configFileName,
                                 char *remote_config_path, char *ip_address,
-                                char *username,char *remote_friend_file_path);
+                                char *username,
+                                char *remote_friend_file_path);
 
 /**
  * Main start function to be called.  Needs a remote config specified, as well
@@ -89,7 +90,8 @@ int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
  * types are defined in gnunet_remote_lib.h
  */
 int GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
-                                 unsigned long long number_of_daemons, GNUNET_REMOTE_TOPOLOGIES type_of_topology);
+                                 unsigned long long number_of_daemons,
+                                 GNUNET_REMOTE_TOPOLOGIES type_of_topology);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

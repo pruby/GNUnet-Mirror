@@ -55,7 +55,7 @@ typedef struct GNUNET_ClientServerConnection
 {
 
   /**
-   * the socket handle, NULL if not life
+   * the socket handle, NULL if not live
    */
   struct GNUNET_SocketHandle *sock;
 
