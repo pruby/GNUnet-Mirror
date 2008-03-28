@@ -33,6 +33,30 @@
 #include "gnunet_util.h"
 #include "gnunet_remote_lib.h"
 
+
+/**
+ * Linked list of information about daemon processes.
+ */
+struct GNUNET_REMOTE_host_list
+{
+  struct GNUNET_REMOTE_host_list *next;
+  struct GNUNET_REMOTE_friends_list *friend_entries;
+  char *hostname;
+  char *remote_friend_file_path;
+  char *username;
+  unsigned short port;
+};
+
+/* Simple linked list to store friends lists for each node, 
+ * for writing to the friends file
+ */
+struct GNUNET_REMOTE_friends_list
+{
+  struct GNUNET_REMOTE_friends_list *next;
+  struct GNUNET_REMOTE_host_list *hostentry;
+  GNUNET_EncName *nodeid;
+};
+
 /**
  * Establish a connection between two GNUnet daemons
  *
