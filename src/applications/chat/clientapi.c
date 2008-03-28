@@ -90,77 +90,81 @@ poll_thread (void *rcls)
           disconnected = GNUNET_YES;
           continue;
         }
-      switch (ntohs(reply->type)) {
-      case GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE:
-      case GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_LEAVE_MESSAGE:
+      switch (ntohs (reply->type))
         {
-          size = ntohs (reply->size);
-          received_room_member_msg = (CS_chat_ROOM_MEMBER_MESSAGE *) reply;
-          nick_len = ntohs (received_room_member_msg->nick_len);
+        case GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE:
+        case GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_LEAVE_MESSAGE:
+          {
+            size = ntohs (reply->size);
+            received_room_member_msg = (CS_chat_ROOM_MEMBER_MESSAGE *) reply;
+            nick_len = ntohs (received_room_member_msg->nick_len);
 
-          if (size - sizeof(GNUNET_MessageHeader) < nick_len)
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              GNUNET_client_connection_close_temporarily (room->sock);
-              disconnected = GNUNET_YES;
-              continue;
-            }
-          nick = GNUNET_malloc (nick_len + 1);
-          memcpy (nick, &received_room_member_msg->nick[0], nick_len);
-          nick[nick_len] = '\0';
+            if (size - sizeof (GNUNET_MessageHeader) < nick_len)
+              {
+                GNUNET_GE_BREAK (NULL, 0);
+                GNUNET_client_connection_close_temporarily (room->sock);
+                disconnected = GNUNET_YES;
+                continue;
+              }
+            nick = GNUNET_malloc (nick_len + 1);
+            memcpy (nick, &received_room_member_msg->nick[0], nick_len);
+            nick[nick_len] = '\0';
 
-          if (GNUNET_OK !=
-              room->member_list_callback (room->member_list_callback_cls,
-                                          nick, ntohs(reply->type) == GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE,
-                                          GNUNET_get_time ()))
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              GNUNET_client_connection_close_temporarily (room->sock);
-              disconnected = GNUNET_YES;
-              continue;
-            }	 
+            if (GNUNET_OK !=
+                room->member_list_callback (room->member_list_callback_cls,
+                                            nick,
+                                            ntohs (reply->type) ==
+                                            GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE,
+                                            GNUNET_get_time ()))
+              {
+                GNUNET_GE_BREAK (NULL, 0);
+                GNUNET_client_connection_close_temporarily (room->sock);
+                disconnected = GNUNET_YES;
+                continue;
+              }
+          }
+          GNUNET_free (nick);
+          break;
+        case GNUNET_CS_PROTO_CHAT_MSG:
+          {
+            size = ntohs (reply->size);
+            received_msg = (CS_chat_MESSAGE *) reply;
+            nick_len = ntohs (received_msg->nick_len);
+            msg_len = ntohs (received_msg->msg_len);
+            /* NO NEED TO SEND ROOM! */
+            room_name_len =
+              size - nick_len - msg_len - sizeof (CS_chat_MESSAGE);
+            if (size - sizeof (GNUNET_MessageHeader) <
+                (nick_len + msg_len + room_name_len))
+              {
+                GNUNET_GE_BREAK (NULL, 0);
+                GNUNET_client_connection_close_temporarily (room->sock);
+                disconnected = GNUNET_YES;
+                continue;
+              }
+            nick = GNUNET_malloc (nick_len + 1);
+            memcpy (nick, &received_msg->nick[0], nick_len);
+            nick[nick_len] = '\0';
+            message_content = GNUNET_malloc (msg_len + 1);
+            memcpy (message_content, &received_msg->nick[nick_len], msg_len);
+            message_content[msg_len] = '\0';
+            if (GNUNET_OK !=
+                room->callback (room->callback_cls, room, nick,
+                                message_content, GNUNET_get_time (), 0))
+              {
+                GNUNET_GE_BREAK (NULL, 0);
+                GNUNET_client_connection_close_temporarily (room->sock);
+                disconnected = GNUNET_YES;
+                continue;
+              }
+            GNUNET_free (message_content);
+          }
+          GNUNET_free (nick);
+          break;
+        default:
+          GNUNET_GE_BREAK (NULL, 0);
+          break;
         }
-	GNUNET_free (nick);
-	break;
-      case GNUNET_CS_PROTO_CHAT_MSG:
-        {
-          size = ntohs (reply->size);
-          received_msg = (CS_chat_MESSAGE *) reply;
-          nick_len = ntohs (received_msg->nick_len);
-          msg_len = ntohs (received_msg->msg_len);
-          /* NO NEED TO SEND ROOM! */
-          room_name_len =
-            size - nick_len - msg_len - sizeof (CS_chat_MESSAGE);
-          if (size - sizeof(GNUNET_MessageHeader) < (nick_len + msg_len + room_name_len))
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              GNUNET_client_connection_close_temporarily (room->sock);
-              disconnected = GNUNET_YES;
-              continue;
-            }
-          nick = GNUNET_malloc (nick_len + 1);
-          memcpy (nick, &received_msg->nick[0], nick_len);
-          nick[nick_len] = '\0';
-          message_content = GNUNET_malloc (msg_len + 1);
-          memcpy (message_content, &received_msg->nick[nick_len], msg_len);
-          message_content[msg_len] = '\0';
-          if (GNUNET_OK !=
-              room->callback (room->callback_cls, room, nick, message_content,
-                              GNUNET_get_time (), 0))
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              GNUNET_client_connection_close_temporarily (room->sock);
-              disconnected = GNUNET_YES;
-              continue;
-            }
-          GNUNET_free (message_content);
-        }
-	GNUNET_free (nick);
-	break;
-      default:
-	GNUNET_GE_BREAK(NULL, 0);
-	break;
-      }
     }
   return NULL;
 }
@@ -220,13 +224,12 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   join_msg->header.size = htons (size_of_join);
   join_msg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_MSG);
   join_msg->nick_len = htons (strlen (nickname));
-  memcpy(&join_msg->pkey,me,sizeof(GNUNET_RSA_PublicKey));
+  memcpy (&join_msg->pkey, me, sizeof (GNUNET_RSA_PublicKey));
   //join_msg->pubkey_len = htons (sizeof (GNUNET_RSA_PublicKey));
   memcpy (&join_msg->nick[0], nickname, strlen (nickname));
   //memcpy (&join_msg->nick[strlen (nickname)], me,
   //        sizeof (GNUNET_RSA_PublicKey));
-  memcpy (&join_msg->nick[strlen (nickname)],
-          room_name, strlen (room_name));
+  memcpy (&join_msg->nick[strlen (nickname)], room_name, strlen (room_name));
   if (GNUNET_SYSERR ==
       GNUNET_client_connection_write (sock, &join_msg->header))
     {
@@ -273,15 +276,16 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
   GNUNET_hash (chat_room->room_name, strlen (chat_room->room_name),
                &hash_of_room_name);
   size_of_join =
-    sizeof (CS_chat_JOIN_MESSAGE) + strlen (chat_room->nickname) + strlen (chat_room->room_name);
+    sizeof (CS_chat_JOIN_MESSAGE) + strlen (chat_room->nickname) +
+    strlen (chat_room->room_name);
   join_msg = GNUNET_malloc (size_of_join);
   join_msg->nick_len = htons (strlen (chat_room->nickname));
-  memcpy(&join_msg->pkey,chat_room->my_public_key,sizeof(GNUNET_RSA_PublicKey));
+  memcpy (&join_msg->pkey, chat_room->my_public_key,
+          sizeof (GNUNET_RSA_PublicKey));
 
 #if FIXED
-  char * nick = (char*) &join_msg[1];
-  memcpy (nick, chat_room->nickname,
-          strlen (chat_room->nickname));
+  char *nick = (char *) &join_msg[1];
+  memcpy (nick, chat_room->nickname, strlen (chat_room->nickname));
 #endif
 
   memcpy (&join_msg->nick[0], chat_room->nickname,

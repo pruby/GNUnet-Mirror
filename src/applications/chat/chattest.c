@@ -50,8 +50,8 @@ main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
-  struct GNUNET_CHAT_Room * r1;
-  struct GNUNET_CHAT_Room * r2;
+  struct GNUNET_CHAT_Room *r1;
+  struct GNUNET_CHAT_Room *r2;
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -63,8 +63,7 @@ main (int argc, char **argv)
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("",
                                         "chat stats",
-                                        "/tmp/gnunet-chat-test",
-                                        2087, 10, 1);
+                                        "/tmp/gnunet-chat-test", 2087, 10, 1);
   if (peers == NULL)
     {
       fprintf (stderr, "Failed to start the gnunetd daemon!\n");
@@ -72,9 +71,9 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-  r1 = GNUNET_CHAT_join_room(...);
+  r1 = GNUNET_CHAT_join_room (...);
 
-  GNUNET_CHAT_leave_room(r1);  
+  GNUNET_CHAT_leave_room (r1);
 
   GNUNET_shutdown_wait_for ();
 

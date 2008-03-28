@@ -55,7 +55,7 @@ static struct GNUNET_CS_chat_client *client_list_head;
 
 /* Thread that tells clients about chat room members
  */
-static void 
+static void
 update_client_members (void *cls)
 {
   struct GNUNET_CS_chat_client *pos;
@@ -63,41 +63,41 @@ update_client_members (void *cls)
   CS_chat_ROOM_MEMBER_MESSAGE *message;
   int message_size;
 
-      fprintf (stderr, "Checking room members\n");
-      GNUNET_mutex_lock (chatMutex);
-      pos = client_list_head;
-      while (pos != NULL)
+  fprintf (stderr, "Checking room members\n");
+  GNUNET_mutex_lock (chatMutex);
+  pos = client_list_head;
+  while (pos != NULL)
+    {
+      compare_pos = client_list_head;
+      while (compare_pos != NULL)
         {
-          compare_pos = client_list_head;
-          while (compare_pos != NULL)
+          if (memcmp
+              (&pos->room_name_hash, &compare_pos->room_name_hash,
+               sizeof (GNUNET_HashCode)) == 0)
             {
-              if (memcmp
-                  (&pos->room_name_hash, &compare_pos->room_name_hash,
-                   sizeof (GNUNET_HashCode)) == 0)
-                {
-                  /*Send nick to this client, so it knows who is in the same room! (Including itself...) */
-                  fprintf (stderr, "Found matching member %s length is %d\n",
-                           compare_pos->nick, strlen (compare_pos->nick));
+              /*Send nick to this client, so it knows who is in the same room! (Including itself...) */
+              fprintf (stderr, "Found matching member %s length is %d\n",
+                       compare_pos->nick, strlen (compare_pos->nick));
 
-                  message_size =
-                    sizeof (CS_chat_ROOM_MEMBER_MESSAGE) +
-                    strlen (compare_pos->nick);
-                  message = GNUNET_malloc (message_size);
-                  message->header.size = htons (message_size);
-                  message->header.type =
-                    htons (GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE);
-                  message->nick_len = htons (strlen (compare_pos->nick));
-                  memcpy (&message->nick[0], compare_pos->nick,
-                          strlen (compare_pos->nick));
+              message_size =
+                sizeof (CS_chat_ROOM_MEMBER_MESSAGE) +
+                strlen (compare_pos->nick);
+              message = GNUNET_malloc (message_size);
+              message->header.size = htons (message_size);
+              message->header.type =
+                htons (GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE);
+              message->nick_len = htons (strlen (compare_pos->nick));
+              memcpy (&message->nick[0], compare_pos->nick,
+                      strlen (compare_pos->nick));
 
-                  coreAPI->cs_send_message (pos->client, &message->header,
-                                            GNUNET_YES);
-                }
-              compare_pos = compare_pos->next;
+              coreAPI->cs_send_message (pos->client, &message->header,
+                                        GNUNET_YES);
             }
-          pos = pos->next;
+          compare_pos = compare_pos->next;
         }
-      GNUNET_mutex_unlock (chatMutex);
+      pos = pos->next;
+    }
+  GNUNET_mutex_unlock (chatMutex);
 }
 
 
@@ -220,15 +220,14 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
   header_size = ntohs (cmsg->header.size);
   nick_len = ntohs (cmsg->nick_len);
-  room_name_len =
-    header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len;
+  room_name_len = header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len;
 
   fprintf (stderr,
            "JOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\nroom_name_len : %d\n",
-           sizeof (CS_chat_JOIN_MESSAGE), header_size, nick_len, room_name_len);
+           sizeof (CS_chat_JOIN_MESSAGE), header_size, nick_len,
+           room_name_len);
   fprintf (stderr, "According to my addition, header_size should be %d\n",
-           nick_len + room_name_len +
-           sizeof (CS_chat_JOIN_MESSAGE));
+           nick_len + room_name_len + sizeof (CS_chat_JOIN_MESSAGE));
   if (header_size < (nick_len + room_name_len))
     {
       GNUNET_GE_BREAK (NULL, 0);
@@ -296,7 +295,7 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
   GNUNET_mutex_unlock (chatMutex);
   fprintf (stderr, "End of handleChatJoinRequest\n");
-  update_client_members(NULL);
+  update_client_members (NULL);
   return GNUNET_OK;
 }
 
