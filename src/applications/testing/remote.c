@@ -29,13 +29,6 @@
 
 #define VERBOSE GNUNET_NO
 
-const unsigned long long MIN_STARTING_PORT = 1;
-const unsigned long long MAX_STARTING_PORT = -1;
-const unsigned long long MIN_PORT_INCREMENT = 1;
-const unsigned long long MAX_PORT_INCREMENT = -1;
-const unsigned long long MIN_NUMBER_DAEMONS = 1;
-const unsigned long long MAX_NUMBER_DAEMONS = -1;
-
 static struct GNUNET_REMOTE_host_list *head;
 static struct GNUNET_REMOTE_host_list **list_as_array;
 
@@ -107,6 +100,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   unsigned long long starting_port;
   unsigned long long port_increment;
   unsigned long long daemons_per_machine;
+  unsigned long long temp_port;
 
   char *hostnames;
   char *temp;
@@ -131,10 +125,16 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 
   length = 0;
   ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+  if (ipk_dir == NULL)
+    {
+      ipk_dir = GNUNET_malloc (1);
+      ipk_dir = "\0";
+    }
   length = snprintf (NULL, 0, "%s%s", ipk_dir, "gnunetd.conf.skel");
   data_dir = GNUNET_malloc (length + 1);
   snprintf (data_dir, length + 1, "%s%s", ipk_dir, "gnunetd.conf.skel");
-  GNUNET_free (ipk_dir);
+  if (ipk_dir != NULL)
+    GNUNET_free (ipk_dir);
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "SSH_USERNAME", "",
                                             &ssh_username);
@@ -146,14 +146,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                             &hostnames);
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "STARTING_PORT",
-                                            MIN_STARTING_PORT,
-                                            MAX_STARTING_PORT, 1,
-                                            &starting_port);
+                                            1, -1, 1, &starting_port);
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "PORT_INCREMENT",
-                                            MIN_PORT_INCREMENT,
-                                            MAX_PORT_INCREMENT, 2,
-                                            &port_increment);
+                                            1, -1, 2, &port_increment);
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "REMOTE_CONFIG_PATH", "/tmp/",
                                             &remote_config_path);
@@ -161,7 +157,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "REMOTE_GNUNETD_PATH", ipk_dir,
                                             &remote_gnunetd_path);
-  GNUNET_free (ipk_dir);
+  if (ipk_dir != NULL)
+    GNUNET_free (ipk_dir);
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "BASE_CONFIG",
                                             "gnunetd.conf.skel",
@@ -215,7 +212,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
         {
           curr_host = &hostnames[pos];
         }
-      printf ("curr_host is %s\n", curr_host);
 
       for (j = 0; j < daemons_per_machine; ++j)
         {
@@ -307,7 +303,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                         "NETWORK",
                                                         "PORT",
                                                         0, 65535, 65535,
-                                                        &temp_pos->port);
+                                                        &temp_port);
+              temp_pos->port = (unsigned short) temp_port;
               temp_pos->next = head;
               head = temp_pos;
               array_of_pointers[count_started] = temp_pos;
@@ -421,7 +418,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                             "NETWORK",
                                                             "PORT",
                                                             0, 65535, 65535,
-                                                            &temp_pos->port);
+                                                            &temp_port);
+
+                  temp_pos->port = (unsigned short) temp_port;
                   temp_pos->next = head;
                   head = temp_pos;
                   array_of_pointers[count_started] = temp_pos;
@@ -488,7 +487,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
       pos = head;
       while (pos != NULL)
         {
-          fprintf (stderr, "Friend list of %s:%lld\n", pos->hostname,
+          fprintf (stderr, "Friend list of %s:%d\n", pos->hostname,
                    pos->port);
           temp_friend_handle = fopen ("friend.temp", "wt");
           friend_pos = pos->friend_entries;
@@ -525,11 +524,11 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
-              fprintf (stderr, "connecting %s:%lld to %s:%lld\n",
+              fprintf (stderr, "connecting %s:%d to %s:%d\n",
                        pos->hostname, pos->port,
                        friend_pos->hostentry->hostname,
                        friend_pos->hostentry->port);
-              fprintf (stderr, "or %s:%lld to %s\n", pos->hostname, pos->port,
+              fprintf (stderr, "or %s:%d to %s\n", pos->hostname, pos->port,
                        (const char *) friend_pos->nodeid);
               GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
                                              friend_pos->hostentry->hostname,

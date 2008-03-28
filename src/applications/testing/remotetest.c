@@ -58,7 +58,6 @@ main (int argc, char *const *argv)
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *hostConfig;
-
   res =
     GNUNET_init (argc, argv, "remotetest", &configFile, gnunetRemoteOptions,
                  &ectx, &cfg);
