@@ -32,8 +32,8 @@
 typedef struct
 {
   GNUNET_MessageHeader header;
-  int nick_len;
-  int msg_len;
+  unsigned short nick_len;
+  unsigned short msg_len;
   /*int room_name_len; */
   char nick[1];
 
@@ -42,17 +42,15 @@ typedef struct
 typedef struct
 {
   GNUNET_MessageHeader header;
-  /*  GNUNET_RSA_PublicKey pkey; */
-  int nick_len;
-  int pubkey_len;
-  /*int room_name_len; */
+  GNUNET_RSA_PublicKey pkey;
+  unsigned short nick_len;
   char nick[1];
 } CS_chat_JOIN_MESSAGE;
 
 typedef struct
 {
   GNUNET_MessageHeader header;
-  int nick_len;
+  unsigned short nick_len;
   char nick[1];
 
 } CS_chat_ROOM_MEMBER_MESSAGE;
@@ -72,8 +70,6 @@ struct GNUNET_CHAT_Room
   char *nickname;
 
   char *room_name;
-
-  GNUNET_HashCode room_name_hash;
 
   const GNUNET_RSA_PublicKey *my_public_key;
 

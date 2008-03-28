@@ -56,7 +56,7 @@ static struct GNUNET_CS_chat_client *client_list_head;
 /* Thread that tells clients about chat room members
  */
 static void 
-update_client_thread (void *cls)
+update_client_members (void *cls)
 {
   struct GNUNET_CS_chat_client *pos;
   struct GNUNET_CS_chat_client *compare_pos;
@@ -200,13 +200,12 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   GNUNET_HashCode room_name_hash;
 
   char *nick;
-  GNUNET_RSA_PublicKey *client_key;
+  GNUNET_RSA_PublicKey client_key;
   char *room_name;
 
   int header_size;
   int tempCount;
   int nick_len;
-  int pubkey_len;
   int room_name_len;
   struct GNUNET_CS_chat_client *tempClient;
 
@@ -221,30 +220,27 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
   header_size = ntohs (cmsg->header.size);
   nick_len = ntohs (cmsg->nick_len);
-  pubkey_len = ntohs (cmsg->pubkey_len);
   room_name_len =
-    header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len - pubkey_len;
+    header_size - sizeof (CS_chat_JOIN_MESSAGE) - nick_len;
 
   fprintf (stderr,
-           "JOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\npubkey_len : %d\nroom_name_len : %d\n",
-           sizeof (CS_chat_JOIN_MESSAGE), header_size, nick_len, pubkey_len,
-           room_name_len);
+           "JOIN_MESSAGE size : %d\nheader_size : %d\nnick_len : %d\nroom_name_len : %d\n",
+           sizeof (CS_chat_JOIN_MESSAGE), header_size, nick_len, room_name_len);
   fprintf (stderr, "According to my addition, header_size should be %d\n",
-           nick_len + pubkey_len + room_name_len +
+           nick_len + room_name_len +
            sizeof (CS_chat_JOIN_MESSAGE));
-  if (header_size < (nick_len + pubkey_len + room_name_len))
+  if (header_size < (nick_len + room_name_len))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
     }
 
   nick = GNUNET_malloc (nick_len + 1);
-  client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
+  client_key = cmsg->pkey;
   room_name = GNUNET_malloc (room_name_len + 1);
 
   memcpy (nick, &cmsg->nick[0], nick_len);
-  memcpy (client_key, &cmsg->nick[nick_len], pubkey_len);
-  memcpy (room_name, &cmsg->nick[nick_len + pubkey_len], room_name_len);
+  memcpy (room_name, &cmsg->nick[nick_len], room_name_len);
 
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
@@ -296,11 +292,11 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
 
   GNUNET_free (nick);
-  GNUNET_free (client_key);
   GNUNET_free (room_name);
 
   GNUNET_mutex_unlock (chatMutex);
-  fprintf (stderr, "End of handleChatRequest\n");
+  fprintf (stderr, "End of handleChatJoinRequest\n");
+  update_client_members(NULL);
   return GNUNET_OK;
 }
 
@@ -395,11 +391,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
 
   coreAPI = capi;
-  GNUNET_cron_add_job(coreAPI->cron,
-		      &update_client_thread,
-		      30 * GNUNET_CRON_SECONDS,
-		      30 * GNUNET_CRON_SECONDS,
-		      NULL);
+
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handlers %d and %d\n"),
                  "chat", GNUNET_P2P_PROTO_CHAT_MSG, GNUNET_CS_PROTO_CHAT_MSG);
@@ -433,10 +425,6 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_chat ()
 {
-  GNUNET_cron_del_job(coreAPI->cron,
-		      &update_client_thread,
-		      30 * GNUNET_CRON_SECONDS,
-		      NULL);
   shutdown_flag = GNUNET_YES;
   /*coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG); */
   coreAPI->cs_disconnect_handler_unregister (&chatClientExitHandler);
