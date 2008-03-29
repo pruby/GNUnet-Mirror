@@ -3,12 +3,12 @@ SUBDIRS = \
 
 INCLUDES = -I$(top_srcdir)/src/include
 
-noinst_LTLIBRARIES = \
-  libecrs_core.la 
+lib_LTLIBRARIES = \
+  libgnunetecrs_core.la 
 
-libecrs_core_la_SOURCES = \
+libgnunetecrs_core_la_SOURCES = \
   ecrs_core.c
-libecrs_core_la_LIBADD = \
+libgnunetecrs_core_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
 
@@ -20,5 +20,5 @@ TESTS = $(check_PROGRAMS)
 ecrs_core_test_SOURCES = \
   ecrs_core_test.c 
 ecrs_core_test_LDADD = \
-  $(top_builddir)/src/applications/fs/libecrs_core.la 
+  $(top_builddir)/src/applications/fs/libgnunetecrs_core.la 
 

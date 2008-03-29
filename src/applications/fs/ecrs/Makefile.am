@@ -22,7 +22,7 @@ libgnunetecrs_la_LIBADD = \
  -lz \
  -lextractor \
  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
- $(top_builddir)/src/applications/fs/libecrs_core.la \
+ $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
  $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
  $(top_builddir)/src/util/libgnunetutil.la 
