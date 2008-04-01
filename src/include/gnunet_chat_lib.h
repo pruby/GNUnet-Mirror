@@ -209,6 +209,16 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           GNUNET_CHAT_MSG_OPTIONS options,
                           const GNUNET_RSA_PublicKey * receiver);
 
+
+struct GNUNET_RSA_PrivateKey *GNUNET_CHAT_initPrivateKey (struct
+                                                          GNUNET_GE_Context
+                                                          *ectx,
+                                                          struct
+                                                          GNUNET_GC_Configuration
+                                                          *cfg,
+                                                          char *room_name,
+                                                          GNUNET_RSA_PublicKey
+                                                          * pubKey);
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
