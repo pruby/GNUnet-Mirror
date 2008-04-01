@@ -361,7 +361,7 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
     }
   else
     {
-      fprintf (stderr, "Failed to establish connection with peers.\n");
+      fprintf (stderr, _("Failed to establish connection with peers.\n"));
     }
   GNUNET_GC_free (cfg1);
   GNUNET_GC_free (cfg2);

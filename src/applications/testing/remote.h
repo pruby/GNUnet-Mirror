@@ -67,9 +67,21 @@ struct GNUNET_REMOTE_friends_list
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 int
-GNUNET_REMOTE_connect_daemons (char *ip1, unsigned short port1, char *ip2,
-                               unsigned short port2);
+GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
+                               char *hostname2, unsigned short port2);
 
+/**
+ * Because we need to copy over the friends file before actually connecting,
+ * we call this function to get the information for the peers and store it 
+ * in a linked list, which is iterated over later to actually connect.
+ * 
+ * @param port1 client port of the first daemon
+ * @param port2 client port of the second daemon
+ * @param ip1 client ip or hostname for the first daemon
+ * @param ip2 client ip or hostname for the second daemon
+ * @param host1entry the entry of host1 for the friends file of host2
+ * @param host2entry the entry of host2 for the friends file of host1
+ */
 int
 GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
                                        char *hostname2, unsigned short port2,

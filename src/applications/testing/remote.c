@@ -29,6 +29,9 @@
 
 #define VERBOSE GNUNET_NO
 
+/* Yes this is ugly, but for now it is nice to 
+ * have a linked list and an array
+ */
 static struct GNUNET_REMOTE_host_list *head;
 static struct GNUNET_REMOTE_host_list **list_as_array;
 
@@ -58,7 +61,11 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
             configFileName, username, hostname, remote_config_path);
 
-  fprintf (stderr, "scp command is : %s \n", cmd);
+  /* To me this seems like information that will always be appreciated by the user
+   * if this is contested by anyone, please mark it here as well as how it should be
+   * done, and I can change it everywhere else by example! NE
+   */
+  fprintf (stderr, _("scp command is : %s \n"), cmd);
   system (cmd);
 
   GNUNET_free (cmd);
@@ -268,9 +275,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
           CLOSE (ret);
           if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
             {
-              fprintf (stderr,
-                       "Failed to write peer configuration file `%s'\n",
-                       temp_path);
               GNUNET_free (temp_path);
               break;
             }
@@ -381,9 +385,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               CLOSE (ret);
               if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
                 {
-                  fprintf (stderr,
-                           "Failed to write peer configuration file `%s'\n",
-                           temp_path);
+                  /* I guess an error would be logged by GNUNET_GC_write_configuration */
                   GNUNET_GC_free (basecfg);
                   GNUNET_free (temp_path);
                   break;
@@ -487,7 +489,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
       pos = head;
       while (pos != NULL)
         {
-          fprintf (stderr, "Friend list of %s:%d\n", pos->hostname,
+          /* Printing out the friends isn't necessary, but it's nice */
+          fprintf (stderr, _("Friend list of %s:%d\n"), pos->hostname,
                    pos->port);
           temp_friend_handle = fopen ("friend.temp", "wt");
           friend_pos = pos->friend_entries;
@@ -509,7 +512,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
                     pos->username, pos->hostname,
                     pos->remote_friend_file_path);
 
-          fprintf (stderr, "scp command for friend file copy is : %s \n",
+          fprintf (stderr, _("scp command for friend file copy is : %s \n"),
                    cmd);
           system (cmd);
           GNUNET_free (cmd);
@@ -519,17 +522,22 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
       system ("rm friend.temp");
 
       pos = head;
+
+      /* This loop goes over the friend entries of each peer and connects that
+       * peer to each friend in the list.  Note this is redundant, i.e. once
+       * the two are connected, the second doesn't really need to try to connect
+       * to the first later, but this IS simple.  If performance becomes a problem
+       * with MANY conns, we'll see...
+       */
       while (pos != NULL)
         {
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
-              fprintf (stderr, "connecting %s:%d to %s:%d\n",
+              fprintf (stderr, _("connecting peer %s:%d to peer %s:%d\n"),
                        pos->hostname, pos->port,
                        friend_pos->hostentry->hostname,
                        friend_pos->hostentry->port);
-              fprintf (stderr, "or %s:%d to %s\n", pos->hostname, pos->port,
-                       (const char *) friend_pos->nodeid);
               GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
                                              friend_pos->hostentry->hostname,
                                              friend_pos->hostentry->port);
