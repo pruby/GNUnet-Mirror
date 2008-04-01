@@ -58,13 +58,14 @@ For Subversion access and compilation:
 
 subversion
 autoconf
-automake1.8
+automake (>= 1.8)
 cvs
+gettext
 
 
 For changing gnunet-gtk glade user interface (development):
 
-glade
+glade-3
 
 
 ==============================================
