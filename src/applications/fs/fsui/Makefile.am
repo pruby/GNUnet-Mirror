@@ -40,7 +40,8 @@ check_PROGRAMS = \
   serializetest2 \
   serializetest3 \
   serializetest4 \
-  downloadtest 
+  downloadtest \
+  recursivetest
 
 TESTS = $(check_PROGRAMS)
 
@@ -68,6 +69,13 @@ searchtest_LDADD = \
 downloadtest_SOURCES = \
   downloadtest.c 
 downloadtest_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+recursivetest_SOURCES = \
+  recursivetest.c 
+recursivetest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
