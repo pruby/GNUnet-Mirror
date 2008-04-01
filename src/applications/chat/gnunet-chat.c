@@ -155,8 +155,12 @@ main (int argc, char **argv)
 
   fprintf (stderr, "Generating public/private key pair\n");
   /* FIXME: try to read key from disk! */
-  my_priv = GNUNET_RSA_create_key ();
-  GNUNET_RSA_get_public_key (my_priv, &my_pub);
+  my_priv = NULL;
+  my_priv = GNUNET_CHAT_initPrivateKey (ectx, cfg, room_name, &my_pub);
+  if (my_priv == NULL)
+    fprintf (stderr, "something funky happened with key generation!\n");
+  /*my_priv = GNUNET_RSA_create_key ();
+     GNUNET_RSA_get_public_key (my_priv, &my_pub); */
   room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
                                 nickname, room_name,
