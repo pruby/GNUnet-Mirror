@@ -40,6 +40,49 @@ static struct GNUNET_GC_Configuration *cfg;
 static struct GNUNET_ClientServerConnection *sock;
 
 
+static int
+receive_callback1 (void *cls,
+                  struct GNUNET_CHAT_Room *room,
+                  const char *senderNick,
+                  const char *message,
+                  GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+{
+  fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
+  return GNUNET_OK;
+}
+
+static int
+member_list_callback1 (void *cls, const char *senderNick,
+                      int is_joining, GNUNET_CronTime timestamp)
+{
+  fprintf (stdout, is_joining
+           ? _("`%s' entered the room\n")
+           : _("`%s' left the room\n"), senderNick);
+  return GNUNET_OK;
+}
+
+static int
+receive_callback2 (void *cls,
+                  struct GNUNET_CHAT_Room *room,
+                  const char *senderNick,
+                  const char *message,
+                  GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+{
+  fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
+  return GNUNET_OK;
+}
+
+static int
+member_list_callback2 (void *cls, const char *senderNick,
+                      int is_joining, GNUNET_CronTime timestamp)
+{
+  fprintf (stdout, is_joining
+           ? _("`%s' entered the room\n")
+           : _("`%s' left the room\n"), senderNick);
+  return GNUNET_OK;
+}
+
+
 
 /**
  * Testcase to test chat.
@@ -53,6 +96,12 @@ main (int argc, char **argv)
   struct GNUNET_CHAT_Room *r1;
   struct GNUNET_CHAT_Room *r2;
 
+	GNUNET_RSA_PublicKey * me = NULL;
+	const struct GNUNET_RSA_PrivateKey *key = NULL;
+
+	key = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (key, &me); 
+
   ret = 0;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
@@ -61,7 +110,7 @@ main (int argc, char **argv)
       return -1;
     }
 #if START_PEERS
-  peers = GNUNET_TESTING_start_daemons ("",
+  peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "chat stats",
                                         "/tmp/gnunet-chat-test", 2087, 10, 1);
   if (peers == NULL)
@@ -71,9 +120,17 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-  r1 = GNUNET_CHAT_join_room (...);
+
+  r1 = GNUNET_CHAT_join_room (NULL,cfg,"nicktest1","testroom",me,key,""
+  														,&receive_callback1, NULL,member_list_callback1,
+                       				NULL);
+                       
+  r2 = GNUNET_CHAT_join_room (NULL,cfg,"nicktest2","testroom",me,key,"",
+                       &receive_callback2, NULL,member_list_callback2,
+                       NULL);
 
   GNUNET_CHAT_leave_room (r1);
+  GNUNET_CHAT_leave_room (r2);
 
   GNUNET_shutdown_wait_for ();
 
