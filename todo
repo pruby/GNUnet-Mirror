@@ -4,9 +4,7 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [4'08] (aka "advanced features"):
-- support ECRS NULL download file name
 - document gnunet-auto-share on webpage
-- disconnect issues ("other peer sent too much" - solved?)
 - clean up VPN code
 - tune GAP query planning code [RC]
 - gnunet-chat (CS-only) [RC]

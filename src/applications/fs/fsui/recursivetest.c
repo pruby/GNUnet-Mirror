@@ -281,7 +281,6 @@ main (int argc, char *argv[])
   pid_t daemon;
 #endif
   int ok;
-  int i;
   struct GNUNET_ECRS_URI *uri = NULL;
   char *fn = NULL;
   char *keywords[] = {
@@ -291,7 +290,6 @@ main (int argc, char *argv[])
   };
   char keyword[40];
   int prog;
-  char *buf;
   struct GNUNET_ECRS_MetaData *meta;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
