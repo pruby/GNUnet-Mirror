@@ -125,12 +125,15 @@ static int
 checkHierarchy (unsigned int i, const char *tree)
 {
   char *fn;
+  int res;
 
   fn = makeName(i);
   if (GNUNET_disk_directory_test (NULL, fn) != GNUNET_YES)
     return GNUNET_SYSERR;
-  return (makeHierarchyHelper (fn, tree, 0, 1) == -1) ?
+  res = (makeHierarchyHelper (fn, tree, 0, 1) == -1) ?
          GNUNET_SYSERR : GNUNET_OK;
+  GNUNET_free(fn);
+  return res;
 }
 
 
@@ -359,6 +362,7 @@ main (int argc, char *argv[])
     }
   CHECK (search == NULL);
   CHECK (download != NULL);
+  /* TODO: how to unindex empty directories? */
 /*  waitForEvent = GNUNET_FSUI_unindex_completed;
   unindex = GNUNET_FSUI_unindex_start (ctx, fn);
   CHECK (unindex != NULL);
