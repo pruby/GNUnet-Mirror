@@ -68,8 +68,7 @@ int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
  * types are defined in gnunet_remote_lib.h
  */
 int GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
-                                 unsigned long long number_of_daemons,
-                                 GNUNET_REMOTE_TOPOLOGIES type_of_topology);
+                                 unsigned long long number_of_daemons);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
