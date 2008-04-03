@@ -172,12 +172,118 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list)
 }
 
 int
-GNUNET_REMOTE_connect_2d_torus (int number_of_daemons,
+GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
                                 struct GNUNET_REMOTE_host_list
                                 **list_as_array)
 {
+	unsigned int i;
+	unsigned int square;
+	unsigned int rows;
+	unsigned int cols;
+	unsigned int toggle = 1;
+	unsigned int nodeToConnect;
+	
+	GNUNET_EncName *node1;
+  GNUNET_EncName *node2;
+  struct GNUNET_REMOTE_friends_list *node1temp;
+  struct GNUNET_REMOTE_friends_list *node2temp;
 
-  return GNUNET_SYSERR;
+  node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
+  node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
+	
+	square = floor(sqrt(number_of_daemons));
+	rows = square;
+	cols = square;
+		
+	if(square * square != number_of_daemons)
+	{
+		while(rows * cols < number_of_daemons)
+		{
+			if (toggle % 2 == 0)
+				rows++;
+			else
+				cols++;
+				
+			toggle++;
+		}
+	}
+	fprintf(stderr,_("Connecting nodes in 2d torus topology: %u rows %u columns\n"),rows,cols);
+	/* Rows and columns are all sorted out, now iterate over all nodes and connect each 
+	 * to the node to its right and above.  Once this is over, we'll have our torus!
+	 * Special case for the last node (if the rows and columns are not equal), connect
+	 * to the first in the row to maintain topology.
+	 */
+	for(i = 0;i<number_of_daemons;i++)
+	{
+		/* First connect to the node to the right */
+		if (((i + 1) % cols != 0) && (i+1 != number_of_daemons))
+			nodeToConnect = i+1;
+		else if (i+1 == number_of_daemons)
+			nodeToConnect = rows * cols - cols;                  
+		else
+			nodeToConnect = i - cols + 1;
+		
+		fprintf(stderr,"connecting node %u to %u\n",i,nodeToConnect);
+		GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname, list_as_array[i]->port,
+                                             list_as_array[nodeToConnect]->hostname,
+                                             list_as_array[nodeToConnect]->port, &node1,&node2);
+		
+		node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+    node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+
+    node2temp->hostentry = list_as_array[i];
+    node1temp->hostentry = list_as_array[nodeToConnect];
+
+    node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+    node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+
+    memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
+    memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
+
+    node1temp->next = list_as_array[i]->friend_entries;
+    node2temp->next = list_as_array[nodeToConnect]->friend_entries;
+
+    list_as_array[i]->friend_entries = node1temp;
+    list_as_array[nodeToConnect]->friend_entries = node2temp;
+    
+    
+		/* Second connect to the node immediately above */
+		if (i < cols)
+			nodeToConnect = (rows * cols) - cols + i;
+		else
+			nodeToConnect = i - cols;
+		
+		if (nodeToConnect < number_of_daemons)
+		{	
+			fprintf(stderr,"connecting node %u to %u\n",i,nodeToConnect);
+			GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname, list_as_array[i]->port,
+	                                             list_as_array[nodeToConnect]->hostname,
+	                                             list_as_array[nodeToConnect]->port, &node1,&node2);
+			
+			node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+	    node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+	
+	    node2temp->hostentry = list_as_array[i];
+	    node1temp->hostentry = list_as_array[nodeToConnect];
+	
+	    node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+	    node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+	
+	    memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
+	    memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
+	
+	    node1temp->next = list_as_array[i]->friend_entries;
+	    node2temp->next = list_as_array[nodeToConnect]->friend_entries;
+	
+	    list_as_array[i]->friend_entries = node1temp;
+	    list_as_array[nodeToConnect]->friend_entries = node2temp;
+		}
+		
+	}
+	
+	GNUNET_free(node1);
+	GNUNET_free(node2);
+  return GNUNET_OK;
 }
 
 int
@@ -322,11 +428,11 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
   GNUNET_snprintf (host, 128, "%s:%u", hostname1, port1);
   GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
                                             host);
-
+  
   GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
   GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
                                             host);
-
+                                            
   if ((GNUNET_OK ==
        GNUNET_wait_for_daemon_running (NULL, cfg1, 300 * GNUNET_CRON_SECONDS))
       && (GNUNET_OK ==
@@ -367,5 +473,7 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
   GNUNET_GC_free (cfg2);
   return ret;
 }
+
+
 
 /* end of remotetopologies.c */
