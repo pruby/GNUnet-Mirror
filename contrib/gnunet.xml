@@ -6,6 +6,7 @@
          <comment xml:lang="es">directorio GNUnet</comment>
          <comment xml:lang="fi">GNUnet-hakemisto</comment>
          <comment xml:lang="fr">répertoire GNUnet</comment>
+         <comment xml:lang="ja">GNUnetディレクトリ</comment>
          <comment xml:lang="nl">GNUnet map</comment>
          <magic priority="50">
                 <match type="string" value="\211GND\r\n\032\n" offset="0"/>
