@@ -11,6 +11,7 @@ Annotations:
 - test new asynchronous ECRS API (and resulting FSUI changes);
   make sure error handling & reporting are nice [RC]
 - test RPC code (write a small demo)
+- make it easier to get your own identity (gnunet-peer-info? gnunet-setup?)
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074
