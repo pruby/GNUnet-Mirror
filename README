@@ -43,10 +43,7 @@ Certain gnunet-setup plugins would also like to have:
 - ncurses
 
 Certain transports would also like to have:
-- libmicrohttpd >= 0.2.1  (available from http://gnunet.org/libmicrohttpd/)
-                          [If you want to use the HTTP transport and not use 
-                           100% CPU, you will need the yet unreleased 
-                           version 0.2.2 (or SVN HEAD)]
+- libmicrohttpd >= 0.3.0
 - libcurl       >= 7.15.4
 - libesmtp      >= 1.0.4
 
