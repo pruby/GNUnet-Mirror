@@ -31,6 +31,7 @@ libglade2-dev (recommended)
 libgtk2.0-dev (recommended)
 libxml2-dev (recommended, especially with NAT)
 libesmtp-dev (optional -- only for SMTP transport)
+libmicrohttpd-dev (optional -- for HTTP transport and build-in hostlist server)
 
 
 Additional libextractor dependencies:
@@ -66,14 +67,14 @@ gettext
 
 For changing gnunet-gtk glade user interface (development):
 
-glade-3
+glade
 
 ==============================================
 
 In short, if you want to install everything you may need, just type this in a root terminal from a recent Debian:
 - for GNUnet and gnunet-gtk:
 
-# apt-get install libtool gcc make intltool libadns1-dev libgcrypt11-dev libgmp3-dev libltdl3-dev guile-1.8-dev libextractor-dev libcurl4-gnutls-dev libsqlite3-dev libmysqlclient15-dev libncursesw5-dev dialog libglade2-dev libgtk2.0-dev libxml2-dev libesmtp-dev librsvg2-common libnotify-dev libgksu2-dev mysql-server-5.0 mysql-client-5.0 subversion autoconf automake cvs gettext glade-3
+# apt-get install libtool gcc make intltool libadns1-dev libgcrypt11-dev libgmp3-dev libltdl3-dev guile-1.8-dev libextractor-dev libcurl4-gnutls-dev libsqlite3-dev libmysqlclient15-dev libncursesw5-dev dialog libglade2-dev libgtk2.0-dev libxml2-dev libesmtp-dev librsvg2-common libnotify-dev libgksu2-dev mysql-server-5.0 mysql-client-5.0 subversion autoconf automake cvs gettext glade libmicrohttpd-dev
 
 - for libextractor:
 
