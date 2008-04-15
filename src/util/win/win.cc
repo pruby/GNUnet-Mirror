@@ -191,7 +191,7 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
           pTable->table[dwIfIdx].bPhysAddr,
           pTable->table[dwIfIdx].dwPhysAddrLen);
           
-        snprintf(szEntry, 1000, "%s (%d.%d.%d.%d - %I64u)",
+        snprintf(szEntry, 1000, "%s (%s - %I64u)",
           pszIfName ? pszIfName : (char *) pTable->table[dwIfIdx].bDescr,
           inet_ntop (AF_INET, &dwIP, dst, INET_ADDRSTRLEN),
           *((unsigned long long *) bPhysAddr));
