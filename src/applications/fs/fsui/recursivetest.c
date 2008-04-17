@@ -39,6 +39,8 @@
 
 static struct GNUNET_GE_Context *ectx;
 
+volatile int search_done;
+
 static char *
 makeName (unsigned int i)
 {
@@ -216,11 +218,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       printf ("Download complete.\n");
 #endif
       if (checkHierarchy(43, DIRECTORY_TREE_SPEC) == GNUNET_OK)
-        {
-          GNUNET_FSUI_search_abort (ctx, search);
-          GNUNET_FSUI_search_stop (ctx, search);
-          search = NULL;
-        }
+	search_done = 1;
       break;
     case GNUNET_FSUI_download_progress:
 #if DEBUG_VERBOSE > 1
@@ -352,7 +350,7 @@ main (int argc, char *argv[])
   search = GNUNET_FSUI_search_start (ctx, 0, uri);
   CHECK (search != NULL);
   prog = 0;
-  while (search != NULL)
+  while (! search_done)
     {
       prog++;
       CHECK (prog < 1000);
@@ -360,24 +358,10 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  CHECK (search == NULL);
+  GNUNET_FSUI_search_abort (ctx, search);
+  GNUNET_FSUI_search_stop (ctx, search);
+  search = NULL;
   CHECK (download != NULL);
-  /* TODO: how to unindex empty directories? */
-/*  waitForEvent = GNUNET_FSUI_unindex_completed;
-  unindex = GNUNET_FSUI_unindex_start (ctx, fn);
-  CHECK (unindex != NULL);
-  prog = 0;
-  while (lastEvent != GNUNET_FSUI_unindex_completed)
-    {
-      prog++;
-      CHECK (prog < 5000);
-      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-      CHECK (lastEvent != GNUNET_FSUI_unindex_error);
-      if (GNUNET_shutdown_test () == GNUNET_YES)
-        break;
-    }
-  CHECK (lastEvent == GNUNET_FSUI_unindex_completed);*/
-  /* END OF TEST CODE */
 FAILURE:
   if (ctx != NULL)
     {
@@ -389,7 +373,7 @@ FAILURE:
         GNUNET_FSUI_search_stop (ctx, search);
       GNUNET_FSUI_stop (ctx);
     }
-    if (fn != NULL)
+  if (fn != NULL)
     {
       GNUNET_disk_directory_remove (NULL, fn);
       GNUNET_free (fn);
