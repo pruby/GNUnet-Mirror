@@ -1,10 +1,9 @@
 Source: gnunet
 Section: net
 Priority: optional
-Maintainer: Ubuntu MOTU Developers <ubuntu-motu@lists.ubuntu.com>
-XSBC-Original-Maintainer: Arnaud Kyheng <Arnaud.Kyheng@free.fr>
+Maintainer: Arnaud Kyheng <Arnaud.Kyheng@free.fr>
 Uploaders: Daniel Baumann <daniel@debian.org>
-Build-Depends: debhelper (>= 5), autotools-dev, dialog (>= 1.1-20071028-3), gettext, guile-1.8-dev, libadns1-dev, libcurl4-gnutls-dev, libextractor-dev (>= 0.5.20), libgcrypt11-dev, libglade2-dev, libgmp3-dev, libgtk2.0-dev, libmicrohttpd-dev (>= 0.3.0), libltdl3-dev, libmysqlclient15-dev, libncursesw5-dev, libsqlite3-dev, libxml2-dev, po-debconf, zlib1g-dev
+Build-Depends: debhelper (>= 5), autotools-dev, dialog (>= 1.1-20071028-3), gettext, guile-1.8-dev, libadns1-dev, libcurl4-gnutls-dev, libextractor-dev (>= 0.5.18), libgcrypt11-dev, libglade2-dev, libgmp3-dev, libgtk2.0-dev, libmicrohttpd-dev (>= 0.2.0), libltdl3-dev, libmysqlclient15-dev, libncursesw5-dev, libsqlite3-dev, libxml2-dev, po-debconf, zlib1g-dev
 Standards-Version: 3.7.3
 Homepage: http://www.gnunet.org/
 
@@ -73,7 +72,7 @@ Description: secure, trust-based peer-to-peer framework (server)
 Package: gnunet-dev
 Section: libdevel
 Architecture: any
-Depends: gnunet-server (= ${binary:Version}), gnunet-client (= ${binary:Version}), gnunet-tools (= ${binary:Version}), libextractor-dev (>= 0.5.20)
+Depends: gnunet-server (= ${binary:Version}), gnunet-client (= ${binary:Version}), gnunet-tools (= ${binary:Version}), libextractor-dev (>= 0.5.18)
 Description: secure, trust-based peer-to-peer framework (development)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
  link-to-link messages in the network are confidential and authenticated. The

@@ -1,12 +1,22 @@
-gnunet (0.8.0pre0-0 unstable; urgency=low
-  * New upstream version
-    - Use libmicrohttpd 0.3.0
-    - Use libextractor 0.5.20
+gnunet (0.8.0pre0-2 unstable; urgency=low
+  * Make the pre version work
     - gnunet-server.postinst check if /var/run/gnunetd exist  
-    - New hostlist for 0.8.0 
+    - Switch to the new hostlist for 0.8.0 
     - Do not provide /var/run/gnunetd (/var/run is tmpfs)
 
  -- Markus Golser <elmargol@googlemail.com>  Sat, 12 Apr 2008 14:29:25 +0200
+
+gnunet (0.8.0~pre0-2) experimental; urgency=low
+
+  * Tightened gnunet inter depends (Closes: #470180).
+
+ -- Daniel Baumann <daniel@debian.org>  Tue, 25 Mar 2008 11:49:00 +0100
+
+gnunet (0.8.0~pre0-1) experimental; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Baumann <daniel@debian.org>  Fri,  7 Mar 2008 16:19:00 +0100
 
 gnunet (0.7.3-4) unstable; urgency=medium
 
@@ -27,7 +37,7 @@ gnunet (0.7.3-2) unstable; urgency=low
     included to gnunet-dev before.
 
  -- Daniel Baumann <daniel@debian.org>  Mon, 21 Jan 2008 20:22:00 +0100
- 
+
 gnunet (0.7.3-1) unstable; urgency=low
 
   * New upstream release.
