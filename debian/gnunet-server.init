@@ -1,14 +1,14 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:		gnunet-daemon
+# Provides:		gnunet-server
 # Required-Start:	$syslog $network $local_fs
 # Required-Stop:	$syslog $network $local_fs
 # Should-Start:
 # Should-Stop:
 # Default-Start:	2 3 4 5
 # Default-Stop:		0 1 6
-# Short-Description:	Starts the GNUnet daemon at boot time.
+# Short-Description:	Starts the GNUnet server at boot time.
 # Description:		GNUnet is a secure, trust-based peer-to-peer framework.
 ### END INIT INFO
 
@@ -24,10 +24,18 @@ test -x "${DAEMON}" || exit 0
 set -e
 
 # Get configuration
-if [ -r /etc/default/gnunet-daemon ]
+if [ -r /etc/default/gnunet-server ]
 then
-	. /etc/default/gnunet-daemon
+	. /etc/default/gnunet-server
 fi
+
+#check if /var/run/gnunetd exists
+if ! [ -d /var/run/gnunetd ]
+then
+	mkdir /var/run/gnunetd
+fi
+	#chown the var dir
+	chown ${GNUNET_USER}:${GNUNET_GROUP} /var/run/gnunetd
 
 case "${1}" in
 	start)
@@ -38,14 +46,14 @@ case "${1}" in
 
 		echo -n "Starting ${DESC}: "
 		start-stop-daemon --start --background --chuid ${GNUNET_USER} \
-			--pidfile "$PIDFILE" --exec ${DAEMON} -- -c \
+			--pidfile "${PIDFILE}" --exec ${DAEMON} -- -c \
 			/etc/gnunetd.conf
 		echo "${NAME}."
 		;;
 
 	stop)
 		echo -n "Stopping ${DESC}: "
-		start-stop-daemon --stop --pidfile $PIDFILE --exec ${DAEMON} \
+		start-stop-daemon --stop --pidfile ${PIDFILE} --exec ${DAEMON} \
 			--retry 15 --oknodo
 		echo "${NAME}."
 		;;

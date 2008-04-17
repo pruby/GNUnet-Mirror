@@ -3,11 +3,11 @@ gnunet for Debian
 
 GNUnet starts by default at boot time. To change the default behaviour, run:
 
-	# dpkg-reconfigure -plow gnunet-daemon
+	# dpkg-reconfigure -plow gnunet-server
 
-In order to start, stop or restart manually the daemon, use:
+In order to start, stop or restart manually the server, use:
 
-	# /etc/init.d/gnunet-daemon
+	# /etc/init.d/gnunet-server
 
 with the parameter start, stop or restart.
 

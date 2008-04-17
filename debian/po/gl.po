@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnunet\n"
 "Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
-"POT-Creation-Date: 2007-06-27 09:09+0000\n"
+"POT-Creation-Date: 2007-06-26 17:52+0200\n"
 "PO-Revision-Date: 2007-06-11 13:21+0200\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@debian.org>\n"
 "Language-Team: Galician <proxecto@trasno.net>\n"
@@ -14,18 +14,140 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:2001
+msgid "Former installation of GNUnet detected"
+msgstr "Detectouse unha instalación anterior de GNUnet"
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:2001
+msgid ""
+"Since there are important changes in this version, the installer will need "
+"to modify the GNUnet configuration file (/etc/gnunet.conf)."
+msgstr ""
+"Como hai cambios importantes nesta versión, o instalador ha ter que "
+"modificar o ficheiro de configuración de GNUnet (/etc/gnunet.conf)."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:2001
+msgid ""
+"The installation process will backup /etc/gnunet.conf to /etc/gnunet.conf."
+"old, and will automatically build a new configuration file."
+msgstr ""
+"O proceso de instalación ha copiar /etc/gnunet.conf a /etc/gnunet.conf.old, "
+"e ha construír automaticamente un novo ficheiro de configuración."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:2001
+msgid "Every personal settings will be preserved as much as possible."
+msgstr "Hase conservar cada configuración persoal o máximo que sexa posible."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:3001
+msgid "Warning"
+msgstr "Aviso"
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:3001
+msgid ""
+"For some obscure reason, the installer have failed to discover the "
+"configuration settings in /etc/gnunet.conf."
+msgstr ""
+"Por algún motivo, o instalador non puido descubrir a configuración de /etc/"
+"gnunet.conf."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:3001
+msgid "The old configuration file will be moved to /etc/gnunet.conf.old."
+msgstr ""
+"Hase trasladar o ficheiro de configuración antigo a /etc/gnunet.conf.old."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:3001
+msgid ""
+"Since some changes are *mandatory* in this file, a fresh default "
+"configuration file will now be installed"
+msgstr ""
+"Xa que algúns cambios son *obrigatorios* neste ficheiro, hase instalar un "
+"novo ficheiro de configuración por defecto."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:3001
+msgid ""
+"Please take a look and make necessary changes in it if needed after "
+"installation."
+msgstr ""
+"Bótelle unha ollada e faga os cambios necesarios nel trala instalación."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:4001
+msgid "Upgrade from a version prior to 0.7.0"
+msgstr "Actualizar dunha versión anterior á 0.7.0"
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:4001
+msgid ""
+"It seems that you are upgrading GNUnet from a version prior to 0.7.x. GNUnet "
+"0.7.x introduced new configuration files and a new database storage format "
+"which is not compatible with versions prior to 0.7.x."
+msgstr ""
+"Semella que está a actualizar GNUnet dunha versión anterior á 0.7.x. GNUnet "
+"0.7.x introduciu novos ficheiros de configuración e un novo formato de "
+"armacenamento de base de datos que non é compatible coas versións anteriores "
+"á 0.7.x."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:4001
+msgid "GNUnet cannot convert your database format to the new format."
+msgstr "GNUnet non pode converter a base de datos ao novo formato."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:4001
+msgid ""
+"Your database storage will be automatically moved to /var/lib/GNUnet."
+"prior07, and the gnunet package will build a new empty storage for you."
+msgstr ""
+"Hase trasladar a súa base de datos automaticamente a /var/lib/GNUnet."
+"prior07, e o paquete gnunet ha construír unha nova base de datos baleira "
+"para vostede."
+
+#. Type: note
+#. Description
+#: ../gnunet-server.templates:4001
+msgid ""
+"Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07 "
+"and replaced by /etc/gnunetd.conf which you can modify later by running "
+"\"gnunet-setup -d -c /etc/gnunetd.conf\", as root."
+msgstr ""
+"Tamén se ha trasladar o ficheiro /etc/gnunet.conf a /etc/gnunet.conf.prior07 "
+"e se ha substituír por /etc/gnunetd.conf, que ha poder modificar despois "
+"executando \"gnunet-setup -d -c /etc/gnunetd.conf\" coma administrador."
+
 #. Type: boolean
 #. Description
-#: ../gnunet-daemon.templates:2001
-msgid "Should the GNUnet daemon be launched on boot?"
+#: ../gnunet-server.templates:5001
+msgid "Should the GNUnet server be launched on boot?"
 msgstr "¿Debe iniciarse o servizo GNUnet co sistema?"
 
 #. Type: boolean
 #. Description
-#: ../gnunet-daemon.templates:2001
+#: ../gnunet-server.templates:5001
 msgid ""
-"If you choose this option, a GNUnet server will be started each time the "
-"system is launched. Otherwise, you will need to launch GNUnet each time you "
+"If you choose this option, a GNUnet server will be launched each time the "
+"system is started. Otherwise, you will need to launch GNUnet each time you "
 "want to use it."
 msgstr ""
 "Se escolle esta opción, hase iniciar un servidor GNUnet cada vez que inicie "
@@ -33,19 +155,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:3001
+#: ../gnunet-server.templates:6001
 msgid "GNUnet user:"
 msgstr "Usuario de GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:3001
-msgid "Please choose the user that the GNUnet daemon process will run as."
+#: ../gnunet-server.templates:6001
+msgid "Please choose the user that the GNUnet server process will run as."
 msgstr "Escolla o usuario co que se ha executar o servizo GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:3001
+#: ../gnunet-server.templates:6001
 msgid ""
 "This should be a dedicated account. If the specified account does not "
 "already exist, it will automatically be created, with no login shell."
@@ -55,19 +177,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:4001
+#: ../gnunet-server.templates:7001
 msgid "GNUnet group:"
 msgstr "Grupo de GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:4001
-msgid "Please choose the group that the GNUnet daemon process will run as."
+#: ../gnunet-server.templates:7001
+msgid "Please choose the group that the GNUnet server process will run as."
 msgstr "Escolla o grupo co que se ha executar o servizo GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:4001
+#: ../gnunet-server.templates:7001
 msgid ""
 "This should be a dedicated group, not one that already owns data. Only the "
 "members of this group will have access to GNUnet data, and be allowed to "

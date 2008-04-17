@@ -1,1 +1,3 @@
+# internal libraries are not splitted out into a dedicated package to avoid
+# micropackaging.
 gnunet-common: package-name-doesnt-match-sonames

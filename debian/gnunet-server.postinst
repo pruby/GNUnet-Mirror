@@ -1,5 +1,4 @@
 #!/bin/sh
-# Author: Arnaud Kyheng <Arnaud.Kyheng@free.fr>
 
 set -e
 
@@ -9,43 +8,40 @@ case "${1}" in
 		. /usr/share/debconf/confmodule
 
 		# Read default values
-		CONFIG_FILE=/etc/default/gnunet-daemon
+		CONFIG_FILE="/etc/default/gnunet-server"
 
-		# Check for GNUNETD_HOME consistancy
-		# Look for historical location of GNUNETD_HOME
-		GNUNETD_HOME=`gnunet-update --get=PATHS:GNUNETD_HOME`
-		if [ ! $GNUNETD_HOME ] || [ ! -d "$GNUNETD_HOME" ]; then
-			# Set up the new section and value
-			echo -n "Updating /etc/gnunetd.conf with new [PATHS] mandatory section"
-			GNUNETD_HOME=`gnunet-update --get=GNUNETD:GNUNETD_HOME`
-			if [ ! $GNUNETD_HOME ] || [ ! -d "$GNUNETD_HOME" ]; then
-				# using default value
-				GNUNETD_HOME="/var/lib/GNUnet"
-			fi
-			CONFIG_NEW=`/bin/tempfile`
-			cat > $CONFIG_NEW <<EOF
+		GNUNETD_HOME="`gnunet-update --get=PATHS:GNUNETD_HOME`" || true
+
+		if [ ! -d "${GNUNETD_HOME}" ]
+		then
+			echo -n "Updating /etc/gnunetd.conf with new [PATHS] mandatory section: "
+
+			# Using default value
+			GNUNETD_HOME="/var/lib/gnunet"
+
+			CONFIG_NEW="`/bin/tempfile`"
+
+cat > "${CONFIG_NEW}" << EOF
 [PATHS]
-GNUNETD_HOME = $GNUNETD_HOME
+GNUNETD_HOME = ${GNUNETD_HOME}
 
 EOF
-			sed '/^GNUNETD_HOME/d' /etc/gnunetd.conf >> $CONFIG_NEW
+
+			sed '/^GNUNETD_HOME/d' /etc/gnunetd.conf >> "${CONFIG_NEW}"
 			mv -f /etc/gnunetd.conf /etc/gnunetd.conf.bak
-			cp -f $CONFIG_NEW /etc/gnunetd.conf
-			rm -f $CONFIG_NEW
+			cp -f "${CONFIG_NEW}" /etc/gnunetd.conf
+			rm -f "${CONFIG_NEW}"
 			chmod 644 /etc/gnunetd.conf
-			echo " [done]"
+
+			echo "done."
 		fi
 
-		# This is need to migrate data from 0.6.1b or later
-		echo "Migrating previous GNUnet data (gnunet-update)"
-		gnunet-update
-
 		# Read debconf values
-		db_get gnunet-daemon/gnunet_user
+		db_get gnunet-server/gnunet_user
 		gnunet_user="${RET}"
-		db_get gnunet-daemon/gnunet_group
+		db_get gnunet-server/gnunet_group
 		gnunet_group="${RET}"
-		db_get gnunet-daemon/launch_at_startup
+		db_get gnunet-server/launch_at_startup
 		launch_at_startup="${RET}"
 
 		# Creating gnunet group if needed
@@ -67,10 +63,13 @@ EOF
 		# Update files and directories permissions.
 		# Assuming default values, this *should* not be changed.
 		echo -n "Updating files and directories permissions: "
-		chown -R ${gnunet_user}:${gnunet_group} /var/run/gnunetd
+		
 		chown -R ${gnunet_user}:${gnunet_group} /var/log/gnunetd
 		# Use the new "gnunet-update -g"
-		GNUNETD_HOME=`gnunet-update --get=GNUNETD:GNUNETD_HOME`
+		if [ -z "${GNUNETD_HOME}" ]
+		then
+			GNUNETD_HOME=`gnunet-update --get=GNUNETD:GNUNETD_HOME`
+		fi
 		chown -R ${gnunet_user}:${gnunet_group} ${GNUNETD_HOME}
 		echo  "done."
 
@@ -81,7 +80,7 @@ EOF
 cat > "${CONFIG_NEW}" <<EOF
 # This file controls the behaviour of the GNUnet init script.
 # It will be parsed as a shell script.
-# please do not edit by hand, use 'dpkg-reconfigure gnunet-daemon'.
+# please do not edit by hand, use 'dpkg-reconfigure gnunet-server'.
 
 GNUNET_USER=${gnunet_user}
 GNUNET_GROUP=${gnunet_group}
@@ -93,35 +92,40 @@ EOF
 		# Secure access to the data directory
 		chmod 0700 "${GNUNETD_HOME}" || true
 
+		# This is need to migrate data from 0.6.1b or later
+		echo -n "Migrating previous GNUnet data (gnunet-update): "
+		gnunet-update
+		echo "done."
+
 		# Cleaning
 		rm -f "${CONFIG_NEW}"
 		echo "All done."
 
 		if [ "${launch_at_startup}" = "true" ]
 		then
-			if [ -x /etc/init.d/gnunet-daemon ]
+			if [ -x /etc/init.d/gnunet-server ]
 			then
-				update-rc.d gnunet-daemon defaults > /dev/null 2>&1 || true
+				update-rc.d gnunet-server defaults > /dev/null 2>&1 || true
 
 				if [ -x /usr/sbin/invoke-rc.d ]
 				then
-					invoke-rc.d gnunet-daemon start || true
+					invoke-rc.d gnunet-server start || true
 				else
-					/etc/init.d/gnunet-daemon start || true
+					/etc/init.d/gnunet-server start || true
 				fi
 			fi
 		else
-			if [ -x /etc/init.d/gnunet-daemon ]
+			if [ -x /etc/init.d/gnunet-server ]
 			then
 				if [ -x /usr/sbin/invoke-rc.d ]
 				then
-					invoke-rc.d gnunet-daemon stop || true
+					invoke-rc.d gnunet-server stop || true
 				else
-					/etc/init.d/gnunet-daemon stop || true
+					/etc/init.d/gnunet-server stop || true
 				fi
 			fi
 
-			update-rc.d -f gnunet-daemon remove > /dev/null 2>&1 || true
+			update-rc.d -f gnunet-server remove > /dev/null 2>&1 || true
 		fi
 		;;
 

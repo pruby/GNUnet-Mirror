@@ -2,13 +2,13 @@
 
 set -e
 
-if [ -x /etc/init.d/gnunet-daemon ]
+if [ -x /etc/init.d/gnunet-server ]
 then
 	if [ -x /usr/sbin/invoke-rc.d ]
 	then
-		invoke-rc.d gnunet-daemon stop || exit 0
+		invoke-rc.d gnunet-server stop || exit "${?}"
 	else
-		/etc/init.d/gnunet-daemon stop || exit 0
+		/etc/init.d/gnunet-server stop || exit "${?}"
 	fi
 fi
 

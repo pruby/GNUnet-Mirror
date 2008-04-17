@@ -1,1 +1,3 @@
-gnunet-daemon: package-name-doesnt-match-sonames
+# internal libraries are not splitted out into a dedicated package to avoid
+# micropackaging.
+gnunet-server: package-name-doesnt-match-sonames
