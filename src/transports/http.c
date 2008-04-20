@@ -1660,6 +1660,7 @@ httpSend (GNUNET_TSession * tsession,
       memcpy (&hdr[1], msg, size - sizeof (GNUNET_MessageHeader));
       getData->wpos += size;
     }
+  signal_select ();
   GNUNET_mutex_unlock (lock);
 #endif
   EXIT ();
