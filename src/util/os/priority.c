@@ -41,31 +41,31 @@ GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str)
    * and the usual numeric nice() increments */
   if (strcmp (str, "NORMAL") == 0)
 #ifdef MINGW
-    priority = NORMAL_PRIORITY_CLASS;
+	  prio = NORMAL_PRIORITY_CLASS;
 #else
     prio = 0;
 #endif
   else if (strcmp (str, "ABOVE NORMAL") == 0)
 #ifdef MINGW
-    priority = ABOVE_NORMAL_PRIORITY_CLASS;
+	  prio = ABOVE_NORMAL_PRIORITY_CLASS;
 #else
     prio = -5;
 #endif
   else if (strcmp (str, "BELOW NORMAL") == 0)
 #ifdef MINGW
-    priority = BELOW_NORMAL_PRIORITY_CLASS;
+	  prio = BELOW_NORMAL_PRIORITY_CLASS;
 #else
     prio = 10;
 #endif
   else if (strcmp (str, "HIGH") == 0)
 #ifdef MINGW
-    priority = HIGH_PRIORITY_CLASS;
+	  prio = HIGH_PRIORITY_CLASS;
 #else
     prio = -10;
 #endif
   else if (strcmp (str, "IDLE") == 0)
 #ifdef MINGW
-    priority = IDLE_PRIORITY_CLASS;
+	  prio = IDLE_PRIORITY_CLASS;
 #else
     prio = 19;
 #endif
@@ -81,22 +81,22 @@ GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str)
 
 #ifdef MINGW
       /* Convert the nice increment to a priority class */
-      if (priority == 0)
-        priority = NORMAL_PRIORITY_CLASS;
-      else if (priority > 0 && priority <= 10)
-        priority = BELOW_NORMAL_PRIORITY_CLASS;
-      else if (priority > 0)
-        priority = IDLE_PRIORITY_CLASS;
-      else if (priority < 0 && priority >= -10)
-        priority = ABOVE_NORMAL_PRIORITY_CLASS;
-      else if (priority < 0)
-        priority = HIGH_PRIORITY_CLASS;
+      if (prio == 0)
+        prio = NORMAL_PRIORITY_CLASS;
+      else if (prio > 0 && prio <= 10)
+        prio = BELOW_NORMAL_PRIORITY_CLASS;
+      else if (prio > 0)
+        prio = IDLE_PRIORITY_CLASS;
+      else if (prio < 0 && prio >= -10)
+        prio = ABOVE_NORMAL_PRIORITY_CLASS;
+      else if (prio < 0)
+        prio = HIGH_PRIORITY_CLASS;
 #endif
     }
 
   /* Set process priority */
 #ifdef MINGW
-  SetPriorityClass (GetCurrentProcess (), priority);
+  SetPriorityClass (GetCurrentProcess (), prio);
 #else
   errno = 0;
   nice (prio);
