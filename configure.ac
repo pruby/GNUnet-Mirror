@@ -738,14 +738,20 @@ LIBS=$SAVE_LIBS
 # check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)
 AM_PATH_GTK_2_0(2.6.0,without_gtk=false,without_gtk=true)
-AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
 if test $without_gtk != true
 then
- AC_DEFINE_UNQUOTED([HAVE_GTK], 1, [We have GTK])
- PKG_CHECK_MODULES(GNUNETGTK, libglade-2.0) # libgnomeui-2.0 >= 1.110.0
- AC_SUBST(GNUNETGTK_CFLAGS)
- AC_SUBST(GNUNETGTK_LIBS)
+ PKG_CHECK_MODULES(GNUNETGTK, libglade-2.0,  # libgnomeui-2.0 >= 1.110.0
+ [
+  AC_DEFINE_UNQUOTED([HAVE_GTK], 1, [We have GTK])
+  AC_SUBST(GNUNETGTK_CFLAGS)
+  AC_SUBST(GNUNETGTK_LIBS)
+ ],
+ [
+  without_gtk=true
+  AC_MSG_RESULT([libglade-2.0 not found])
+ ])
 fi
+AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
 
 # check for gettext
 AM_GNU_GETTEXT_VERSION([0.13.1])
