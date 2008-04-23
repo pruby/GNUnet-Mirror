@@ -65,7 +65,6 @@ makeHierarchyHelper (const char *current, const char *tree, int index,
   done = 0;
   while (!done && tree[index] != '\0')
     {
-    printf("%s/%u\n", current, fi);
     s = GNUNET_malloc (strlen(current)+strlen(DIR_SEPARATOR_STR)+14);
     GNUNET_snprintf (s, strlen(current)+strlen(DIR_SEPARATOR_STR)+14,
                      "%s%s%u",
@@ -73,24 +72,30 @@ makeHierarchyHelper (const char *current, const char *tree, int index,
     switch (tree[index++])
       {
       case 'd':
-        if (check && GNUNET_disk_directory_test (NULL, s) == GNUNET_NO)
+        if (check)
           {
-            index = -1;
-            done = 1;
+            if (GNUNET_disk_directory_test (NULL, s) == GNUNET_NO)
+              {
+                index = -1;
+                done = 1;
+              }
           }
         else
           {
             GNUNET_disk_directory_create (NULL, s);
           }
         if (!done)
-          index = makeHierarchyHelper (s, tree, index, 0);
+          index = makeHierarchyHelper (s, tree, index, check);
         break;
       case 'f':
-        if (check && GNUNET_disk_directory_test (NULL, s) != GNUNET_NO)
+        if (check)
           {
 	    /* TODO: compare file contents */
-            index = -1;
-            done = 1;
+            if (GNUNET_disk_directory_test (NULL, s) != GNUNET_NO) 
+              {
+                index = -1;
+                done = 1;
+              }
           }
         else
           {
@@ -132,8 +137,8 @@ checkHierarchy (unsigned int i, const char *tree)
   fn = makeName(i);
   if (GNUNET_disk_directory_test (NULL, fn) != GNUNET_YES)
     return GNUNET_SYSERR;
-  res = (makeHierarchyHelper (fn, tree, 0, 1) == -1) ?
-         GNUNET_SYSERR : GNUNET_OK;
+  res = ((makeHierarchyHelper (fn, tree, 0, 1) == -1) ?
+         GNUNET_SYSERR : GNUNET_OK);
   GNUNET_free(fn);
   return res;
 }
