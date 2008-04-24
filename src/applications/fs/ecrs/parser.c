@@ -39,7 +39,7 @@ GNUNET_ECRS_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext
 {
   struct GNUNET_ECRS_URI **uri = scls;
   struct GNUNET_ECRS_URI *u = *uri;
-  char * val;
+  char *val;
   size_t slen;
 
   if (u == NULL)
@@ -54,53 +54,45 @@ GNUNET_ECRS_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext
     {
       GNUNET_GE_ASSERT (NULL, u->type == ksk);
     }
-  slen = strlen(value);
+  slen = strlen (value);
   if (slen == 0)
-    return GNUNET_SYSERR; /* cannot be empty */
+    return GNUNET_SYSERR;       /* cannot be empty */
   if (value[0] == '+')
     {
       /* simply preserve the "mandatory" flag */
       if (slen < 2)
-	return GNUNET_SYSERR; /* empty keywords not allowed */
-      if ( (value[1] == '"') &&
-	   (slen > 3) &&
-	   (value[slen-1] == '"') ) 
-	{
-	  /* remove the quotes, keep the '+' */
-	  val = GNUNET_malloc(slen-1);
-	  val[0] = '+';
-	  memcpy(&val[1],
-		 &value[2],
-		 slen-3);
-	  val[slen-2] = '\0';
-	}
+        return GNUNET_SYSERR;   /* empty keywords not allowed */
+      if ((value[1] == '"') && (slen > 3) && (value[slen - 1] == '"'))
+        {
+          /* remove the quotes, keep the '+' */
+          val = GNUNET_malloc (slen - 1);
+          val[0] = '+';
+          memcpy (&val[1], &value[2], slen - 3);
+          val[slen - 2] = '\0';
+        }
       else
-	{     
-	  /* no quotes, just keep the '+' */
-	  val = GNUNET_strdup (value);
-	}
+        {
+          /* no quotes, just keep the '+' */
+          val = GNUNET_strdup (value);
+        }
     }
   else
     {
-      if ( (value[0] == '"') &&
-	   (slen > 2) &&
-	   (value[slen-1] == '"') ) 
-	{
-	  /* remove the quotes, add a space */
-	  val = GNUNET_malloc(slen);
-	  val[0] = ' ';
-	  memcpy(&val[1],
-		 &value[1],
-		 slen-2);
-	  val[slen-1] = '\0';
-	}
+      if ((value[0] == '"') && (slen > 2) && (value[slen - 1] == '"'))
+        {
+          /* remove the quotes, add a space */
+          val = GNUNET_malloc (slen);
+          val[0] = ' ';
+          memcpy (&val[1], &value[1], slen - 2);
+          val[slen - 1] = '\0';
+        }
       else
-	{
-	  /* add a space to indicate "not mandatory" */
-	  val = GNUNET_malloc(slen+2);
-	  strcpy(val, " ");
-	  strcat(val, value);
-	}
+        {
+          /* add a space to indicate "not mandatory" */
+          val = GNUNET_malloc (slen + 2);
+          strcpy (val, " ");
+          strcat (val, value);
+        }
     }
   GNUNET_array_grow (u->data.ksk.keywords,
                      u->data.ksk.keywordCount, u->data.ksk.keywordCount + 1);

@@ -93,7 +93,7 @@ typedef struct GNUNET_ECRS_URI
        * %-encoding are NOT used internally
        * (only in URI-strings).
        */
-      char ** keywords;      
+      char **keywords;
       unsigned int keywordCount;
     } ksk;
     struct

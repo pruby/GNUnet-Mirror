@@ -88,12 +88,11 @@
  * In URI-encoding, does the given character
  * need to be encoded using %-encoding?
  */
-static int needs_percent(char c) {
-  return (! ( (isalnum(c)) ||
-		  (c == '-') ||
-		  (c == '_') ||
-		  (c == '.') ||
-	      (c == '~') ) );
+static int
+needs_percent (char c)
+{
+  return (!((isalnum (c)) ||
+            (c == '-') || (c == '_') || (c == '.') || (c == '~')));
 }
 
 /**
@@ -109,7 +108,7 @@ createKeywordURI (char **keywords, unsigned int keywordCount)
   unsigned int j;
   unsigned int wpos;
   size_t slen;
-  const char * keyword;
+  const char *keyword;
 
   n =
     keywordCount + strlen (GNUNET_ECRS_URI_PREFIX) +
@@ -117,45 +116,43 @@ createKeywordURI (char **keywords, unsigned int keywordCount)
   for (i = 0; i < keywordCount; i++)
     {
       keyword = keywords[i];
-      slen = strlen(keyword);
+      slen = strlen (keyword);
       n += slen;
       for (j = 0; j < slen; j++)
-	{
-	  if ( (j == 0) &&
-	       (keyword[j] == ' ') )
-	    {
-	      n--;
-	      continue; /* skip leading space */
-	    }
-	  if (needs_percent(keyword[j]))
-	    n += 2; /* will use %-encoding */	    
-	}
+        {
+          if ((j == 0) && (keyword[j] == ' '))
+            {
+              n--;
+              continue;         /* skip leading space */
+            }
+          if (needs_percent (keyword[j]))
+            n += 2;             /* will use %-encoding */
+        }
     }
   ret = GNUNET_malloc (n);
   strcpy (ret, GNUNET_ECRS_URI_PREFIX);
   strcat (ret, GNUNET_ECRS_SEARCH_INFIX);
-  wpos = strlen(ret);
+  wpos = strlen (ret);
   for (i = 0; i < keywordCount; i++)
     {
       keyword = keywords[i];
-      slen = strlen(keyword);
+      slen = strlen (keyword);
       for (j = 0; j < slen; j++)
-	{
-	  if ( (j == 0) &&
-	       (keyword[j] == ' ') )
-	    continue; /* skip leading space */	    
-	  if (needs_percent(keyword[j]))
-	    {
-	      sprintf(&ret[wpos], "%%%02X", keyword[j]);
-	      wpos += 3;
-	    }
-	  else
-	    {
-	      ret[wpos++] = keyword[j];
-	    }
-	}    	    
+        {
+          if ((j == 0) && (keyword[j] == ' '))
+            continue;           /* skip leading space */
+          if (needs_percent (keyword[j]))
+            {
+              sprintf (&ret[wpos], "%%%02X", keyword[j]);
+              wpos += 3;
+            }
+          else
+            {
+              ret[wpos++] = keyword[j];
+            }
+        }
       if (i != keywordCount - 1)
-	ret[wpos++] = '+';
+        ret[wpos++] = '+';
     }
   return ret;
 }
@@ -284,47 +281,48 @@ GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri)
  * if there is not a '+'.
  */
 static char *
-percent_decode_keyword(const char * in) {
-  char * out;
-  char * ret;
-  unsigned int rpos;  
+percent_decode_keyword (const char *in)
+{
+  char *out;
+  char *ret;
+  unsigned int rpos;
   unsigned int wpos;
   unsigned int hx;
 
-  out = GNUNET_strdup(in);
+  out = GNUNET_strdup (in);
   rpos = 0;
   wpos = 0;
   while (out[rpos] != '\0')
     {
       if (out[rpos] == '%')
-	{
-	  if (1 != sscanf(&out[rpos+1], "%2X", &hx))
-	    {
-	      GNUNET_free(out);
-	      return NULL;
-	    }
-	  rpos += 3;
-	  if (hx == '"')
-	    continue; /* skip double quote */
-	  out[wpos++] = (char) hx;	    
-	}
+        {
+          if (1 != sscanf (&out[rpos + 1], "%2X", &hx))
+            {
+              GNUNET_free (out);
+              return NULL;
+            }
+          rpos += 3;
+          if (hx == '"')
+            continue;           /* skip double quote */
+          out[wpos++] = (char) hx;
+        }
       else
-	{
-	  out[wpos++] = out[rpos++];
-	}      
+        {
+          out[wpos++] = out[rpos++];
+        }
     }
   if (out[0] == '+')
     {
-      ret = GNUNET_strdup(out);
+      ret = GNUNET_strdup (out);
     }
   else
     {
       /* need to prefix with space */
-      ret = GNUNET_malloc(strlen(out)+2);
-      strcpy(ret, " ");
-      strcat(ret, out);
+      ret = GNUNET_malloc (strlen (out) + 2);
+      strcpy (ret, " ");
+      strcat (ret, out);
     }
-  GNUNET_free(out);
+  GNUNET_free (out);
   return ret;
 }
 
@@ -373,15 +371,13 @@ parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri,
   saw_quote = 0;
   for (i = pos; i < slen; i++)
     {
-      if ( (uri[i] == '%') &&
-	   (&uri[i] == strstr(&uri[i], "%22")) )
-	{
-	  saw_quote = (saw_quote + 1) % 2;
-	  i += 3;
-	  continue;
-	}
-	if ( (uri[i] == '+') &&
-	     (saw_quote == 0) )
+      if ((uri[i] == '%') && (&uri[i] == strstr (&uri[i], "%22")))
+        {
+          saw_quote = (saw_quote + 1) % 2;
+          i += 3;
+          continue;
+        }
+      if ((uri[i] == '+') && (saw_quote == 0))
         {
           ret++;
           if (uri[i - 1] == '+')
@@ -389,7 +385,7 @@ parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri,
         }
     }
   if (saw_quote == 1)
-    return GNUNET_SYSERR; /* quotes not balanced */
+    return GNUNET_SYSERR;       /* quotes not balanced */
   iret = ret;
   dup = GNUNET_strdup (uri);
   (*keywords) = GNUNET_malloc (ret * sizeof (char *));
@@ -397,19 +393,17 @@ parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri,
     (*keywords)[i] = NULL;
   for (i = slen - 1; i >= pos; i--)
     {
-      if ( (uri[i] == '%') &&
-	   (&uri[i] == strstr(&uri[i], "%22")) )
-	{
-	  saw_quote = (saw_quote + 1) % 2;
-	  i += 3;
-	  continue;
-	} 
-      if ( (dup[i] == '+') &&
-	   (saw_quote == 0) )
+      if ((uri[i] == '%') && (&uri[i] == strstr (&uri[i], "%22")))
+        {
+          saw_quote = (saw_quote + 1) % 2;
+          i += 3;
+          continue;
+        }
+      if ((dup[i] == '+') && (saw_quote == 0))
         {
           (*keywords)[--ret] = percent_decode_keyword (&dup[i + 1]);
-	  if (NULL == (*keywords)[ret])
-	    goto CLEANUP;
+          if (NULL == (*keywords)[ret])
+            goto CLEANUP;
           dup[i] = '\0';
         }
     }
@@ -419,12 +413,12 @@ parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri,
   GNUNET_GE_ASSERT (ectx, ret == 0);
   GNUNET_free (dup);
   return iret;
- CLEANUP:
+CLEANUP:
   for (i = 0; i < ret; i++)
-    GNUNET_free_non_null((*keywords)[i]);
-  GNUNET_free(*keywords);
+    GNUNET_free_non_null ((*keywords)[i]);
+  GNUNET_free (*keywords);
   *keywords = NULL;
-  return GNUNET_SYSERR; 
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -785,7 +779,7 @@ GNUNET_ECRS_uri_get_keywords_from_ksk (const struct GNUNET_ECRS_URI *uri,
                                        void *cls)
 {
   unsigned int i;
-  char * keyword;
+  char *keyword;
 
   if (uri->type != ksk)
     return -1;
@@ -795,11 +789,9 @@ GNUNET_ECRS_uri_get_keywords_from_ksk (const struct GNUNET_ECRS_URI *uri,
     {
       keyword = uri->data.ksk.keywords[i];
       /* first character of keyword indicates
-	 if it is mandator or not */
-      if (GNUNET_OK != iterator (&keyword[1],
-				 keyword[0] == '+',
-				 cls))
-	return i;
+         if it is mandator or not */
+      if (GNUNET_OK != iterator (&keyword[1], keyword[0] == '+', cls))
+        return i;
     }
   return i;
 }
@@ -939,8 +931,8 @@ GNUNET_ECRS_meta_data_to_uri (const MetaData * md)
   int j;
   int havePreview;
   int add;
-  const char * kword;
-  char * nkword;
+  const char *kword;
+  char *nkword;
 
   if (md == NULL)
     return NULL;
@@ -990,12 +982,11 @@ GNUNET_ECRS_meta_data_to_uri (const MetaData * md)
           if (add == 1)
             {
               GNUNET_GE_ASSERT (NULL, md->items[i].data != NULL);
-	      kword = md->items[i].data;
-	      nkword = GNUNET_malloc(strlen(kword)+2);
-	      strcpy(nkword, " "); /* not mandatory */
-	      strcat(nkword, kword);
-              ret->data.ksk.keywords[i - havePreview] 
-                = nkword;
+              kword = md->items[i].data;
+              nkword = GNUNET_malloc (strlen (kword) + 2);
+              strcpy (nkword, " ");     /* not mandatory */
+              strcat (nkword, kword);
+              ret->data.ksk.keywords[i - havePreview] = nkword;
             }
         }
     }

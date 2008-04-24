@@ -68,19 +68,17 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
   pos = searchString;
   while ('\0' != *pos)
     {
-      if ( (saw_quote ==0) &&
-	   (isspace (*pos)) )
+      if ((saw_quote == 0) && (isspace (*pos)))
         {
           inWord = 0;
         }
-      else
-	if (0 == inWord)
-	  {
-	    inWord = 1;
-	    ++num_Words;
-	  }
+      else if (0 == inWord)
+        {
+          inWord = 1;
+          ++num_Words;
+        }
       if ('"' == *pos)
-	saw_quote = (saw_quote + 1) % 2;     
+        saw_quote = (saw_quote + 1) % 2;
       pos++;
     }
   if (num_Words == 0)
@@ -102,11 +100,10 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
   keywords = GNUNET_malloc (num_Words * sizeof (char *));
   num_Words = 0;
   inWord = 0;
-  pos = searchString;  
-  while ('\0' != *pos) 
+  pos = searchString;
+  while ('\0' != *pos)
     {
-      if ( (saw_quote == 0) &&
-	   (isspace (*pos)) )
+      if ((saw_quote == 0) && (isspace (*pos)))
         {
           inWord = 0;
           *pos = '\0';
@@ -118,7 +115,7 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
           ++num_Words;
         }
       if ('"' == *pos)
-	saw_quote = (saw_quote + 1) % 2;     
+        saw_quote = (saw_quote + 1) % 2;
       pos++;
     }
   uri =
@@ -154,10 +151,10 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
 {
   unsigned int i;
   struct GNUNET_ECRS_URI *uri;
-  const char * keyword;
-  char * val;
-  const char * r;
-  char * w;
+  const char *keyword;
+  char *val;
+  const char *r;
+  char *w;
 
   uri = GNUNET_malloc (sizeof (URI));
   uri->type = ksk;
@@ -167,26 +164,26 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
     {
       keyword = keywords[i];
       if (keyword[0] == '+')
-	{
-	  val = GNUNET_strdup(keyword);
-	}
+        {
+          val = GNUNET_strdup (keyword);
+        }
       else
-	{
-	  val = GNUNET_malloc(strlen(keyword) + 2);
-	  strcpy(val, " ");
-	  strcat(val, keyword);
-	}
+        {
+          val = GNUNET_malloc (strlen (keyword) + 2);
+          strcpy (val, " ");
+          strcat (val, keyword);
+        }
       r = val;
       w = val;
       while ('\0' != *r)
-	{
-	  if ('"' == *r)
-	    r++;
-	  else
-	    *(w++) = *(r++);
-	}
-      uri->data.ksk.keywords[i] = GNUNET_strdup(val);
-      GNUNET_free(val);
+        {
+          if ('"' == *r)
+            r++;
+          else
+            *(w++) = *(r++);
+        }
+      uri->data.ksk.keywords[i] = GNUNET_strdup (val);
+      GNUNET_free (val);
     }
   return uri;
 }

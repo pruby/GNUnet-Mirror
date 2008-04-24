@@ -46,7 +46,8 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-recursivetest/FSUITEST") + 15);
+  fn =
+    GNUNET_malloc (strlen ("/tmp/gnunet-fsui-recursivetest/FSUITEST") + 15);
   GNUNET_snprintf (fn,
                    strlen ("/tmp/gnunet-fsui-recursivetest/FSUITEST") + 15,
                    "/tmp/gnunet-fsui-recursivetest/FSUITEST%u/", i);
@@ -65,55 +66,54 @@ makeHierarchyHelper (const char *current, const char *tree, int index,
   done = 0;
   while (!done && tree[index] != '\0')
     {
-    s = GNUNET_malloc (strlen(current)+strlen(DIR_SEPARATOR_STR)+14);
-    GNUNET_snprintf (s, strlen(current)+strlen(DIR_SEPARATOR_STR)+14,
-                     "%s%s%u",
-                     current, DIR_SEPARATOR_STR, fi);
-    switch (tree[index++])
-      {
-      case 'd':
-        if (check)
-          {
-            if (GNUNET_disk_directory_test (NULL, s) == GNUNET_NO)
-              {
-                index = -1;
-                done = 1;
-              }
-          }
-        else
-          {
-            GNUNET_disk_directory_create (NULL, s);
-          }
-        if (!done)
-          index = makeHierarchyHelper (s, tree, index, check);
-        break;
-      case 'f':
-        if (check)
-          {
-	    /* TODO: compare file contents */
-            if (GNUNET_disk_directory_test (NULL, s) != GNUNET_NO) 
-              {
-                index = -1;
-                done = 1;
-              }
-          }
-        else
-          {
-            buf = GNUNET_malloc (FILESIZE);
-            for (i = 0; i < FILESIZE; i++)
-              buf[i] = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 256);
-            GNUNET_disk_file_write (ectx, s, buf, FILESIZE, "600");
-            GNUNET_free (buf);
-          }
-        break;
-      case '.':
-        done = 1;
-        break;
-      default:
-        break;
-      }
-    GNUNET_free (s);
-    fi++;
+      s = GNUNET_malloc (strlen (current) + strlen (DIR_SEPARATOR_STR) + 14);
+      GNUNET_snprintf (s, strlen (current) + strlen (DIR_SEPARATOR_STR) + 14,
+                       "%s%s%u", current, DIR_SEPARATOR_STR, fi);
+      switch (tree[index++])
+        {
+        case 'd':
+          if (check)
+            {
+              if (GNUNET_disk_directory_test (NULL, s) == GNUNET_NO)
+                {
+                  index = -1;
+                  done = 1;
+                }
+            }
+          else
+            {
+              GNUNET_disk_directory_create (NULL, s);
+            }
+          if (!done)
+            index = makeHierarchyHelper (s, tree, index, check);
+          break;
+        case 'f':
+          if (check)
+            {
+              /* TODO: compare file contents */
+              if (GNUNET_disk_directory_test (NULL, s) != GNUNET_NO)
+                {
+                  index = -1;
+                  done = 1;
+                }
+            }
+          else
+            {
+              buf = GNUNET_malloc (FILESIZE);
+              for (i = 0; i < FILESIZE; i++)
+                buf[i] = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 256);
+              GNUNET_disk_file_write (ectx, s, buf, FILESIZE, "600");
+              GNUNET_free (buf);
+            }
+          break;
+        case '.':
+          done = 1;
+          break;
+        default:
+          break;
+        }
+      GNUNET_free (s);
+      fi++;
     }
   return index;
 }
@@ -123,7 +123,7 @@ makeHierarchy (unsigned int i, const char *tree)
 {
   char *fn;
 
-  fn = makeName(i);
+  fn = makeName (i);
   makeHierarchyHelper (fn, tree, 0, 0);
   return fn;
 }
@@ -134,12 +134,12 @@ checkHierarchy (unsigned int i, const char *tree)
   char *fn;
   int res;
 
-  fn = makeName(i);
+  fn = makeName (i);
   if (GNUNET_disk_directory_test (NULL, fn) != GNUNET_YES)
     return GNUNET_SYSERR;
   res = ((makeHierarchyHelper (fn, tree, 0, 1) == -1) ?
          GNUNET_SYSERR : GNUNET_OK);
-  GNUNET_free(fn);
+  GNUNET_free (fn);
   return res;
 }
 
@@ -222,8 +222,8 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #if DEBUG_VERBOSE
       printf ("Download complete.\n");
 #endif
-      if (checkHierarchy(43, DIRECTORY_TREE_SPEC) == GNUNET_OK)
-	search_done = 1;
+      if (checkHierarchy (43, DIRECTORY_TREE_SPEC) == GNUNET_OK)
+        search_done = 1;
       break;
     case GNUNET_FSUI_download_progress:
 #if DEBUG_VERBOSE > 1
@@ -322,9 +322,11 @@ main (int argc, char *argv[])
                            cfg, "fsuirecursivetest", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
-  fn = makeHierarchy(42, DIRECTORY_TREE_SPEC);
+  fn = makeHierarchy (42, DIRECTORY_TREE_SPEC);
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2, (const char **) keywords);
+  kuri =
+    GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
+                                             (const char **) keywords);
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload = GNUNET_FSUI_upload_start (ctx,
                                      fn,
@@ -347,14 +349,13 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (ctx, upload);
-  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0],
-                   keywords[1]);
+  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;
   search = GNUNET_FSUI_search_start (ctx, 0, uri);
   CHECK (search != NULL);
   prog = 0;
-  while (! search_done)
+  while (!search_done)
     {
       prog++;
       CHECK (prog < 1000);

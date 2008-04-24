@@ -157,8 +157,7 @@ main (int argc, char *argv[])
                            cfg, "serializetest3", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
-  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], 
-                   keywords[1]);
+  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   search = GNUNET_FSUI_search_start (ctx, 0, uri);
   CHECK (search != NULL);

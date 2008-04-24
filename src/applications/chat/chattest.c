@@ -42,10 +42,10 @@ static struct GNUNET_ClientServerConnection *sock;
 
 static int
 receive_callback1 (void *cls,
-                  struct GNUNET_CHAT_Room *room,
-                  const char *senderNick,
-                  const char *message,
-                  GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+                   struct GNUNET_CHAT_Room *room,
+                   const char *senderNick,
+                   const char *message,
+                   GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
 {
   fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
   return GNUNET_OK;
@@ -53,7 +53,7 @@ receive_callback1 (void *cls,
 
 static int
 member_list_callback1 (void *cls, const char *senderNick,
-                      int is_joining, GNUNET_CronTime timestamp)
+                       int is_joining, GNUNET_CronTime timestamp)
 {
   fprintf (stdout, is_joining
            ? _("`%s' entered the room\n")
@@ -63,10 +63,10 @@ member_list_callback1 (void *cls, const char *senderNick,
 
 static int
 receive_callback2 (void *cls,
-                  struct GNUNET_CHAT_Room *room,
-                  const char *senderNick,
-                  const char *message,
-                  GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+                   struct GNUNET_CHAT_Room *room,
+                   const char *senderNick,
+                   const char *message,
+                   GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
 {
   fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
   return GNUNET_OK;
@@ -74,7 +74,7 @@ receive_callback2 (void *cls,
 
 static int
 member_list_callback2 (void *cls, const char *senderNick,
-                      int is_joining, GNUNET_CronTime timestamp)
+                       int is_joining, GNUNET_CronTime timestamp)
 {
   fprintf (stdout, is_joining
            ? _("`%s' entered the room\n")
@@ -96,11 +96,11 @@ main (int argc, char **argv)
   struct GNUNET_CHAT_Room *r1;
   struct GNUNET_CHAT_Room *r2;
 
-	GNUNET_RSA_PublicKey * me = NULL;
-	const struct GNUNET_RSA_PrivateKey *key = NULL;
+  GNUNET_RSA_PublicKey *me = NULL;
+  const struct GNUNET_RSA_PrivateKey *key = NULL;
 
-	key = GNUNET_RSA_create_key ();
-  GNUNET_RSA_get_public_key (key, &me); 
+  key = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (key, &me);
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -121,13 +121,14 @@ main (int argc, char **argv)
     }
 #endif
 
-  r1 = GNUNET_CHAT_join_room (NULL,cfg,"nicktest1","testroom",me,key,""
-  														,&receive_callback1, NULL,member_list_callback1,
-                       				NULL);
-                       
-  r2 = GNUNET_CHAT_join_room (NULL,cfg,"nicktest2","testroom",me,key,"",
-                       &receive_callback2, NULL,member_list_callback2,
-                       NULL);
+  r1 =
+    GNUNET_CHAT_join_room (NULL, cfg, "nicktest1", "testroom", me, key, "",
+                           &receive_callback1, NULL, member_list_callback1,
+                           NULL);
+
+  r2 = GNUNET_CHAT_join_room (NULL, cfg, "nicktest2", "testroom", me, key, "",
+                              &receive_callback2, NULL, member_list_callback2,
+                              NULL);
 
   GNUNET_CHAT_leave_room (r1);
   GNUNET_CHAT_leave_room (r2);

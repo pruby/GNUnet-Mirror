@@ -227,11 +227,11 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
       GNUNET_GE_ASSERT (NULL, s->checksum == -s->handle);
       if ((ret == (size_t) - 1) &&
           (errno == EINTR) && (0 != (nc & GNUNET_NC_IGNORE_INT)))
-	{
-	  if (GNUNET_shutdown_test() == GNUNET_YES)
-	    return GNUNET_SYSERR;
-	  continue;
-	}
+        {
+          if (GNUNET_shutdown_test () == GNUNET_YES)
+            return GNUNET_SYSERR;
+          continue;
+        }
       if ((ret == (size_t) - 1) || (ret > max - pos))
         {
           if (errno == EINTR)

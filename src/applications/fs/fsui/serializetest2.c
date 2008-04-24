@@ -366,7 +366,9 @@ main (int argc, char *argv[])
       GNUNET_free (fn);
     }
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2, (const char **) keywords);
+  kuri =
+    GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
+                                             (const char **) keywords);
   GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_MIMETYPE,
                                 GNUNET_DIRECTORY_MIME);
   upload =

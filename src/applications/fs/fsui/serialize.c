@@ -32,18 +32,18 @@
 #include "fsui.h"
 
 
-typedef struct {
+typedef struct
+{
   int fd;
   unsigned int have;
   unsigned int size;
-  char * buffer;
+  char *buffer;
 } WriteBuffer;
 
 static void
-write_buffered(WriteBuffer * wb,
-	       const void * s,
-	       unsigned int size) {
-  const char * src = s;
+write_buffered (WriteBuffer * wb, const void *s, unsigned int size)
+{
+  const char *src = s;
   unsigned int min;
   unsigned int pos;
   int ret;
@@ -51,32 +51,28 @@ write_buffered(WriteBuffer * wb,
   if (wb->fd == -1)
     return;
   pos = 0;
-  do 
+  do
     {
       /* first, just use buffer */
       min = wb->size - wb->have;
       if (min > size)
-	min = size;
-      memcpy(&wb->buffer[wb->have],
-	     &src[pos],
-	     min);
+        min = size;
+      memcpy (&wb->buffer[wb->have], &src[pos], min);
       pos += min;
       wb->have += min;
       if (pos == size)
-	return; /* done */
-      GNUNET_GE_ASSERT(NULL, wb->have == wb->size);
-      ret = WRITE(wb->fd,
-		  wb->buffer,
-		  wb->size);
+        return;                 /* done */
+      GNUNET_GE_ASSERT (NULL, wb->have == wb->size);
+      ret = WRITE (wb->fd, wb->buffer, wb->size);
       if (ret != wb->size)
-	{
-	  CLOSE(wb->fd);
-	  wb->fd = -1;
-	  return; /* error */
-	}
+        {
+          CLOSE (wb->fd);
+          wb->fd = -1;
+          return;               /* error */
+        }
       wb->have = 0;
     }
-  while (pos < size); /* should always be true */
+  while (pos < size);           /* should always be true */
 }
 
 
@@ -192,9 +188,9 @@ writeDownloadList (struct GNUNET_GE_Context *ectx,
               i = 0;
               break;
             }
-	  i++;
+          i++;
         }
-      if (pos == NULL) 
+      if (pos == NULL)
         i = 0;
       WRITEINT (wb, i);
     }
@@ -235,18 +231,17 @@ writeCollection (WriteBuffer * wb, struct GNUNET_FSUI_Context *ctx)
  * that we are performing.
  */
 static void
-write_search_record_list(struct GNUNET_GE_Context * ectx,
-			 WriteBuffer *wb,
-			 struct SearchRecordList * pos) 
+write_search_record_list (struct GNUNET_GE_Context *ectx,
+                          WriteBuffer * wb, struct SearchRecordList *pos)
 {
-  while (pos != NULL) 
+  while (pos != NULL)
     {
-      WRITEINT(wb, pos->is_required);
-      write_buffered(wb, &pos->key, sizeof(GNUNET_HashCode));
-      writeURI(wb, pos->uri);
+      WRITEINT (wb, pos->is_required);
+      write_buffered (wb, &pos->key, sizeof (GNUNET_HashCode));
+      writeURI (wb, pos->uri);
       pos = pos->next;
-    }     
-  WRITEINT(wb, -1);
+    }
+  WRITEINT (wb, -1);
 }
 
 /**
@@ -258,40 +253,39 @@ write_search_record_list(struct GNUNET_GE_Context * ectx,
  * @param pos results to write
  */
 void
-write_result_list(struct GNUNET_GE_Context * ectx,
-		  WriteBuffer *wb,
-		  struct SearchRecordList * search_list,
-		  struct SearchResultList * pos) 
+write_result_list (struct GNUNET_GE_Context *ectx,
+                   WriteBuffer * wb,
+                   struct SearchRecordList *search_list,
+                   struct SearchResultList *pos)
 {
   unsigned int i;
   unsigned int idx;
-  struct SearchRecordList * spos;
+  struct SearchRecordList *spos;
 
-  while (pos != NULL) 
-    { 
-      WRITEINT(wb, pos->matchingSearchCount);
-      WRITEINT(wb, pos->mandatoryMatchesRemaining);
-      WRITEINT(wb, pos->probeSuccess);
-      WRITEINT(wb, pos->probeFailure);
-      writeFileInfo(ectx, wb, &pos->fi);
+  while (pos != NULL)
+    {
+      WRITEINT (wb, pos->matchingSearchCount);
+      WRITEINT (wb, pos->mandatoryMatchesRemaining);
+      WRITEINT (wb, pos->probeSuccess);
+      WRITEINT (wb, pos->probeFailure);
+      writeFileInfo (ectx, wb, &pos->fi);
       i = pos->matchingSearchCount;
       while (i-- > 0)
-	{
-	  idx = 1;
-	  spos = search_list;
-	  while ( (spos != NULL) &&
-		  (spos != pos->matchingSearches[i]) )
-	    {
-	      idx++;
-	      spos = spos->next;
-	    }
-	  if (spos == NULL)
-	    idx = 0;
-	  WRITEINT(wb, idx);	  
-	}
+        {
+          idx = 1;
+          spos = search_list;
+          while ((spos != NULL) && (spos != pos->matchingSearches[i]))
+            {
+              idx++;
+              spos = spos->next;
+            }
+          if (spos == NULL)
+            idx = 0;
+          WRITEINT (wb, idx);
+        }
       pos = pos->next;
-    }     
-  WRITEINT(wb, -1);
+    }
+  WRITEINT (wb, -1);
 }
 
 
@@ -313,13 +307,9 @@ writeSearches (WriteBuffer * wb, struct GNUNET_FSUI_Context *ctx)
       WRITEINT (wb, spos->anonymityLevel);
       WRITEINT (wb, spos->mandatory_keyword_count);
       writeURI (wb, spos->uri);
-      write_search_record_list(ctx->ectx,
-			       wb,
-			       spos->searches);
-      write_result_list(ctx->ectx,
-			wb,
-			spos->searches,
-			spos->resultsReceived);
+      write_search_record_list (ctx->ectx, wb, spos->searches);
+      write_result_list (ctx->ectx,
+                         wb, spos->searches, spos->resultsReceived);
       spos = spos->next;
     }
   WRITEINT (wb, 0);
@@ -420,25 +410,23 @@ GNUNET_FSUI_serialize (struct GNUNET_FSUI_Context *ctx)
   WriteBuffer wb;
 
   wb.fd = GNUNET_disk_file_open (ctx->ectx,
-				 ctx->name,
-				 O_CREAT | O_TRUNC | O_WRONLY,
-				 S_IRUSR | S_IWUSR);
+                                 ctx->name,
+                                 O_CREAT | O_TRUNC | O_WRONLY,
+                                 S_IRUSR | S_IWUSR);
   if (wb.fd == -1)
     return;
   wb.have = 0;
   wb.size = 64 * 1024;
-  wb.buffer = GNUNET_malloc(wb.size);
-  write_buffered (&wb, "FSUI03\n\0", 8);  /* magic */
+  wb.buffer = GNUNET_malloc (wb.size);
+  write_buffered (&wb, "FSUI03\n\0", 8);        /* magic */
   writeCollection (&wb, ctx);
   writeSearches (&wb, ctx);
   writeDownloadList (ctx->ectx, &wb, ctx, ctx->activeDownloads.child);
   writeUnindexing (&wb, ctx);
   writeUploads (&wb, ctx, ctx->activeUploads.child);
-  WRITE(wb.fd,
-	wb.buffer,
-	wb.have);  
+  WRITE (wb.fd, wb.buffer, wb.have);
   CLOSE (wb.fd);
-  GNUNET_free(wb.buffer);
+  GNUNET_free (wb.buffer);
 }
 
 /* end of serialize.c */

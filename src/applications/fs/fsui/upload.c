@@ -862,7 +862,7 @@ GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_UploadList *ul)
   void *unused;
   struct GNUNET_FSUI_UploadShared *shared;
   struct GNUNET_FSUI_Context *ctx;
-  
+
   if (ul == NULL)
     return GNUNET_SYSERR;
   ctx = ul->shared->ctx;

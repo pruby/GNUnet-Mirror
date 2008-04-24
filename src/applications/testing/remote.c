@@ -97,7 +97,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   GNUNET_REMOTE_TOPOLOGIES type_of_topology;
   list_as_array = &array_of_pointers[0];
 
-	
+
   char *ssh_username;
   char *control_host;
   char *remote_config_path;
@@ -111,7 +111,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   char *temp_pid_file;
   char *curr_host;
   char *temp_remote_config_path;
-  
+
   unsigned long long starting_port;
   unsigned long long port_increment;
   unsigned long long daemons_per_machine;
@@ -150,9 +150,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                             "SSH_USERNAME", "",
                                             &ssh_username);
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
-                                            "TOPOLOGY",
-                                            0, -1, 0, &topology);
-  type_of_topology = (unsigned int)topology;
+                                            "TOPOLOGY", 0, -1, 0, &topology);
+  type_of_topology = (unsigned int) topology;
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "CONTROL_HOST", "localhost",
                                             &control_host);
@@ -476,19 +475,19 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
   switch (t)
     {
     case GNUNET_REMOTE_CLIQUE:
-    	fprintf(stderr,"Creating clique topology\n");
+      fprintf (stderr, "Creating clique topology\n");
       ret = GNUNET_REMOTE_connect_clique (head);
       break;
     case GNUNET_REMOTE_SMALL_WORLD:
-      fprintf(stderr,"Creating small world topology\n");
+      fprintf (stderr, "Creating small world topology\n");
       ret = GNUNET_SYSERR;
       break;
     case GNUNET_REMOTE_RING:
-      fprintf(stderr,"Creating ring topology\n");
+      fprintf (stderr, "Creating ring topology\n");
       ret = GNUNET_SYSERR;
       break;
     case GNUNET_REMOTE_2D_TORUS:
-      fprintf(stderr,"Creating 2d torus topology\n");
+      fprintf (stderr, "Creating 2d torus topology\n");
       ret = GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array);
       break;
     default:
@@ -542,7 +541,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
        * with MANY conns, we'll see...
        */
       while (pos != NULL)
-      	{
+        {
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
@@ -557,7 +556,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
             }
           pos = pos->next;
         }
-        
+
     }
   else
     {

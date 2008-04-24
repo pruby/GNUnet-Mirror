@@ -38,14 +38,17 @@
 
 #define DEBUG_SEARCH GNUNET_NO
 
-void bug() {}
+void
+bug ()
+{
+}
 
 /**
  * Pass the result to the client and note it as shown.
  */
 static void
-processResult (struct GNUNET_FSUI_SearchList * ctx,
-	       struct SearchResultList * pos)
+processResult (struct GNUNET_FSUI_SearchList *ctx,
+               struct SearchResultList *pos)
 {
   GNUNET_FSUI_Event event;
 
@@ -66,15 +69,14 @@ processResult (struct GNUNET_FSUI_SearchList * ctx,
  */
 int
 GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
-                                      const GNUNET_HashCode * key, 
-				      int isRoot,
-                                      void *cls)
+                                      const GNUNET_HashCode * key,
+                                      int isRoot, void *cls)
 {
   GNUNET_FSUI_SearchList *pos = cls;
   unsigned int i;
   struct GNUNET_GE_Context *ectx;
-  struct SearchResultList * srl;
-  struct SearchRecordList * rec;
+  struct SearchResultList *srl;
+  struct SearchRecordList *rec;
 
   ectx = pos->ctx->ectx;
   GNUNET_URITRACK_track (ectx, pos->ctx->cfg, fi);
@@ -89,96 +91,87 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   srl = pos->resultsReceived;
   while (srl != NULL)
     {
-      if (GNUNET_ECRS_uri_test_equal (fi->uri, 
-				      srl->fi.uri))
-	{
-	  for (i=0;i<srl->matchingSearchCount;i++)
-	    {
-	      if ( (GNUNET_ECRS_uri_test_sks(pos->uri)) ||
-		   (0 == memcmp(key,
-				&srl->matchingSearches[i]->key,
-				sizeof(GNUNET_HashCode))) )
-		{
+      if (GNUNET_ECRS_uri_test_equal (fi->uri, srl->fi.uri))
+        {
+          for (i = 0; i < srl->matchingSearchCount; i++)
+            {
+              if ((GNUNET_ECRS_uri_test_sks (pos->uri)) ||
+                  (0 == memcmp (key,
+                                &srl->matchingSearches[i]->key,
+                                sizeof (GNUNET_HashCode))))
+                {
 #if DEBUG_SEARCH
-		  GNUNET_GE_LOG (ectx,
-				 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-				 "Received search result that I have seen before.\n");
+                  GNUNET_GE_LOG (ectx,
+                                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                                 GNUNET_GE_USER,
+                                 "Received search result that I have seen before.\n");
 #endif
-		  GNUNET_mutex_unlock (pos->lock);
-		  return GNUNET_OK;       /* seen before */
-		}	      
-	    }
-	  /* not seen before, find corresponding search! */
-	  rec = pos->searches;
-	  while ( (rec != NULL) &&
-		  (0 != memcmp(key,
-			       &rec->key,
-			       sizeof(GNUNET_HashCode))) )
-	    rec = rec->next;
-	  if (rec == NULL)
-	    {
-	      GNUNET_GE_BREAK(NULL, 0);
-	      GNUNET_mutex_unlock (pos->lock);
-	      return GNUNET_OK; /* should have matching search */
-	    }
-	  GNUNET_array_append(srl->matchingSearches,
-			      srl->matchingSearchCount,
-			      rec);
-	  if (rec->is_required)
-	    {
-	      if (srl->mandatoryMatchesRemaining > 0)
-		srl->mandatoryMatchesRemaining--;
-	      else
-		{
-		  bug();
-		  GNUNET_GE_BREAK(NULL, 0);
-		}
-	    }	  
-	  if (srl->mandatoryMatchesRemaining == 0)
-	    processResult(pos, srl);
-	  GNUNET_mutex_unlock (pos->lock);
-	  return GNUNET_OK;
-	}
+                  GNUNET_mutex_unlock (pos->lock);
+                  return GNUNET_OK;     /* seen before */
+                }
+            }
+          /* not seen before, find corresponding search! */
+          rec = pos->searches;
+          while ((rec != NULL) &&
+                 (0 != memcmp (key, &rec->key, sizeof (GNUNET_HashCode))))
+            rec = rec->next;
+          if (rec == NULL)
+            {
+              GNUNET_GE_BREAK (NULL, 0);
+              GNUNET_mutex_unlock (pos->lock);
+              return GNUNET_OK; /* should have matching search */
+            }
+          GNUNET_array_append (srl->matchingSearches,
+                               srl->matchingSearchCount, rec);
+          if (rec->is_required)
+            {
+              if (srl->mandatoryMatchesRemaining > 0)
+                srl->mandatoryMatchesRemaining--;
+              else
+                {
+                  bug ();
+                  GNUNET_GE_BREAK (NULL, 0);
+                }
+            }
+          if (srl->mandatoryMatchesRemaining == 0)
+            processResult (pos, srl);
+          GNUNET_mutex_unlock (pos->lock);
+          return GNUNET_OK;
+        }
       srl = srl->next;
     }
   /* new result */
   rec = pos->searches;
-  while ( (rec != NULL) &&
-	  (! GNUNET_ECRS_uri_test_sks(pos->uri)) &&
-	  (0 != memcmp(key,
-		       &rec->key,
-		       sizeof(GNUNET_HashCode))) )
+  while ((rec != NULL) &&
+         (!GNUNET_ECRS_uri_test_sks (pos->uri)) &&
+         (0 != memcmp (key, &rec->key, sizeof (GNUNET_HashCode))))
     rec = rec->next;
   if (rec == NULL)
     {
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       GNUNET_mutex_unlock (pos->lock);
-      return GNUNET_OK; /* should have matching search */
+      return GNUNET_OK;         /* should have matching search */
     }
-  srl = GNUNET_malloc(sizeof(struct SearchResultList));
-  memset(srl, 
-	 0,
-	 sizeof(struct SearchResultList));
-  GNUNET_array_append(srl->matchingSearches,
-		      srl->matchingSearchCount,
-		      rec);
+  srl = GNUNET_malloc (sizeof (struct SearchResultList));
+  memset (srl, 0, sizeof (struct SearchResultList));
+  GNUNET_array_append (srl->matchingSearches, srl->matchingSearchCount, rec);
   srl->fi.meta = GNUNET_ECRS_meta_data_duplicate (fi->meta);
   srl->fi.uri = GNUNET_ECRS_uri_duplicate (fi->uri);
   srl->mandatoryMatchesRemaining = pos->mandatory_keyword_count;
   if (rec->is_required)
     {
       if (srl->mandatoryMatchesRemaining > 0)
-	srl->mandatoryMatchesRemaining--;
+        srl->mandatoryMatchesRemaining--;
       else
-	{
-	  bug();
-	  GNUNET_GE_BREAK(NULL, 0);
-	}
-   }
+        {
+          bug ();
+          GNUNET_GE_BREAK (NULL, 0);
+        }
+    }
   srl->next = pos->resultsReceived;
   pos->resultsReceived = srl;
   if (srl->mandatoryMatchesRemaining == 0)
-    processResult(pos, srl);
+    processResult (pos, srl);
   GNUNET_mutex_unlock (pos->lock);
   return GNUNET_OK;
 }
@@ -190,39 +183,33 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
  * @param closure our GNUNET_FSUI_SearchList.
  */
 static int
-create_ecrs_search(const char * keyword,
-		   int is_mandatory,
-		   void * closure)
+create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
 {
-  struct GNUNET_FSUI_SearchList * pos = closure;
-  struct SearchRecordList * srl;
+  struct GNUNET_FSUI_SearchList *pos = closure;
+  struct SearchRecordList *srl;
 
-  srl = GNUNET_malloc(sizeof(struct SearchRecordList));
-  memset(srl, 0, sizeof(struct SearchRecordList));
-  srl->uri = GNUNET_ECRS_keyword_command_line_to_uri(pos->ctx->ectx,
-						     1,
-						     &keyword);  
-  GNUNET_hash(keyword,
-	      strlen(keyword),
-	      &srl->key);
+  srl = GNUNET_malloc (sizeof (struct SearchRecordList));
+  memset (srl, 0, sizeof (struct SearchRecordList));
+  srl->uri = GNUNET_ECRS_keyword_command_line_to_uri (pos->ctx->ectx,
+                                                      1, &keyword);
+  GNUNET_hash (keyword, strlen (keyword), &srl->key);
   srl->is_required = is_mandatory;
   if (is_mandatory)
     pos->mandatory_keyword_count++;
   srl->next = pos->searches;
   pos->searches = srl;
-  srl->search = 
+  srl->search =
     GNUNET_ECRS_search_start (pos->ctx->ectx,
-			      pos->ctx->cfg,
-			      srl->uri,
-			      pos->anonymityLevel,
-			      &GNUNET_FSUI_search_progress_callback,
-			      pos);
+                              pos->ctx->cfg,
+                              srl->uri,
+                              pos->anonymityLevel,
+                              &GNUNET_FSUI_search_progress_callback, pos);
   if (srl->search == NULL)
     {
-      GNUNET_ECRS_uri_destroy(srl->uri);
+      GNUNET_ECRS_uri_destroy (srl->uri);
       pos->searches = srl->next;
-      GNUNET_free(srl);
-      pos->start_time = 0; /* flag to indicate error */
+      GNUNET_free (srl);
+      pos->start_time = 0;      /* flag to indicate error */
       return GNUNET_SYSERR;
     }
   return GNUNET_OK;
@@ -239,72 +226,67 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   GNUNET_FSUI_SearchList *pos;
   struct GNUNET_GE_Context *ectx;
   GNUNET_FSUI_Event event;
-  struct SearchRecordList * srl;
+  struct SearchRecordList *srl;
 
-  if (! (GNUNET_ECRS_uri_test_ksk(uri) ||
-	 GNUNET_ECRS_uri_test_sks(uri) ) )
+  if (!(GNUNET_ECRS_uri_test_ksk (uri) || GNUNET_ECRS_uri_test_sks (uri)))
     {
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return NULL;
-    }      
+    }
   ectx = ctx->ectx;
   pos = GNUNET_malloc (sizeof (GNUNET_FSUI_SearchList));
-  memset(pos,
-	 0,
-	 sizeof (GNUNET_FSUI_SearchList));
+  memset (pos, 0, sizeof (GNUNET_FSUI_SearchList));
   pos->state = GNUNET_FSUI_ACTIVE;
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
   pos->start_time = GNUNET_get_time ();
   pos->uri = GNUNET_ECRS_uri_duplicate (uri);
-  pos->lock = GNUNET_mutex_create(GNUNET_NO);
+  pos->lock = GNUNET_mutex_create (GNUNET_NO);
   event.type = GNUNET_FSUI_search_started;
   event.data.SearchStarted.sc.pos = pos;
   event.data.SearchStarted.sc.cctx = NULL;
   event.data.SearchStarted.searchURI = pos->uri;
   event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
   pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);
-  GNUNET_mutex_lock(pos->lock);
-  if (GNUNET_ECRS_uri_test_ksk(uri))
+  GNUNET_mutex_lock (pos->lock);
+  if (GNUNET_ECRS_uri_test_ksk (uri))
     {
       /* (possibly boolean) keyword search */
-      GNUNET_ECRS_uri_get_keywords_from_ksk(uri,
-					    &create_ecrs_search,
-					    pos);
+      GNUNET_ECRS_uri_get_keywords_from_ksk (uri, &create_ecrs_search, pos);
       if (pos->start_time == 0)
-	{
-	  /* failed to start ECRS searches */
-	  while (pos->searches != NULL)
-	    {
-	      srl = pos->searches;
-	      pos->searches = srl->next;
-	      GNUNET_ECRS_search_stop(srl->search);
-	      GNUNET_ECRS_uri_destroy (srl->uri);
-	      GNUNET_free(srl);
-	    }
-	}
+        {
+          /* failed to start ECRS searches */
+          while (pos->searches != NULL)
+            {
+              srl = pos->searches;
+              pos->searches = srl->next;
+              GNUNET_ECRS_search_stop (srl->search);
+              GNUNET_ECRS_uri_destroy (srl->uri);
+              GNUNET_free (srl);
+            }
+        }
     }
   else
     {
       /* Namespace search, only one ECRS search */
-      srl = GNUNET_malloc(sizeof(struct SearchRecordList));
-      memset(srl, 0, sizeof(struct SearchRecordList));
+      srl = GNUNET_malloc (sizeof (struct SearchRecordList));
+      memset (srl, 0, sizeof (struct SearchRecordList));
       srl->uri = GNUNET_ECRS_uri_duplicate (uri);
       srl->search = GNUNET_ECRS_search_start (pos->ctx->ectx,
-					      pos->ctx->cfg,
-					      pos->uri,
-					      pos->anonymityLevel,
-					      &GNUNET_FSUI_search_progress_callback,
-					      pos);
+                                              pos->ctx->cfg,
+                                              pos->uri,
+                                              pos->anonymityLevel,
+                                              &GNUNET_FSUI_search_progress_callback,
+                                              pos);
       if (srl->search == NULL)
-	{
-	  GNUNET_ECRS_uri_destroy (srl->uri);
-	  GNUNET_free (srl);
-	}
+        {
+          GNUNET_ECRS_uri_destroy (srl->uri);
+          GNUNET_free (srl);
+        }
       else
-	{
-	  pos->searches = srl;
-	}
+        {
+          pos->searches = srl;
+        }
     }
   if (pos->searches == NULL)
     {
@@ -312,14 +294,14 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
       event.type = GNUNET_FSUI_search_stopped;
       event.data.SearchStopped.sc.pos = pos;
       event.data.SearchStopped.sc.cctx = NULL;
-      pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);	
+      pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);
       GNUNET_ECRS_uri_destroy (pos->uri);
-      GNUNET_mutex_unlock(pos->lock);
-      GNUNET_mutex_destroy(pos->lock);  
+      GNUNET_mutex_unlock (pos->lock);
+      GNUNET_mutex_destroy (pos->lock);
       GNUNET_free (pos);
       return NULL;
-    }     
-  GNUNET_mutex_unlock(pos->lock);
+    }
+  GNUNET_mutex_unlock (pos->lock);
   /* success, add to FSUI state */
   GNUNET_mutex_lock (ctx->lock);
   pos->next = ctx->activeSearches;
@@ -335,8 +317,8 @@ int
 GNUNET_FSUI_search_abort (struct GNUNET_FSUI_SearchList *sl)
 {
   GNUNET_FSUI_Event event;
-  struct SearchRecordList * rec;
-  struct SearchResultList * srl;
+  struct SearchRecordList *rec;
+  struct SearchResultList *srl;
   struct GNUNET_FSUI_Context *ctx;
 
   ctx = sl->ctx;
@@ -359,24 +341,22 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_SearchList *sl)
     {
       rec = sl->searches;
       sl->searches = rec->next;
-      GNUNET_ECRS_search_stop(rec->search);
+      GNUNET_ECRS_search_stop (rec->search);
       GNUNET_ECRS_uri_destroy (rec->uri);
-      GNUNET_free(rec);
+      GNUNET_free (rec);
     }
   /* clean up a bit more: we don't need matchingSearches
-     anymore, and the pointers are now invalid! */     
+     anymore, and the pointers are now invalid! */
   GNUNET_mutex_lock (ctx->lock);
   srl = sl->resultsReceived;
   while (srl != NULL)
     {
-      GNUNET_array_grow(srl->matchingSearches,
-			srl->matchingSearchCount,
-			0);
+      GNUNET_array_grow (srl->matchingSearches, srl->matchingSearchCount, 0);
       if (srl->test_download != NULL)
-	{
-	  GNUNET_ECRS_file_download_partial_stop(srl->test_download);
-	  srl->test_download = NULL;
-	}
+        {
+          GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+          srl->test_download = NULL;
+        }
       srl = srl->next;
     }
   event.type = GNUNET_FSUI_search_aborted;
@@ -394,8 +374,8 @@ int
 GNUNET_FSUI_search_pause (struct GNUNET_FSUI_SearchList *sl)
 {
   GNUNET_FSUI_Event event;
-  struct SearchRecordList * rec;
-  struct SearchResultList * srl;
+  struct SearchRecordList *rec;
+  struct SearchResultList *srl;
   struct GNUNET_FSUI_Context *ctx;
 
   ctx = sl->ctx;
@@ -412,7 +392,7 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_SearchList *sl)
   while (rec != NULL)
     {
       if (rec->search != NULL)
-	GNUNET_ECRS_search_stop(rec->search);
+        GNUNET_ECRS_search_stop (rec->search);
       rec->search = NULL;
       rec = rec->next;
     }
@@ -421,10 +401,10 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_SearchList *sl)
   while (srl != NULL)
     {
       if (srl->test_download != NULL)
-	{
-	  GNUNET_ECRS_file_download_partial_stop(srl->test_download);
-	  srl->test_download = NULL;
-	}
+        {
+          GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+          srl->test_download = NULL;
+        }
       srl = srl->next;
     }
   event.type = GNUNET_FSUI_search_paused;
@@ -442,7 +422,7 @@ int
 GNUNET_FSUI_search_restart (struct GNUNET_FSUI_SearchList *pos)
 {
   GNUNET_FSUI_Event event;
-  struct SearchRecordList * rec;
+  struct SearchRecordList *rec;
   struct GNUNET_FSUI_Context *ctx;
 
   ctx = pos->ctx;
@@ -456,19 +436,19 @@ GNUNET_FSUI_search_restart (struct GNUNET_FSUI_SearchList *pos)
   while (rec != NULL)
     {
       rec->search = GNUNET_ECRS_search_start (pos->ctx->ectx,
-					      pos->ctx->cfg,
-					      rec->uri,
-					      pos->anonymityLevel,
-					      &GNUNET_FSUI_search_progress_callback,
-					      pos);
+                                              pos->ctx->cfg,
+                                              rec->uri,
+                                              pos->anonymityLevel,
+                                              &GNUNET_FSUI_search_progress_callback,
+                                              pos);
       if (rec->search == NULL)
-	break;
+        break;
       rec = rec->next;
     }
   if (rec != NULL)
     {
       /* failed to restart, auto-pause again */
-      GNUNET_FSUI_search_pause(pos);
+      GNUNET_FSUI_search_pause (pos);
       GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_SYSERR;
     }
@@ -486,8 +466,8 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
   GNUNET_FSUI_SearchList *pos;
   GNUNET_FSUI_SearchList *prev;
   int i;
-  struct SearchRecordList * rec;
-  struct SearchResultList * srl;
+  struct SearchRecordList *rec;
+  struct SearchResultList *srl;
   struct GNUNET_FSUI_Context *ctx;
 
   ctx = sl->ctx;
@@ -520,13 +500,13 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
       rec = sl->searches;
       sl->searches = rec->next;
       if (rec->search != NULL)
-	{
-	  GNUNET_GE_BREAK (ctx->ectx, 0);
-	  GNUNET_ECRS_search_stop(rec->search);
-	  rec->search = NULL;
-	}
+        {
+          GNUNET_GE_BREAK (ctx->ectx, 0);
+          GNUNET_ECRS_search_stop (rec->search);
+          rec->search = NULL;
+        }
       GNUNET_ECRS_uri_destroy (rec->uri);
-      GNUNET_free(rec);
+      GNUNET_free (rec);
     }
   event.type = GNUNET_FSUI_search_stopped;
   event.data.SearchStopped.sc.pos = pos;
@@ -537,16 +517,14 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
     {
       srl = sl->resultsReceived;
       sl->resultsReceived = srl->next;
-      GNUNET_array_grow(srl->matchingSearches,
-			srl->matchingSearchCount,
-			0);
+      GNUNET_array_grow (srl->matchingSearches, srl->matchingSearchCount, 0);
       GNUNET_ECRS_uri_destroy (srl->fi.uri);
       GNUNET_ECRS_meta_data_destroy (srl->fi.meta);
       if (srl->test_download != NULL)
-	GNUNET_ECRS_file_download_partial_stop(srl->test_download);
-      GNUNET_free(srl);
+        GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+      GNUNET_free (srl);
     }
-  GNUNET_mutex_destroy(pos->lock);
+  GNUNET_mutex_destroy (pos->lock);
   GNUNET_free (pos);
   return GNUNET_OK;
 }

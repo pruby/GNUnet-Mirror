@@ -36,7 +36,7 @@
 struct SearchResultList
 {
 
-  struct SearchResultList * next;
+  struct SearchResultList *next;
 
   /**
    * Test download (if any).
@@ -48,7 +48,7 @@ struct SearchResultList
    * (do NOT free the search records that this array
    * points to when freeing this result!).
    */
-  struct SearchRecordList ** matchingSearches;
+  struct SearchRecordList **matchingSearches;
 
   /**
    * What info do we have about this result?
@@ -86,13 +86,13 @@ struct SearchResultList
  */
 struct SearchRecordList
 {
-  
-  struct SearchRecordList * next;
+
+  struct SearchRecordList *next;
 
   /**
    * Handles to the ECRS SearchContexts.
    */
-  struct GNUNET_ECRS_SearchContext * search;
+  struct GNUNET_ECRS_SearchContext *search;
 
   /**
    * Which keyword are we searching? (this is
@@ -128,8 +128,8 @@ typedef struct GNUNET_FSUI_SearchList
 
   /**
    * Lock for the search.
-   */ 
-  struct GNUNET_Mutex * lock;
+   */
+  struct GNUNET_Mutex *lock;
 
   /**
    * Searches are kept in a simple linked list.
@@ -144,7 +144,7 @@ typedef struct GNUNET_FSUI_SearchList
   /**
    * Handles to the ECRS SearchContexts.
    */
-  struct SearchRecordList * searches;
+  struct SearchRecordList *searches;
 
   /**
    * Which URI are we searching?

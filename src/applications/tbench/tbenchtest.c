@@ -157,17 +157,17 @@ main (int argc, char **argv)
   /* 'blast' pass: hit bandwidth limits! */
   for (i = 8; i < 60000; i *= 2)
     {
-      if (GNUNET_shutdown_test() == GNUNET_YES)
-	break;
+      if (GNUNET_shutdown_test () == GNUNET_YES)
+        break;
       if (ret == 0)
         ret =
           test (sock, i, 1 + 1024 / i, 4, 10 * GNUNET_CRON_MILLISECONDS, 2,
                 2 * GNUNET_CRON_SECONDS);
     }
-  if (GNUNET_shutdown_test() != GNUNET_YES)
+  if (GNUNET_shutdown_test () != GNUNET_YES)
     ret =
       test (sock, 32768, 10, 10, 500 * GNUNET_CRON_MILLISECONDS, 1,
-	    10 * GNUNET_CRON_SECONDS);
+            10 * GNUNET_CRON_SECONDS);
   GNUNET_client_connection_destroy (sock);
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
