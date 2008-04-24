@@ -569,8 +569,8 @@ main (int argc, char *const *argv)
     {
       GNUNET_shutdown_wait_for ();
       if (errorCode == 1)
-        GNUNET_FSUI_upload_abort (ctx, ul);
-      GNUNET_FSUI_upload_stop (ctx, ul);
+        GNUNET_FSUI_upload_abort (ul);
+      GNUNET_FSUI_upload_stop (ul);
     }
   GNUNET_FSUI_stop (ctx);
 quit:

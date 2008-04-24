@@ -189,8 +189,8 @@ main (int argc, char *const *argv)
     }
   GNUNET_shutdown_wait_for ();
   if (errorCode == 1)
-    GNUNET_FSUI_search_abort (ctx, s);
-  GNUNET_FSUI_search_stop (ctx, s);
+    GNUNET_FSUI_search_abort (s);
+  GNUNET_FSUI_search_stop (s);
   GNUNET_FSUI_stop (ctx);
 
   if (output_filename != NULL)

@@ -652,7 +652,6 @@ readSearches (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 					       total_searches,
 					       srla);
       GNUNET_free(srla);
-      list->ctx = ctx;
       list->next = NULL;
 
       /* finally: append (!) to list */

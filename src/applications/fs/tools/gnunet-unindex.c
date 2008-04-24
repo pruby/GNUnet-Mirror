@@ -168,8 +168,8 @@ main (int argc, char *const *argv)
     {
       GNUNET_shutdown_wait_for ();
       if (errorCode == 1)
-        GNUNET_FSUI_unindex_abort (ctx, ul);
-      GNUNET_FSUI_unindex_stop (ctx, ul);
+        GNUNET_FSUI_unindex_abort (ul);
+      GNUNET_FSUI_unindex_stop (ul);
     }
   GNUNET_free (filename);
   GNUNET_FSUI_stop (ctx);

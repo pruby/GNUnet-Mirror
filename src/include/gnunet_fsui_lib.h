@@ -902,28 +902,28 @@ struct GNUNET_FSUI_SearchList *GNUNET_FSUI_search_start (struct GNUNET_FSUI_Cont
  *
  * @return GNUNET_SYSERR if such a search is not known
  */
-int GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);      /* search.c */
+int GNUNET_FSUI_search_abort (struct GNUNET_FSUI_SearchList *sl);      /* search.c */
 
 /**
  * Pause a search.
  *
  * @return GNUNET_SYSERR if such a search is not known
  */
-int GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);      /* search.c */
+int GNUNET_FSUI_search_pause (struct GNUNET_FSUI_SearchList *sl);      /* search.c */
 
 /**
  * Restart a paused search.
  *
  * @return GNUNET_SYSERR if such a search is not known
  */
-int GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);    /* search.c */
+int GNUNET_FSUI_search_restart (struct GNUNET_FSUI_SearchList *sl);    /* search.c */
 
 /**
  * Stop a search.
  *
  * @return GNUNET_SYSERR if such a search is not known
  */
-int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);       /* search.c */
+int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl);       /* search.c */
 
 /**
  * Start to download a file or directory.
@@ -943,7 +943,7 @@ struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl);  /* download.c */
+int GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl);  /* download.c */
 
 /**
  * Stop a download.  If the dl is for a recursive
@@ -951,7 +951,7 @@ int GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_F
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl);   /* download.c */
+int GNUNET_FSUI_download_stop (struct GNUNET_FSUI_DownloadList *dl);   /* download.c */
 
 /**
  * Method that can be used to select files that
@@ -1014,8 +1014,7 @@ struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_start (struct
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
-                              struct GNUNET_FSUI_UploadList *ul);
+int GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul);
 
 /**
  * Stop an upload.  Only to be called for the top-level
@@ -1023,8 +1022,7 @@ int GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_Context *ctx,
-                             struct GNUNET_FSUI_UploadList *ul);
+int GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_UploadList *ul);
 
 
 /**
@@ -1045,8 +1043,7 @@ struct GNUNET_FSUI_UnindexList *GNUNET_FSUI_unindex_start (struct
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx,
-                               struct GNUNET_FSUI_UnindexList *ul);
+int GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_UnindexList *ul);
 
 
 /**
@@ -1054,8 +1051,7 @@ int GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx,
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx,
-                              struct GNUNET_FSUI_UnindexList *ul);
+int GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_UnindexList *ul);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

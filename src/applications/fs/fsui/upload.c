@@ -816,12 +816,14 @@ GNUNET_FSUI_upload_start (struct GNUNET_FSUI_Context *ctx,
  * @return GNUNET_SYSERR on error
  */
 int
-GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
-                          struct GNUNET_FSUI_UploadList *ul)
+GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul)
 {
   GNUNET_FSUI_UploadList *c;
+  struct GNUNET_FSUI_Context *ctx;
 
-  GNUNET_GE_ASSERT (ctx->ectx, ul != NULL);
+  if (ul == NULL)
+    return GNUNET_SYSERR;
+  ctx = ul->shared->ctx;
   if ((ul->state != GNUNET_FSUI_ACTIVE) && (ul->state != GNUNET_FSUI_PENDING))
     return GNUNET_NO;
   if (ul->state == GNUNET_FSUI_ACTIVE)
@@ -830,7 +832,7 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
       c = ul->child;
       while (c != NULL)
         {
-          GNUNET_FSUI_upload_abort (ctx, c);
+          GNUNET_FSUI_upload_abort (c);
           c = c->next;
         }
       GNUNET_thread_stop_sleep (ul->shared->handle);
@@ -841,7 +843,7 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
       c = ul->child;
       while (c != NULL)
         {
-          GNUNET_FSUI_upload_abort (ctx, c);
+          GNUNET_FSUI_upload_abort (c);
           c = c->next;
         }
     }
@@ -855,13 +857,15 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
  * @return GNUNET_SYSERR on error
  */
 int
-GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_Context *ctx,
-                         struct GNUNET_FSUI_UploadList *ul)
+GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_UploadList *ul)
 {
   void *unused;
   struct GNUNET_FSUI_UploadShared *shared;
-
-  GNUNET_GE_ASSERT (ctx->ectx, ul != NULL);
+  struct GNUNET_FSUI_Context *ctx;
+  
+  if (ul == NULL)
+    return GNUNET_SYSERR;
+  ctx = ul->shared->ctx;
   GNUNET_GE_ASSERT (ctx->ectx, ul->parent == &ctx->activeUploads);
   if ((ul->state == GNUNET_FSUI_ACTIVE) ||
       (ul->state == GNUNET_FSUI_COMPLETED) ||

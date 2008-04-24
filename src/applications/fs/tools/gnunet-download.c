@@ -384,10 +384,10 @@ main (int argc, char *const *argv)
   if (do_delete_incomplete)
     {
       for (i = 0; i < downloads_size; i++)
-        GNUNET_FSUI_download_abort (ctx, downloads[i]);
+        GNUNET_FSUI_download_abort (downloads[i]);
     }
   for (i = 0; i < downloads_size; i++)
-    GNUNET_FSUI_download_stop (ctx, downloads[i]);
+    GNUNET_FSUI_download_stop (downloads[i]);
   GNUNET_array_grow (downloads, downloads_size, 0);
   GNUNET_FSUI_stop (ctx);
   GNUNET_mutex_destroy (lock);

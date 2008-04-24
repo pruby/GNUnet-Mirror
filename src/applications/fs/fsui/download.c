@@ -553,17 +553,19 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
  *         GNUNET_NO if the download has already finished
  */
 int
-GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx,
-                            struct GNUNET_FSUI_DownloadList *dl)
+GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
 {
+  struct GNUNET_FSUI_Context *ctx;
   struct GNUNET_FSUI_DownloadList *c;
   GNUNET_FSUI_Event event;
 
-  GNUNET_GE_ASSERT (ctx->ectx, dl != NULL);
+  if (dl == NULL)
+    return GNUNET_SYSERR;
+  ctx = dl->ctx;
   c = dl->child;
   while (c != NULL)
     {
-      GNUNET_FSUI_download_abort (ctx, c);
+      GNUNET_FSUI_download_abort (c);
       c = c->next;
     }
   if ((dl->state != GNUNET_FSUI_ACTIVE) && (dl->state != GNUNET_FSUI_PENDING))
@@ -605,16 +607,18 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx,
  * @return GNUNET_SYSERR if no such download is pending
  */
 int
-GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx,
-                           struct GNUNET_FSUI_DownloadList *dl)
+GNUNET_FSUI_download_stop (struct GNUNET_FSUI_DownloadList *dl)
 {
   struct GNUNET_FSUI_DownloadList *prev;
+  struct GNUNET_FSUI_Context *ctx;
   GNUNET_FSUI_Event event;
   int i;
 
-  GNUNET_GE_ASSERT (ctx->ectx, dl != NULL);
+  if (dl == NULL)
+    return GNUNET_SYSERR;
+  ctx = dl->ctx;
   while (dl->child != NULL)
-    GNUNET_FSUI_download_stop (ctx, dl->child);
+    GNUNET_FSUI_download_stop (dl->child);
   GNUNET_mutex_lock (ctx->lock);
   prev =
     (dl->parent != NULL) ? dl->parent->child : ctx->activeDownloads.child;

@@ -400,8 +400,8 @@ auto_share_main (const char *dirname)
       GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, NULL);
       if (GNUNET_YES == upload_done)
         {
-          GNUNET_FSUI_upload_abort (ctx, ul);
-          GNUNET_FSUI_upload_stop (ctx, ul);
+          GNUNET_FSUI_upload_abort (ul);
+          GNUNET_FSUI_upload_stop (ul);
           upload_done = GNUNET_NO;
           ul = NULL;
         }

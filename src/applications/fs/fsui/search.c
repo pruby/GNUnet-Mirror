@@ -332,13 +332,14 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
  * Abort a search.
  */
 int
-GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx,
-                          struct GNUNET_FSUI_SearchList *sl)
+GNUNET_FSUI_search_abort (struct GNUNET_FSUI_SearchList *sl)
 {
   GNUNET_FSUI_Event event;
   struct SearchRecordList * rec;
   struct SearchResultList * srl;
+  struct GNUNET_FSUI_Context *ctx;
 
+  ctx = sl->ctx;
   GNUNET_mutex_lock (ctx->lock);
   if (sl->state == GNUNET_FSUI_PENDING)
     {
@@ -390,13 +391,14 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx,
  * Pause a search.
  */
 int
-GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
-                          struct GNUNET_FSUI_SearchList *sl)
+GNUNET_FSUI_search_pause (struct GNUNET_FSUI_SearchList *sl)
 {
   GNUNET_FSUI_Event event;
   struct SearchRecordList * rec;
   struct SearchResultList * srl;
+  struct GNUNET_FSUI_Context *ctx;
 
+  ctx = sl->ctx;
   GNUNET_mutex_lock (ctx->lock);
   if (sl->state != GNUNET_FSUI_ACTIVE)
     {
@@ -437,12 +439,13 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
  * Restart a paused search.
  */
 int
-GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx,
-                            struct GNUNET_FSUI_SearchList *pos)
+GNUNET_FSUI_search_restart (struct GNUNET_FSUI_SearchList *pos)
 {
   GNUNET_FSUI_Event event;
   struct SearchRecordList * rec;
+  struct GNUNET_FSUI_Context *ctx;
 
+  ctx = pos->ctx;
   GNUNET_mutex_lock (ctx->lock);
   pos->state = GNUNET_FSUI_ACTIVE;
   event.type = GNUNET_FSUI_search_restarted;
@@ -465,7 +468,7 @@ GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx,
   if (rec != NULL)
     {
       /* failed to restart, auto-pause again */
-      GNUNET_FSUI_search_pause(ctx, pos);
+      GNUNET_FSUI_search_pause(pos);
       GNUNET_mutex_unlock (ctx->lock);
       return GNUNET_SYSERR;
     }
@@ -477,8 +480,7 @@ GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx,
  * Stop a search.
  */
 int
-GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
-                         struct GNUNET_FSUI_SearchList *sl)
+GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
 {
   GNUNET_FSUI_Event event;
   GNUNET_FSUI_SearchList *pos;
@@ -486,10 +488,12 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
   int i;
   struct SearchRecordList * rec;
   struct SearchResultList * srl;
+  struct GNUNET_FSUI_Context *ctx;
 
+  ctx = sl->ctx;
   GNUNET_mutex_lock (ctx->lock);
   if (sl->state == GNUNET_FSUI_ACTIVE)
-    GNUNET_FSUI_search_abort (ctx, sl);
+    GNUNET_FSUI_search_abort (sl);
   prev = NULL;
   pos = ctx->activeSearches;
   while ((pos != sl) && (pos != NULL))
