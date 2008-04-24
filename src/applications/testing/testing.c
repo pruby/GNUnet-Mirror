@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/testing/testingtest.c
+ * @file applications/testing/testing.c
  * @brief testcase for testing library
  * @author Christian Grothoff
  */
@@ -110,9 +110,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
     }
   GNUNET_free (dpath);
   updatePort (cfg, "TCP", tra_offset);
-  updatePort (cfg, "TCP6", tra_offset);
   updatePort (cfg, "UDP", tra_offset);
-  updatePort (cfg, "UDP6", tra_offset);
   updatePort (cfg, "HTTP", tra_offset);
   updatePort (cfg, "SMTP", tra_offset);
   GNUNET_GC_set_configuration_value_string (cfg,

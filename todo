@@ -4,14 +4,18 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [4'08] (aka "advanced features"):
-- document gnunet-auto-share on webpage
-- clean up VPN code
+- add code to check that [MODULES] configuration entries are
+  at least superficially valid (matching strings...)
+- document gnunet-auto-share on webpage [RC]
+- clean up and test VPN code [RC]
 - tune GAP query planning code [RC]
 - gnunet-chat (CS-only) [RC]
-- test new asynchronous ECRS API (and resulting FSUI changes);
-  make sure error handling & reporting are nice [RC]
-- test RPC code (write a small demo)
-- make it easier to get your own identity (gnunet-peer-info? gnunet-setup?)
+- test new asynchronous ECRS API (and resulting FSUI changes):
+  * make sure error handling & reporting are nice [RC]
+- make it easier to get your own identity (gnunet-peer-info? gnunet-setup?) [RC]
+- google-style search support:
+  * extended FSUI support (test event generation, support for probing downloads)
+  * gnunet-gtk and gnunet-qt support (visualization, sorting, event handling)
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074
@@ -25,6 +29,7 @@ Hostlist for network testing:
 - HTTPS support (#1225)
 - clean up indexing with gnunet-insert (#1107)
 - power insert (#854)
+- test RPC code (write a small demo)
 
 
 1.0.0 (aka "userfriendly"):

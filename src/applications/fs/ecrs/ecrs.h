@@ -81,7 +81,19 @@ typedef struct GNUNET_ECRS_URI
   {
     struct
     {
-      char **keywords;
+      /**
+       * Keywords start with a '+' if they are
+       * mandatory (in which case the '+' is NOT
+       * part of the keyword) and with a
+       * simple space if they are optional
+       * (in which case the space is ALSO not
+       * part of the actual keyword).
+       *
+       * Double-quotes to protect spaces and
+       * %-encoding are NOT used internally
+       * (only in URI-strings).
+       */
+      char ** keywords;      
       unsigned int keywordCount;
     } ksk;
     struct

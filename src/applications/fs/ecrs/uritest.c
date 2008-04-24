@@ -48,8 +48,8 @@ testKeyword ()
       ABORT ();
     }
   if ((2 != ret->data.ksk.keywordCount) ||
-      (0 != strcmp ("foo", ret->data.ksk.keywords[0])) ||
-      (0 != strcmp ("bar", ret->data.ksk.keywords[1])))
+      (0 != strcmp (" foo", ret->data.ksk.keywords[0])) ||
+      (0 != strcmp (" bar", ret->data.ksk.keywords[1])))
     {
       GNUNET_ECRS_uri_destroy (ret);
       ABORT ();

@@ -113,7 +113,6 @@ main (int argc, char *argv[])
   char *keywords[] = {
     "fsui_foo",
     "fsui_bar",
-    NULL,
   };
   char keyword[40];
   int prog;
@@ -150,7 +149,7 @@ main (int argc, char *argv[])
                           filename,
                           "foo bar test!", strlen ("foo bar test!"), "600");
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_list_to_uri (NULL, 2, (const char **) keywords);
+  kuri = GNUNET_ECRS_keyword_command_line_to_uri (NULL, 2, (const char **) keywords);
   upload = GNUNET_FSUI_upload_start (ctx, filename, (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan, NULL, 0,  /* anonymity */
                                      0, /* priority */
                                      GNUNET_YES,

@@ -149,10 +149,6 @@ main (int argc, char **argv)
   int ret;
   int i;
   char buf[128];
-  const char *keywords[] = {
-    "multi-test",
-    NULL,
-  };
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -184,7 +180,7 @@ main (int argc, char **argv)
           return -1;
         }
     }
-  key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
+  key = GNUNET_ECRS_keyword_string_to_uri (NULL, "multi-test");
   fprintf (stderr, "Uploading...");
   for (i = 0; i < TOTAL; i++)
     {

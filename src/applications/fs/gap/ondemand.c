@@ -167,7 +167,7 @@ publish_unavailable_mark (const GNUNET_HashCode * fileId)
   if (ret != -1)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK |
                      GNUNET_GE_USER,
                      _
                      ("Because the file `%s' has been unavailable for 3 days"

@@ -131,7 +131,6 @@ main (int argc, char *argv[])
   char *keywords[] = {
     "search_foo",
     "search_bar",
-    NULL,
   };
   char keyword[40];
   int prog;
@@ -165,8 +164,7 @@ main (int argc, char *argv[])
                            cfg, "fsuisearchtest", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
-  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
-                   keywords[1]);
+  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
   uri = NULL;
   search = GNUNET_FSUI_search_start (ctx, 0, luri);
@@ -190,7 +188,7 @@ main (int argc, char *argv[])
                           fn, "foo bar test!", strlen ("foo bar test!"),
                           "600");
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_list_to_uri (NULL, 2, (const char **) keywords);
+  kuri = GNUNET_ECRS_keyword_command_line_to_uri (NULL, 2, (const char **) keywords);
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload =
     GNUNET_FSUI_upload_start (ctx,

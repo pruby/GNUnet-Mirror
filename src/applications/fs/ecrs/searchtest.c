@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -44,11 +44,11 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
           const GNUNET_HashCode * key, int isRoot, void *closure)
 {
   int *cnt = closure;
-#if 1
+#if 0
   char *st;
 
   st = GNUNET_ECRS_uri_to_string (fi->uri);
-  printf ("Got result `%s'\n", st);
+  printf ("Got result `%.*s...'\n", 40, st);
   GNUNET_free (st);
 #endif
   (*cnt)--;
@@ -81,8 +81,6 @@ main (int argc, char *argv[])
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ECRS_MetaData *meta;
   struct GNUNET_ECRS_URI *key;
-  const char *keywords[6];
-
 
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
@@ -102,35 +100,26 @@ main (int argc, char *argv[])
   CHECK (sock != NULL);
   /* ACTUAL TEST CODE */
   /* first, simple insertion => one result */
-#if 1
+#if 0
   printf ("Testing search for 'XXtest' with one result.\n");
 #endif
   uri = GNUNET_ECRS_string_to_uri (NULL,
                                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   meta = GNUNET_ECRS_meta_data_create ();
-  keywords[0] = "XXtest";
-  keywords[1] = NULL;
 
-  key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
+  key = GNUNET_ECRS_keyword_string_to_uri (NULL, "XXtest");
   CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
                                                          uri, meta));
   CHECK (GNUNET_OK == searchFile (key, 1));
   GNUNET_ECRS_uri_destroy (key);
   GNUNET_ECRS_uri_destroy (uri);
 
-  /* inserting another URI under the 'XXtest' keyword and under 'binary'
-     should give both URIs since ECRS knows nothing about 'AND'ing: */
-#if 1
-  printf ("Testing search for 'XXtest AND binary' with two results.\n");
-#endif
   uri = GNUNET_ECRS_string_to_uri (NULL,
                                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
-  keywords[1] = "binary";
-  keywords[2] = NULL;
-  key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
+  key = GNUNET_ECRS_keyword_string_to_uri (NULL, "+binary");
   CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
                                                          uri, meta));
-  CHECK (GNUNET_OK == searchFile (key, 2));
+  CHECK (GNUNET_OK == searchFile (key, 1));
   GNUNET_ECRS_uri_destroy (key);
   GNUNET_ECRS_uri_destroy (uri);
   GNUNET_ECRS_meta_data_destroy (meta);
@@ -139,8 +128,7 @@ main (int argc, char *argv[])
 #if 0
   printf ("Testing search for 'XXtest' with two results.\n");
 #endif
-  keywords[1] = NULL;
-  key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
+  key = GNUNET_ECRS_keyword_string_to_uri (NULL, "XXtest");
   CHECK (GNUNET_OK == searchFile (key, 2));
   GNUNET_ECRS_uri_destroy (key);
 

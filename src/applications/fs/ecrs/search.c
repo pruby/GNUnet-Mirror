@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -34,8 +34,8 @@
 #define DEBUG_SEARCH GNUNET_NO
 
 /**
- * This struct is followed by keyCount keys of
- * type "GNUNET_HashCode".
+ * Context for an individual search.  Followed
+ *  by keyCount keys of type GNUNET_HashCode.
  */
 struct PendingSearch
 {
@@ -48,15 +48,12 @@ struct PendingSearch
    */
   GNUNET_HashCode decryptKey;
 
+  unsigned int keyCount;
+
   /**
    * What type of query is it?
    */
   unsigned int type;
-
-  /**
-   * How many keys are there?
-   */
-  unsigned int keyCount;
 
 };
 
@@ -176,6 +173,7 @@ add_search_for_uri (const struct GNUNET_ECRS_URI *uri,
         struct GNUNET_RSA_PrivateKey *pk;
         GNUNET_RSA_PublicKey pub;
         int i;
+	const char * keyword;
 
 #if DEBUG_SEARCH
         GNUNET_GE_LOG (ectx,
@@ -184,8 +182,12 @@ add_search_for_uri (const struct GNUNET_ECRS_URI *uri,
 #endif
         for (i = 0; i < uri->data.ksk.keywordCount; i++)
           {
-            GNUNET_hash (uri->data.ksk.keywords[i],
-                         strlen (uri->data.ksk.keywords[i]), &hc);
+	    keyword = uri->data.ksk.keywords[i];
+	    /* first character of the keyword is 
+	       "+" or " " to indicate mandatory or
+	       not -- ignore for hashing! */
+	    GNUNET_hash (&keyword[1],
+                         strlen (&keyword[1]), &hc);
             pk = GNUNET_RSA_create_key_from_hash (&hc);
             GNUNET_RSA_get_public_key (pk, &pub);
             GNUNET_hash (&pub, sizeof (GNUNET_RSA_PublicKey), &query);
@@ -565,6 +567,16 @@ GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
 {
   struct GNUNET_ECRS_SearchContext *ctx;
 
+  if (GNUNET_YES == GNUNET_ECRS_uri_test_ksk(uri))
+    {
+      if (1 != GNUNET_ECRS_uri_get_keyword_count_from_ksk(uri))
+	return NULL;
+    }
+  else
+    {
+      if (GNUNET_YES != GNUNET_ECRS_uri_test_sks(uri))	
+	return NULL;
+    }
   ctx = GNUNET_malloc (sizeof (struct GNUNET_ECRS_SearchContext));
   ctx->start = GNUNET_get_time ();
   ctx->anonymityLevel = anonymityLevel;
@@ -576,6 +588,12 @@ GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
   ctx->aborted = GNUNET_NO;
   ctx->lock = GNUNET_mutex_create (GNUNET_YES);
   ctx->sctx = GNUNET_FS_create_search_context (ectx, cfg, ctx->lock);
+  if (ctx->sctx == NULL) 
+    {
+      GNUNET_mutex_destroy(ctx->lock);
+      GNUNET_free(ctx);
+      return NULL;
+    }
   add_search_for_uri (uri, ctx);
   return ctx;
 }
@@ -622,6 +640,8 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
   ctx =
     GNUNET_ECRS_search_start (ectx, cfg, uri, anonymityLevel, spcb,
                               spcbClosure);
+  if (ctx == NULL)
+    return GNUNET_SYSERR;
   while (((NULL == tt) || (GNUNET_OK == tt (ttClosure)))
          && (GNUNET_NO == GNUNET_shutdown_test ())
          && (ctx->aborted == GNUNET_NO))

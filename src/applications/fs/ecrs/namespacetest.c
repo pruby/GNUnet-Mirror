@@ -73,15 +73,10 @@ testNamespace ()
   struct GNUNET_ECRS_URI *advURI;
   struct GNUNET_ECRS_URI *rootURI;
   struct GNUNET_ECRS_MetaData *meta;
-  const char *keys[] = {
-    "testNamespace",
-    NULL,
-  };
-
 
   GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME);  /* make sure old one is deleted */
   meta = GNUNET_ECRS_meta_data_create ();
-  adv = GNUNET_ECRS_keyword_strings_to_uri (keys);
+  adv = GNUNET_ECRS_keyword_string_to_uri (NULL, "testNamespace");
   GNUNET_hash ("root", 4, &root);
   rootURI =
     GNUNET_ECRS_namespace_create (NULL,

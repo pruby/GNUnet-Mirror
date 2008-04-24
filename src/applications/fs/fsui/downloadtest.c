@@ -211,7 +211,6 @@ main (int argc, char *argv[])
   char *keywords[] = {
     "down_foo",
     "down_bar",
-    NULL,
   };
   char keyword[40];
   int prog;
@@ -250,7 +249,7 @@ main (int argc, char *argv[])
   GNUNET_disk_file_write (ectx, fn, buf, FILESIZE, "600");
   GNUNET_free (buf);
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
+  kuri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2, (const char **) keywords);
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload = GNUNET_FSUI_upload_start (ctx,
                                      fn,
@@ -273,7 +272,7 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (ctx, upload);
-  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
+  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0],
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;

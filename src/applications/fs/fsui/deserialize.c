@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,45 +31,110 @@
 #include "gnunet_directories.h"
 #include "fsui.h"
 
+typedef struct {
+  int fd;
+  unsigned int have;
+  unsigned int size;
+  unsigned int pos;
+  char * buffer;
+} ReadBuffer;
 
 static int
-read_int (int fd, int *val)
+read_buffered(ReadBuffer * rb,
+	      void * d,
+	      unsigned int size) {
+  char * dst = d;
+  unsigned int min;
+  unsigned int pos;
+  int ret;
+
+  if (rb->fd == -1)
+    return -1;
+  pos = 0;
+  do 
+    {
+      /* first, use buffer */
+      min = rb->have - rb->pos;
+      if (min > 0) 
+	{
+	  if (min > size)
+	    min = size;
+	  memcpy(&dst[pos],
+		 &rb->buffer[rb->pos],
+		 min);
+	  rb->pos += min;
+	  pos += min;
+	}
+      if (pos == size)
+	return pos; /* done! */
+      GNUNET_GE_ASSERT(NULL, rb->have == rb->pos);  
+      /* fill buffer */
+      ret = READ(rb->fd, rb->buffer, rb->size);
+      if (ret == -1)
+	{
+	  CLOSE(rb->fd);
+	  rb->fd = -1;
+	  return -1;
+	}
+      if (ret == 0)
+	return 0;
+      rb->pos = 0;
+      rb->have = ret;
+    }
+  while (pos < size); /* should always be true */
+  return pos;
+}
+
+
+static int
+read_int (ReadBuffer * rb, int *val)
 {
   int big;
 
-  if (sizeof (int) != READ (fd, &big, sizeof (int)))
+  if (sizeof (int) != read_buffered (rb, &big, sizeof (int)))
     return GNUNET_SYSERR;
   *val = ntohl (big);
   return GNUNET_OK;
 }
 
-#define READINT(a) if (GNUNET_OK != read_int(fd, (int*) &a)) return GNUNET_SYSERR;
+static unsigned int
+read_uint (ReadBuffer * rb, unsigned int *val)
+{
+  unsigned int big;
+
+  if (sizeof (unsigned int) != read_buffered (rb, &big, sizeof (unsigned int)))
+    return GNUNET_SYSERR;
+  *val = ntohl (big);
+  return GNUNET_OK;
+}
+
+#define READINT(a) if (GNUNET_OK != read_int(rb, (int*) &a)) return GNUNET_SYSERR;
 
 static int
-read_long (int fd, long long *val)
+read_long (ReadBuffer * rb, long long *val)
 {
   long long big;
 
-  if (sizeof (long long) != READ (fd, &big, sizeof (long long)))
+  if (sizeof (long long) != read_buffered (rb, &big, sizeof (long long)))
     return GNUNET_SYSERR;
   *val = GNUNET_ntohll (big);
   return GNUNET_OK;
 }
 
-#define READLONG(a) if (GNUNET_OK != read_long(fd, (long long*) &a)) return GNUNET_SYSERR;
+#define READLONG(a) if (GNUNET_OK != read_long(rb, (long long*) &a)) return GNUNET_SYSERR;
 
 static struct GNUNET_ECRS_URI *
-read_uri (struct GNUNET_GE_Context *ectx, int fd)
+read_uri (struct GNUNET_GE_Context *ectx, ReadBuffer * rb)
 {
   char *buf;
   struct GNUNET_ECRS_URI *ret;
   unsigned int size;
 
-  if (GNUNET_OK != read_int (fd, (int *) &size))
+  if (GNUNET_OK != read_uint (rb, &size))
     return NULL;
   buf = GNUNET_malloc (size + 1);
   buf[size] = '\0';
-  if (size != READ (fd, buf, size))
+  if (size != read_buffered (rb, buf, size))
     {
       GNUNET_free (buf);
       return NULL;
@@ -80,21 +145,21 @@ read_uri (struct GNUNET_GE_Context *ectx, int fd)
   return ret;
 }
 
-#define READURI(u) if (NULL == (u = read_uri(ectx, fd))) return GNUNET_SYSERR;
+#define READURI(u) if (NULL == (u = read_uri(ectx, rb))) return GNUNET_SYSERR;
 
 static char *
-read_string (int fd, unsigned int maxLen)
+read_string (ReadBuffer * rb, unsigned int maxLen)
 {
   char *buf;
   unsigned int big;
 
-  if (GNUNET_OK != read_int (fd, (int *) &big))
+  if (GNUNET_OK != read_uint (rb, &big))
     return NULL;
   if (big > maxLen)
     return NULL;
   buf = GNUNET_malloc (big + 1);
   buf[big] = '\0';
-  if (big != READ (fd, buf, big))
+  if (big != read_buffered (rb, buf, big))
     {
       GNUNET_free (buf);
       return NULL;
@@ -102,7 +167,7 @@ read_string (int fd, unsigned int maxLen)
   return buf;
 }
 
-#define READSTRING(c, max) if (NULL == (c = read_string(fd, max))) return GNUNET_SYSERR;
+#define READSTRING(c, max) if (NULL == (c = read_string(rb, max))) return GNUNET_SYSERR;
 
 static void
 fixState (GNUNET_FSUI_State * state)
@@ -139,13 +204,13 @@ fixState (GNUNET_FSUI_State * state)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static struct GNUNET_ECRS_MetaData *
-read_meta (struct GNUNET_GE_Context *ectx, int fd)
+read_meta (struct GNUNET_GE_Context *ectx, ReadBuffer * rb)
 {
   unsigned int size;
   char *buf;
   struct GNUNET_ECRS_MetaData *meta;
 
-  if (read_int (fd, (int *) &size) != GNUNET_OK)
+  if (read_uint (rb, &size) != GNUNET_OK)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
@@ -156,7 +221,7 @@ read_meta (struct GNUNET_GE_Context *ectx, int fd)
       return NULL;
     }
   buf = GNUNET_malloc (size);
-  if (size != READ (fd, buf, size))
+  if (size != read_buffered (rb, buf, size))
     {
       GNUNET_free (buf);
       GNUNET_GE_BREAK (ectx, 0);
@@ -179,10 +244,10 @@ read_meta (struct GNUNET_GE_Context *ectx, int fd)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
-readFileInfo (struct GNUNET_GE_Context *ectx, int fd,
+readFileInfo (struct GNUNET_GE_Context *ectx, ReadBuffer * rb,
               GNUNET_ECRS_FileInfo * fi)
 {
-  fi->meta = read_meta (ectx, fd);
+  fi->meta = read_meta (ectx, rb);
   if (fi->meta == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -190,7 +255,7 @@ readFileInfo (struct GNUNET_GE_Context *ectx, int fd,
     }
   fi->uri = NULL;
 
-  fi->uri = read_uri (ectx, fd);
+  fi->uri = read_uri (ectx, rb);
   if (fi->uri == NULL)
     {
       GNUNET_ECRS_meta_data_destroy (fi->meta);
@@ -212,7 +277,7 @@ readFileInfo (struct GNUNET_GE_Context *ectx, int fd,
  */
 static GNUNET_FSUI_DownloadList *
 readDownloadList (struct GNUNET_GE_Context *ectx,
-                  int fd, GNUNET_FSUI_Context * ctx,
+                  ReadBuffer * rb, GNUNET_FSUI_Context * ctx,
                   GNUNET_FSUI_DownloadList * parent)
 {
   GNUNET_FSUI_DownloadList *ret;
@@ -223,21 +288,21 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
   int soff;
 
   GNUNET_GE_ASSERT (ectx, ctx != NULL);
-  if ((GNUNET_OK != read_int (fd, (int *) &big)) || (big == 0))
+  if ((GNUNET_OK != read_uint (rb, &big)) || (big == 0))
     return NULL;
   ret = GNUNET_malloc (sizeof (GNUNET_FSUI_DownloadList));
   memset (ret, 0, sizeof (GNUNET_FSUI_DownloadList));
   ret->ctx = ctx;
-  if ((GNUNET_OK != read_int (fd, (int *) &soff)) ||
-      (GNUNET_OK != read_int (fd, (int *) &ret->state)) ||
-      (GNUNET_OK != read_int (fd, (int *) &ret->is_recursive)) ||
-      (GNUNET_OK != read_int (fd, (int *) &ret->is_directory)) ||
-      (GNUNET_OK != read_int (fd, (int *) &ret->anonymityLevel)) ||
-      (GNUNET_OK != read_int (fd, (int *) &ret->completedDownloadsCount)) ||
-      (GNUNET_OK != read_long (fd, (long long *) &ret->total)) ||
-      (GNUNET_OK != read_long (fd, (long long *) &ret->completed)) ||
-      (GNUNET_OK != read_long (fd, (long long *) &ret->runTime)) ||
-      (GNUNET_OK != read_int (fd, (int *) &big)) || (big > 1024 * 1024))
+  if ((GNUNET_OK != read_int (rb, &soff)) ||
+      (GNUNET_OK != read_int (rb, (int*) &ret->state)) ||
+      (GNUNET_OK != read_int (rb, &ret->is_recursive)) ||
+      (GNUNET_OK != read_int (rb, &ret->is_directory)) ||
+      (GNUNET_OK != read_uint (rb, &ret->anonymityLevel)) ||
+      (GNUNET_OK != read_uint (rb, &ret->completedDownloadsCount)) ||
+      (GNUNET_OK != read_long (rb, (long long *) &ret->total)) ||
+      (GNUNET_OK != read_long (rb, (long long *) &ret->completed)) ||
+      (GNUNET_OK != read_long (rb, (long long *) &ret->runTime)) ||
+      (GNUNET_OK != read_uint (rb, &big)) || (big > 1024 * 1024))
     {
       GNUNET_GE_BREAK (NULL, 0);
       GNUNET_free (ret);
@@ -246,14 +311,14 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
   fixState (&ret->state);
   ret->filename = GNUNET_malloc (big + 1);
   ret->filename[big] = '\0';
-  if (big != READ (fd, ret->filename, big))
+  if (big != read_buffered (rb, ret->filename, big))
     {
       GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free (ret->filename);
       GNUNET_free (ret);
       return NULL;
     }
-  if (GNUNET_OK != readFileInfo (ectx, fd, &ret->fi))
+  if (GNUNET_OK != readFileInfo (ectx, rb, &ret->fi))
     {
       GNUNET_GE_BREAK (NULL, 0);
       GNUNET_free (ret->filename);
@@ -268,7 +333,7 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
   ok = GNUNET_YES;
   for (i = 0; i < ret->completedDownloadsCount; i++)
     {
-      ret->completedDownloads[i] = read_uri (ectx, fd);
+      ret->completedDownloads[i] = read_uri (ectx, rb);
       if (ret->completedDownloads[i] == NULL)
         {
           GNUNET_GE_BREAK (NULL, 0);
@@ -316,8 +381,8 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
           pos->my_downloads[pos->my_downloads_size - 1] = ret;
         }
     }
-  ret->next = readDownloadList (ectx, fd, ctx, parent);
-  ret->child = readDownloadList (ectx, fd, ctx, ret);
+  ret->next = readDownloadList (ectx, rb, ctx, parent);
+  ret->child = readDownloadList (ectx, rb, ctx, ret);
 #if DEBUG_PERSISTENCE
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -328,16 +393,16 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
 }
 
 static int
-checkMagic (int fd)
+checkMagic (ReadBuffer * rb)
 {
   char magic[8];
 
-  if (8 != READ (fd, magic, 8))
+  if (8 != read_buffered (rb, magic, 8))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  if (0 != memcmp (magic, "FSUI02\n\0", 8))
+  if (0 != memcmp (magic, "FSUI03\n\0", 8))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
@@ -346,7 +411,7 @@ checkMagic (int fd)
 }
 
 static int
-readCollection (int fd, struct GNUNET_FSUI_Context *ctx)
+readCollection (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 {
   int big;
 
@@ -364,7 +429,7 @@ readCollection (int fd, struct GNUNET_FSUI_Context *ctx)
     }
   ctx->collectionDataSize = big;
   ctx->collectionData = GNUNET_malloc (big);
-  if (big != READ (fd, ctx->collectionData, big))
+  if (big != read_buffered (rb, ctx->collectionData, big))
     {
       GNUNET_free (ctx->collectionData);
       ctx->collectionData = NULL;
@@ -375,16 +440,153 @@ readCollection (int fd, struct GNUNET_FSUI_Context *ctx)
   return GNUNET_OK;
 }
 
+/**
+ * Read in information about the individual ECRS searches
+ * that we are performing.
+ */
+struct SearchRecordList *
+read_search_record_list(struct GNUNET_GE_Context * ectx,
+			ReadBuffer *rb) 
+{
+  unsigned int is_required;
+  GNUNET_HashCode key;
+  struct GNUNET_ECRS_URI * uri;
+  struct SearchRecordList * ret;
+  struct SearchRecordList * head;
+  struct SearchRecordList * tail;
+
+  ret = NULL;
+  head = NULL;
+  tail = NULL;
+  while (1) 
+    {
+      if (GNUNET_OK != read_uint(rb, &is_required))
+	break;
+      if (is_required == -1)
+	break; /* end of list marker */
+      if (sizeof(GNUNET_HashCode) 
+	  != read_buffered(rb, &key, sizeof(GNUNET_HashCode)))
+	break;
+      uri = read_uri(ectx, rb);
+      if (uri == NULL)
+	break; /* error */      
+      ret = GNUNET_malloc(sizeof(struct SearchRecordList));
+      ret->key = key;
+      ret->uri = uri;
+      ret->search = NULL;
+      ret->is_required = is_required;
+      ret->next = NULL;
+      if (head == NULL)
+	head = ret;
+      if (tail != NULL)
+	tail->next = ret;
+      tail = ret;
+    }     
+  return head;
+}
+
+/**
+ * Read all of the results received so far
+ * for this search.
+ *
+ * @param search_count length of search_list
+ * @param search_list list of ECRS search requests 
+ */
+struct SearchResultList *
+read_result_list(struct GNUNET_GE_Context * ectx,
+		 ReadBuffer *rb,
+		 unsigned int search_count,
+		 struct SearchRecordList ** search_list) 
+{
+  unsigned int matching;
+  unsigned int remaining;
+  unsigned int probeSucc;
+  unsigned int probeFail;
+  struct SearchResultList * ret;
+  struct SearchResultList * head;
+  struct SearchResultList * tail;
+  unsigned int i;
+  unsigned int idx;
+
+  ret = NULL;
+  head = NULL;
+  tail = NULL;
+  while (1) 
+    { 
+      if (GNUNET_OK != read_uint(rb, &matching)) 
+	break;
+      if (matching == -1)
+	break; /* end of list marker */
+      if ( (GNUNET_OK != read_uint(rb, &remaining)) ||
+	   (GNUNET_OK != read_uint(rb, &probeSucc)) ||
+	   (GNUNET_OK != read_uint(rb, &probeFail)) )	   
+	break;
+      ret = GNUNET_malloc(sizeof(struct SearchResultList));
+      if (GNUNET_OK != readFileInfo(ectx, rb, &ret->fi))
+	{
+	  GNUNET_free(ret);
+	  break;
+	}
+      ret->matchingSearchCount = matching;
+      ret->mandatoryMatchesRemaining = remaining;
+      ret->probeSuccess = probeSucc;
+      ret->probeFailure = probeFail;
+      ret->test_download = NULL;
+      ret->next = NULL;
+      ret->matchingSearches = NULL;
+      i = 0;
+      GNUNET_array_grow(ret->matchingSearches,
+			i,
+			ret->matchingSearchCount);
+      while (i-- > 0)
+	{
+	  if ( (GNUNET_OK != read_uint(rb, &idx)) ||
+	       (idx > search_count) )
+	    {
+	      GNUNET_GE_BREAK(NULL, 0);
+	      GNUNET_array_grow(ret->matchingSearches,
+				ret->matchingSearchCount,
+				0);
+	      GNUNET_free(ret);
+	      return head;      
+	    }
+	  if (idx == 0)
+	    {
+	      GNUNET_GE_BREAK(NULL, 0);
+	      ret->matchingSearches[i] = NULL;
+	    }
+	  else	    
+	    {
+	      GNUNET_GE_BREAK(NULL, search_list[idx - 1] != NULL);
+	      ret->matchingSearches[i] = search_list[idx - 1];
+	    }
+	}
+      if (head == NULL)
+	head = ret;
+      if (tail != NULL)
+	tail->next = ret;
+      tail = ret;
+    }     
+  return head;
+}
+
+/**
+ * Read in all of the FSUI-searches that we are
+ * performing.
+ */
 static int
-readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
+readSearches (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 {
   int big;
   GNUNET_FSUI_SearchList *list;
   GNUNET_FSUI_SearchList *last;
-  int i;
-  ResultPending *rp;
+  struct SearchResultList *srp;
+  struct SearchRecordList *srl;
+  struct SearchRecordList **srla;
   char *buf;
   GNUNET_CronTime stime;
+  unsigned int total_searches;
+  unsigned int i;
 
   while (1)
     {
@@ -393,15 +595,13 @@ readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
         return GNUNET_OK;
       list = GNUNET_malloc (sizeof (GNUNET_FSUI_SearchList));
       memset (list, 0, sizeof (GNUNET_FSUI_SearchList));
-      if ((GNUNET_OK != read_int (fd, (int *) &list->state)) ||
-          (GNUNET_OK != read_long (fd, (long long *) &list->start_time)) ||
-          (GNUNET_OK != read_long (fd, (long long *) &stime)) ||
-          (GNUNET_OK != read_int (fd, (int *) &list->anonymityLevel)) ||
-          (GNUNET_OK != read_int (fd, (int *) &list->sizeResultsReceived)) ||
-          (GNUNET_OK !=
-           read_int (fd, (int *) &list->sizeUnmatchedResultsReceived))
-          || (list->sizeResultsReceived > 1024 * 1024)
-          || (list->sizeUnmatchedResultsReceived > 1024 * 1024))
+      list->lock = GNUNET_mutex_create(GNUNET_NO);
+      list->ctx = ctx;
+      if ((GNUNET_OK != read_int (rb, (int *) &list->state)) ||
+          (GNUNET_OK != read_long (rb, (long long *) &list->start_time)) ||
+          (GNUNET_OK != read_long (rb, (long long *) &stime)) ||
+          (GNUNET_OK != read_uint (rb, &list->anonymityLevel)) ||
+          (GNUNET_OK != read_uint (rb, &list->mandatory_keyword_count)) )
         {
           GNUNET_GE_BREAK (NULL, 0);
           break;
@@ -410,7 +610,7 @@ readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
       if (stime > GNUNET_get_time ())
         stime = GNUNET_get_time ();
       list->start_time += GNUNET_get_time () - stime;
-      buf = read_string (fd, 1024 * 1024);
+      buf = read_string (rb, 1024 * 1024);
       if (buf == NULL)
         {
           GNUNET_GE_BREAK (NULL, 0);
@@ -430,72 +630,32 @@ readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
           GNUNET_GE_BREAK (NULL, 0);
           break;
         }
-      list->numberOfURIKeys =
-        GNUNET_ECRS_uri_get_keyword_count_from_ksk (list->uri);
-      if (list->sizeResultsReceived > 0)
-        {
-          list->resultsReceived
-            =
-            GNUNET_malloc (list->sizeResultsReceived *
-                           sizeof (GNUNET_ECRS_FileInfo));
-          memset (list->resultsReceived, 0,
-                  list->sizeResultsReceived * sizeof (GNUNET_ECRS_FileInfo));
-        }
-      if (list->sizeUnmatchedResultsReceived > 0)
-        {
-          list->unmatchedResultsReceived
-            = GNUNET_malloc (list->sizeUnmatchedResultsReceived *
-                             sizeof (ResultPending));
-          memset (list->unmatchedResultsReceived,
-                  0,
-                  list->sizeUnmatchedResultsReceived *
-                  sizeof (ResultPending));
-        }
-      for (i = 0; i < list->sizeResultsReceived; i++)
-        if (GNUNET_OK !=
-            readFileInfo (ctx->ectx, fd, &list->resultsReceived[i]))
-          {
-            GNUNET_GE_BREAK (NULL, 0);
-            goto ERR;
-          }
-      for (i = 0; i < list->sizeUnmatchedResultsReceived; i++)
-        {
-          rp = &list->unmatchedResultsReceived[i];
-          if (GNUNET_OK != readFileInfo (ctx->ectx, fd, &rp->fi))
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              goto ERR;
-            }
-          if (GNUNET_OK != read_int (fd, (int *) &rp->matchingKeyCount))
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              goto ERR;
-            }
-          if ((rp->matchingKeyCount > 1024) ||
-              (rp->matchingKeyCount >= list->numberOfURIKeys))
-            {
-              GNUNET_GE_BREAK (NULL, 0);
-              goto ERR;
-            }
-          if (rp->matchingKeyCount > 0)
-            {
-              rp->matchingKeys
-                =
-                GNUNET_malloc (sizeof (GNUNET_HashCode) *
-                               rp->matchingKeyCount);
-              if (sizeof (GNUNET_HashCode) * rp->matchingKeyCount !=
-                  READ (fd, rp->matchingKeys,
-                        sizeof (GNUNET_HashCode) * rp->matchingKeyCount))
-                {
-                  GNUNET_GE_BREAK (NULL, 0);
-                  goto ERR;
-                }
-            }
-        }
+      list->searches = read_search_record_list(ctx->ectx, rb);
+      if (list->searches == NULL)
+	goto ERR; /* can never be empty in practice */
+      srl = list->searches;
+      total_searches = 0;
+      while (srl != NULL)
+	{
+	  total_searches++;
+	  srl = srl->next;
+	}
+      srla = GNUNET_malloc(total_searches * sizeof(struct SearchRecordList*));
+      srl = list->searches;
+      i = total_searches;
+      while (srl != NULL)
+	{
+	  srla[--i] = srl;
+	  srl = srl->next;
+	}
+      list->resultsReceived = read_result_list(ctx->ectx, rb,
+					       total_searches,
+					       srla);
+      GNUNET_free(srla);
       list->ctx = ctx;
       list->next = NULL;
-      /* finally: append (!) to list */
 
+      /* finally: append (!) to list */
       if (ctx->activeSearches == NULL)
         {
           ctx->activeSearches = list;
@@ -510,50 +670,40 @@ readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
     }                           /* end OUTER: 'while(1)' */
 ERR:
   /* error - deallocate 'list' */
-  if (list->resultsReceived != NULL)
+  while (list->resultsReceived != NULL)
     {
-      for (i = 0; i < list->sizeResultsReceived; i++)
-        {
-          if (list->resultsReceived[i].uri != NULL)
-            GNUNET_ECRS_uri_destroy (list->resultsReceived[i].uri);
-          if (list->resultsReceived[i].meta != NULL)
-            GNUNET_ECRS_meta_data_destroy (list->resultsReceived[i].meta);
-        }
-      GNUNET_array_grow (list->resultsReceived, list->sizeResultsReceived, 0);
+      srp = list->resultsReceived;
+      list->resultsReceived = srp->next;
+      GNUNET_free(srp);
     }
-  if (list->unmatchedResultsReceived != NULL)
+  while (list->searches != NULL)
     {
-      for (i = 0; i < list->sizeUnmatchedResultsReceived; i++)
-        {
-          rp = &list->unmatchedResultsReceived[i];
-
-          if (rp->fi.uri != NULL)
-            GNUNET_ECRS_uri_destroy (rp->fi.uri);
-          if (rp->fi.meta != NULL)
-            GNUNET_ECRS_meta_data_destroy (rp->fi.meta);
-          GNUNET_free_non_null (rp->matchingKeys);
-        }
-      GNUNET_array_grow (list->resultsReceived, list->sizeResultsReceived, 0);
+      srl = list->searches;
+      list->searches = srl->next;      
+      if (srl->uri != NULL)
+	GNUNET_ECRS_uri_destroy(srl->uri);
+      GNUNET_free(srl);
     }
   if (list->uri != NULL)
     GNUNET_ECRS_uri_destroy (list->uri);
+  GNUNET_mutex_destroy(list->lock);
   GNUNET_free (list);
   return GNUNET_SYSERR;
 }
 
 static int
-readDownloads (int fd, struct GNUNET_FSUI_Context *ctx)
+readDownloads (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 {
   memset (&ctx->activeDownloads, 0, sizeof (GNUNET_FSUI_DownloadList));
   ctx->activeDownloads.child
-    = readDownloadList (ctx->ectx, fd, ctx, &ctx->activeDownloads);
+    = readDownloadList (ctx->ectx, rb, ctx, &ctx->activeDownloads);
   return GNUNET_OK;
 }
 
 static int
 readUploadList (struct GNUNET_FSUI_Context *ctx,
                 struct GNUNET_FSUI_UploadList *parent,
-                int fd, struct GNUNET_FSUI_UploadShared *shared, int top)
+                ReadBuffer * rb, struct GNUNET_FSUI_UploadShared *shared, int top)
 {
   struct GNUNET_FSUI_UploadList *list;
   struct GNUNET_FSUI_UploadList l;
@@ -598,7 +748,7 @@ readUploadList (struct GNUNET_FSUI_Context *ctx,
         READURI (l.uri);
       if ((big & 4) == 4)
         {
-          l.keywords = read_uri (ctx->ectx, fd);
+          l.keywords = read_uri (ctx->ectx, rb);
           if (l.keywords == NULL)
             {
               if (l.uri != NULL)
@@ -609,7 +759,7 @@ readUploadList (struct GNUNET_FSUI_Context *ctx,
         }
       if ((big & 8) == 8)
         {
-          l.meta = read_meta (ctx->ectx, fd);
+          l.meta = read_meta (ctx->ectx, rb);
           if (l.meta == NULL)
             {
               if (l.uri != NULL)
@@ -620,7 +770,7 @@ readUploadList (struct GNUNET_FSUI_Context *ctx,
               break;
             }
         }
-      l.filename = read_string (fd, 1024 * 1024);
+      l.filename = read_string (rb, 1024 * 1024);
       if (l.filename == NULL)
         {
           if (l.uri != NULL)
@@ -636,7 +786,7 @@ readUploadList (struct GNUNET_FSUI_Context *ctx,
       memcpy (list, &l, sizeof (struct GNUNET_FSUI_UploadList));
       list->shared = shared;
       list->parent = parent;
-      if (GNUNET_OK != readUploadList (ctx, list, fd, shared, GNUNET_NO))
+      if (GNUNET_OK != readUploadList (ctx, list, rb, shared, GNUNET_NO))
         {
           if (l.uri != NULL)
             GNUNET_ECRS_uri_destroy (l.uri);
@@ -655,7 +805,7 @@ readUploadList (struct GNUNET_FSUI_Context *ctx,
 
 
 static int
-readUploads (int fd, struct GNUNET_FSUI_Context *ctx)
+readUploads (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 {
   int big;
   int bag;
@@ -690,7 +840,7 @@ readUploads (int fd, struct GNUNET_FSUI_Context *ctx)
       READSTRING (sshared.top_filename, 1024 * 1024);
       if ((big & 4) == 4)
         {
-          sshared.global_keywords = read_uri (ctx->ectx, fd);
+          sshared.global_keywords = read_uri (ctx->ectx, rb);
           if (sshared.global_keywords == NULL)
             {
               GNUNET_free_non_null (sshared.extractor_config);
@@ -702,7 +852,7 @@ readUploads (int fd, struct GNUNET_FSUI_Context *ctx)
       memcpy (shared, &sshared, sizeof (GNUNET_FSUI_UploadShared));
       shared->ctx = ctx;
       if (GNUNET_OK !=
-          readUploadList (ctx, &ctx->activeUploads, fd, shared, GNUNET_YES))
+          readUploadList (ctx, &ctx->activeUploads, rb, shared, GNUNET_YES))
         {
           GNUNET_GE_BREAK (NULL, 0);
 #if 0
@@ -723,7 +873,7 @@ readUploads (int fd, struct GNUNET_FSUI_Context *ctx)
 }
 
 static int
-readUnindex (int fd, struct GNUNET_FSUI_Context *ctx)
+readUnindex (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 {
   int big;
   char *name;
@@ -750,29 +900,35 @@ readUnindex (int fd, struct GNUNET_FSUI_Context *ctx)
 void
 GNUNET_FSUI_deserialize (struct GNUNET_FSUI_Context *ctx)
 {
-  int fd;
+  ReadBuffer rb;
 
-  fd = -1;
+  rb.fd = -1;
   if (0 != ACCESS (ctx->name, R_OK))
     return;
-  fd = GNUNET_disk_file_open (ctx->ectx, ctx->name, O_RDONLY);
-  if (fd == -1)
+  rb.fd = GNUNET_disk_file_open (ctx->ectx, ctx->name, O_RDONLY);
+  if (rb.fd == -1)
     return;
-
-  if ((GNUNET_OK != checkMagic (fd)) ||
-      (GNUNET_OK != readCollection (fd, ctx)) ||
-      (GNUNET_OK != readSearches (fd, ctx)) ||
-      (GNUNET_OK != readDownloads (fd, ctx)) ||
-      (GNUNET_OK != readUnindex (fd, ctx))
-      || (GNUNET_OK != readUploads (fd, ctx)))
+  rb.pos = 0;
+  rb.size = 64 * 1024;
+  rb.have = 0;
+  rb.buffer = GNUNET_malloc(rb.size);
+  if ((GNUNET_OK != checkMagic (&rb)) ||
+      (GNUNET_OK != readCollection (&rb, ctx)) ||
+      (GNUNET_OK != readSearches (&rb, ctx)) ||
+      (GNUNET_OK != readDownloads (&rb, ctx)) ||
+      (GNUNET_OK != readUnindex (&rb, ctx))
+      || (GNUNET_OK != readUploads (&rb, ctx)))
     {
       GNUNET_GE_BREAK (ctx->ectx, 0);
       GNUNET_GE_LOG (ctx->ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _
                      ("FSUI state file `%s' had syntax error at offset %u.\n"),
-                     ctx->name, LSEEK (fd, 0, SEEK_CUR));
+                     ctx->name, LSEEK (rb.fd, 0, SEEK_CUR));
     }
-  CLOSE (fd);
+  CLOSE (rb.fd);
   UNLINK (ctx->name);
+  GNUNET_free(rb.buffer);
 }
+
+/* end of deserialize.c */

@@ -137,6 +137,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
   char *dstURI;
   GNUNET_EC_KBlock *kb;
   char **keywords;
+  const char * keyword;
   unsigned int keywordCount;
   int i;
 #if DEBUG_KEYSPACE
@@ -149,7 +150,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
   char *cpy;                    /* copy of the encrypted portion */
   struct GNUNET_ECRS_URI *xuri;
 
-  if (!GNUNET_ECRS_uri_test_ksk (uri))
+  if (!GNUNET_ECRS_uri_test_ksk (uri)) 
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
@@ -220,7 +221,10 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
   for (i = 0; i < keywordCount; i++)
     {
       memcpy (&kb[1], cpy, mdsize + strlen (dstURI) + 1);
-      GNUNET_hash (keywords[i], strlen (keywords[i]), &key);
+      keyword = keywords[i];
+      /* first character of keyword indicates if it is
+	 mandatory or not -- ignore for hashing */
+      GNUNET_hash (&keyword[1], strlen (&keyword[1]), &key);
 #if DEBUG_KEYSPACE
       IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&key, &enc));

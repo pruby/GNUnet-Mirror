@@ -53,9 +53,10 @@ extern "C"
  * 4.0.x: with expiration, variable meta-data, kblocks
  * 4.1.x: with new error and configuration handling
  * 5.0.x: with location URIs
- * 6.x.x: who knows? :-)
+ * 6.0.0: with support for OR in KSKs
+ * 7.0.0: who knows? :-)
  */
-#define GNUNET_ECRS_VERSION "5.1.0"
+#define GNUNET_ECRS_VERSION "6.0.0"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
@@ -96,9 +97,14 @@ typedef int (*GNUNET_ECRS_MetaDataProcessor) (EXTRACTOR_KeywordType type,
 
 /**
  * Iterator over keywords
+ *
+ * @param keyword the keyword
+ * @param is_mandatory is the keyword mandatory (in a search)
  * @return GNUNET_OK to continue to iterate, GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_ECRS_KeywordIterator) (const char *data, void *closure);
+typedef int (*GNUNET_ECRS_KeywordIterator) (const char *keyword, 
+					    int is_mandatory,
+					    void *closure);
 
 /**
  * Create a fresh MetaData token.
@@ -294,7 +300,8 @@ unsigned int GNUNET_ECRS_uri_get_keyword_count_from_ksk (const struct
                                                          *uri);
 
 /**
- * Iterate over all keywords in this keyword URI?
+ * Iterate over all keywords in this keyword URI.
+ *
  * @return -1 if this is not a keyword URI, otherwise number of
  *   keywords iterated over until iterator aborted
  */
@@ -367,19 +374,19 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_uri_expand_keywords_with_date (const
                                                                    *uri);
 
 /**
- * Convert a NULL-terminated array of keywords
- * to an ECRS URI.
- */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_strings_to_uri (const char
-                                                            *keyword[]);
-
-/**
  * Create an ECRS URI from a single user-supplied string of keywords.
- * The string may contain the reserved word 'AND' to create a boolean
- * search over multiple keywords.
+ * The string is broken up at spaces into individual keywords.
+ * Keywords that start with "+" are mandatory.  Double-quotes can
+ * be used to prevent breaking up strings at spaces (and also
+ * to specify non-mandatory keywords starting with "+").
  *
+ * Keywords must contain a balanced number of double quotes and
+ * double quotes can not be used in the actual keywords (for
+ * example, the string '""foo bar""' will be turned into two
+ * "OR"ed keywords 'foo' and 'bar', not into '"foo bar"'.
+ * 
  * @return an ECRS URI for the given keywords, NULL
- *  if keywords is not legal (i.e. empty).
+ *  if keywords is not legal (i.e. empty). 
  */
 struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_string_to_uri (struct
                                                            GNUNET_GE_Context
@@ -389,9 +396,18 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_string_to_uri (struct
 
 /**
  * Create an ECRS URI from a user-supplied command line of keywords.
- * The command line may contain the reserved word 'AND' to create a
- * boolean search over multiple keywords.
+ * Arguments should start with "+" to indicate mandatory
+ * keywords.  
  *
+ * @param argc number of keywords
+ * @param argv keywords (double quotes are not required for
+ *             keywords containing spaces; however, double
+ *             quotes are required for keywords starting with
+ *             "+"); there is no mechanism for having double
+ *             quotes in the actual keywords (if the user
+ *             did specifically specify double quotes, the
+ *             caller should convert each double quote
+ *             into two single quotes).
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
@@ -403,22 +419,6 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_command_line_to_uri (struct
                                                                  const char
                                                                  **argv);
                                                                  /* helper.c */
-
-/**
- * Create an ECRS URI from a user-supplied list of keywords.
- * The keywords are NOT separated by AND but already
- * given individually.
- *
- * @return an ECRS URI for the given keywords, NULL
- *  if keywords is not legal (i.e. empty).
- */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_list_to_uri (struct
-                                                         GNUNET_GE_Context
-                                                         *ectx,
-                                                         unsigned int
-                                                         num_keywords,
-                                                         const char
-                                                         **keywords);
 
 /**
  * Test if two URIs are equal.
@@ -757,8 +757,9 @@ struct GNUNET_ECRS_SearchContext;
 /**
  * Start search for content (asynchronous version).
  *
- * @param uri specifies the search parameters
- * @param uri set to the URI of the uploaded file
+ * @param uri specifies the search parameters;
+ *        this must be a simple URI (with a single
+ *        keyword)
  */
 struct GNUNET_ECRS_SearchContext *
 GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,

@@ -139,6 +139,7 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   GNUNET_EC_NBlock *nb;
   GNUNET_EC_KNBlock *knb;
   char **keywords;
+  const char * keyword;
   unsigned int keywordCount;
   int i;
   char *cpy;
@@ -262,7 +263,10 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
               size - sizeof (GNUNET_EC_KBlock) - sizeof (unsigned int));
       for (i = 0; i < keywordCount; i++)
         {
-          GNUNET_hash (keywords[i], strlen (keywords[i]), &hc);
+	  keyword = keywords[i];
+	  /* first character of keyword indicates
+	     mandatory or not -- ignore for hashing! */
+          GNUNET_hash (&keyword[1], strlen (&keyword[1]), &hc);
           pk = GNUNET_RSA_create_key_from_hash (&hc);
           GNUNET_RSA_get_public_key (pk, &knb->kblock.keyspace);
           GNUNET_GE_ASSERT (ectx,

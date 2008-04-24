@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,14 +27,22 @@
 
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
+#include "ecrs.h"
 
 /**
  * Create an ECRS URI from a single user-supplied string of keywords.
- * The string may contain the reserved word 'AND' to create a boolean
- * search over multiple keywords.
+ * The string is broken up at spaces into individual keywords.
+ * Keywords that start with "+" are mandatory.  Double-quotes can
+ * be used to prevent breaking up strings at spaces (and also
+ * to specify non-mandatory keywords starting with "+").
  *
+ * Keywords must contain a balanced number of double quotes and
+ * double quotes can not be used in the actual keywords (for
+ * example, the string '""foo bar""' will be turned into two
+ * "OR"ed keywords 'foo' and 'bar', not into '"foo bar"'.
+ * 
  * @return an ECRS URI for the given keywords, NULL
- *  if keywords is not legal (i.e. empty).
+ *  if keywords is not legal (i.e. empty). 
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
@@ -43,9 +51,10 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
   char **keywords;
   unsigned int num_Words;
   int inWord;
-  char *c;
+  char *pos;
   struct GNUNET_ECRS_URI *uri;
   char *searchString;
+  int saw_quote;
 
   if (input == NULL)
     {
@@ -54,42 +63,63 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
     }
   searchString = GNUNET_strdup (input);
   num_Words = 0;
-  for (inWord = 0, c = searchString; *c != '\0'; ++c)
+  inWord = 0;
+  saw_quote = 0;
+  pos = searchString;
+  while ('\0' != *pos)
     {
-      if (isspace (*c))
+      if ( (saw_quote ==0) &&
+	   (isspace (*pos)) )
         {
           inWord = 0;
         }
-      else if (!inWord)
-        {
-          inWord = 1;
-          ++num_Words;
-        }
+      else
+	if (0 == inWord)
+	  {
+	    inWord = 1;
+	    ++num_Words;
+	  }
+      if ('"' == *pos)
+	saw_quote = (saw_quote + 1) % 2;     
+      pos++;
     }
-
   if (num_Words == 0)
     {
-      GNUNET_free_non_null (searchString);
+      GNUNET_free (searchString);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _("No keywords specified!\n"));
       return NULL;
     }
+  if (saw_quote != 0)
+    {
+      GNUNET_free (searchString);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
+                     _("Number of double-quotes not balanced!\n"));
+      return NULL;
+    }
   keywords = GNUNET_malloc (num_Words * sizeof (char *));
   num_Words = 0;
-  for (inWord = 0, c = searchString; *c != '\0'; ++c)
+  inWord = 0;
+  pos = searchString;  
+  while ('\0' != *pos) 
     {
-      if (isspace (*c))
+      if ( (saw_quote == 0) &&
+	   (isspace (*pos)) )
         {
           inWord = 0;
-          *c = '\0';
+          *pos = '\0';
         }
-      else if (!inWord)
+      else if (0 == inWord)
         {
-          keywords[num_Words] = c;
+          keywords[num_Words] = pos;
           inWord = 1;
           ++num_Words;
         }
+      if ('"' == *pos)
+	saw_quote = (saw_quote + 1) % 2;     
+      pos++;
     }
   uri =
     GNUNET_ECRS_keyword_command_line_to_uri (ectx, num_Words,
@@ -99,11 +129,21 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
   return uri;
 }
 
+
 /**
  * Create an ECRS URI from a user-supplied command line of keywords.
- * The command line may contain the reserved word 'AND' to create a
- * boolean search over multiple keywords.
+ * Arguments should start with "+" to indicate mandatory
+ * keywords.  
  *
+ * @param argc number of keywords
+ * @param argv keywords (double quotes are not required for
+ *             keywords containing spaces; however, double
+ *             quotes are required for keywords starting with
+ *             "+"); there is no mechanism for having double
+ *             quotes in the actual keywords (if the user
+ *             did specifically specify double quotes, the
+ *             caller should convert each double quote
+ *             into two single quotes).
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
@@ -113,93 +153,42 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
                                          const char **keywords)
 {
   unsigned int i;
-  unsigned int uriLen;
-  char *uriString;
-  unsigned int uriSize;
   struct GNUNET_ECRS_URI *uri;
+  const char * keyword;
+  char * val;
+  const char * r;
+  char * w;
 
-  uriString = NULL;
-  uriSize = 0;
-  GNUNET_array_grow (uriString, uriSize, 4096);
-  strcpy (uriString, GNUNET_ECRS_URI_PREFIX);
-  strcat (uriString, GNUNET_ECRS_SEARCH_INFIX);
-  uriLen =
-    1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
-
-
+  uri = GNUNET_malloc (sizeof (URI));
+  uri->type = ksk;
+  uri->data.ksk.keywordCount = num_keywords;
+  uri->data.ksk.keywords = GNUNET_malloc (num_keywords * sizeof (char *));
   for (i = 0; i < num_keywords; i++)
     {
-      if (uriSize < uriLen + strlen (_("AND")) + 1 + strlen (keywords[i]))
-        GNUNET_array_grow (uriString, uriSize,
-                           uriSize + 4096 + strlen (keywords[i]));
-      if ((i > 0) && (0 == strcmp (keywords[i], _("AND"))))
-        {
-          strcat (uriString, "+");
-          if (i == num_keywords - 1)
-            strcat (uriString, _("AND"));       /* last keyword 'AND'? keep it! */
-          uriLen += 1;
-        }
+      keyword = keywords[i];
+      if (keyword[0] == '+')
+	{
+	  val = GNUNET_strdup(keyword);
+	}
       else
-        {
-          if ((i > 0) && (0 != strcmp (keywords[i - 1], _("AND"))))
-            {
-              strcat (uriString, " ");
-              uriLen += 1;
-            }
-          strcat (uriString, keywords[i]);
-          uriLen += strlen (keywords[i]);
-        }
+	{
+	  val = GNUNET_malloc(strlen(keyword) + 2);
+	  strcpy(val, " ");
+	  strcat(val, keyword);
+	}
+      r = val;
+      w = val;
+      while ('\0' != *r)
+	{
+	  if ('"' == *r)
+	    r++;
+	  else
+	    *(w++) = *(r++);
+	}
+      uri->data.ksk.keywords[i] = GNUNET_strdup(val);
+      GNUNET_free(val);
     }
-  uri = GNUNET_ECRS_string_to_uri (ectx, uriString);
-  GNUNET_array_grow (uriString, uriSize, 0);
   return uri;
 }
-
-/**
- * Create an ECRS URI from a user-supplied list of keywords.
- * The keywords are NOT separated by AND but already
- * given individually.
- *
- * @return an ECRS URI for the given keywords, NULL
- *  if keywords is not legal (i.e. empty).
- */
-struct GNUNET_ECRS_URI *
-GNUNET_ECRS_keyword_list_to_uri (struct GNUNET_GE_Context *ectx,
-                                 unsigned int num_keywords,
-                                 const char **keywords)
-{
-  unsigned int i;
-  unsigned int uriLen;
-  char *uriString;
-  unsigned int uriSize;
-  struct GNUNET_ECRS_URI *uri;
-
-  uriString = NULL;
-  uriSize = 0;
-  GNUNET_array_grow (uriString, uriSize, 4096);
-  strcpy (uriString, GNUNET_ECRS_URI_PREFIX);
-  strcat (uriString, GNUNET_ECRS_SEARCH_INFIX);
-  uriLen =
-    1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
-
-
-  for (i = 0; i < num_keywords; i++)
-    {
-      if (uriSize < uriLen + 1 + strlen (keywords[i]))
-        GNUNET_array_grow (uriString, uriSize,
-                           uriSize + 4096 + strlen (keywords[i]));
-      if (i > 0)
-        {
-          strcat (uriString, "+");
-          uriLen++;
-        }
-      strcat (uriString, keywords[i]);
-      uriLen += strlen (keywords[i]);
-    }
-  uri = GNUNET_ECRS_string_to_uri (ectx, uriString);
-  GNUNET_array_grow (uriString, uriSize, 0);
-  return uri;
-}
-
 
 /* end of helper.c */

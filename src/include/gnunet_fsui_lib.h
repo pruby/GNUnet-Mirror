@@ -56,17 +56,18 @@
  * may want to open a window informing the user about the pending
  * shutdown operation.<p>
  *
- * Any "startXXX" operation will result in FSUI state and memory
- * being allocated until it is paired with a "stopXXX" operation.
- * Before calling "stopXXX", one of three things must happen:
+ * Any "start" operation will result in FSUI state and memory
+ * being allocated until it is paired with a "stop" operation.
+ * Before calling "stop", one of three things must happen:
  * Either, the client receives an "error" (something went wrong)
  * or "completed" (action finished) event.  Alternatively, the
- * client may call abortXXX" which will result in an "aborted"
+ * client may call "abort" which will result in an "aborted"
  * event.  In either case, the event itself will NOT result in
  * the memory being released by FSUI -- the client must still
- * call "GNUNET_FSUI_stopXXX" explicitly.  Clients that call
- * "GNUNET_FSUI_stopXXX" before an aborted, error or completed event
- * will be blocked until either of the three events happens.<p>
+ * call "stop" explicitly.  Clients that call "stop" before an 
+ * aborted, error or completed event will be blocked until
+ * an error or completion event happens (it is illegal for a
+ * client to call "abort" after calling "stop").<p>
  *
  * Using the Event mechanism, clients can associate an arbitrary
  * pointer with any operation (upload, download, search or
@@ -76,9 +77,6 @@
  * that memory when suspend or stop events are issued.  For all
  * events (other than start/resume), FSUI will track and provide
  * the client pointer as part of the event (cctx field).<p>
- *
- * Note that most of this code is completely new in GNUnet 0.7.0 and
- * thus still highly experimental.  Suggestions are welcome.<p>
  */
 
 #ifndef GNUNET_FSUI_LIB_H
@@ -134,6 +132,7 @@ enum GNUNET_FSUI_EventType
   GNUNET_FSUI_search_resumed,
   GNUNET_FSUI_search_paused,
   GNUNET_FSUI_search_restarted,
+  GNUNET_FSUI_search_update,
   GNUNET_FSUI_download_started,
   GNUNET_FSUI_download_stopped,
   GNUNET_FSUI_download_progress,
@@ -392,6 +391,39 @@ typedef struct
       GNUNET_FSUI_SearchContext sc;
 
     } SearchRestarted;
+
+
+    struct
+    {
+
+      GNUNET_FSUI_SearchContext sc;
+
+      /**
+       * File-Info of the data for which we have
+       * updated ranking information.
+       */
+      GNUNET_ECRS_FileInfo fi;
+
+      /**
+       * The URI of the search for which we provide
+       * the updated ranking information.
+       */
+      const struct GNUNET_ECRS_URI *searchURI;
+
+      /**
+       * Updated availability rank (negative: 
+       * unavailable, positive: available)
+       */
+      int availability_rank;
+
+      /**
+       * Updated applicability rank (the larger,
+       * the better the result fits the search
+       * criteria).
+       */
+      unsigned int applicability_rank;
+
+    } SearchUpdate;
 
 
 

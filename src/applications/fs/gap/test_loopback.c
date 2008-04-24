@@ -107,13 +107,9 @@ uploadFile (unsigned int size)
     {
       struct GNUNET_ECRS_MetaData *meta;
       struct GNUNET_ECRS_URI *key;
-      const char *keywords[2];
-
-      keywords[0] = name;
-      keywords[1] = NULL;
 
       meta = GNUNET_ECRS_meta_data_create ();
-      key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
+      key = GNUNET_ECRS_keyword_string_to_uri (NULL, name);
       ret = GNUNET_ECRS_publish_under_keyword (ectx, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,     /* expire */
                                                uri, meta);
       GNUNET_ECRS_meta_data_destroy (meta);

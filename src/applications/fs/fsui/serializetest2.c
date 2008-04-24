@@ -323,7 +323,6 @@ main (int argc, char *argv[])
   char *keywords[] = {
     "down_foo",
     "down_bar",
-    NULL,
   };
   char keyword[40];
   int prog;
@@ -367,7 +366,7 @@ main (int argc, char *argv[])
       GNUNET_free (fn);
     }
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
+  kuri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2, (const char **) keywords);
   GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_MIMETYPE,
                                 GNUNET_DIRECTORY_MIME);
   upload =
@@ -382,8 +381,7 @@ main (int argc, char *argv[])
   kuri = NULL;
   GNUNET_FSUI_upload_stop (ctx, upload);
   CHECK (upURI != NULL);
-  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
-                   keywords[1]);
+  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   search = GNUNET_FSUI_search_start (ctx, 0, uri);
   CHECK (search != NULL);

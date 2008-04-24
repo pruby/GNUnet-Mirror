@@ -29,7 +29,7 @@
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
 
-#define DEBUG_VERBOSE GNUNET_YES
+#define DEBUG_VERBOSE GNUNET_NO
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -292,7 +292,6 @@ main (int argc, char *argv[])
   char *keywords[] = {
     "down_foo",
     "down_bar",
-    NULL,
   };
   char keyword[40];
   int prog;
@@ -325,7 +324,7 @@ main (int argc, char *argv[])
   CHECK (ctx != NULL);
   fn = makeHierarchy(42, DIRECTORY_TREE_SPEC);
   meta = GNUNET_ECRS_meta_data_create ();
-  kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
+  kuri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2, (const char **) keywords);
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload = GNUNET_FSUI_upload_start (ctx,
                                      fn,
@@ -348,7 +347,7 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (ctx, upload);
-  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
+  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0],
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -196,6 +196,11 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   GNUNET_FSUI_Context *ret;
   GNUNET_FSUI_SearchList *list;
   GNUNET_FSUI_UnindexList *xlist;
+  struct SearchResultList * pos;
+  struct SearchRecordList * rec;
+  unsigned int valid;
+  unsigned int i;
+  GNUNET_ECRS_FileInfo * fis;
   char *fn;
   char *gh;
   unsigned long long size;
@@ -257,15 +262,37 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   list = ret->activeSearches;
   while (list != NULL)
     {
+      valid = 0;
+      pos = list->resultsReceived;
+      while (pos != NULL)
+	{
+	  if (pos->mandatoryMatchesRemaining == 0)
+	    valid++;
+	  pos = pos->next;
+	}
+      fis = NULL;
+      if (valid > 0)
+	{
+	  fis = GNUNET_malloc(sizeof(GNUNET_ECRS_FileInfo) * valid);
+	  pos = list->resultsReceived;
+	  i = 0;
+	  while (pos != NULL)
+	    {
+	      if (pos->mandatoryMatchesRemaining == 0)
+		fis[i++] = pos->fi;
+	      pos = pos->next;
+	    } 
+	}
       event.type = GNUNET_FSUI_search_resumed;
       event.data.SearchResumed.sc.pos = list;
       event.data.SearchResumed.sc.cctx = NULL;
-      event.data.SearchResumed.fis = list->resultsReceived;
-      event.data.SearchResumed.fisSize = list->sizeResultsReceived;
+      event.data.SearchResumed.fis = fis;
+      event.data.SearchResumed.fisSize = valid;
       event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
       event.data.SearchResumed.searchURI = list->uri;
       event.data.SearchResumed.state = list->state;
       list->cctx = cb (closure, &event);
+      GNUNET_free_non_null(fis);
       list = list->next;
     }
   /* 2c) signal upload restarts */
@@ -322,20 +349,39 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
       if (list->state == GNUNET_FSUI_PENDING)
         {
           list->state = GNUNET_FSUI_ACTIVE;
-          list->handle = GNUNET_ECRS_search_start (list->ctx->ectx,
-                                                   list->ctx->cfg,
-                                                   list->uri,
-                                                   list->anonymityLevel,
-                                                   &GNUNET_FSUI_search_progress_callback,
-                                                   list);
-          if (list->handle == NULL)
-            {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
-                             GNUNET_GE_IMMEDIATE,
-                             "Failed to resume search\n");
-              list->state = GNUNET_FSUI_PENDING;
-            }
+	  rec = list->searches;
+	  while (rec != NULL)
+	    {
+	      rec->search = GNUNET_ECRS_search_start (list->ctx->ectx,
+						      list->ctx->cfg,
+						      rec->uri,
+						      list->anonymityLevel,
+						      &GNUNET_FSUI_search_progress_callback,
+						      list);
+	      if (rec->search == NULL)
+		{
+		  GNUNET_GE_LOG (ectx,
+				 GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+				 GNUNET_GE_IMMEDIATE,
+				 "Failed to resume search\n");
+		  list->state = GNUNET_FSUI_PENDING;
+		}
+	      rec = rec->next;
+	    }
+	  if (list->state != GNUNET_FSUI_ACTIVE)
+	    {
+	      /* stop searches, we failed... */
+	      rec = list->searches;
+	      while (rec != NULL)
+		{
+		  if (rec->search != NULL)
+		    {
+		      GNUNET_ECRS_search_stop(rec->search);
+		      rec->search = NULL;
+		    }
+		  rec = rec->next;
+		}
+	    }
         }
       list = list->next;
     }
@@ -464,9 +510,10 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
   GNUNET_FSUI_DownloadList *dpos;
   GNUNET_FSUI_UnindexList *xpos;
   GNUNET_FSUI_UploadList *upos;
+  struct SearchRecordList * rec;
+  struct SearchResultList * res;
   GNUNET_FSUI_Event event;
   void *unused;
-  int i;
 
   ectx = ctx->ectx;
   if (ctx->ipc != NULL)
@@ -499,8 +546,23 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
         {
           if (spos->state == GNUNET_FSUI_ACTIVE)
             spos->state = GNUNET_FSUI_PENDING;
-          GNUNET_ECRS_search_stop (spos->handle);
-          spos->handle = NULL;
+	  rec = spos->searches;
+	  while (rec != NULL)
+	    {
+	      GNUNET_ECRS_search_stop (rec->search);
+	      rec->search = NULL;
+	      rec = rec->next;
+	    }
+	  res = spos->resultsReceived;
+	  while (res != NULL)
+	    {
+	      if (res->test_download != NULL)
+		{
+		  GNUNET_ECRS_file_download_partial_stop(res->test_download);
+		  res->test_download = NULL;
+		}
+	      res = res->next;
+	    }
           if (spos->state != GNUNET_FSUI_PENDING)
             spos->state++;      /* _JOINED */
         }
@@ -582,25 +644,22 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
       spos = ctx->activeSearches;
       ctx->activeSearches = spos->next;
       GNUNET_ECRS_uri_destroy (spos->uri);
-      for (i = spos->sizeResultsReceived - 1; i >= 0; i--)
-        {
-          GNUNET_ECRS_FileInfo *fi;
-          fi = &spos->resultsReceived[i];
-          GNUNET_ECRS_meta_data_destroy (fi->meta);
-          GNUNET_ECRS_uri_destroy (fi->uri);
-        }
-      GNUNET_array_grow (spos->resultsReceived, spos->sizeResultsReceived, 0);
-      for (i = spos->sizeUnmatchedResultsReceived - 1; i >= 0; i--)
-        {
-          ResultPending *rp;
-
-          rp = &spos->unmatchedResultsReceived[i];
-          GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount, 0);
-          GNUNET_ECRS_meta_data_destroy (rp->fi.meta);
-          GNUNET_ECRS_uri_destroy (rp->fi.uri);
-        }
-      GNUNET_array_grow (spos->unmatchedResultsReceived,
-                         spos->sizeUnmatchedResultsReceived, 0);
+      while (spos->searches != NULL)
+	{
+	  rec = spos->searches;
+	  spos->searches = rec->next;
+	  GNUNET_ECRS_uri_destroy(rec->uri);
+	  GNUNET_free(rec);
+	}
+      while (spos->resultsReceived != NULL)
+	{
+	  res = spos->resultsReceived;
+	  spos->resultsReceived = res->next;	  
+          GNUNET_ECRS_meta_data_destroy (res->fi.meta);
+          GNUNET_ECRS_uri_destroy (res->fi.uri);
+	  GNUNET_free(res->matchingSearches);	  
+	  GNUNET_free(res);
+	}
       GNUNET_free (spos);
     }
   /* 4b) free unindex memory */

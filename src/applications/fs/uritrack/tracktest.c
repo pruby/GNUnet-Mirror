@@ -98,18 +98,10 @@ processor (const GNUNET_ECRS_FileInfo * fi,
 static int
 testTracking ()
 {
-  static const char *k1[] = {
-    "foo",
-    NULL,
-  };
-  static const char *k2[] = {
-    "foot",
-    NULL,
-  };
-  fi1.uri = GNUNET_ECRS_keyword_strings_to_uri (k1);
+  fi1.uri = GNUNET_ECRS_keyword_string_to_uri (NULL, "foo");
   fi1.meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_insert (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
-  fi2.uri = GNUNET_ECRS_keyword_strings_to_uri (k2);
+  fi2.uri = GNUNET_ECRS_keyword_string_to_uri (NULL, "foot");
   fi2.meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_insert (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
 
