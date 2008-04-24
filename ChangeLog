@@ -1,3 +1,7 @@
+Thu Apr 24 00:05:17 MDT 2008
+	Simplified FSUI stop/abort/pause/resume API calls
+	(no need to pass FSUI context anymore).
+
 Mon Apr 21 21:05:20 MDT 2008
 	Adding buffered IO for FSUI's serialize and
 	deserialize code.
