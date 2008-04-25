@@ -427,7 +427,12 @@ getaddrinfo_resolve (struct GNUNET_GE_Context *ectx,
   struct addrinfo *result;
 
   memset (&hints, 0, sizeof (struct addrinfo));
+// FIXME in PlibC
+#ifndef MINGW
   hints.ai_family = domain;
+#else
+  hints.ai_family = AF_INET;
+#endif
   hints.ai_socktype = 0;
   hints.ai_protocol = 0;        /* Any protocol */
   hints.ai_canonname = NULL;
