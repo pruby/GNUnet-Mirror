@@ -139,7 +139,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   if (ipk_dir == NULL)
     {
       ipk_dir = GNUNET_malloc (1);
-      strcpy(ipk_dir,"\0");
+      strcpy(ipk_dir,"");
     }
   length = snprintf (NULL, 0, "%s%s", ipk_dir, "gnunetd.conf.skel");
   data_dir = GNUNET_malloc (length + 1);
