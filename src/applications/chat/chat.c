@@ -331,7 +331,7 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
   if (pos != NULL)
     {
       found = GNUNET_YES;
-      nick_to_remove = GNUNET_malloc (strlen (pos->nick));
+      nick_to_remove = GNUNET_malloc (strlen (pos->nick) + 1);
       strcpy (nick_to_remove, pos->nick);
       if (prev == NULL)
         client_list_head = pos->next;

@@ -354,10 +354,11 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
       ret = -20;
       fprintf (stderr, _("Waiting for peers to connect"));
+      h1 = NULL;
+      h2 = NULL;
       while ((ret++ < -1) && (GNUNET_shutdown_test () == GNUNET_NO))
         {
-          h1 = NULL;
-          h2 = NULL;
+          
           if ((GNUNET_OK == GNUNET_IDENTITY_get_self (sock1,
                                                       &h1)) &&
               (GNUNET_OK == GNUNET_IDENTITY_get_self (sock2,
@@ -372,8 +373,6 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
                                                                  senderIdentity))
                 {
                   ret = GNUNET_OK;
-                  GNUNET_free_non_null (h1);
-                  GNUNET_free_non_null (h2);
                   break;
                 }
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock2,
@@ -381,19 +380,19 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
                                                                  senderIdentity))
                 {
                   ret = GNUNET_OK;
-                  GNUNET_free_non_null (h1);
-                  GNUNET_free_non_null (h2);
                   break;
                 }
               GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
             }
-          GNUNET_free_non_null (h1);
-          GNUNET_free_non_null (h2);
+          
         }
 
       GNUNET_hash_to_enc (&h1->senderIdentity.hashPubKey, host1entry);
       GNUNET_hash_to_enc (&h2->senderIdentity.hashPubKey, host2entry);
 
+			GNUNET_free_non_null (h1);
+      GNUNET_free_non_null (h2);
+			
       if (ret != GNUNET_OK)
         {
           fprintf (stderr,
@@ -417,6 +416,8 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
     }
   GNUNET_GC_free (cfg1);
   GNUNET_GC_free (cfg2);
+  GNUNET_free (host1entry);
+  GNUNET_free (host2entry);
   return ret;
 }
 

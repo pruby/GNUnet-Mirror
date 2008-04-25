@@ -139,13 +139,12 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   if (ipk_dir == NULL)
     {
       ipk_dir = GNUNET_malloc (1);
-      ipk_dir = "\0";
+      strcpy(ipk_dir,"\0");
     }
   length = snprintf (NULL, 0, "%s%s", ipk_dir, "gnunetd.conf.skel");
   data_dir = GNUNET_malloc (length + 1);
   snprintf (data_dir, length + 1, "%s%s", ipk_dir, "gnunetd.conf.skel");
-  if (ipk_dir != NULL)
-    GNUNET_free (ipk_dir);
+  GNUNET_free (ipk_dir);
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "SSH_USERNAME", "",
                                             &ssh_username);
@@ -277,12 +276,14 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                            GNUNET_GE_BULK, "mkstemp",
                                            temp_path);
               GNUNET_free (temp_path);
+              GNUNET_free (temp_remote_config_path);
               break;
             }
           CLOSE (ret);
           if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
             {
               GNUNET_free (temp_path);
+              GNUNET_free (temp_remote_config_path);
               break;
             }
 
@@ -291,10 +292,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
             {
               temp_pos =
                 GNUNET_malloc (sizeof (struct GNUNET_REMOTE_host_list));
-              temp_pos->hostname = GNUNET_malloc (strlen (curr_host));
+              temp_pos->hostname = GNUNET_malloc (strlen (curr_host)+1);
               strcpy (temp_pos->hostname, curr_host);
 
-              temp_pos->username = GNUNET_malloc (strlen (ssh_username));
+              temp_pos->username = GNUNET_malloc (strlen (ssh_username)+1);
               strcpy (temp_pos->username, ssh_username);
 
               friend_location_length =
