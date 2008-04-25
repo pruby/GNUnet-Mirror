@@ -306,7 +306,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
               GNUNET_GE_LOG (ectx,
                              GNUNET_GE_ERROR | GNUNET_GE_BULK |
                              GNUNET_GE_USER,
-                             _("Indexing data failed at position %i.\n"),
+                             _("Indexing data of file `%s' failed at position %llu.\n"),
+			     filename,
                              pos);
               goto FAILURE;
             }
