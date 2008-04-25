@@ -134,8 +134,8 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #if DEBUG_VERBOSE
       printf ("Download complete.\n");
 #endif
-      GNUNET_FSUI_search_abort (ctx, search);
-      GNUNET_FSUI_search_stop (ctx, search);
+      GNUNET_FSUI_search_abort (search);
+      GNUNET_FSUI_search_stop (search);
       search = NULL;
       break;
     case GNUNET_FSUI_download_progress:
@@ -273,7 +273,7 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_upload_stop (ctx, upload);
+  GNUNET_FSUI_upload_stop (upload);
   GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;
@@ -330,11 +330,11 @@ FAILURE:
   if (ctx != NULL)
     {
       if (unindex != NULL)
-        GNUNET_FSUI_unindex_stop (ctx, unindex);
+        GNUNET_FSUI_unindex_stop (unindex);
       if (download != NULL)
-        GNUNET_FSUI_download_stop (ctx, download);
+        GNUNET_FSUI_download_stop (download);
       if (search != NULL)
-        GNUNET_FSUI_search_stop (ctx, search);
+        GNUNET_FSUI_search_stop (search);
       GNUNET_FSUI_stop (ctx);
     }
   if (fn != NULL)

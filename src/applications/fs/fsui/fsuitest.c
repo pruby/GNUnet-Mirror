@@ -186,8 +186,8 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_search_abort (ctx, search);
-  GNUNET_FSUI_search_stop (ctx, search);
+  GNUNET_FSUI_search_abort (search);
+  GNUNET_FSUI_search_stop (search);
   unindex = GNUNET_FSUI_unindex_start (ctx, filename);
   prog = 0;
   while (lastEvent != GNUNET_FSUI_unindex_completed)
@@ -199,8 +199,8 @@ main (int argc, char *argv[])
         break;
     }
   if (lastEvent != GNUNET_FSUI_unindex_completed)
-    GNUNET_FSUI_unindex_abort (ctx, unindex);
-  GNUNET_FSUI_unindex_stop (ctx, unindex);
+    GNUNET_FSUI_unindex_abort (unindex);
+  GNUNET_FSUI_unindex_stop (unindex);
 
 
   /* END OF TEST CODE */

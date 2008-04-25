@@ -233,7 +233,7 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_upload_stop (ctx, upload);
+  GNUNET_FSUI_upload_stop (upload);
   waitForEvent = GNUNET_FSUI_unindex_completed;
   unindex = GNUNET_FSUI_unindex_start (ctx, fn);
   CHECK (unindex != NULL);
@@ -273,7 +273,7 @@ FAILURE:
   if (ctx != NULL)
     {
       if (unindex != NULL)
-        GNUNET_FSUI_unindex_stop (ctx, unindex);
+        GNUNET_FSUI_unindex_stop (unindex);
       GNUNET_FSUI_stop (ctx);
     }
   if (fn != NULL)

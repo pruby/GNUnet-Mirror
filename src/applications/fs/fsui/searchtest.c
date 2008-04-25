@@ -175,13 +175,13 @@ main (int argc, char *argv[])
   ctx = GNUNET_FSUI_start (NULL,
                            cfg, "fsuisearchtest", 32, GNUNET_YES,
                            &eventCallback, NULL);
-  GNUNET_FSUI_search_pause (ctx, search);
+  GNUNET_FSUI_search_pause (search);
   GNUNET_FSUI_stop (ctx);
   /* resume search! */
   ctx = GNUNET_FSUI_start (NULL,
                            cfg, "fsuisearchtest", 32, GNUNET_YES,
                            &eventCallback, NULL);
-  GNUNET_FSUI_search_restart (ctx, search);
+  GNUNET_FSUI_search_restart (search);
 
   fn = makeName (42);
   GNUNET_disk_file_write (NULL,
@@ -220,17 +220,17 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_upload_stop (ctx, upload);
-  GNUNET_FSUI_search_pause (ctx, search);
-  GNUNET_FSUI_search_restart (ctx, search);
+  GNUNET_FSUI_upload_stop (upload);
+  GNUNET_FSUI_search_pause (search);
+  GNUNET_FSUI_search_restart (search);
   while ((uri == NULL) && (GNUNET_shutdown_test () != GNUNET_YES))
     {
       prog++;
       CHECK (prog < 10000);
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
     }
-  GNUNET_FSUI_search_abort (ctx, search);
-  GNUNET_FSUI_search_stop (ctx, search);
+  GNUNET_FSUI_search_abort (search);
+  GNUNET_FSUI_search_stop (search);
   CHECK (uri != NULL);
   fn = makeName (43);
   meta = GNUNET_ECRS_meta_data_create ();
@@ -251,7 +251,7 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_download_stop (ctx, download);
+  GNUNET_FSUI_download_stop (download);
   fn = makeName (42);
   waitForEvent = GNUNET_FSUI_unindex_completed;
   unindex = GNUNET_FSUI_unindex_start (ctx, fn);
@@ -267,7 +267,7 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_unindex_stop (ctx, unindex);
+  GNUNET_FSUI_unindex_stop (unindex);
 
   /* END OF TEST CODE */
 FAILURE:

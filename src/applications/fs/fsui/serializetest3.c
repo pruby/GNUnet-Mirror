@@ -190,8 +190,8 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_search_abort (ctx, search);
-  GNUNET_FSUI_search_stop (ctx, search);
+  GNUNET_FSUI_search_abort (search);
+  GNUNET_FSUI_search_stop (search);
   search = NULL;
   /* END OF TEST CODE */
 FAILURE:

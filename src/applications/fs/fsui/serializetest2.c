@@ -381,7 +381,7 @@ main (int argc, char *argv[])
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
   kuri = NULL;
-  GNUNET_FSUI_upload_stop (ctx, upload);
+  GNUNET_FSUI_upload_stop (upload);
   CHECK (upURI != NULL);
   GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
@@ -426,20 +426,20 @@ main (int argc, char *argv[])
         {
           no_check = 1;
           GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-          GNUNET_FSUI_search_abort (ctx, search);
-          GNUNET_FSUI_search_stop (ctx, search);
+          GNUNET_FSUI_search_abort (search);
+          GNUNET_FSUI_search_stop (search);
           search = NULL;
           no_check = 0;
         }
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_download_stop (ctx, download);
+  GNUNET_FSUI_download_stop (download);
   for (j = 4; j < 256; j += 4)
     {
       fn = makeName (j);
       unindex = GNUNET_FSUI_unindex_start (ctx, fn);
-      GNUNET_FSUI_unindex_stop (ctx, unindex);
+      GNUNET_FSUI_unindex_stop (unindex);
       UNLINK (fn);
       GNUNET_free (fn);
     }
