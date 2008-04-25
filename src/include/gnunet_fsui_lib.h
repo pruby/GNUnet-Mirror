@@ -844,6 +844,12 @@ struct GNUNET_FSUI_Context;
  * FSUI guarantees is that only one thread at a time will call the
  * callback (so it need not be re-entrant).<p>
  *
+ * The code in the callback is NOT allowed to abort, stop,
+ * resume or cancel any pending FSUI operation.  The callback
+ * is allowed to start yet another FSUI operation (as long as
+ * the application can guarantee that FSUI_stop is not called
+ * before the FSUI_XXXX_start call returns).
+ *
  * @return cctx for resume events, otherwise NULL
  */
 typedef void *(*GNUNET_FSUI_EventProcessor) (void *cls,

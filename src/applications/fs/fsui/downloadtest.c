@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -51,6 +51,7 @@ makeName (unsigned int i)
 
 static volatile enum GNUNET_FSUI_EventType lastEvent;
 static volatile enum GNUNET_FSUI_EventType waitForEvent;
+static volatile int search_done;
 static struct GNUNET_FSUI_Context *ctx;
 static struct GNUNET_ECRS_URI *upURI;
 static struct GNUNET_FSUI_SearchList *search;
@@ -134,9 +135,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #if DEBUG_VERBOSE
       printf ("Download complete.\n");
 #endif
-      GNUNET_FSUI_search_abort (search);
-      GNUNET_FSUI_search_stop (search);
-      search = NULL;
+      search_done = 1;
       break;
     case GNUNET_FSUI_download_progress:
 #if DEBUG_VERBOSE > 1
@@ -277,10 +276,11 @@ main (int argc, char *argv[])
   GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;
+  search_done = 0;
   search = GNUNET_FSUI_search_start (ctx, 0, uri);
   CHECK (search != NULL);
   prog = 0;
-  while (search != NULL)
+  while (search_done == 0)
     {
       prog++;
       CHECK (prog < 1000);
@@ -309,7 +309,9 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  CHECK (search == NULL);
+  GNUNET_FSUI_search_abort (search);
+  GNUNET_FSUI_search_stop (search);
+  search = NULL;
   CHECK (download != NULL);
   waitForEvent = GNUNET_FSUI_unindex_completed;
   unindex = GNUNET_FSUI_unindex_start (ctx, fn);
