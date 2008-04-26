@@ -171,6 +171,8 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       download = event->data.DownloadResumed.dc.pos;
       break;
     case GNUNET_FSUI_search_result:
+      if (upURI == NULL)
+	break;
       if (download == NULL)
         {
           char *u;
@@ -179,7 +181,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
           if (!GNUNET_ECRS_uri_test_equal
               (upURI, event->data.SearchResult.fi.uri))
             {
-#if DEBUG_VERBOSE
+#if DEBUG_VERBOSE && 0
               printf ("Received result for different file: %s.\n", u);
 #endif
               GNUNET_free (u);
@@ -215,12 +217,14 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_upload_completed:
       upURI = GNUNET_ECRS_uri_duplicate (event->data.UploadCompleted.uri);
 #if DEBUG_VERBOSE
-      printf ("Upload complete.\n");
+      printf ("Upload of `%s' complete.\n",
+	      event->data.UploadCompleted.filename);
 #endif
       break;
     case GNUNET_FSUI_download_completed:
 #if DEBUG_VERBOSE
-      printf ("Download complete.\n");
+      printf ("Download of `%s' complete.\n",
+	      event->data.DownloadCompleted.filename);
 #endif
       if (checkHierarchy (43, DIRECTORY_TREE_SPEC) == GNUNET_OK)
         search_done = 1;
@@ -245,10 +249,16 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #endif
       break;
     case GNUNET_FSUI_unindex_error:
+      fprintf (stderr, "Error unindexing: %s\n", 
+	       event->data.UnindexError.message);
+      break;
     case GNUNET_FSUI_upload_error:
+      fprintf (stderr, "Error uploading: %s\n", 
+	       event->data.UploadError.message);
+      break;
     case GNUNET_FSUI_download_error:
-      fprintf (stderr, "Received ERROR: %d\n", event->type);
-      GNUNET_GE_BREAK (ectx, 0);
+      fprintf (stderr, "Error downloading: %s\n", 
+	       event->data.DownloadError.message);
       break;
     case GNUNET_FSUI_download_aborted:
 #if DEBUG_VERBOSE
@@ -358,7 +368,7 @@ main (int argc, char *argv[])
   while (!search_done)
     {
       prog++;
-      CHECK (prog < 1000);
+      CHECK (prog < 5000);
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
