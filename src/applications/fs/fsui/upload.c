@@ -293,6 +293,7 @@ GNUNET_FSUI_uploadThread (void *cls)
   GNUNET_FSUI_Event event;
   GNUNET_ECRS_FileInfo fi;
   int ret;
+  int is_directory;
   struct GNUNET_GE_Context *ectx;
   char *filename;
   char *pfn;
@@ -319,6 +320,7 @@ GNUNET_FSUI_uploadThread (void *cls)
   if (GNUNET_YES == GNUNET_disk_directory_test (ectx, utc->filename))
     {
       error = NULL;
+      is_directory = 1;
       filename = createDirectoryHelper (ectx,
                                         utc->shared->ctx->cfg,
                                         utc->child, utc->meta, &error);
@@ -334,6 +336,7 @@ GNUNET_FSUI_uploadThread (void *cls)
     }
   else
     {
+      is_directory = 0;
       filename = GNUNET_strdup (utc->filename);
     }
   utc->start_time = GNUNET_get_time ();
@@ -403,7 +406,7 @@ GNUNET_FSUI_uploadThread (void *cls)
         tpos--;
       pfn = GNUNET_malloc (strlen (&utc->filename[tpos + 1]) + 2);
       strcpy (pfn, &utc->filename[tpos + 1]);
-      if ((utc->child != NULL) &&
+      if ((is_directory || (utc->child != NULL)) &&
           ((strlen (pfn) == 0) || (pfn[strlen (pfn) - 1] != DIR_SEPARATOR)))
         strcat (pfn, DIR_SEPARATOR_STR);
       GNUNET_ECRS_meta_data_insert (utc->meta, EXTRACTOR_FILENAME, pfn);

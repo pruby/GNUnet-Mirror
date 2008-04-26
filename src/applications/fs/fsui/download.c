@@ -182,16 +182,19 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
             GNUNET_ECRS_meta_data_destroy (md);
           if (dl->is_recursive)
             {
+              int n;
               /* load directory, start downloads */
               md = NULL;
               GNUNET_mutex_lock (dl->ctx->lock);
-              GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                                                   dirBlock,
-                                                   totalBytes,
-                                                   &md,
-                                                   &triggerRecursiveDownload,
-                                                   dl);
+              n = GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
+                                                       dirBlock,
+                                                       totalBytes,
+                                                       &md,
+                                                       &triggerRecursiveDownload,
+                                                       dl);
               GNUNET_mutex_unlock (dl->ctx->lock);
+              if (n == 0)
+                GNUNET_disk_directory_create (dl->ctx->ectx, dl->filename);
               GNUNET_ECRS_meta_data_destroy (md);
               MUNMAP (dirBlock, totalBytes);
             }
@@ -297,13 +300,16 @@ downloadProgressCallback (unsigned long long totalBytes,
     }
   if ((dl->is_recursive == GNUNET_YES) && (dl->is_directory == GNUNET_YES))
     {
+      int n;
       md = NULL;
       GNUNET_mutex_lock (dl->ctx->lock);
-      GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                                           lastBlock,
-                                           lastBlockSize, &md,
-                                           &triggerRecursiveDownload, dl);
+      n = GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
+                                               lastBlock,
+                                               lastBlockSize, &md,
+                                               &triggerRecursiveDownload, dl);
       GNUNET_mutex_unlock (dl->ctx->lock);
+      if (n == 0)
+        GNUNET_disk_directory_create (dl->ctx->ectx, dl->filename);
       if (md != NULL)
         GNUNET_ECRS_meta_data_destroy (md);
     }
