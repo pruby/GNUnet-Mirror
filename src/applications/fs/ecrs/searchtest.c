@@ -57,7 +57,7 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 #endif
   (*cnt)--;
   if (0 == *cnt)
-    return GNUNET_SYSERR;       /* abort search */
+    return GNUNET_SYSERR;       /* abort search */    
   return GNUNET_OK;
 }
 
@@ -109,18 +109,21 @@ main (int argc, char *argv[])
 #endif
   uri = GNUNET_ECRS_string_to_uri (NULL,
                                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
+  CHECK (uri != NULL);
   meta = GNUNET_ECRS_meta_data_create ();
 
   key = GNUNET_ECRS_keyword_string_to_uri (NULL, "XXtest");
   CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
                                                          uri, meta));
   CHECK (GNUNET_OK == searchFile (key, 1));
-  GNUNET_ECRS_uri_destroy (key);
   GNUNET_ECRS_uri_destroy (uri);
 
   uri = GNUNET_ECRS_string_to_uri (NULL,
                                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
-  key = GNUNET_ECRS_keyword_string_to_uri (NULL, "+binary");
+  CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
+                                                         uri, meta));
+  GNUNET_ECRS_uri_destroy (key);
+  key = GNUNET_ECRS_keyword_string_to_uri (NULL, "binary");
   CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
                                                          uri, meta));
   CHECK (GNUNET_OK == searchFile (key, 1));
