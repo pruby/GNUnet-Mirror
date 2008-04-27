@@ -31,9 +31,13 @@
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
+static unsigned int app_killer;
+
 static int
 testTerminate (void *unused)
 {
+  if (app_killer++ > 10000)
+    return GNUNET_SYSERR;
   return GNUNET_OK;
 }
 
