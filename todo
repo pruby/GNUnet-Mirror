@@ -16,6 +16,8 @@ Annotations:
 - google-style search support:
   * extended FSUI support (test event generation, support for probing downloads)
   * gnunet-gtk and gnunet-qt support (visualization, sorting, event handling)
+- Windows: bug #1337 [RC]
+- Windows: gnunet-auto-share
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074
