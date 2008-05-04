@@ -27,7 +27,7 @@
  * Size of a GNUNET_EC_DBlock.  Should be a multiple of 8 and larger than
  * sizeof(GNUNET_EC_ContentHashKey).
  */
-#define DBLOCK_SIZE 32768
+#define DBLOCK_SIZE (GNUNET_ECRS_DBLOCK_SIZE)
 
 /**
  * Pick a multiple of 2 here to achive 8-byte alignment!

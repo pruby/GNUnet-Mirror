@@ -31,6 +31,29 @@
 #include "gnunet_ecrs_lib.h"
 
 /**
+ * How many probes do we do at most per search?
+ */
+#define GNUNET_FSUI_MAX_PROBES 10
+
+/**
+ * How many seconds do we spend on the first test download?
+ * (each additional probe will take exponentially longer)
+ */
+#define GNUNET_FSUI_PROBE_TIME_FACTOR (2 * GNUNET_CRON_MINUTES)
+
+/**
+ * Given n running probes, how long should we wait
+ * between the end of one probe and the starting of
+ * the next probe?  The exact delay will be n*n*PROBE_DELAY+rand(PROBE_DELAY).
+ */
+#define GNUNET_FSUI_PROBE_DELAY (5 * GNUNET_CRON_MINUTES)
+
+/**
+ * Strict upper limit on the number of concurrent probes.
+ */
+#define GNUNET_FSUI_HARD_PROBE_LIMIT 128
+
+/**
  * Track record for a given result.
  */
 struct SearchResultList
@@ -78,6 +101,17 @@ struct SearchResultList
    * How often did a test download fail?
    */
   unsigned int probeFailure;
+
+  /**
+   * When did we start the test?  Set to 0
+   * if the download was successful.
+   */
+  GNUNET_CronTime test_download_start_time;
+
+  /**
+   * When did the last probe complete?
+   */
+  GNUNET_CronTime last_probe_time;
 
 };
 
@@ -499,6 +533,11 @@ typedef struct GNUNET_FSUI_Context
    * currently active.
    */
   unsigned int activeDownloadThreads;
+
+  /**
+   * Number of currently active search probes.
+   */
+  unsigned int active_probes;
 
 } GNUNET_FSUI_Context;
 
