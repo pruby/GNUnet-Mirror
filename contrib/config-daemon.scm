@@ -38,6 +38,8 @@
 (define (nohelp) 
   (_ "No help available.") )
 
+(define (nathelp)
+  (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).") )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -163,7 +165,7 @@ However, active testing and qualified feedback of these features is always welco
   "HELLOEXPIRES"
   (_ "How many minutes should peer advertisements last?")
   (_ 
-"How many minutes is the current IP valid?  (GNUnet will sign HELLO messages with this expiration timeline. If you are on dialup, 60 (for 1 hour) is suggested. If you are having a static IP address, you may want to set this to a large value (say 14400).  The default is 1440 (1 day). If your IP changes periodically, you will want to choose the expiration to be smaller than the frequency with which your IP changes." )
+"How many minutes is the current IP valid?  (GNUnet will sign HELLO messages with this expiration timeline. If you are on dialup, 60 (for 1 hour) is suggested. If you have a static IP address, you may want to set this to a large value (say 14400).  The default is 1440 (1 day). If your IP changes periodically, you will want to choose an expiry period smaller than the frequency with which your IP changes." )
   '()
   #t
   1440
@@ -348,7 +350,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   "TRANSPORTS"
   (_ "Which transport mechanisms should GNUnet use?")
   (_ 
-"Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The available transports are udp, tcp, http, smtp and nat.
+"Use a space-separated list of modules, e.g.  \"udp smtp tcp\".  The available transports are udp, tcp, http, smtp and nat.
 		
 Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that cannot directly be reached from the outside.  Peers that are NOT behind a NAT box and that want to *allow* peers that ARE behind a NAT box to connect must ALSO load the 'nat' module.  Note that the actual transfer will always be via tcp initiated by the peer behind the NAT box.  The nat transport requires the use of tcp, http and/or smtp in addition to nat itself.")
   '()
@@ -396,7 +398,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  "TCPSERVER"
  "DISABLE"
  (_ "Disable client-server connections")
- (_ "This option can be used to tell gnunetd not to open the client port.  When run like this, gnunetd will participate as a peer in the network but not support any user interfaces.  This maybe useful for headless systems that are never expected to have end-user interactions.  Note that this will also prevent you from running diagnostic tools like gnunet-stats!")
+ (_ "This option can be used to tell gnunetd not to open the client port.  When run like this, gnunetd will participate as a peer in the network but not support any user interfaces.  This may be useful for headless systems that are never expected to have end-user interactions.  Note that this will also prevent you from running diagnostic tools like gnunet-stats!")
  '()
  #t
  #f
@@ -409,7 +411,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  "GNUNETD"
  "DISABLE-IPV6"
  (_ "YES disables IPv6 support, NO enables IPv6 support")
- (_ "This option maybe useful on peers where the kernel does not support IPv6.  You might also want to set this option if you do not have an IPv6 network connection.")
+ (_ "This option may be useful on peers where the kernel does not support IPv6.  You might also want to set this option if you do not have an IPv6 network connection.")
  '()
  #t
  #t
@@ -458,7 +460,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  "NETWORK"
  "HELLOEXCHANGE"
  (_ "Enable advertising of other peers by this peer")
- (_ "This option maybe useful during testing, but turning it off is dangerous! If in any doubt, set it to YES (which is the default).")
+ (_ "This option may be useful during testing, but turning it off is dangerous! If in any doubt, set it to YES (which is the default).")
  '()
  #t
  #t
@@ -686,7 +688,7 @@ In order to use sqstore_mysql, you must configure the mysql database, which is r
  (builder
  "F2F"
  "MINIMUM"
- (_ "Minimum number of connected friends before this peer is allowed to connect to peers that are not listed as friends")
+ (_ "The minimum number of connected friends before this peer is allowed to connect to peers that are not listed as friends")
  (_ "Note that this option does not guarantee that the peer will be able to connect to the specified number of friends.  Also, if the peer had connected to a sufficient number of friends and then established non-friend connections, some of the friends may drop out of the network, temporarily resulting in having fewer than the specified number of friends connected while being connected to non-friends.  However, it is guaranteed that the peer itself will never choose to drop a friend's connection if this would result in dropping below the specified number of friends (unless that number is higher than the overall connection target).")
  '()
  #t
@@ -904,7 +906,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "NAT"
  "LIMITED"
  (_ "Is this machine unreachable behind a NAT?")
- (_ "Set to YES if this machine is behind a NAT that limits connections from the outside to the GNUnet port and that cannot be traversed using UPnP.  Note that if you have configured your NAT box to allow direct connections from other machines to the GNUnet ports or if GNUnet can open ports using UPnP, you should set the option to NO.  Set this only to YES if other peers cannot contact you directly.  You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You can also use gnunet-transport-check with the '-p' option in order to determine which setting results in more connections.  Use YES only if you get no connections otherwise.  Set to AUTO to use YES if the local IP is belongs to a private IP network and NO otherwise.")
+ (_ "Set to YES if this machine is behind a NAT that limits connections from the outside to the GNUnet port and that cannot be traversed using UPnP. Note that if you have configured your NAT box to allow direct connections from other machines to the GNUnet ports or if GNUnet can open ports using UPnP, you should set the option to NO. Set this only to YES if other peers cannot contact you directly. You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP. You can also use gnunet-transport-check with the '-p' option in order to determine which setting results in more connections.  Use YES only if you get no connections otherwise. Set to AUTO to use YES if the local IP is belongs to a private IP network and NO otherwise.")
  '()
  #t
  "AUTO"
@@ -928,7 +930,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "TCP"
  "UPNP"
  (_ "Should we try to determine our external IP using UPnP?")
- (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).")
+ (nathelp)
  '()
  #t
  #t
@@ -1019,7 +1021,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "HTTP"
  "UPNP"
  (_ "Should we try to determine our external IP using UPnP?")
- (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP. You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).")
+ (nathelp)
  '()
  #t
  #t
@@ -1031,7 +1033,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "HTTP"
  "ADVERTISED-PORT"
  (_ "Which is the external port of the HTTP transport?")
- (_ "Use this option if your firewall maps say port 80 to your real HTTP port.  This can be useful in making the HTTP messages appear even more legit (without the need for running gnunetd as root due to the use of a priviledged port).")
+ (_ "Use this option if your firewall maps, say, port 80 to your real HTTP port.  This can be useful in making the HTTP messages appear even more legit (without needing to run gnunetd as root due to the use of a privileged port).")
  '()
  #t
  80
@@ -1169,7 +1171,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "UDP"
  "UPNP"
  (_ "Should we try to determine our external IP using UPnP?")
- (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP. You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).")
+ (nathelp)
  '()
  #t
  #t
@@ -1345,8 +1347,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "LOAD"
  "MAXCPULOAD"
  (_ "What is the maximum CPU load (percentage)?")
- (_ 
-"Which CPU load can be tolerated.  Load here always refers to the total system load, that is it includes CPU utilization by other processes.  A value of 50 means that once your 1 minute-load average goes over 50% non-idle, GNUnet will try to reduce CPU consumption until the load goes under the threshold.  Reasonable values are typically between 50 and 100.  Multiprocessors may use values above 100." )
+ (_ "The highest tolerable CPU load. Load here always refers to the total system load, that is it includes CPU utilization by other processes.  A value of 50 means that once your 1 minute-load average goes over 50% non-idle, GNUnet will try to reduce CPU consumption until the load goes under the threshold.  Reasonable values are typically between 50 and 100.  Multiprocessors may use values above 100." )
  '()
  #t
  100
@@ -1359,7 +1360,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "MAXIOLOAD"
  (_ "What is the maximum IO load (permille)?")
  (_ 
-"Which IO load can be tolerated.  Load here refers to the percentage of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 10 means that once the average number of cycles wasted waiting for IO is more than 10% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 10 and 75." )
+"The highest tolerable IO load.  Load here refers to the percentage of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 10 means that once the average number of cycles wasted waiting for IO is more than 10% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 10 and 75." )
  '()
  #t
  50
@@ -1371,7 +1372,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  "LOAD"
  "HARDCPULIMIT"
  (_ "What is the maximum CPU load (hard limit)?")
- (_ "Which CPU load can be tolerated.  This is the hard limit, so once it is reached, gnunetd will start to massively drop data to reduce the load.  Use with caution.")
+ (_ "The highest tolerable CPU load.  This is the hard limit, so once it is reached, gnunetd will start to massively drop data to reduce the load.  Use with caution.")
  '()
  #t
  0
@@ -1412,7 +1413,7 @@ The size of the DSTORE QUOTA is specified in MB.")
 
 While basic bandwidth limitation is simple and always works, there are some situations where it is not perfect.  Suppose you are running another application which performs a larger download. During that particular time, it would be nice if GNUnet would throttle its bandwidth consumption (automatically) and resume using more bandwidth after the download is complete.  This is obviously advanced magic since GNUnet will have to monitor the behavior of other applications. Another scenario is a monthly cap on bandwidth imposed by your ISP, which you would want to ensure is obeyed.  Here, you may want GNUnet to monitor the traffic from other applications to ensure that the combined long-term traffic is within the pre-set bounds.  Note that you should probably not set the bounds tightly since GNUnet may observe that the bounds are about to be broken but would be unable to stop other applications from continuing to use bandwidth.
 
-If either of these two scenarios applies, set BASICLIMITING to NO. Then set the bandwidth limits to the COMBINED amount of traffic that is accepable for both GNUnet and other applications.  GNUnet will then immediately throttle bandwidth consumption if the short-term average is above the limit, and it will also try to ensure that the long-term average is below the limit.  Note however that using NO can have the effect of GNUnet (almost) ceasing operations after other applications perform high-volume downloads that are beyond the defined limits.  GNUnet would reduce consumption until the long-term limits are again within bounds.
+If either of these two scenarios applies, set BASICLIMITING to NO. Then set the bandwidth limits to the COMBINED amount of traffic that is acceptable for both GNUnet and other applications.  GNUnet will then immediately throttle bandwidth consumption if the short-term average is above the limit, and it will also try to ensure that the long-term average is below the limit.  Note however that using NO can have the effect of GNUnet (almost) ceasing operations after other applications perform high-volume downloads that are beyond the defined limits.  GNUnet would reduce consumption until the long-term limits are again within bounds.
 
 NO only works on platforms where GNUnet can monitor the amount of traffic that the local host puts out on the network.  This is only implemented for Linux and Win32.  In order for the code to work, GNUnet needs to know the specific network interface that is used for the external connection (after all, the amount of traffic on loopback or on the LAN should never be counted since it is irrelevant).")
  '()

@@ -3761,7 +3761,7 @@ GNUNET_CORE_connection_init (struct GNUNET_GE_Context *e,
       stat_total_lost_sent =
         stats->
         create (gettext_noop
-                ("# total number of bytes we were allowed to sent but did not"));
+                ("# total number of bytes we were allowed to send but did not"));
       stat_total_allowed_inc =
         stats->
         create (gettext_noop

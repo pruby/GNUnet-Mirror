@@ -364,7 +364,8 @@ listenAndDistribute (void *unused)
                              GNUNET_GE_WARNING | GNUNET_GE_BULK |
                              GNUNET_GE_USER,
                              _
-                             ("Received malformed message via SMTP (size mismatch).\n"));
+                             ("Received malformed message via %s. Ignored.\n"),
+			     "SMTP");
 #if DEBUG_SMTP
               GNUNET_GE_LOG (ectx,
                              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |

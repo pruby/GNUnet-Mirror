@@ -349,7 +349,7 @@ network_load_up ()
                        ("How much upstream bandwidth (in bytes/s) may be used?"),
                        _("You can limit GNUnet's resource usage "
                          "here.\n\nThe \"upstream\" is the data channel through which data "
-                         "is *sent* to the internet. The limit is the maximum amount"
+                         "is *sent* to the internet. The limit is the maximum amount "
                          "which GNUnet is allowed to use. If you have a flatrate, you can set it to "
                          "the maximum speed of your internet connection. You should not use a value "
                          "that is higher than what your actual connection allows."),
@@ -364,7 +364,7 @@ network_load_down ()
                        ("How much downstream bandwidth (in bytes/s) may be used?"),
                        _("You can limit GNUnet's resource usage "
                          "here.\n\nThe \"downstream\" is the data channel through which data "
-                         "is *received* from the internet. The limit is the maximum amount"
+                         "is *received* from the internet. The limit is the maximum amount "
                          "which GNUnet is allowed to use. If you have a flatrate, you can set it to "
                          "the maximum speed of your internet connection. You should not use a value "
                          "that is higher than what your actual connection allows."),
@@ -413,7 +413,7 @@ group ()
                        _
                        ("For security reasons, it is a good idea to let this setup create "
                         "a new group for the chosen user account.\n\n"
-                        "You can also specify a already existant group here.\n\n"
+                        "You can also specify a already existent group here.\n\n"
                         "Only members of this group will be allowed to start and stop the "
                         "the GNUnet server and have access to GNUnet server data.\n"),
                        "GNUNETD", "GROUP", "gnunet");

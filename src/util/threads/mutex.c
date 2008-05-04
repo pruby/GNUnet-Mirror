@@ -184,7 +184,7 @@ GNUNET_mutex_unlock (Mutex * mutex)
         GNUNET_GE_LOG (NULL,
                        GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING |
                        GNUNET_GE_IMMEDIATE,
-                       _("Lock aquired for too long (%llu ms) at %s:%u\n"),
+                       _("Lock acquired for too long (%llu ms) at %s:%u\n"),
                        now - mutex->locked_time, mutex->locked_file,
                        mutex->locked_line);
       mutex->locked_file = NULL;

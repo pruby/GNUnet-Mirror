@@ -2138,10 +2138,10 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
                          GNUNET_GE_IMMEDIATE,
                          _
                          ("The UPnP service could not be loaded. To disable UPnP, set the "
-                          "configuration option \"UPNP\" in section \"HTTP\" to \"NO\"\n"));
+                          "configuration option \"UPNP\" in section \"%s\" to \"NO\"\n"),
+			 "HTTP");
         }
     }
-
   stats = coreAPI->service_request ("stats");
   if (stats != NULL)
     {

@@ -483,7 +483,6 @@ hello_to_address (const GNUNET_MessageHello * hello,
   return GNUNET_OK;
 }
 
-
 static void
 do_shutdown ()
 {

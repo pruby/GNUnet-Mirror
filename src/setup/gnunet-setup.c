@@ -71,7 +71,7 @@ set_option_helper (GNUNET_CommandLineProcessorContext * ctx,
     {
       fprintf (stderr,
                _
-               ("Invalid synatx, argument to 'set' must have the format SECTION:OPTION=VALUE.\n"));
+               ("Invalid syntax, argument to 'set' must have the format SECTION:OPTION=VALUE.\n"));
       return GNUNET_SYSERR;
     }
   set_option = GNUNET_strdup (value);
@@ -92,7 +92,7 @@ get_option_helper (GNUNET_CommandLineProcessorContext * ctx,
     {
       fprintf (stderr,
                _
-               ("Invalid synatx, argument to 'get' must have the format SECTION:OPTION.\n"));
+               ("Invalid syntax, argument to 'get' must have the format SECTION:OPTION.\n"));
       return GNUNET_SYSERR;
     }
   get_option = GNUNET_strdup (value);

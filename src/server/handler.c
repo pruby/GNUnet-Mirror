@@ -434,7 +434,7 @@ GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
                              GNUNET_GE_WARNING | GNUNET_GE_USER |
                              GNUNET_GE_BULK,
                              _
-                             ("Received corrupt message from peer `%s'in %s:%d.\n"),
+                             ("Received corrupt message from peer `%s' in %s:%d.\n"),
                              &enc, __FILE__, __LINE__);
             }
           else

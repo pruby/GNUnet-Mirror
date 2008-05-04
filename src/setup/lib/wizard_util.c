@@ -124,7 +124,7 @@ GNUNET_GNS_wiz_autostart_service (int doAutoStart, char *username,
           break;
         case 4:
           err =
-            winErrorStr (_("Cannot write to the regisitry"), GetLastError ());
+            winErrorStr (_("Cannot write to the registry"), GetLastError ());
           break;
         case 5:
           err = winErrorStr (_("Can't access the service"), GetLastError ());
