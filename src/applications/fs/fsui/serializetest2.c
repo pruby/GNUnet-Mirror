@@ -290,6 +290,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
           have_error = 1;
         }
       break;
+    case GNUNET_FSUI_search_update:
     case GNUNET_FSUI_upload_started:
     case GNUNET_FSUI_upload_stopped:
     case GNUNET_FSUI_search_started:
