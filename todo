@@ -10,7 +10,6 @@ Annotations:
 - gnunet-chat (CS-only) [RC]
 - test new asynchronous ECRS API (and resulting FSUI changes):
   * make sure error handling & reporting are nice [RC]
-- make it easier to get your own identity (gnunet-peer-info? gnunet-setup?) [RC]
 - google-style search support:
   * extended FSUI support (test event generation, support for probing downloads)
   * gnunet-gtk and gnunet-qt support (visualization, sorting, event handling)

@@ -43,6 +43,10 @@ static char *cfgFilename = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 
 static int no_resolve = GNUNET_NO;
 
+static int get_self = GNUNET_NO;
+
+static int be_quiet = GNUNET_NO;
+
 /**
  * All gnunet-peer-info command line options
  */
@@ -54,6 +58,12 @@ static struct GNUNET_CommandLineOption gnunetpeerinfoOptions[] = {
   {'n', "numeric", NULL,
    gettext_noop ("don't resolve host names"),
    0, &GNUNET_getopt_configure_set_one, &no_resolve},
+  {'q', "quiet", NULL,
+   gettext_noop ("output only the identity strings"),
+   0, &GNUNET_getopt_configure_set_one, &be_quiet},
+  {'s', "self", NULL,
+   gettext_noop ("output our own identity only"),
+   0, &GNUNET_getopt_configure_set_one, &get_self},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -116,8 +126,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
   if (NULL == hello)
     {
       GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Could not get address of peer `%s'.\n"), &enc);
+		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("Could not get address of peer `%s'.\n"), &enc);
       return GNUNET_OK;
     }
   if (GNUNET_SYSERR == GNUNET_RSA_verify (&hello->senderIdentity,
@@ -129,8 +139,9 @@ printHostInfo (const GNUNET_PeerIdentity * id,
                                           &hello->publicKey))
     {
       GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("hello message invalid (signature invalid).\n"));
+		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("`%s' message invalid (signature invalid).\n"),
+		     "HELLO");
     }
   addr = NULL;
   addr_len = 0;
@@ -151,12 +162,20 @@ printHostInfo (const GNUNET_PeerIdentity * id,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Could not get address of peer `%s'.\n"), &enc);
-      printf (_("Peer `%s' with trust %8u\n"),
-              (char *) &enc, identity->getHostTrust (id));
+      if (be_quiet)
+	printf ("%s\n",
+		(char *) &enc);
+      else
+	printf (_("Peer `%s' with trust %8u\n"),
+		(char *) &enc, identity->getHostTrust (id));
       return GNUNET_OK;
     }
-  printf (_("Peer `%s' with trust %8u and address `%s'\n"),
-          (char *) &enc, identity->getHostTrust (id), info);
+  if (be_quiet)
+    printf ("%s\n",
+	    (char *) &enc);
+  else
+    printf (_("Peer `%s' with trust %8u and address `%s'\n"),
+	    (char *) &enc, identity->getHostTrust (id), info);
   GNUNET_free (info);
   return GNUNET_OK;
 }
@@ -166,6 +185,9 @@ main (int argc, char *const *argv)
 {
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
+  const GNUNET_RSA_PublicKey * me;
+  GNUNET_PeerIdentity id;
+  GNUNET_EncName enc;
   int ret;
 
   ret = GNUNET_init (argc,
@@ -184,20 +206,57 @@ main (int argc, char *const *argv)
                                                                    "DISABLE",
                                                                    "YES"));
   cron = GNUNET_cron_create (ectx);
-  GNUNET_CORE_init (ectx, cfg, cron, NULL);
-  identity = GNUNET_CORE_request_service ("identity");
-  transport = GNUNET_CORE_request_service ("transport");
-  if (no_resolve != GNUNET_YES)
+  if (GNUNET_OK != GNUNET_CORE_init (ectx, cfg, cron, NULL))
     {
-#if HAVE_ADNS
-      identity->forEachHost (0, /* no timeout */
-                             &resolveHostInfo, NULL);
-      /* give GNU ADNS time to resolve... */
-      GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
-#endif
+      GNUNET_cron_destroy (cron);
+      GNUNET_fini (ectx, cfg);
+      return -1;
     }
-  identity->forEachHost (0,     /* no timeout */
-                         &printHostInfo, NULL);
+  identity = GNUNET_CORE_request_service ("identity");
+  if (identity == NULL)
+    {
+      GNUNET_CORE_done ();
+      GNUNET_cron_destroy (cron);
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+  transport = GNUNET_CORE_request_service ("transport");
+  if (transport == NULL)
+    {
+      GNUNET_CORE_release_service(identity);
+      GNUNET_CORE_done ();
+      GNUNET_cron_destroy (cron);
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+  if (get_self != GNUNET_YES)
+    {
+      if (no_resolve != GNUNET_YES)
+	{
+#if HAVE_ADNS
+	  identity->forEachHost (0, /* no timeout */
+				 &resolveHostInfo, NULL);
+	  /* give GNU ADNS time to resolve... */
+	  GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
+#endif
+	}
+      identity->forEachHost (0,     /* no timeout */
+			     &printHostInfo, NULL);
+    } 
+  else
+    {
+      me = identity->getPublicPrivateKey();
+      identity->getPeerIdentity(me,
+				&id);
+      GNUNET_hash_to_enc(&id.hashPubKey,
+			 &enc);
+      if (be_quiet)
+	printf ("%s\n",
+		(char *) &enc);
+      else
+	printf(_("I am peer `%s'.\n"),
+	       (const char*)&enc);
+    }
   GNUNET_CORE_release_service (identity);
   GNUNET_CORE_release_service (transport);
   GNUNET_CORE_done ();
