@@ -4,8 +4,6 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [4'08] (aka "advanced features"):
-- add code to check that [MODULES] configuration entries are
-  at least superficially valid (matching strings...)
 - document gnunet-auto-share on webpage [RC]
 - clean up and test VPN code [RC]
 - tune GAP query planning code [RC]

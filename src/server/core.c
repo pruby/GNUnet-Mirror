@@ -110,6 +110,18 @@ loadApplicationModule (const char *rpos)
                                                       &pos))
     return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (applicationCore.ectx, pos != NULL);
+  if (pos != strstr(pos, rpos))
+    {
+      GNUNET_GE_LOG (applicationCore.ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER |
+		     GNUNET_GE_BULK,
+		     _
+		     ("Configuration value `%s' under [MODULES] for `%s' is invalid!\n"),
+		     pos,
+		     rpos);
+      GNUNET_free(pos);
+      return GNUNET_SYSERR;
+    }
   name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
   strcat (name, pos);
@@ -298,6 +310,18 @@ GNUNET_CORE_request_service (const char *rpos)
                                                       &pos))
     return NULL;
   GNUNET_GE_ASSERT (applicationCore.ectx, pos != NULL);
+  if (pos != strstr(pos, rpos))
+    {
+      GNUNET_GE_LOG (applicationCore.ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER |
+		     GNUNET_GE_BULK,
+		     _
+		     ("Configuration value `%s' under [MODULES] for `%s' is invalid!\n"),
+		     pos,
+		     rpos);
+      GNUNET_free(pos);
+      return GNUNET_SYSERR;
+    }
   name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
   strcat (name, pos);

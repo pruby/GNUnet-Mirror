@@ -1,3 +1,6 @@
+Tue May  6 04:10:02 MDT 2008
+	Added simple sanity check for [MODULES] values.
+
 Thu Apr 24 00:05:17 MDT 2008
 	Simplified FSUI stop/abort/pause/resume API calls
 	(no need to pass FSUI context anymore).
