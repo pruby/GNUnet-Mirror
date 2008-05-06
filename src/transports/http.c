@@ -2139,7 +2139,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
                          _
                          ("The UPnP service could not be loaded. To disable UPnP, set the "
                           "configuration option \"UPNP\" in section \"%s\" to \"NO\"\n"),
-			 "HTTP");
+                         "HTTP");
         }
     }
   stats = coreAPI->service_request ("stats");

@@ -20,6 +20,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "fs.h"
 #include "tree.h"
 
 /**
@@ -33,19 +34,19 @@ GNUNET_ECRS_compute_depth (unsigned long long flen)
   unsigned int treeDepth;
   unsigned long long fl;
 
-  GNUNET_GE_ASSERT (NULL, DBLOCK_SIZE < GNUNET_MAX_BUFFER_SIZE);
-  GNUNET_GE_ASSERT (NULL, IBLOCK_SIZE < GNUNET_MAX_BUFFER_SIZE);
+  GNUNET_GE_ASSERT (NULL, GNUNET_ECRS_DBLOCK_SIZE < GNUNET_MAX_BUFFER_SIZE);
+  GNUNET_GE_ASSERT (NULL, GNUNET_ECRS_IBLOCK_SIZE < GNUNET_MAX_BUFFER_SIZE);
   treeDepth = 0;
-  fl = DBLOCK_SIZE;
+  fl = GNUNET_ECRS_DBLOCK_SIZE;
   while (fl < flen)
     {
       treeDepth++;
-      if (fl * CHK_PER_INODE < fl)
+      if (fl * GNUNET_ECRS_CHK_PER_INODE < fl)
         {
           /* integer overflow, this is a HUGE file... */
           return treeDepth;
         }
-      fl = fl * CHK_PER_INODE;
+      fl = fl * GNUNET_ECRS_CHK_PER_INODE;
     }
   return treeDepth;
 }

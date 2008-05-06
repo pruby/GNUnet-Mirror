@@ -413,7 +413,7 @@ fast_path_processor (const GNUNET_HashCode * key,
   unsigned int type;
   int ret;
 
-  if (cls->processed > MAX_SYNC_PROCESSED)
+  if (cls->processed > GNUNET_GAP_MAX_SYNC_PROCESSED)
     {
       cls->have_more = GNUNET_YES;
       return GNUNET_SYSERR;
@@ -595,7 +595,8 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   prio = ntohl (req->priority);
   netLoad =
     GNUNET_network_monitor_get_load (coreAPI->load_monitor, GNUNET_ND_UPLOAD);
-  if ((netLoad == (unsigned int) -1) || (netLoad < GAP_IDLE_LOAD_THRESHOLD))
+  if ((netLoad == (unsigned int) -1)
+      || (netLoad < GNUNET_GAP_IDLE_LOAD_THRESHOLD))
     {
       prio = 0;                 /* minimum priority, no charge! */
       policy = GNUNET_FS_RoutingPolicy_ALL;
@@ -603,7 +604,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   else
     {
       prio = -identity->changeHostTrust (sender, -prio);
-      if (netLoad < GAP_IDLE_LOAD_THRESHOLD + prio)
+      if (netLoad < GNUNET_GAP_IDLE_LOAD_THRESHOLD + prio)
         {
           policy = GNUNET_FS_RoutingPolicy_ALL;
         }
@@ -631,20 +632,22 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   /* decrement ttl (always) */
   if (ttl < 0)
     {
-      ttl -= 2 * TTL_DECREMENT +
-        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TTL_DECREMENT);
+      ttl -= 2 * GNUNET_GAP_TTL_DECREMENT +
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                           GNUNET_GAP_TTL_DECREMENT);
       if (ttl > 0)
         /* integer underflow => drop (should be very rare)! */
         return GNUNET_OK;
     }
   else
     {
-      ttl -= 2 * TTL_DECREMENT +
-        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TTL_DECREMENT);
+      ttl -= 2 * GNUNET_GAP_TTL_DECREMENT +
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                           GNUNET_GAP_TTL_DECREMENT);
     }
   preference = (double) prio;
-  if (preference < QUERY_BANDWIDTH_VALUE)
-    preference = QUERY_BANDWIDTH_VALUE;
+  if (preference < GNUNET_GAP_QUERY_BANDWIDTH_VALUE)
+    preference = GNUNET_GAP_QUERY_BANDWIDTH_VALUE;
   coreAPI->p2p_connection_preference_increase (sender, preference);
   GNUNET_FS_GAP_execute_query (sender,
                                prio,
@@ -730,8 +733,8 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       if (stats != NULL)
         stats->change (stat_gap_trust_awarded, prio);
       preference = (double) prio;
-      if (preference < CONTENT_BANDWIDTH_VALUE)
-        preference = CONTENT_BANDWIDTH_VALUE;
+      if (preference < GNUNET_GAP_CONTENT_BANDWIDTH_VALUE)
+        preference = GNUNET_GAP_CONTENT_BANDWIDTH_VALUE;
       coreAPI->p2p_connection_preference_increase (sender, preference);
     }
   return GNUNET_OK;

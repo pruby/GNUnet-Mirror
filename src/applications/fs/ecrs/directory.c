@@ -27,6 +27,7 @@
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
+#include "fs.h"
 
 /**
  * Iterate over all entries in a directory.  Note that directories
@@ -92,11 +93,12 @@ GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
         {
           /* URI is never empty, must be end of block,
              skip to next alignment */
-          align = ((pos / BLOCK_ALIGN_SIZE) + 1) * BLOCK_ALIGN_SIZE;
+          align =
+            ((pos / GNUNET_ECRS_DBLOCK_SIZE) + 1) * GNUNET_ECRS_DBLOCK_SIZE;
           if (align == pos)
             {
               /* if we were already aligned, still skip a block! */
-              align += BLOCK_ALIGN_SIZE;
+              align += GNUNET_ECRS_DBLOCK_SIZE;
             }
           pos = align;
           if (pos >= len)
@@ -155,14 +157,14 @@ GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
 /**
  * Given the start and end position of a block of
  * data, return the end position of that data
- * after alignment to the BLOCK_ALIGN_SIZE.
+ * after alignment to the GNUNET_ECRS_DBLOCK_SIZE.
  */
 static unsigned long long
 do_align (unsigned long long start_position, unsigned long long end_position)
 {
   unsigned long long align;
 
-  align = (end_position / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
+  align = (end_position / GNUNET_ECRS_DBLOCK_SIZE) * GNUNET_ECRS_DBLOCK_SIZE;
   if ((start_position < align) && (end_position > align))
     return align + end_position - start_position;
   return end_position;
@@ -201,25 +203,28 @@ block_align (unsigned long long start,
         {
           cval = perm[j];
           cend = cpos + sizes[cval];
-          if (cpos % BLOCK_ALIGN_SIZE == 0)
+          if (cpos % GNUNET_ECRS_DBLOCK_SIZE == 0)
             {
               /* prefer placing the largest blocks first */
-              cbad = -(cend % BLOCK_ALIGN_SIZE);
+              cbad = -(cend % GNUNET_ECRS_DBLOCK_SIZE);
             }
           else
             {
-              if (cpos / BLOCK_ALIGN_SIZE == cend / BLOCK_ALIGN_SIZE)
+              if (cpos / GNUNET_ECRS_DBLOCK_SIZE ==
+                  cend / GNUNET_ECRS_DBLOCK_SIZE)
                 {
                   /* Data fits into the same block! Prefer small left-overs! */
-                  cbad = BLOCK_ALIGN_SIZE - cend % BLOCK_ALIGN_SIZE;
+                  cbad =
+                    GNUNET_ECRS_DBLOCK_SIZE - cend % GNUNET_ECRS_DBLOCK_SIZE;
                 }
               else
                 {
                   /* Would have to waste space to re-align, add big factor, this
                      case is a real loss (proportional to space wasted)! */
                   cbad =
-                    BLOCK_ALIGN_SIZE * (BLOCK_ALIGN_SIZE -
-                                        cpos % BLOCK_ALIGN_SIZE);
+                    GNUNET_ECRS_DBLOCK_SIZE * (GNUNET_ECRS_DBLOCK_SIZE -
+                                               cpos %
+                                               GNUNET_ECRS_DBLOCK_SIZE);
                 }
             }
           if (cbad < badness)

@@ -208,12 +208,13 @@ GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio)
   if (ttl_in <= 0)
     return ttl_in;
   if (ttl_in >
-      ((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS)
+      ((unsigned long long) prio) * GNUNET_GAP_TTL_DECREMENT /
+      GNUNET_CRON_SECONDS)
     {
-      if (((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS >=
-          (1 << 30))
+      if (((unsigned long long) prio) * GNUNET_GAP_TTL_DECREMENT /
+          GNUNET_CRON_SECONDS >= (1 << 30))
         return 1 << 30;
-      return (int) ((unsigned long long) prio) * TTL_DECREMENT /
+      return (int) ((unsigned long long) prio) * GNUNET_GAP_TTL_DECREMENT /
         GNUNET_CRON_SECONDS;
     }
   return ttl_in;

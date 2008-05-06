@@ -67,7 +67,7 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
   present =
     (size - sizeof (GNUNET_EC_DBlock)) / sizeof (GNUNET_EC_ContentHashKey);
   db = (GNUNET_EC_DBlock *) & iblocks[level][1];
-  if (present == CHK_PER_INODE)
+  if (present == GNUNET_ECRS_CHK_PER_INODE)
     {
       GNUNET_EC_file_block_get_key (db, size, &ichk.key);
       GNUNET_EC_file_block_get_query (db, size, &ichk.query);
@@ -232,10 +232,10 @@ GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
       return GNUNET_SYSERR;
     }
   dblock =
-    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE +
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + GNUNET_ECRS_DBLOCK_SIZE +
                    sizeof (GNUNET_EC_DBlock));
   dblock->size =
-    htonl (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE +
+    htonl (sizeof (GNUNET_DatastoreValue) + GNUNET_ECRS_DBLOCK_SIZE +
            sizeof (GNUNET_EC_DBlock));
   dblock->anonymity_level = htonl (0);
   dblock->priority = htonl (0);
@@ -248,8 +248,8 @@ GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
   for (i = 0; i <= treedepth; i++)
     {
       iblocks[i] =
-        GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + IBLOCK_SIZE +
-                       sizeof (GNUNET_EC_DBlock));
+        GNUNET_malloc (sizeof (GNUNET_DatastoreValue) +
+                       GNUNET_ECRS_IBLOCK_SIZE + sizeof (GNUNET_EC_DBlock));
       iblocks[i]->size =
         htonl (sizeof (GNUNET_DatastoreValue) + sizeof (GNUNET_EC_DBlock));
       iblocks[i]->anonymity_level = htonl (0);
@@ -268,11 +268,11 @@ GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
       if (tt != NULL)
         if (GNUNET_OK != tt (ttClosure))
           goto FAILURE;
-      size = DBLOCK_SIZE;
+      size = GNUNET_ECRS_DBLOCK_SIZE;
       if (size > filesize - pos)
         {
           size = filesize - pos;
-          memset (&db[1], 0, DBLOCK_SIZE);
+          memset (&db[1], 0, GNUNET_ECRS_DBLOCK_SIZE);
         }
       dblock->size =
         htonl (sizeof (GNUNET_DatastoreValue) + size +
@@ -361,7 +361,8 @@ GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
     {
       if (GNUNET_OK == undoSymlinking (ectx, filename, &fileId, sock))
         {
-          if (GNUNET_OK != GNUNET_FS_unindex (sock, DBLOCK_SIZE, &fileId))
+          if (GNUNET_OK !=
+              GNUNET_FS_unindex (sock, GNUNET_ECRS_DBLOCK_SIZE, &fileId))
             {
               GNUNET_GE_BREAK (ectx, 0);
               goto FAILURE;

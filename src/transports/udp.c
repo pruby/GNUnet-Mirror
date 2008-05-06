@@ -105,7 +105,7 @@ select_message_handler (void *mh_cls,
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                      _("Received malformed message via %s. Ignored.\n"),
-		     "UDP");
+                     "UDP");
       return GNUNET_SYSERR;
     }
   um = (const UDPMessage *) msg;
@@ -553,7 +553,7 @@ inittransport_udp (GNUNET_CoreAPIForTransport * core)
                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                        "The UPnP service could not be loaded. To disable UPnP, set the "
                        "configuration option \"UPNP\" in section \"%s\" to \"NO\"\n",
-		       "UDP");
+                       "UDP");
     }
   stats = coreAPI->service_request ("stats");
   if (stats != NULL)

@@ -43,8 +43,6 @@
 #define SBLOCK_UPDATE_NONE     GNUNET_ECRS_SBLOCK_UPDATE_NONE
 
 
-#define BLOCK_ALIGN_SIZE (DBLOCK_SIZE)
-
 typedef struct Location
 {
   /**

@@ -159,7 +159,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
   if (cls->iteration_count > 10 * (1 + req->value))
     {
       if (cls->result_count > 0)
-        req->have_more += HAVE_MORE_INCREMENT;
+        req->have_more += GNUNET_GAP_HAVE_MORE_INCREMENT;
       want_more = GNUNET_SYSERR;
     }
   enc = NULL;
@@ -184,7 +184,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
     et -= now;
   else
     et = 0;
-  et %= MAX_MIGRATION_EXP;
+  et %= GNUNET_GAP_MAX_MIGRATION_EXP;
   size =
     sizeof (P2P_gap_reply_MESSAGE) + ntohl (value->size) -
     sizeof (GNUNET_DatastoreValue);
@@ -197,7 +197,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
   cls->result_count++;
   if (cls->result_count > 2 * (1 + req->value))
     {
-      req->have_more += HAVE_MORE_INCREMENT;
+      req->have_more += GNUNET_GAP_HAVE_MORE_INCREMENT;
       want_more = GNUNET_SYSERR;
     }
   if (stats != NULL)
@@ -209,7 +209,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
   GNUNET_cron_add_job (cron,
                        send_delayed,
                        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-                                          TTL_DECREMENT), 0, msg);
+                                          GNUNET_GAP_TTL_DECREMENT), 0, msg);
   ret =
     (ntohl (value->type) ==
      GNUNET_ECRS_BLOCKTYPE_DATA) ? GNUNET_SYSERR : want_more;
@@ -316,7 +316,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
             rl->bloomfilter = GNUNET_bloomfilter_init (coreAPI->ectx,
                                                        bloomfilter_data,
                                                        filter_size,
-                                                       GAP_BLOOMFILTER_K);
+                                                       GNUNET_GAP_BLOOMFILTER_K);
           else
             rl->bloomfilter = NULL;
           GNUNET_FS_PT_change_rc (peer, -1);
@@ -370,7 +370,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
       rl->bloomfilter = GNUNET_bloomfilter_init (coreAPI->ectx,
                                                  bloomfilter_data,
                                                  filter_size,
-                                                 GAP_BLOOMFILTER_K);
+                                                 GNUNET_GAP_BLOOMFILTER_K);
     }
   rl->anonymityLevel = 1;
   rl->type = type;
@@ -476,8 +476,10 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           memcpy (&msg[1], data, size);
           coreAPI->ciphertext_send (&target,
                                     &msg->header,
-                                    BASE_REPLY_PRIORITY * (1 + rl->value),
-                                    MAX_GAP_DELAY);
+                                    GNUNET_GAP_BASE_REPLY_PRIORITY * (1 +
+                                                                      rl->
+                                                                      value),
+                                    GNUNET_GAP_MAX_GAP_DELAY);
           GNUNET_free (msg);
           if (stats != NULL)
             {
@@ -641,11 +643,11 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
   if (-1 ==
       GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "GAP",
                                                 "TABLESIZE",
-                                                MIN_INDIRECTION_TABLE_SIZE,
+                                                GNUNET_GAP_MIN_INDIRECTION_TABLE_SIZE,
                                                 GNUNET_MAX_GNUNET_malloc_CHECKED
                                                 /
                                                 sizeof (struct RequestList *),
-                                                MIN_INDIRECTION_TABLE_SIZE,
+                                                GNUNET_GAP_MIN_INDIRECTION_TABLE_SIZE,
                                                 &ts))
     return GNUNET_SYSERR;
   table_size = ts;

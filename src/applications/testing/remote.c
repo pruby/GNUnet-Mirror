@@ -139,7 +139,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   if (ipk_dir == NULL)
     {
       ipk_dir = GNUNET_malloc (1);
-      strcpy(ipk_dir,"");
+      strcpy (ipk_dir, "");
     }
   length = snprintf (NULL, 0, "%s%s", ipk_dir, "gnunetd.conf.skel");
   data_dir = GNUNET_malloc (length + 1);
@@ -292,10 +292,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
             {
               temp_pos =
                 GNUNET_malloc (sizeof (struct GNUNET_REMOTE_host_list));
-              temp_pos->hostname = GNUNET_malloc (strlen (curr_host)+1);
+              temp_pos->hostname = GNUNET_malloc (strlen (curr_host) + 1);
               strcpy (temp_pos->hostname, curr_host);
 
-              temp_pos->username = GNUNET_malloc (strlen (ssh_username)+1);
+              temp_pos->username = GNUNET_malloc (strlen (ssh_username) + 1);
               strcpy (temp_pos->username, ssh_username);
 
               friend_location_length =

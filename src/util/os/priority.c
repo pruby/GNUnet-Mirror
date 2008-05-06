@@ -41,31 +41,31 @@ GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str)
    * and the usual numeric nice() increments */
   if (strcmp (str, "NORMAL") == 0)
 #ifdef MINGW
-	  prio = NORMAL_PRIORITY_CLASS;
+    prio = NORMAL_PRIORITY_CLASS;
 #else
     prio = 0;
 #endif
   else if (strcmp (str, "ABOVE NORMAL") == 0)
 #ifdef MINGW
-	  prio = ABOVE_NORMAL_PRIORITY_CLASS;
+    prio = ABOVE_NORMAL_PRIORITY_CLASS;
 #else
     prio = -5;
 #endif
   else if (strcmp (str, "BELOW NORMAL") == 0)
 #ifdef MINGW
-	  prio = BELOW_NORMAL_PRIORITY_CLASS;
+    prio = BELOW_NORMAL_PRIORITY_CLASS;
 #else
     prio = 10;
 #endif
   else if (strcmp (str, "HIGH") == 0)
 #ifdef MINGW
-	  prio = HIGH_PRIORITY_CLASS;
+    prio = HIGH_PRIORITY_CLASS;
 #else
     prio = -10;
 #endif
   else if (strcmp (str, "IDLE") == 0)
 #ifdef MINGW
-	  prio = IDLE_PRIORITY_CLASS;
+    prio = IDLE_PRIORITY_CLASS;
 #else
     prio = 19;
 #endif

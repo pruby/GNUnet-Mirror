@@ -327,10 +327,14 @@ typedef struct
 
 /* ***************** policy constants **************** */
 
+/* The constants here are used all over FS.  The
+   primary location where the constant is used
+   gives it its prefix */
+
 /**
  * Bandwidth value of an (effectively) 0-priority query.
  */
-#define QUERY_BANDWIDTH_VALUE 0.001
+#define GNUNET_GAP_QUERY_BANDWIDTH_VALUE 0.001
 
 /**
  * Bandwidth value of a 0-priority content (must be
@@ -339,7 +343,7 @@ typedef struct
  * since it can take many queries to get one piece of
  * content).
  */
-#define CONTENT_BANDWIDTH_VALUE 0.8
+#define GNUNET_GAP_CONTENT_BANDWIDTH_VALUE 0.8
 
 /**
  * By which amount do we decrement the TTL for simple forwarding /
@@ -347,25 +351,25 @@ typedef struct
  * accordance to your network latency (above the time it'll take you
  * to send a packet and get a reply).
  */
-#define TTL_DECREMENT (5 * GNUNET_CRON_SECONDS)
+#define GNUNET_GAP_TTL_DECREMENT (5 * GNUNET_CRON_SECONDS)
 
 /**
  * Until which load do we consider the peer idle and do not
  * charge at all? (should be larger than GNUNET_IDLE_LOAD_THRESHOLD used
  * by the rest of the code)!
  */
-#define GAP_IDLE_LOAD_THRESHOLD ((100 + GNUNET_IDLE_LOAD_THRESHOLD) / 2)
+#define GNUNET_GAP_IDLE_LOAD_THRESHOLD ((100 + GNUNET_IDLE_LOAD_THRESHOLD) / 2)
 
 /**
  * How many bits should we have per entry in the
  * bloomfilter?
  */
-#define GAP_BLOOMFILTER_K 16
+#define GNUNET_GAP_BLOOMFILTER_K 16
 
 /**
  * Minimum size of the GAP routing table.
  */
-#define MIN_INDIRECTION_TABLE_SIZE 4
+#define GNUNET_GAP_MIN_INDIRECTION_TABLE_SIZE 4
 
 
 /**
@@ -378,20 +382,20 @@ typedef struct
  * (note that querymanager multiplies the query priority with 2 to
  * compute the scheduling priority).
  */
-#define BASE_REPLY_PRIORITY 4092
+#define GNUNET_GAP_BASE_REPLY_PRIORITY 4092
 
 /**
  * What is the maximum time that any peer
  * should delay forwarding a response (when
  * waiting for bandwidth).
  */
-#define MAX_GAP_DELAY (60 * GNUNET_CRON_SECONDS)
+#define GNUNET_GAP_MAX_GAP_DELAY (60 * GNUNET_CRON_SECONDS)
 
 
 /**
  * How long should DHT requests live?
  */
-#define MAX_DHT_DELAY (60 * GNUNET_CRON_SECONDS)
+#define GNUNET_GAP_MAX_DHT_DELAY (60 * GNUNET_CRON_SECONDS)
 
 
 /**
@@ -435,7 +439,7 @@ typedef struct
  * expiration to give the user some indication about availability.
  *
  */
-#define MAX_MIGRATION_EXP (1L * GNUNET_CRON_MONTHS)
+#define GNUNET_GAP_MAX_MIGRATION_EXP (1L * GNUNET_CRON_MONTHS)
 
 /**
  * Estimated size of most blocks transported with
@@ -447,20 +451,41 @@ typedef struct
  * If, after finding local results, we abort a GET
  * iteration, we increment "have_more" by this value.
  */
-#define HAVE_MORE_INCREMENT 16
+#define GNUNET_GAP_HAVE_MORE_INCREMENT 16
 
 /**
  * What is the maximum number of local results
  * that we are willing to return synchronously?
  */
-#define MAX_SYNC_PROCESSED 8
+#define GNUNET_GAP_MAX_SYNC_PROCESSED 8
 
 /**
  * What is the maximum number of local results
  * that we are willing to return asynchronously?
  */
-#define MAX_ASYNC_PROCESSED 32
+#define GNUNET_GAP_MAX_ASYNC_PROCESSED 32
 
+
+/**
+ * Pick a multiple of 2 here to achive 8-byte alignment!
+ * We also probably want DBlocks to have (roughly) the
+ * same size as IBlocks.  With SHA-512, the optimal
+ * value is 32768 byte / 128 byte = 256
+ * (128 byte = 2 * 512 bits).  DO NOT CHANGE!
+ */
+#define GNUNET_ECRS_CHK_PER_INODE 256
+
+/**
+ * Size of a DBLOCK.  DO NOT CHANGE!
+ */
+#define GNUNET_ECRS_DBLOCK_SIZE (32 * 1024)
+
+/**
+ * You cannot change this one (directly).  Ideally
+ * CHK_PER_INODE is chosen such that
+ * IBLOCK_SIZE == DBLOCK_SIZE.
+ */
+#define GNUNET_ECRS_IBLOCK_SIZE (GNUNET_ECRS_CHK_PER_INODE * sizeof(GNUNET_EC_ContentHashKey))
 
 
 #endif

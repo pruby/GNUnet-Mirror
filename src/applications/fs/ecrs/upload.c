@@ -35,6 +35,7 @@
 #include "gnunet_protocols.h"
 #include "ecrs.h"
 #include "ecrs_core.h"
+#include "fs.h"
 #include "uri.h"
 #include "tree.h"
 
@@ -62,11 +63,13 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
   size = ntohl (iblocks[level]->size);
   GNUNET_GE_ASSERT (NULL, size > sizeof (GNUNET_DatastoreValue));
   size -= sizeof (GNUNET_DatastoreValue);
-  GNUNET_GE_ASSERT (NULL, size - sizeof (GNUNET_EC_DBlock) <= IBLOCK_SIZE);
+  GNUNET_GE_ASSERT (NULL,
+                    size - sizeof (GNUNET_EC_DBlock) <=
+                    GNUNET_ECRS_IBLOCK_SIZE);
   present =
     (size - sizeof (GNUNET_EC_DBlock)) / sizeof (GNUNET_EC_ContentHashKey);
   db = (GNUNET_EC_DBlock *) & iblocks[level][1];
-  if (present == CHK_PER_INODE)
+  if (present == GNUNET_ECRS_CHK_PER_INODE)
     {
       GNUNET_EC_file_block_get_key (db, size, &ichk.key);
       GNUNET_EC_file_block_get_query (db, size, &ichk.query);
@@ -230,10 +233,10 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
     }
 
   dblock =
-    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE +
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + GNUNET_ECRS_DBLOCK_SIZE +
                    sizeof (GNUNET_EC_DBlock));
   dblock->size =
-    htonl (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE +
+    htonl (sizeof (GNUNET_DatastoreValue) + GNUNET_ECRS_DBLOCK_SIZE +
            sizeof (GNUNET_EC_DBlock));
   dblock->anonymity_level = htonl (anonymityLevel);
   dblock->priority = htonl (priority);
@@ -246,8 +249,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
   for (i = 0; i <= treedepth; i++)
     {
       iblocks[i] =
-        GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + IBLOCK_SIZE +
-                       sizeof (GNUNET_EC_DBlock));
+        GNUNET_malloc (sizeof (GNUNET_DatastoreValue) +
+                       GNUNET_ECRS_IBLOCK_SIZE + sizeof (GNUNET_EC_DBlock));
       iblocks[i]->size =
         htonl (sizeof (GNUNET_DatastoreValue) + sizeof (GNUNET_EC_DBlock));
       iblocks[i]->anonymity_level = htonl (anonymityLevel);
@@ -266,11 +269,11 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       if (tt != NULL)
         if (GNUNET_OK != tt (ttClosure))
           goto FAILURE;
-      size = DBLOCK_SIZE;
+      size = GNUNET_ECRS_DBLOCK_SIZE;
       if (size > filesize - pos)
         {
           size = filesize - pos;
-          memset (&db[1], 0, DBLOCK_SIZE);
+          memset (&db[1], 0, GNUNET_ECRS_DBLOCK_SIZE);
         }
       GNUNET_GE_ASSERT (ectx,
                         sizeof (GNUNET_DatastoreValue) + size +
@@ -306,9 +309,9 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
               GNUNET_GE_LOG (ectx,
                              GNUNET_GE_ERROR | GNUNET_GE_BULK |
                              GNUNET_GE_USER,
-                             _("Indexing data of file `%s' failed at position %llu.\n"),
-			     filename,
-                             pos);
+                             _
+                             ("Indexing data of file `%s' failed at position %llu.\n"),
+                             filename, pos);
               goto FAILURE;
             }
         }

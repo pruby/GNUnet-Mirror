@@ -430,8 +430,8 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
          response was */
       history_score
         =
-        (MAX_GAP_DELAY * history->response_count) / (history->request_count *
-                                                     (now - last));
+        (GNUNET_GAP_MAX_GAP_DELAY * history->response_count) /
+        (history->request_count * (now - last));
       if (history->response_count == 0)
         history_score =
           -history->request_count * coreAPI->p2p_connections_iterate (NULL,
@@ -474,16 +474,18 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       if (ttl < 0)
         {
           ttl -=
-            TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-                                               2 * TTL_DECREMENT);
+            GNUNET_GAP_TTL_DECREMENT +
+            GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                               2 * GNUNET_GAP_TTL_DECREMENT);
           if (ttl > 0)          /* integer underflow */
             ttl = -(1 << 30);
         }
       else
         {
           ttl -=
-            TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-                                               2 * TTL_DECREMENT);
+            GNUNET_GAP_TTL_DECREMENT +
+            GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                               2 * GNUNET_GAP_TTL_DECREMENT);
         }
     }
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);

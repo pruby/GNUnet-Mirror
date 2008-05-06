@@ -365,7 +365,7 @@ listenAndDistribute (void *unused)
                              GNUNET_GE_USER,
                              _
                              ("Received malformed message via %s. Ignored.\n"),
-			     "SMTP");
+                             "SMTP");
 #if DEBUG_SMTP
               GNUNET_GE_LOG (ectx,
                              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |

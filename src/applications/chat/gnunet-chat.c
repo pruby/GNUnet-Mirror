@@ -153,8 +153,8 @@ main (int argc, char **argv)
       return -1;
     }
 
-  
-  
+
+
   my_priv = NULL;
   my_priv = GNUNET_CHAT_initPrivateKey (ectx, cfg, room_name, &my_pub);
   if (my_priv == NULL)

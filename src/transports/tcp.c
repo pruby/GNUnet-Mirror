@@ -269,7 +269,7 @@ select_message_handler (void *mh_cls,
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                          _("Received malformed message via %s. Ignored.\n"),
-			 MY_TRANSPORT_NAME);
+                         MY_TRANSPORT_NAME);
           tcp_disconnect (tsession);
           return GNUNET_SYSERR;
         }
@@ -289,7 +289,7 @@ select_message_handler (void *mh_cls,
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                          _("Received malformed message via %s. Ignored.\n"),
-			 MY_TRANSPORT_NAME);
+                         MY_TRANSPORT_NAME);
           tcp_disconnect (tsession);
           return GNUNET_SYSERR;
         }
@@ -781,8 +781,8 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
       return NULL;
     }
   coreAPI = core;
-  if (GNUNET_GC_get_configuration_value_yesno (cfg, MY_TRANSPORT_NAME, "UPNP", GNUNET_YES)
-      == GNUNET_YES)
+  if (GNUNET_GC_get_configuration_value_yesno
+      (cfg, MY_TRANSPORT_NAME, "UPNP", GNUNET_YES) == GNUNET_YES)
     {
       upnp = coreAPI->service_request ("upnp");
 
@@ -794,7 +794,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
                          _
                          ("The UPnP service could not be loaded. To disable UPnP, set the "
                           "configuration option \"UPNP\" in section \"%s\" to \"NO\"\n"),
-			 MY_TRANSPORT_NAME);
+                         MY_TRANSPORT_NAME);
 
         }
     }

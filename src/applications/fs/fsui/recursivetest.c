@@ -172,7 +172,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_search_result:
       if (upURI == NULL)
-	break;
+        break;
       if (download == NULL)
         {
           char *u;
@@ -218,13 +218,13 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       upURI = GNUNET_ECRS_uri_duplicate (event->data.UploadCompleted.uri);
 #if DEBUG_VERBOSE
       printf ("Upload of `%s' complete.\n",
-	      event->data.UploadCompleted.filename);
+              event->data.UploadCompleted.filename);
 #endif
       break;
     case GNUNET_FSUI_download_completed:
 #if DEBUG_VERBOSE
       printf ("Download of `%s' complete.\n",
-	      event->data.DownloadCompleted.filename);
+              event->data.DownloadCompleted.filename);
 #endif
       if (checkHierarchy (43, DIRECTORY_TREE_SPEC) == GNUNET_OK)
         search_done = 1;
@@ -249,16 +249,16 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #endif
       break;
     case GNUNET_FSUI_unindex_error:
-      fprintf (stderr, "Error unindexing: %s\n", 
-	       event->data.UnindexError.message);
+      fprintf (stderr, "Error unindexing: %s\n",
+               event->data.UnindexError.message);
       break;
     case GNUNET_FSUI_upload_error:
-      fprintf (stderr, "Error uploading: %s\n", 
-	       event->data.UploadError.message);
+      fprintf (stderr, "Error uploading: %s\n",
+               event->data.UploadError.message);
       break;
     case GNUNET_FSUI_download_error:
-      fprintf (stderr, "Error downloading: %s\n", 
-	       event->data.DownloadError.message);
+      fprintf (stderr, "Error downloading: %s\n",
+               event->data.DownloadError.message);
       break;
     case GNUNET_FSUI_download_aborted:
 #if DEBUG_VERBOSE

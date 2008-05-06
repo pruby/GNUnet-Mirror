@@ -96,7 +96,7 @@ static int stat_gap_client_bf_updates;
 /**
  * How many bytes should a bloomfilter be if
  * we have already seen entry_count responses?
- * Note that GAP_BLOOMFILTER_K gives us the
+ * Note that GNUNET_GAP_BLOOMFILTER_K gives us the
  * number of bits set per entry.  Furthermore,
  * we should not re-size the filter too often
  * (to keep it cheap).
@@ -114,7 +114,7 @@ compute_bloomfilter_size (unsigned int entry_count)
 {
   unsigned short size;
   unsigned short max = 1 << 15;
-  unsigned int ideal = (entry_count * GAP_BLOOMFILTER_K) / 4;
+  unsigned int ideal = (entry_count * GNUNET_GAP_BLOOMFILTER_K) / 4;
 
   if (entry_count > max)
     return max;
@@ -162,7 +162,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   request->response_client = client;
   request->policy = GNUNET_FS_RoutingPolicy_ALL;
   if (have_more != GNUNET_NO)
-    request->have_more = HAVE_MORE_INCREMENT;
+    request->have_more = GNUNET_GAP_HAVE_MORE_INCREMENT;
   memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
   if (seen != NULL)
     {
@@ -178,7 +178,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
       request->bloomfilter =
         GNUNET_bloomfilter_init (NULL, NULL, request->bloomfilter_size,
-                                 GAP_BLOOMFILTER_K);
+                                 GNUNET_GAP_BLOOMFILTER_K);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
       pos = seen;
@@ -212,7 +212,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   if (request->anonymityLevel == 0)
     {
       request->last_dht_get = GNUNET_get_time ();
-      request->dht_back_off = MAX_DHT_DELAY;
+      request->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;
       GNUNET_FS_DHT_execute_query (request->type, &request->queries[0]);
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
@@ -281,7 +281,7 @@ handle_response (PID_INDEX sender,
   if (ret != GNUNET_OK)
     return ret;
   if (sender == 0)              /* dht produced response */
-    rl->dht_back_off = MAX_DHT_DELAY;   /* go back! */
+    rl->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;        /* go back! */
   /* send to client */
   msg = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) + size);
   msg->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) + size);
@@ -317,7 +317,7 @@ handle_response (PID_INDEX sender,
       rl->bloomfilter = GNUNET_bloomfilter_init (NULL,
                                                  NULL,
                                                  rl->bloomfilter_size,
-                                                 GAP_BLOOMFILTER_K);
+                                                 GNUNET_GAP_BLOOMFILTER_K);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
     }
@@ -329,7 +329,7 @@ handle_response (PID_INDEX sender,
       ic.mingle_number = rl->bloomfilter_mutator;
       GNUNET_bloomfilter_resize (rl->bloomfilter,
                                  &response_bf_iterator,
-                                 &ic, bf_size, GAP_BLOOMFILTER_K);
+                                 &ic, bf_size, GNUNET_GAP_BLOOMFILTER_K);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
     }
@@ -486,7 +486,7 @@ have_more_processor (const GNUNET_HashCode * key,
     }
   GNUNET_FS_SHARED_mark_response_seen (cls->request, &hc);
   cls->processed++;
-  if (cls->processed > MAX_ASYNC_PROCESSED)
+  if (cls->processed > GNUNET_GAP_MAX_ASYNC_PROCESSED)
     {
       cls->have_more = GNUNET_YES;
       return GNUNET_SYSERR;
@@ -594,7 +594,7 @@ repeat_requests_job (void *unused)
                           &have_more_processor, &hmc);
         }
       if (hmc.have_more)
-        request->have_more += HAVE_MORE_INCREMENT;
+        request->have_more += GNUNET_GAP_HAVE_MORE_INCREMENT;
     }
   else
     {

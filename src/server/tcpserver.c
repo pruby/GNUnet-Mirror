@@ -187,11 +187,13 @@ select_accept_handler (void *ah_cls,
           &&
           (!(((IN6_IS_ADDR_V4COMPAT (&a6->sin6_addr))
               || (IN6_IS_ADDR_V4MAPPED (&a6->sin6_addr)))
-             && (isWhitelisted4 (&ip4))))) {
-        GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-          "Rejected connection from untrusted client");
-        return NULL;
-      }
+             && (isWhitelisted4 (&ip4)))))
+        {
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                         "Rejected connection from untrusted client");
+          return NULL;
+        }
     }
   else if (addr_len == sizeof (struct sockaddr_in))
     {

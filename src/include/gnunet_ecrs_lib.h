@@ -78,8 +78,6 @@ extern "C"
 #define GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC  -1
 #define GNUNET_ECRS_SBLOCK_UPDATE_NONE       0
 
-#define GNUNET_ECRS_DBLOCK_SIZE (32 * 1024)
-
 /* ***************** metadata API (meta.c) ******************** */
 
 /**

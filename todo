@@ -3,7 +3,7 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.8.0 [4'08] (aka "advanced features"):
+0.8.0 [5'08] (aka "new protocol"):
 - document gnunet-auto-share on webpage [RC]
 - clean up and test VPN code [RC]
 - tune GAP query planning code [RC]

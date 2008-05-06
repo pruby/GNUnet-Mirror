@@ -57,7 +57,7 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 #endif
   (*cnt)--;
   if (0 == *cnt)
-    return GNUNET_SYSERR;       /* abort search */    
+    return GNUNET_SYSERR;       /* abort search */
   return GNUNET_OK;
 }
 

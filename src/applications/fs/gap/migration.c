@@ -299,7 +299,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
     et -= now;
   else
     et = 0;
-  et %= MAX_MIGRATION_EXP;
+  et %= GNUNET_GAP_MAX_MIGRATION_EXP;
   anonymity = ntohl (value->anonymity_level);
   ret = 0;
   if ((anonymity == 0) ||

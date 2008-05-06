@@ -24,28 +24,6 @@
 #include "ecrs_core.h"
 
 /**
- * Size of a GNUNET_EC_DBlock.  Should be a multiple of 8 and larger than
- * sizeof(GNUNET_EC_ContentHashKey).
- */
-#define DBLOCK_SIZE (GNUNET_ECRS_DBLOCK_SIZE)
-
-/**
- * Pick a multiple of 2 here to achive 8-byte alignment!
- * We also probably want DBlocks to have (roughly) the
- * same size as IBlocks.  With SHA-512, the optimal
- * value is 32768 byte / 128 byte = 256
- * (128 byte = 2 * 512 bits).
- */
-#define CHK_PER_INODE 256
-
-/**
- * You cannot change this one (directly).  Ideally
- * CHK_PER_INODE is chosen such that
- * IBLOCK_SIZE == DBLOCK_SIZE.
- */
-#define IBLOCK_SIZE (CHK_PER_INODE * sizeof(GNUNET_EC_ContentHashKey))
-
-/**
  * Compute the depth of the tree.
  * @param flen file length for which to compute the depth
  * @return depth of the tree

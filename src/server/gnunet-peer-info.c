@@ -126,8 +126,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
   if (NULL == hello)
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("Could not get address of peer `%s'.\n"), &enc);
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Could not get address of peer `%s'.\n"), &enc);
       return GNUNET_OK;
     }
   if (GNUNET_SYSERR == GNUNET_RSA_verify (&hello->senderIdentity,
@@ -139,9 +139,9 @@ printHostInfo (const GNUNET_PeerIdentity * id,
                                           &hello->publicKey))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("`%s' message invalid (signature invalid).\n"),
-		     "HELLO");
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' message invalid (signature invalid).\n"),
+                     "HELLO");
     }
   addr = NULL;
   addr_len = 0;
@@ -163,19 +163,17 @@ printHostInfo (const GNUNET_PeerIdentity * id,
                      GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Could not get address of peer `%s'.\n"), &enc);
       if (be_quiet)
-	printf ("%s\n",
-		(char *) &enc);
+        printf ("%s\n", (char *) &enc);
       else
-	printf (_("Peer `%s' with trust %8u\n"),
-		(char *) &enc, identity->getHostTrust (id));
+        printf (_("Peer `%s' with trust %8u\n"),
+                (char *) &enc, identity->getHostTrust (id));
       return GNUNET_OK;
     }
   if (be_quiet)
-    printf ("%s\n",
-	    (char *) &enc);
+    printf ("%s\n", (char *) &enc);
   else
     printf (_("Peer `%s' with trust %8u and address `%s'\n"),
-	    (char *) &enc, identity->getHostTrust (id), info);
+            (char *) &enc, identity->getHostTrust (id), info);
   GNUNET_free (info);
   return GNUNET_OK;
 }
@@ -185,7 +183,7 @@ main (int argc, char *const *argv)
 {
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
-  const GNUNET_RSA_PublicKey * me;
+  const GNUNET_RSA_PublicKey *me;
   GNUNET_PeerIdentity id;
   GNUNET_EncName enc;
   int ret;
@@ -223,7 +221,7 @@ main (int argc, char *const *argv)
   transport = GNUNET_CORE_request_service ("transport");
   if (transport == NULL)
     {
-      GNUNET_CORE_release_service(identity);
+      GNUNET_CORE_release_service (identity);
       GNUNET_CORE_done ();
       GNUNET_cron_destroy (cron);
       GNUNET_fini (ectx, cfg);
@@ -232,30 +230,26 @@ main (int argc, char *const *argv)
   if (get_self != GNUNET_YES)
     {
       if (no_resolve != GNUNET_YES)
-	{
+        {
 #if HAVE_ADNS
-	  identity->forEachHost (0, /* no timeout */
-				 &resolveHostInfo, NULL);
-	  /* give GNU ADNS time to resolve... */
-	  GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
+          identity->forEachHost (0,     /* no timeout */
+                                 &resolveHostInfo, NULL);
+          /* give GNU ADNS time to resolve... */
+          GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
 #endif
-	}
-      identity->forEachHost (0,     /* no timeout */
-			     &printHostInfo, NULL);
-    } 
+        }
+      identity->forEachHost (0, /* no timeout */
+                             &printHostInfo, NULL);
+    }
   else
     {
-      me = identity->getPublicPrivateKey();
-      identity->getPeerIdentity(me,
-				&id);
-      GNUNET_hash_to_enc(&id.hashPubKey,
-			 &enc);
+      me = identity->getPublicPrivateKey ();
+      identity->getPeerIdentity (me, &id);
+      GNUNET_hash_to_enc (&id.hashPubKey, &enc);
       if (be_quiet)
-	printf ("%s\n",
-		(char *) &enc);
+        printf ("%s\n", (char *) &enc);
       else
-	printf(_("I am peer `%s'.\n"),
-	       (const char*)&enc);
+        printf (_("I am peer `%s'.\n"), (const char *) &enc);
     }
   GNUNET_CORE_release_service (identity);
   GNUNET_CORE_release_service (transport);

@@ -93,9 +93,9 @@ member_list_callback2 (void *cls, const char *senderNick,
 int
 main (int argc, char **argv)
 {
-	struct GNUNET_TESTING_DaemonContext *peers;
+  struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
-  
+
   pid_t daemon1;
   GNUNET_PeerIdentity p1;
   char *c1 = NULL;
@@ -106,13 +106,13 @@ main (int argc, char **argv)
   GNUNET_RSA_PublicKey me;
   struct GNUNET_RSA_PrivateKey *key = NULL;
 
-	
+
   key = GNUNET_RSA_create_key ();
   GNUNET_RSA_get_public_key (key, &me);
-  
+
   ret = 0;
-  
-  
+
+
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
@@ -120,7 +120,7 @@ main (int argc, char **argv)
       return -1;
     }
 #if START_PEERS
-peers = GNUNET_TESTING_start_daemons ("tcp",
+  peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "chat stats",
                                         "/tmp/gnunet-chat-test/",
                                         2087, 10, 1);
@@ -138,29 +138,32 @@ peers = GNUNET_TESTING_start_daemons ("tcp",
                            &receive_callback1, NULL, &member_list_callback1,
                            NULL);
 
-  r2 = GNUNET_CHAT_join_room (NULL, cfg, "nicktest2", "testroom", &me, key, "",
-                              &receive_callback2, NULL, &member_list_callback2,
-                              NULL);
-	
-	GNUNET_CHAT_send_message (r1, "test message 1", NULL, NULL, GNUNET_CHAT_MSG_OPTION_NONE, NULL);
-                                                    
-	GNUNET_CHAT_send_message (r2, "test message 2", NULL, NULL, GNUNET_CHAT_MSG_OPTION_NONE, NULL);
-	
-	if (r1 != NULL)	
-  	GNUNET_CHAT_leave_room (r1);
-  if (r2 != NULL)	
-  	GNUNET_CHAT_leave_room (r2);
+  r2 =
+    GNUNET_CHAT_join_room (NULL, cfg, "nicktest2", "testroom", &me, key, "",
+                           &receive_callback2, NULL, &member_list_callback2,
+                           NULL);
+
+  GNUNET_CHAT_send_message (r1, "test message 1", NULL, NULL,
+                            GNUNET_CHAT_MSG_OPTION_NONE, NULL);
+
+  GNUNET_CHAT_send_message (r2, "test message 2", NULL, NULL,
+                            GNUNET_CHAT_MSG_OPTION_NONE, NULL);
+
+  if (r1 != NULL)
+    GNUNET_CHAT_leave_room (r1);
+  if (r2 != NULL)
+    GNUNET_CHAT_leave_room (r2);
 
 
 
 #if START_PEERS
-	GNUNET_TESTING_stop_daemons (peers);
+  GNUNET_TESTING_stop_daemons (peers);
 #endif
   //GNUNET_shutdown_wait_for ();
   GNUNET_GC_free (cfg);
-  
-  
-	return 0;  
+
+
+  return 0;
 }
 
 /* end of chattest.c */

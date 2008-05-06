@@ -225,11 +225,20 @@ static void
 initializeStats ()
 {
   stat_handle_network_load_up
-    = statHandle (gettext_noop (/* xgettext:no-c-format */"% of allowed network load (up)"));
-  stat_handle_network_load_down
-    = statHandle (gettext_noop (/* xgettext:no-c-format */"% of allowed network load (down)"));
-  stat_handle_cpu_load = statHandle (gettext_noop (/* xgettext:no-c-format */"% of allowed cpu load"));
-  stat_handle_io_load = statHandle (gettext_noop (/* xgettext:no-c-format */"% of allowed io load"));
+    =
+    statHandle (gettext_noop
+                ( /* xgettext:no-c-format */
+                 "% of allowed network load (up)"));
+  stat_handle_network_load_down =
+    statHandle (gettext_noop
+                ( /* xgettext:no-c-format */
+                 "% of allowed network load (down)"));
+  stat_handle_cpu_load =
+    statHandle (gettext_noop
+                ( /* xgettext:no-c-format */ "% of allowed cpu load"));
+  stat_handle_io_load =
+    statHandle (gettext_noop
+                ( /* xgettext:no-c-format */ "% of allowed io load"));
   stat_connected = statHandle (gettext_noop ("# of connected peers"));
   stat_bytes_noise_received
     = statHandle (gettext_noop ("# bytes of noise received"));

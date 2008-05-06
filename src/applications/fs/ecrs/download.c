@@ -30,6 +30,7 @@
 #include "gnunet_identity_lib.h"
 #include "ecrs_core.h"
 #include "ecrs.h"
+#include "fs.h"
 #include "tree.h"
 
 #define DEBUG_DOWNLOAD GNUNET_NO
@@ -366,7 +367,7 @@ get_node_size (const struct Node *node)
   GNUNET_GE_ASSERT (node->ctx->ectx, node->offset < node->ctx->total);
   if (node->level == 0)
     {
-      ret = DBLOCK_SIZE;
+      ret = GNUNET_ECRS_DBLOCK_SIZE;
       if (node->offset + (unsigned long long) ret > node->ctx->total)
         ret = (unsigned int) (node->ctx->total - node->offset);
 #if DEBUG_DOWNLOAD
@@ -377,11 +378,11 @@ get_node_size (const struct Node *node)
 #endif
       return ret;
     }
-  rsize = DBLOCK_SIZE;
+  rsize = GNUNET_ECRS_DBLOCK_SIZE;
   for (i = 0; i < node->level - 1; i++)
-    rsize *= CHK_PER_INODE;
+    rsize *= GNUNET_ECRS_CHK_PER_INODE;
   spos = rsize * (node->offset / sizeof (GNUNET_EC_ContentHashKey));
-  epos = spos + rsize * CHK_PER_INODE;
+  epos = spos + rsize * GNUNET_ECRS_CHK_PER_INODE;
   if (epos > node->ctx->total)
     epos = node->ctx->total;
   ret = (epos - spos) / rsize;
@@ -507,14 +508,16 @@ iblock_download_children (const struct Node *node,
     }
   if (node->level == 1)
     {
-      levelSize = DBLOCK_SIZE;
+      levelSize = GNUNET_ECRS_DBLOCK_SIZE;
       baseOffset =
-        node->offset / sizeof (GNUNET_EC_ContentHashKey) * DBLOCK_SIZE;
+        node->offset / sizeof (GNUNET_EC_ContentHashKey) *
+        GNUNET_ECRS_DBLOCK_SIZE;
     }
   else
     {
-      levelSize = sizeof (GNUNET_EC_ContentHashKey) * CHK_PER_INODE;
-      baseOffset = node->offset * CHK_PER_INODE;
+      levelSize =
+        sizeof (GNUNET_EC_ContentHashKey) * GNUNET_ECRS_CHK_PER_INODE;
+      baseOffset = node->offset * GNUNET_ECRS_CHK_PER_INODE;
     }
   chks = (const GNUNET_EC_ContentHashKey *) data;
   for (i = 0; i < childcount; i++)
@@ -526,7 +529,7 @@ iblock_download_children (const struct Node *node,
       GNUNET_GE_ASSERT (ectx, child->offset < node->ctx->total);
       child->level = node->level - 1;
       GNUNET_GE_ASSERT (ectx, (child->level != 0) ||
-                        ((child->offset % DBLOCK_SIZE) == 0));
+                        ((child->offset % GNUNET_ECRS_DBLOCK_SIZE) == 0));
       if (GNUNET_NO == check_node_present (child))
         add_request (child);
       else

@@ -28,6 +28,7 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_directories.h"
 #include "fsui.h"
+#include "fs.h"
 
 #define DEBUG_PERSISTENCE GNUNET_NO
 
@@ -47,15 +48,16 @@
  * We just set the flag to notify the cron in
  * the next iteration.
  */
-static void 
-test_download_progress(unsigned long long totalBytes,
-		       unsigned long long completedBytes,
-		       GNUNET_CronTime eta,
-		       unsigned long long lastBlockOffset,
-		       const char *lastBlock, unsigned int lastBlockSize, 
-		       void *closure) {
-  struct SearchResultList * srl = closure;
-  if (lastBlockSize > 0) /* check against IBlock events */
+static void
+test_download_progress (unsigned long long totalBytes,
+                        unsigned long long completedBytes,
+                        GNUNET_CronTime eta,
+                        unsigned long long lastBlockOffset,
+                        const char *lastBlock, unsigned int lastBlockSize,
+                        void *closure)
+{
+  struct SearchResultList *srl = closure;
+  if (lastBlockSize > 0)        /* check against IBlock events */
     srl->test_download_start_time = 0;
 }
 
@@ -67,9 +69,9 @@ static void
 updateDownloadThreads (void *c)
 {
   GNUNET_FSUI_Context *ctx = c;
-  GNUNET_FSUI_DownloadList *dpos;	       
-  struct SearchResultList * srl;
-  struct GNUNET_FSUI_SearchList * sl;
+  GNUNET_FSUI_DownloadList *dpos;
+  struct SearchResultList *srl;
+  struct GNUNET_FSUI_SearchList *sl;
   unsigned long long off;
   unsigned long long len;
   GNUNET_CronTime now;
@@ -88,96 +90,106 @@ updateDownloadThreads (void *c)
       GNUNET_FSUI_updateDownloadThread (dpos);
       dpos = dpos->next;
     }
-  now = GNUNET_get_time();
+  now = GNUNET_get_time ();
   sl = ctx->activeSearches;
   while (sl != NULL)
-    { 
-      GNUNET_mutex_lock(sl->lock);
+    {
+      GNUNET_mutex_lock (sl->lock);
       srl = sl->resultsReceived;
       while (srl != NULL)
-	{		  
-	  if (srl->test_download != NULL)
-	    {
-	      if (srl->test_download_start_time == 0)
-		{
-		  /* probe was successful, kill */
-		  GNUNET_ECRS_file_download_partial_stop (srl->test_download);
-		  srl->test_download = NULL; 
-		  srl->probeSuccess++;
-		  event.type = GNUNET_FSUI_search_update;
-		  event.data.SearchUpdate.sc.pos = sl;
-		  event.data.SearchUpdate.sc.cctx = sl->cctx;		  
-		  event.data.SearchUpdate.fi = srl->fi;
-		  event.data.SearchUpdate.searchURI = sl->uri;
-		  event.data.SearchUpdate.availability_rank = srl->probeSuccess - srl->probeFailure;
-		  event.data.SearchUpdate.applicability_rank = srl->matchingSearchCount;
-		  ctx->ecb(ctx->ecbClosure, &event);
-		  ctx->active_probes--;
-		  srl->last_probe_time = now;
-		}
-	      else
-		{
-		  /* consider stopping */
-		  if ( (now - srl->test_download_start_time)
-		       > SQUARE(srl->probeSuccess + srl->probeFailure + 1) * GNUNET_FSUI_PROBE_TIME_FACTOR)
-		    {
-		      /* timeout hit! */
-		      GNUNET_ECRS_file_download_partial_stop (srl->test_download);
-		      srl->test_download = NULL;
-		      srl->probeFailure++;
-		      event.type = GNUNET_FSUI_search_update;
-		      event.data.SearchUpdate.sc.pos = sl;
-		      event.data.SearchUpdate.sc.cctx = sl->cctx;		  
-		      event.data.SearchUpdate.fi = srl->fi;
-		      event.data.SearchUpdate.searchURI = sl->uri;
-		      event.data.SearchUpdate.availability_rank = srl->probeSuccess - srl->probeFailure;
-		      event.data.SearchUpdate.applicability_rank = srl->matchingSearchCount;
-		      ctx->ecb(ctx->ecbClosure, &event);
-		      ctx->active_probes--;
-		      srl->last_probe_time = now;
-		    }
-		}
-	    }
-	  else
-	    {
-	      len = GNUNET_ECRS_uri_get_file_size(srl->fi.uri);
-	      if (len == 0)
-		srl->probeSuccess = -1; /* MAX */
-	      /* consider starting */
-	      if ( ( (srl->probeSuccess + srl->probeFailure) < GNUNET_FSUI_MAX_PROBES) &&
-		   ( (srl->last_probe_time < 
-		      now 
-		      + GNUNET_FSUI_PROBE_DELAY * SQUARE(ctx->active_probes)
-		      + GNUNET_random_u64(GNUNET_RANDOM_QUALITY_WEAK, GNUNET_FSUI_PROBE_DELAY)) ) &&
-		   (ctx->active_probes < GNUNET_FSUI_HARD_PROBE_LIMIT) ) 
-		{
-		  off = len / GNUNET_ECRS_DBLOCK_SIZE;
-		  if (off > 0)
-		    off = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, off);
-		  off *= GNUNET_ECRS_DBLOCK_SIZE;
-		  if (len - off < GNUNET_ECRS_DBLOCK_SIZE)
-		    len = len - off;
-		  else
-		    len = GNUNET_ECRS_DBLOCK_SIZE;
-		  srl->test_download
-		    = GNUNET_ECRS_file_download_partial_start (ctx->ectx,
-							       ctx->cfg,
-							       srl->fi.uri,
-							       NULL,
-							       off,
-							       len,
-							       1,
-							       GNUNET_YES,
-							       &test_download_progress,
-							       srl);
-		  srl->test_download_start_time = now;
-		  ctx->active_probes++;
-		}	      
-	    }
+        {
+          if (srl->test_download != NULL)
+            {
+              if (srl->test_download_start_time == 0)
+                {
+                  /* probe was successful, kill */
+                  GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+                  srl->test_download = NULL;
+                  srl->probeSuccess++;
+                  event.type = GNUNET_FSUI_search_update;
+                  event.data.SearchUpdate.sc.pos = sl;
+                  event.data.SearchUpdate.sc.cctx = sl->cctx;
+                  event.data.SearchUpdate.fi = srl->fi;
+                  event.data.SearchUpdate.searchURI = sl->uri;
+                  event.data.SearchUpdate.availability_rank =
+                    srl->probeSuccess - srl->probeFailure;
+                  event.data.SearchUpdate.applicability_rank =
+                    srl->matchingSearchCount;
+                  ctx->ecb (ctx->ecbClosure, &event);
+                  ctx->active_probes--;
+                  srl->last_probe_time = now;
+                }
+              else
+                {
+                  /* consider stopping */
+                  if ((now - srl->test_download_start_time)
+                      >
+                      SQUARE (srl->probeSuccess + srl->probeFailure +
+                              1) * GNUNET_FSUI_PROBE_TIME_FACTOR)
+                    {
+                      /* timeout hit! */
+                      GNUNET_ECRS_file_download_partial_stop (srl->
+                                                              test_download);
+                      srl->test_download = NULL;
+                      srl->probeFailure++;
+                      event.type = GNUNET_FSUI_search_update;
+                      event.data.SearchUpdate.sc.pos = sl;
+                      event.data.SearchUpdate.sc.cctx = sl->cctx;
+                      event.data.SearchUpdate.fi = srl->fi;
+                      event.data.SearchUpdate.searchURI = sl->uri;
+                      event.data.SearchUpdate.availability_rank =
+                        srl->probeSuccess - srl->probeFailure;
+                      event.data.SearchUpdate.applicability_rank =
+                        srl->matchingSearchCount;
+                      ctx->ecb (ctx->ecbClosure, &event);
+                      ctx->active_probes--;
+                      srl->last_probe_time = now;
+                    }
+                }
+            }
+          else
+            {
+              len = GNUNET_ECRS_uri_get_file_size (srl->fi.uri);
+              if (len == 0)
+                srl->probeSuccess = -1; /* MAX */
+              /* consider starting */
+              if (((srl->probeSuccess + srl->probeFailure) <
+                   GNUNET_FSUI_MAX_PROBES)
+                  &&
+                  ((srl->last_probe_time <
+                    now +
+                    GNUNET_FSUI_PROBE_DELAY * SQUARE (ctx->active_probes) +
+                    GNUNET_random_u64 (GNUNET_RANDOM_QUALITY_WEAK,
+                                       GNUNET_FSUI_PROBE_DELAY)))
+                  && (ctx->active_probes < GNUNET_FSUI_HARD_PROBE_LIMIT))
+                {
+                  off = len / GNUNET_ECRS_DBLOCK_SIZE;
+                  if (off > 0)
+                    off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, off);
+                  off *= GNUNET_ECRS_DBLOCK_SIZE;
+                  if (len - off < GNUNET_ECRS_DBLOCK_SIZE)
+                    len = len - off;
+                  else
+                    len = GNUNET_ECRS_DBLOCK_SIZE;
+                  srl->test_download
+                    = GNUNET_ECRS_file_download_partial_start (ctx->ectx,
+                                                               ctx->cfg,
+                                                               srl->fi.uri,
+                                                               NULL,
+                                                               off,
+                                                               len,
+                                                               1,
+                                                               GNUNET_YES,
+                                                               &test_download_progress,
+                                                               srl);
+                  srl->test_download_start_time = now;
+                  ctx->active_probes++;
+                }
+            }
 
-	  srl = srl->next;	  
-	}
-      GNUNET_mutex_unlock(sl->lock);
+          srl = srl->next;
+        }
+      GNUNET_mutex_unlock (sl->lock);
       sl = sl->next;
     }
   GNUNET_mutex_unlock (ctx->lock);
