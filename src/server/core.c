@@ -320,7 +320,7 @@ GNUNET_CORE_request_service (const char *rpos)
 		     pos,
 		     rpos);
       GNUNET_free(pos);
-      return GNUNET_SYSERR;
+      return NULL;
     }
   name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
