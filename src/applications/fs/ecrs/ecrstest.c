@@ -27,6 +27,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
+#include "fs.h"
 #include "tree.h"
 
 #define START_DAEMON 1
@@ -237,12 +238,12 @@ int
 main (int argc, char *argv[])
 {
   static unsigned int filesizes[] = {
-    DBLOCK_SIZE - 1,
-    DBLOCK_SIZE,
-    DBLOCK_SIZE + 1,
-    DBLOCK_SIZE * CHK_PER_INODE - 1,
-    DBLOCK_SIZE * CHK_PER_INODE,
-    DBLOCK_SIZE * CHK_PER_INODE + 1,
+    GNUNET_ECRS_DBLOCK_SIZE - 1,
+    GNUNET_ECRS_DBLOCK_SIZE,
+    GNUNET_ECRS_DBLOCK_SIZE + 1,
+    GNUNET_ECRS_DBLOCK_SIZE * GNUNET_ECRS_CHK_PER_INODE - 1,
+    GNUNET_ECRS_DBLOCK_SIZE * GNUNET_ECRS_CHK_PER_INODE,
+    GNUNET_ECRS_DBLOCK_SIZE * GNUNET_ECRS_CHK_PER_INODE + 1,
     1,
     2,
     4,
