@@ -38,29 +38,39 @@
 
 #define DEBUG_SEARCH GNUNET_NO
 
-void
-bug ()
-{
-}
 
 /**
  * Pass the result to the client and note it as shown.
  */
 static void
 processResult (struct GNUNET_FSUI_SearchList *ctx,
-               struct SearchResultList *pos)
+               struct SearchResultList *pos,
+	       int update)
 {
   GNUNET_FSUI_Event event;
 
-  event.type = GNUNET_FSUI_search_result;
-  event.data.SearchResult.sc.pos = ctx;
-  event.data.SearchResult.sc.cctx = ctx->cctx;
-  event.data.SearchResult.fi = pos->fi;
-  event.data.SearchResult.searchURI = ctx->uri;
+  if (update)
+    {
+      event.type = GNUNET_FSUI_search_update;
+      event.data.SearchUpdate.sc.pos = ctx;
+      event.data.SearchUpdate.sc.cctx = ctx->cctx;
+      event.data.SearchUpdate.fi = pos->fi;
+      event.data.SearchUpdate.searchURI = ctx->uri;
+      event.data.SearchUpdate.availability_rank = pos->probeSuccess - pos->probeFailure;
+      event.data.SearchUpdate.applicability_rank = pos->matchingSearchCount;
+    }
+  else
+    {
+      event.type = GNUNET_FSUI_search_result;
+      event.data.SearchResult.sc.pos = ctx;
+      event.data.SearchResult.sc.cctx = ctx->cctx;
+      event.data.SearchResult.fi = pos->fi;
+      event.data.SearchResult.searchURI = ctx->uri;
+      GNUNET_URITRACK_add_state (ctx->ctx->ectx,
+				 ctx->ctx->cfg, pos->fi.uri,
+				 GNUNET_URITRACK_SEARCH_RESULT);
+    }
   ctx->ctx->ecb (ctx->ctx->ecbClosure, &event);
-  GNUNET_URITRACK_add_state (ctx->ctx->ectx,
-                             ctx->ctx->cfg, pos->fi.uri,
-                             GNUNET_URITRACK_SEARCH_RESULT);
 }
 
 
@@ -77,6 +87,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   struct GNUNET_GE_Context *ectx;
   struct SearchResultList *srl;
   struct SearchRecordList *rec;
+  int update;
 
   ectx = pos->ctx->ectx;
   GNUNET_URITRACK_track (ectx, pos->ctx->cfg, fi);
@@ -128,13 +139,15 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
               if (srl->mandatoryMatchesRemaining > 0)
                 srl->mandatoryMatchesRemaining--;
               else
-                {
-                  bug ();
-                  GNUNET_GE_BREAK (NULL, 0);
-                }
+		GNUNET_GE_BREAK (NULL, 0);
+	      update = 0;
             }
+	  else
+	    {
+	      update = 1;
+	    }
           if (srl->mandatoryMatchesRemaining == 0)
-            processResult (pos, srl);
+            processResult (pos, srl, update);
           GNUNET_mutex_unlock (pos->lock);
           return GNUNET_OK;
         }
@@ -163,15 +176,12 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
       if (srl->mandatoryMatchesRemaining > 0)
         srl->mandatoryMatchesRemaining--;
       else
-        {
-          bug ();
-          GNUNET_GE_BREAK (NULL, 0);
-        }
+	GNUNET_GE_BREAK (NULL, 0);        
     }
   srl->next = pos->resultsReceived;
   pos->resultsReceived = srl;
   if (srl->mandatoryMatchesRemaining == 0)
-    processResult (pos, srl);
+    processResult (pos, srl, 0);
   GNUNET_mutex_unlock (pos->lock);
   return GNUNET_OK;
 }
