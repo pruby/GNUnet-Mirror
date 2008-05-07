@@ -180,6 +180,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_search_started:
     case GNUNET_FSUI_search_aborted:
     case GNUNET_FSUI_search_stopped:
+    case GNUNET_FSUI_search_update:
     case GNUNET_FSUI_unindex_started:
     case GNUNET_FSUI_unindex_stopped:
       break;
