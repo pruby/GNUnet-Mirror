@@ -454,30 +454,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
 
   /* 3) restart processing */
   ret->cron = GNUNET_cron_create (ectx);
-  /* 3a) resume downloads */
-  GNUNET_cron_add_job (ret->cron,
-                       &updateDownloadThreads, 0, GNUNET_FSUI_UDT_FREQUENCY,
-                       ret);
-  GNUNET_cron_start (ret->cron);
-  /* 3b) resume uploads */
-  doResumeUploads (ret->activeUploads.child, ret);
-  /* 3c) resume unindexing */
-  xlist = ret->unindexOperations;
-  while (xlist != NULL)
-    {
-      if (xlist->state == GNUNET_FSUI_PENDING)
-        {
-          xlist->state = GNUNET_FSUI_ACTIVE;
-          xlist->handle = GNUNET_thread_create (&GNUNET_FSUI_unindexThread,
-                                                xlist, 32 * 1024);
-          if (xlist->handle == NULL)
-            GNUNET_GE_DIE_STRERROR (ectx,
-                                    GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
-                                    GNUNET_GE_IMMEDIATE, "pthread_create");
-        }
-      xlist = xlist->next;
-    }
-  /* 3d) resume searching */
+  /* 3a) resume searching */
   list = ret->activeSearches;
   while (list != NULL)
     {
@@ -520,7 +497,29 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
         }
       list = list->next;
     }
-
+  /* 3b) resume unindexing */
+  xlist = ret->unindexOperations;
+  while (xlist != NULL)
+    {
+      if (xlist->state == GNUNET_FSUI_PENDING)
+        {
+          xlist->state = GNUNET_FSUI_ACTIVE;
+          xlist->handle = GNUNET_thread_create (&GNUNET_FSUI_unindexThread,
+                                                xlist, 32 * 1024);
+          if (xlist->handle == NULL)
+            GNUNET_GE_DIE_STRERROR (ectx,
+                                    GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                    GNUNET_GE_IMMEDIATE, "pthread_create");
+        }
+      xlist = xlist->next;
+    }
+  /* 3c) resume downloads */
+  GNUNET_cron_add_job (ret->cron,
+                       &updateDownloadThreads, 0, GNUNET_FSUI_UDT_FREQUENCY,
+                       ret);
+  GNUNET_cron_start (ret->cron);
+  /* 3d) resume uploads */
+  doResumeUploads (ret->activeUploads.child, ret);
   return ret;
 }
 
@@ -743,21 +742,11 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
     }
 
   /* 2) signal suspension events */
-  /* 2a) signal search suspension */
-  spos = ctx->activeSearches;
-  while (spos != NULL)
-    {
-      event.type = GNUNET_FSUI_search_suspended;
-      event.data.SearchSuspended.sc.pos = spos;
-      event.data.SearchSuspended.sc.cctx = spos->cctx;
-      ctx->ecb (ctx->ecbClosure, &event);
-      spos = spos->next;
-    }
-  /* 2b) signal uploads suspension */
+  /* 2a) signal uploads suspension */
   signalUploadSuspend (ectx, ctx, ctx->activeUploads.child);
-  /* 2c) signal downloads suspension */
+  /* 2b) signal downloads suspension */
   signalDownloadSuspend (ectx, ctx, ctx->activeDownloads.child);
-  /* 2d) signal unindex suspension */
+  /* 2c) signal unindex suspension */
   xpos = ctx->unindexOperations;
   while (xpos != NULL)
     {
@@ -766,6 +755,16 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
       event.data.UnindexSuspended.uc.cctx = xpos->cctx;
       ctx->ecb (ctx->ecbClosure, &event);
       xpos = xpos->next;
+    }
+  /* 2d) signal search suspension */
+  spos = ctx->activeSearches;
+  while (spos != NULL)
+    {
+      event.type = GNUNET_FSUI_search_suspended;
+      event.data.SearchSuspended.sc.pos = spos;
+      event.data.SearchSuspended.sc.cctx = spos->cctx;
+      ctx->ecb (ctx->ecbClosure, &event);
+      spos = spos->next;
     }
 
   /* 3) serialize all of the FSUI state */
