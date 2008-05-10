@@ -391,9 +391,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   ret->lock = GNUNET_mutex_create (GNUNET_YES);
 
   /* 2) do resume events */
-  /* 2a) signal download restarts */
-  signalDownloadResume (ret->activeDownloads.child, ret);
-  /* 2b) signal search restarts */
+  /* 2a) signal search restarts */
   list = ret->activeSearches;
   while (list != NULL)
     {
@@ -430,6 +428,8 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
       GNUNET_free_non_null (fis);
       list = list->next;
     }
+  /* 2b) signal download restarts */
+  signalDownloadResume (ret->activeDownloads.child, ret);
   /* 2c) signal upload restarts */
   signalUploadResume (ret->activeUploads.child, ret);
   /* 2d) signal unindex restarts */
