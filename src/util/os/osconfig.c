@@ -24,6 +24,7 @@
  * @brief functions to read or change the OS configuration
  * @author Nils Durner
  * @author Heikki Lindholm
+ * @author Jake Dust
  */
 
 #include "platform.h"
@@ -141,6 +142,12 @@ isOSAutostartCapable ()
   if (ACCESS ("/usr/sbin/update-rc.d", X_OK) == 0)
     {
       /* Debian */
+      if (ACCESS ("/etc/init.d/", W_OK) == 0)
+        return GNUNET_YES;
+    }
+      /* Gentoo */
+  else if (ACCESS ("/sbin/rc-update", X_OK) == 0)
+    {
       if (ACCESS ("/etc/init.d/", W_OK) == 0)
         return GNUNET_YES;
     }
@@ -303,11 +310,14 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
   /* Unix */
   if ((ACCESS ("/usr/sbin/update-rc.d", X_OK) != 0))
     {
-      GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
-                                   GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                   "access", "/usr/sbin/update-rc.d");
-      return GNUNET_SYSERR;
+      if ((ACCESS ("/sbin/rc-update", X_OK) != 0))
+        {
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                       GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                       GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                       "access", "/usr/sbin/update-rc.d");
+          return GNUNET_SYSERR;
+        }
     }
 
   /* Debian */
@@ -382,29 +392,59 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
       if (STAT ("/etc/init.d/gnunetd", &buf) != -1)
         {
           errno = 0;
-          ret = system ("/usr/sbin/update-rc.d gnunetd defaults");
-          if (ret != 0)
+          if (ACCESS ("/usr/sbin/update-rc.d", W_OK) == 0)
             {
-              if (errno != 0)
+              ret = system ("/usr/sbin/update-rc.d gnunetd defaults");
+              if (ret != 0)
                 {
-                  GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                               GNUNET_GE_WARNING |
-                                               GNUNET_GE_USER |
-                                               GNUNET_GE_ADMIN |
-                                               GNUNET_GE_IMMEDIATE, "system",
-                                               "/usr/sbin/update-rc.d");
+                  if (errno != 0)
+                    {
+                      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                                   GNUNET_GE_WARNING |
+                                                   GNUNET_GE_USER |
+                                                   GNUNET_GE_ADMIN |
+                                                   GNUNET_GE_IMMEDIATE, "system",
+                                                   "/usr/sbin/update-rc.d");
+                    }
+                  else
+                    {
+                      GNUNET_GE_LOG (ectx,
+                                     GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                     GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                     _
+                                     ("Command `%s' failed with error code %u\n"),
+                                     "/usr/sbin/update-rc.d gnunetd defaults",
+                                     WEXITSTATUS (ret));
+                    }
+                  return GNUNET_SYSERR;
                 }
-              else
+            }
+          else if (ACCESS ("/sbin/rc-update", W_OK) == 0)
+            {
+              ret = system ("/sbin/rc-update add gnunetd default");
+              if (ret != 0)
                 {
-                  GNUNET_GE_LOG (ectx,
-                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                 GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                 _
-                                 ("Command `%s' failed with error code %u\n"),
-                                 "/usr/sbin/update-rc.d gnunetd defaults",
-                                 WEXITSTATUS (ret));
+                  if (errno != 0)
+                    {
+                      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                                   GNUNET_GE_WARNING |
+                                                   GNUNET_GE_USER |
+                                                   GNUNET_GE_ADMIN |
+                                                   GNUNET_GE_IMMEDIATE, "system",
+                                                   "/sbin/rc-update");
+                    }
+                  else
+                    {
+                      GNUNET_GE_LOG (ectx,
+                                     GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                     GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                     _
+                                     ("Command `%s' failed with error code %u\n"),
+                                     "/sbin/rc-update add gnunetd default",
+                                     WEXITSTATUS (ret));
+                    }
+                  return GNUNET_SYSERR;
                 }
-              return GNUNET_SYSERR;
             }
         }
       return GNUNET_YES;
@@ -420,13 +460,27 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
           return GNUNET_SYSERR;
         }
       errno = 0;
-      if (-1 != system ("/usr/sbin/update-rc.d gnunetd remove"))
+      if (ACCESS ("/usr/sbin/update-rc.d", W_OK) == 0)
         {
-          GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                       GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                       GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                       "system", "/usr/sbin/update-rc.d");
-          return GNUNET_SYSERR;
+          if (-1 != system ("/usr/sbin/update-rc.d gnunetd remove"))
+            {
+              GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                           GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                           GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                           "system", "/usr/sbin/update-rc.d");
+              return GNUNET_SYSERR;
+            }
+        } 
+      else if (ACCESS ("/sbin/rc-update", W_OK) == 0)
+        {
+          if (-1 != system ("/sbin/rc-update del gnunetd"))
+            {
+              GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                           GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                           GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                           "system", "/sbin/rc-update");
+              return GNUNET_SYSERR;
+            }
         }
       return GNUNET_YES;
     }
