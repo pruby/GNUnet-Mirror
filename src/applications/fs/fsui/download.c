@@ -574,8 +574,12 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
       GNUNET_FSUI_download_abort (c);
       c = c->next;
     }
+  GNUNET_mutex_lock (ctx->lock);
   if ((dl->state != GNUNET_FSUI_ACTIVE) && (dl->state != GNUNET_FSUI_PENDING))
-    return GNUNET_NO;
+    {
+      GNUNET_mutex_unlock (ctx->lock);
+      return GNUNET_NO;
+    }
   if (dl->state == GNUNET_FSUI_ACTIVE)
     {
       dl->state = GNUNET_FSUI_ABORTED_JOINED;
@@ -603,6 +607,7 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
     GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
                                  GNUNET_GE_WARNING | GNUNET_GE_USER |
                                  GNUNET_GE_BULK, "unlink", dl->filename);
+  GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }
 
