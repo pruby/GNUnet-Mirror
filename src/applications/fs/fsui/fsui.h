@@ -312,6 +312,8 @@ typedef struct GNUNET_FSUI_DownloadList
 
   /**
    * Is this a recursive download? (GNUNET_YES/GNUNET_NO)
+   * Also set to GNUNET_NO once the recursive downloads
+   * have been triggered!
    */
   int is_recursive;
 

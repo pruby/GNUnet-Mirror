@@ -219,7 +219,6 @@ downloadProgressCallback (unsigned long long totalBytes,
 {
   GNUNET_FSUI_DownloadList *dl = cls;
   GNUNET_FSUI_Event event;
-  struct GNUNET_ECRS_MetaData *md;
   GNUNET_CronTime now;
   GNUNET_CronTime run_time;
 
@@ -288,31 +287,6 @@ downloadProgressCallback (unsigned long long totalBytes,
       else
         dl->is_directory = GNUNET_NO;
     }
-  if (dl->is_directory == GNUNET_YES)
-    {
-      md = NULL;
-      GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                                           lastBlock,
-                                           lastBlockSize, &md,
-                                           &listURIfoundDirectory, dl);
-      if (md != NULL)
-        GNUNET_ECRS_meta_data_destroy (md);
-    }
-  if ((dl->is_recursive == GNUNET_YES) && (dl->is_directory == GNUNET_YES))
-    {
-      int n;
-      md = NULL;
-      GNUNET_mutex_lock (dl->ctx->lock);
-      n = GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                                               lastBlock,
-                                               lastBlockSize, &md,
-                                               &triggerRecursiveDownload, dl);
-      GNUNET_mutex_unlock (dl->ctx->lock);
-      if (n == 0)
-        GNUNET_disk_directory_create (dl->ctx->ectx, dl->filename);
-      if (md != NULL)
-        GNUNET_ECRS_meta_data_destroy (md);
-    }
   if (totalBytes == completedBytes)
     {
       dl->state = GNUNET_FSUI_COMPLETED;
@@ -333,9 +307,6 @@ downloadProgressCallback (unsigned long long totalBytes,
                                  dl->fi.uri,
                                  GNUNET_URITRACK_DOWNLOAD_COMPLETED);
       dl->ctx->ecb (dl->ctx->ecbClosure, &event);
-      if ((dl->is_directory == GNUNET_YES) &&
-          (GNUNET_ECRS_uri_get_file_size (dl->fi.uri) > 0))
-        download_recursive (dl);
     }
 }
 
@@ -534,7 +505,20 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
       list->state++;            /* adds _JOINED */
       ret = GNUNET_YES;
     }
-
+  /* Trigger any recursive sub-downloads */
+  if ( (list->state == GNUNET_FSUI_COMPLETED) &&
+       (list->is_directory == GNUNET_YES) )
+    {
+      /* in case there is no sub-download, still
+	 create the (possibly empty) directory! */
+      GNUNET_disk_directory_create (list->ctx->ectx, list->filename);
+      if ( (list->is_recursive == GNUNET_YES) &&
+	   (GNUNET_ECRS_uri_get_file_size (list->fi.uri) > 0) )
+	{
+	  download_recursive (list);
+	  list->is_recursive = GNUNET_NO;
+	}
+    }
   dpos = list->child;
   while (dpos != NULL)
     {

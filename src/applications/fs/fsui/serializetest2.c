@@ -111,6 +111,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         {
           fprintf (stderr,
                    "Download resuming but search reference not set correctly.\n");
+	  abort();
           have_error = 1;
         }
       if ((event->data.DownloadResumed.dc.pos == download) &&
