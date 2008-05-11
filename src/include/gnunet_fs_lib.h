@@ -51,10 +51,7 @@ struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct
                                                                  *ectx,
                                                                  struct
                                                                  GNUNET_GC_Configuration
-                                                                 *cfg,
-                                                                 struct
-                                                                 GNUNET_Mutex
-                                                                 *lock);
+                                                                 *cfg);
 
 void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
 
