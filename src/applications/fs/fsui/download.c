@@ -506,7 +506,8 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
       ret = GNUNET_YES;
     }
   /* Trigger any recursive sub-downloads */
-  if ( (list->state == GNUNET_FSUI_COMPLETED) &&
+  if ( ( (list->state == GNUNET_FSUI_COMPLETED) ||
+	 (list->state == GNUNET_FSUI_COMPLETED_JOINED) ) &&
        (list->is_directory == GNUNET_YES) )
     {
       /* in case there is no sub-download, still
