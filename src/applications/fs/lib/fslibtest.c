@@ -38,8 +38,6 @@ static GNUNET_CronTime now;
 
 static struct GNUNET_ThreadHandle *mainThread;
 
-static struct GNUNET_Mutex *lock;
-
 static struct GNUNET_GC_Configuration *cfg;
 
 
@@ -179,7 +177,7 @@ trySearch (int i)
   GNUNET_EC_DBlock *db;
   struct GNUNET_FS_SearchContext *ctx;
 
-  ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
+  ctx = GNUNET_FS_create_search_context (NULL, cfg);
   dv = makeBlock (i);
   db = (GNUNET_EC_DBlock *) & dv[1];
   GNUNET_EC_file_block_get_query (db,
@@ -238,7 +236,6 @@ main (int argc, char *argv[])
 #endif
   ok = GNUNET_YES;
   GNUNET_cron_start (cron);
-  lock = GNUNET_mutex_create (GNUNET_NO);
 #if START_DAEMON
   GNUNET_GE_ASSERT (NULL,
                     GNUNET_OK == GNUNET_wait_for_daemon_running (NULL, cfg,
@@ -337,7 +334,7 @@ main (int argc, char *argv[])
   block = NULL;
   i = 2;
   mainThread = GNUNET_thread_get_self ();
-  ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
+  ctx = GNUNET_FS_create_search_context (NULL, cfg);
   GNUNET_FS_start_search (ctx,
                           NULL,
                           GNUNET_ECRS_BLOCKTYPE_ANY,
@@ -354,7 +351,6 @@ FAILURE:
   fprintf (stderr, "\n");
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
-  GNUNET_mutex_destroy (lock);
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
   GNUNET_free_non_null (block);

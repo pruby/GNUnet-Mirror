@@ -271,20 +271,19 @@ reply_process_thread (void *cls)
 
 struct GNUNET_FS_SearchContext *
 GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
-                                 struct GNUNET_GC_Configuration *cfg,
-                                 struct GNUNET_Mutex *lock)
+                                 struct GNUNET_GC_Configuration *cfg) 
 {
   struct GNUNET_FS_SearchContext *ret;
 
-  GNUNET_GE_ASSERT (ectx, lock != NULL);
   ret = GNUNET_malloc (sizeof (struct GNUNET_FS_SearchContext));
   memset (ret, 0, sizeof (struct GNUNET_FS_SearchContext));
   ret->ectx = ectx;
   ret->cfg = cfg;
-  ret->lock = lock;
+  ret->lock = GNUNET_mutex_create(GNUNET_YES);
   ret->sock = GNUNET_client_connection_create (ectx, cfg);
   if (ret->sock == NULL)
     {
+      GNUNET_mutex_destroy(ret->lock);
       GNUNET_free (ret);
       return NULL;
     }
@@ -304,13 +303,10 @@ GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx)
   void *unused;
   struct GNUNET_FS_SearchHandle *pos;
 
-  GNUNET_mutex_lock (ctx->lock);
   ctx->abort = GNUNET_YES;
   GNUNET_client_connection_close_forever (ctx->sock);
-  GNUNET_mutex_unlock (ctx->lock);
   GNUNET_thread_stop_sleep (ctx->thread);
   GNUNET_thread_join (ctx->thread, &unused);
-  ctx->lock = NULL;
   GNUNET_client_connection_destroy (ctx->sock);
   while (ctx->handles != NULL)
     {
@@ -318,6 +314,7 @@ GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx)
       ctx->handles = pos->next;
       GNUNET_free (pos);
     }
+  GNUNET_mutex_destroy(ctx->lock);
   GNUNET_free (ctx);
 }
 
