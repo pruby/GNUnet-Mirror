@@ -86,8 +86,6 @@ struct GNUNET_ECRS_SearchContext
 
   void *spcbClosure;
 
-  struct GNUNET_Mutex *lock;
-
   struct GNUNET_GE_Context *ectx;
 
   struct GNUNET_GC_Configuration *cfg;
@@ -122,10 +120,8 @@ add_search (unsigned int type,
   memcpy (&ps[1], keys, sizeof (GNUNET_HashCode) * keyCount);
   ps->decryptKey = *dkey;
   ps->context = sqc;
-  GNUNET_mutex_lock (sqc->lock);
   ps->next = sqc->queries;
   sqc->queries = ps;
-  GNUNET_mutex_unlock (sqc->lock);
   GNUNET_FS_start_search (sqc->sctx,
                           NULL,
                           type,
@@ -585,11 +581,9 @@ GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
   ctx->spcb = spcb;
   ctx->spcbClosure = spcbClosure;
   ctx->aborted = GNUNET_NO;
-  ctx->lock = GNUNET_mutex_create (GNUNET_YES);
-  ctx->sctx = GNUNET_FS_create_search_context (ectx, cfg, ctx->lock);
+  ctx->sctx = GNUNET_FS_create_search_context (ectx, cfg);
   if (ctx->sctx == NULL)
     {
-      GNUNET_mutex_destroy (ctx->lock);
       GNUNET_free (ctx);
       return NULL;
     }
@@ -614,7 +608,6 @@ GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext *ctx)
       ctx->queries = pos->next;
       GNUNET_free (pos);
     }
-  GNUNET_mutex_destroy (ctx->lock);
   GNUNET_free (ctx);
 }
 

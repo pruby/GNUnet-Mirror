@@ -112,11 +112,6 @@ struct GNUNET_ECRS_DownloadContext
   GNUNET_CronTime startTime;
 
   /**
-   * Mutex for synchronizing access to this struct
-   */
-  struct GNUNET_Mutex *lock;
-
-  /**
    * Doubly linked list of all pending requests (head)
    */
   struct Node *head;
@@ -209,14 +204,8 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
 {
   struct Node *pos;
 
-  GNUNET_mutex_lock (rm->lock);
-  /* can not hold lock during shutdown since
-     fslib may have to aquire it; but we can
-     flag that we are in the shutdown process
-     and start to ignore fslib events! */
   if (rm->abortFlag == GNUNET_NO)
     rm->abortFlag = GNUNET_YES;
-  GNUNET_mutex_unlock (rm->lock);
   GNUNET_FS_destroy_search_context (rm->sctx);
   rm->sctx = NULL;
   while (rm->head != NULL)
@@ -228,8 +217,6 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
   rm->tail = NULL;
   if (rm->handle >= 0)
     CLOSE (rm->handle);
-  if (rm->lock != NULL)
-    GNUNET_mutex_destroy (rm->lock);
   if (rm->main != NULL)
     GNUNET_thread_release_self (rm->main);
   GNUNET_free_non_null (rm->filename);
@@ -585,12 +572,8 @@ content_receive_callback (const GNUNET_HashCode * query,
   unsigned int size;
   char *data;
 
-  GNUNET_mutex_lock (rm->lock);
   if (rm->abortFlag != GNUNET_NO)
-    {
-      GNUNET_mutex_unlock (rm->lock);
-      return GNUNET_SYSERR;
-    }
+    return GNUNET_SYSERR;    
   GNUNET_GE_ASSERT (ectx,
                     0 == memcmp (query, &node->chk.query,
                                  sizeof (GNUNET_HashCode)));
@@ -599,7 +582,6 @@ content_receive_callback (const GNUNET_HashCode * query,
       (size - sizeof (GNUNET_EC_DBlock) != get_node_size (node)))
     {
       GNUNET_GE_BREAK (ectx, 0);
-      GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;     /* invalid size! */
     }
   size -= sizeof (GNUNET_EC_DBlock);
@@ -618,7 +600,6 @@ content_receive_callback (const GNUNET_HashCode * query,
                     _("Decrypted content does not match key. "
                       "This is either a bug or a maliciously inserted "
                       "file. Download aborted.\n"));
-      GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;
     }
   if (size != write_to_files (rm, node->level, node->offset, data, size))
@@ -627,7 +608,6 @@ content_receive_callback (const GNUNET_HashCode * query,
                               GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                               GNUNET_GE_USER | GNUNET_GE_BULK, "WRITE");
       signal_abort (rm, _("IO error."));
-      GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;
     }
   notify_client_about_progress (node, data, size);
@@ -636,7 +616,6 @@ content_receive_callback (const GNUNET_HashCode * query,
   GNUNET_free (data);
   /* request satisfied, stop requesting! */
   delete_node (node);
-  GNUNET_mutex_unlock (rm->lock);
   return GNUNET_OK;
 }
 
@@ -741,7 +720,6 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
     }
   rm = GNUNET_malloc (sizeof (struct GNUNET_ECRS_DownloadContext));
   memset (rm, 0, sizeof (struct GNUNET_ECRS_DownloadContext));
-  rm->lock = GNUNET_mutex_create (GNUNET_YES);
   rm->ectx = ectx;
   rm->cfg = cfg;
   rm->startTime = GNUNET_get_time ();
@@ -797,7 +775,7 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
           return NULL;
         }
     }
-  rm->sctx = GNUNET_FS_create_search_context (ectx, cfg, rm->lock);
+  rm->sctx = GNUNET_FS_create_search_context (ectx, cfg);
   if (rm->sctx == NULL)
     {
       free_request_manager (rm);
@@ -829,13 +807,10 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
   top->chk = uri->data.fi.chk;
   top->offset = 0;
   top->level = rm->treedepth;
-
-  GNUNET_mutex_lock (rm->lock);
   if (GNUNET_NO == check_node_present (top))
     add_request (top);
   else
     GNUNET_free (top);
-  GNUNET_mutex_unlock (rm->lock);
   return rm;
 }
 
@@ -845,9 +820,7 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
 {
   int ret;
 
-  GNUNET_mutex_lock (rm->lock);
   ret = rm->abortFlag;
-  GNUNET_mutex_unlock (rm->lock);
   free_request_manager (rm);
   if (ret == GNUNET_NO)
     ret = GNUNET_OK;            /* normal termination */
