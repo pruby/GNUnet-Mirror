@@ -73,12 +73,6 @@ processResult (struct GNUNET_FSUI_SearchList *ctx,
   ctx->ctx->ecb (ctx->ctx->ecbClosure, &event);
 }
 
-void
-bug ()
-{
-  abort ();
-}
-
 /**
  * Process results found by ECRS.
  */
@@ -133,7 +127,6 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
             {
               GNUNET_GE_BREAK (NULL, 0);
               GNUNET_mutex_unlock (pos->lock);
-              bug ();
               return GNUNET_OK; /* should have matching search */
             }
           GNUNET_array_append (srl->matchingSearches,
@@ -178,7 +171,6 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
     {
       GNUNET_GE_BREAK (NULL, 0);
       GNUNET_mutex_unlock (pos->lock);
-      bug ();
       return GNUNET_OK;         /* should have matching search */
     }
   srl = GNUNET_malloc (sizeof (struct SearchResultList));
@@ -229,7 +221,7 @@ create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
   struct SearchRecordList *srl;
 
 #if DEBUG_SEARCH
-  fprintf (stderr, "Starting search for `%s' (%d)\n", keyword, is_mandatory);
+  fprintf (stderr, "Starting search for `%s' (%d): %s\n", keyword, is_mandatory);
 #endif
   srl = GNUNET_malloc (sizeof (struct SearchRecordList));
   memset (srl, 0, sizeof (struct SearchRecordList));
