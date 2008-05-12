@@ -183,7 +183,11 @@ test (GNUNET_SQstore_ServiceAPI * api)
     {
       memset (&key, 256 - i, sizeof (GNUNET_HashCode));
       value = initValue (i);
-      ASSERT (1 == api->get (&key, NULL, 0, &iterateDelete, NULL));
+      if (1 != api->get (&key, NULL, 0, &iterateDelete, NULL))
+	{
+	  GNUNET_free (value);
+	  ASSERT(0);
+	}
       GNUNET_free (value);
     }
   ASSERT (oldSize > api->getSize ());

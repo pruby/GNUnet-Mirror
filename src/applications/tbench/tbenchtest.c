@@ -114,13 +114,11 @@ main (int argc, char **argv)
   struct GNUNET_TESTING_DaemonContext *peers;
 #endif
   int i;
-  int ok;
   int ret;
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_GC_Configuration *cfg;
 
   ret = 0;
-  ok = 1;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
@@ -172,8 +170,6 @@ main (int argc, char **argv)
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  if (ok == 0)
-    ret = 1;
 
   GNUNET_GC_free (cfg);
   return ret;
