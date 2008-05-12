@@ -86,6 +86,11 @@ uploadFile (unsigned int size)
   name = makeName (size);
   fd =
     GNUNET_disk_file_open (NULL, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
+  if (fd == -1)
+    {
+      GNUNET_free(name);
+      return NULL;
+    }
   buf = GNUNET_malloc (size);
   memset (buf, size + size / 253, size);
   for (i = 0; i < (int) (size - 42 - 2 * sizeof (GNUNET_HashCode));
@@ -213,7 +218,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
   fprintf (stderr, "Uploading...\n");
   uri = uploadFile (SIZE);
-  CHECK (NULL != uri) fprintf (stderr, "Downloading...");
+  CHECK (NULL != uri);
+  fprintf (stderr, "Downloading...");
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   GNUNET_ECRS_uri_destroy (uri);
   fprintf (stderr, "\nUnindexing...\n");
