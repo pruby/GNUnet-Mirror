@@ -251,13 +251,10 @@ GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_UnindexList *dl)
   void *unused;
   GNUNET_FSUI_Event event;
 
+  if (dl == NULL)
+    return GNUNET_SYSERR;    
   ctx = dl->ctx;
   ectx = ctx->ectx;
-  if (dl == NULL)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      return GNUNET_SYSERR;
-    }
 #if 0
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,

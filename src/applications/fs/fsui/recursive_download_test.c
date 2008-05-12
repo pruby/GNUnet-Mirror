@@ -139,7 +139,10 @@ checkHierarchy (unsigned int i, const char *tree)
 
   fn = makeName (i);
   if (GNUNET_disk_directory_test (NULL, fn) != GNUNET_YES)
-    return GNUNET_SYSERR;
+    {
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
+    }
   res = ((makeHierarchyHelper (fn, tree, 0, 1) == -1) ?
          GNUNET_SYSERR : GNUNET_OK);
   GNUNET_free (fn);
@@ -267,7 +270,6 @@ main (int argc, char *argv[])
   struct GNUNET_ECRS_MetaData *meta = NULL;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_FSUI_UnindexList *unindex = NULL;
   struct GNUNET_FSUI_UploadList *upload = NULL;
 
   ok = GNUNET_YES;
@@ -344,8 +346,6 @@ FAILURE:
     GNUNET_ECRS_meta_data_destroy (meta);
   if (ctx != NULL)
     {
-      if (unindex != NULL)
-        GNUNET_FSUI_unindex_stop (unindex);
       if (download != NULL)
         GNUNET_FSUI_download_stop (download);
       GNUNET_FSUI_stop (ctx);
