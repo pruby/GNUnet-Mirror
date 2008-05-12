@@ -694,7 +694,7 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
                 {
                   GNUNET_ECRS_file_download_partial_stop (res->test_download);
                   res->test_download = NULL;
-		  ctx->active_probes--;
+                  ctx->active_probes--;
                 }
               res = res->next;
             }

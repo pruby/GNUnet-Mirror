@@ -37,10 +37,16 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-search_pause_resume_persistence_test/FSUITEST") + 14);
+  fn =
+    GNUNET_malloc (strlen
+                   ("/tmp/gnunet-fsui-search_pause_resume_persistence_test/FSUITEST")
+                   + 14);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-fsui-search_pause_resume_persistence_test/FSUITEST") + 14,
-                   "/tmp/gnunet-fsui-search_pause_resume_persistence_test/FSUITEST%u", i);
+                   strlen
+                   ("/tmp/gnunet-fsui-search_pause_resume_persistence_test/FSUITEST")
+                   + 14,
+                   "/tmp/gnunet-fsui-search_pause_resume_persistence_test/FSUITEST%u",
+                   i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
@@ -150,7 +156,8 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
-  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-search_pause_resume_persistence_test/");
+  GNUNET_disk_directory_remove (NULL,
+                                "/tmp/gnunet-fsui-search_pause_resume_persistence_test/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
@@ -161,8 +168,8 @@ main (int argc, char *argv[])
 #endif
   lock = GNUNET_mutex_create (GNUNET_NO);
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuisearch_pause_resume_persistence_test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "fsuisearch_pause_resume_persistence_test",
+                           32, GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
   GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
@@ -173,14 +180,14 @@ main (int argc, char *argv[])
   GNUNET_FSUI_stop (ctx);
   /* resume search! */
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuisearch_pause_resume_persistence_test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "fsuisearch_pause_resume_persistence_test",
+                           32, GNUNET_YES, &eventCallback, NULL);
   GNUNET_FSUI_search_pause (search);
   GNUNET_FSUI_stop (ctx);
   /* resume search! */
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuisearch_pause_resume_persistence_test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "fsuisearch_pause_resume_persistence_test",
+                           32, GNUNET_YES, &eventCallback, NULL);
   GNUNET_FSUI_search_restart (search);
 
   fn = makeName (42);

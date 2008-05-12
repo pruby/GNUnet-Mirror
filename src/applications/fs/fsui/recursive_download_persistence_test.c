@@ -325,8 +325,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "recursive_download_persistence_test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "recursive_download_persistence_test", 32,
+                           GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 16; j += 4)
     {
@@ -383,8 +383,8 @@ main (int argc, char *argv[])
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
                                    cfg,
-                                   "recursive_download_persistence_test", 32, GNUNET_YES,
-                                   &eventCallback, NULL);
+                                   "recursive_download_persistence_test", 32,
+                                   GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

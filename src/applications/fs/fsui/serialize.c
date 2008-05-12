@@ -249,7 +249,7 @@ write_search_record_list (struct GNUNET_GE_Context *ectx,
  * for this search.
  *
  * @param search_count length of search_list
- * @param search_list list of ECRS search requests 
+ * @param search_list list of ECRS search requests
  * @param pos results to write
  */
 void

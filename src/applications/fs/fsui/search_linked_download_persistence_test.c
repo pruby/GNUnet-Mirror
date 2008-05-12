@@ -111,7 +111,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         {
           fprintf (stderr,
                    "Download resuming but search reference not set correctly.\n");
-	  abort();
+          abort ();
           have_error = 1;
         }
       if ((event->data.DownloadResumed.dc.pos == download) &&
@@ -354,8 +354,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "search_linked_download_persistence_test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "search_linked_download_persistence_test", 32,
+                           GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 256; j += 4)
     {
@@ -416,8 +416,8 @@ main (int argc, char *argv[])
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
                                    cfg,
-                                   "search_linked_download_persistence_test", 32, GNUNET_YES,
-                                   &eventCallback, NULL);
+                                   "search_linked_download_persistence_test",
+                                   32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

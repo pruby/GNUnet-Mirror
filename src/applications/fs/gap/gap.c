@@ -467,8 +467,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           GNUNET_FS_PT_resolve (rl->response_target, &target);
           GNUNET_GE_ASSERT (NULL, block_count <= MAX_ENTRIES_PER_SLOT);
           blocked[block_count++] = rl->response_target;
-	  GNUNET_FS_PT_change_rc (rl->response_target, 1);
-	  /* queue response */
+          GNUNET_FS_PT_change_rc (rl->response_target, 1);
+          /* queue response */
           msg = GNUNET_malloc (sizeof (P2P_gap_reply_MESSAGE) + size);
           msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
           msg->header.size = htons (sizeof (P2P_gap_reply_MESSAGE) + size);
@@ -513,7 +513,7 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
     GNUNET_FS_MIGRATION_inject (primary_query,
                                 size, data, expiration, block_count, blocked);
   GNUNET_mutex_unlock (GNUNET_FS_lock);
-  GNUNET_FS_PT_decrement_rcs(blocked, block_count); /* includes rid */
+  GNUNET_FS_PT_decrement_rcs (blocked, block_count);    /* includes rid */
   return value;
 }
 

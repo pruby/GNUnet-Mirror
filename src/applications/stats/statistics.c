@@ -224,15 +224,10 @@ extern unsigned int uiHandleCount;
 static void
 initializeStats ()
 {
-  stat_handle_network_load_up
-    =
-    statHandle (gettext_noop
-                ( /* xgettext:no-c-format */
-                 "% of allowed network load (up)"));
-  stat_handle_network_load_down =
-    statHandle (gettext_noop
-                ( /* xgettext:no-c-format */
-                 "% of allowed network load (down)"));
+  stat_handle_network_load_up = statHandle (gettext_noop (      /* xgettext:no-c-format */
+                                                           "% of allowed network load (up)"));
+  stat_handle_network_load_down = statHandle (gettext_noop (    /* xgettext:no-c-format */
+                                                             "% of allowed network load (down)"));
   stat_handle_cpu_load =
     statHandle (gettext_noop
                 ( /* xgettext:no-c-format */ "% of allowed cpu load"));

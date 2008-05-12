@@ -271,7 +271,7 @@ reply_process_thread (void *cls)
 
 struct GNUNET_FS_SearchContext *
 GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
-                                 struct GNUNET_GC_Configuration *cfg) 
+                                 struct GNUNET_GC_Configuration *cfg)
 {
   struct GNUNET_FS_SearchContext *ret;
 
@@ -279,11 +279,11 @@ GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
   memset (ret, 0, sizeof (struct GNUNET_FS_SearchContext));
   ret->ectx = ectx;
   ret->cfg = cfg;
-  ret->lock = GNUNET_mutex_create(GNUNET_YES);
+  ret->lock = GNUNET_mutex_create (GNUNET_YES);
   ret->sock = GNUNET_client_connection_create (ectx, cfg);
   if (ret->sock == NULL)
     {
-      GNUNET_mutex_destroy(ret->lock);
+      GNUNET_mutex_destroy (ret->lock);
       GNUNET_free (ret);
       return NULL;
     }
@@ -314,7 +314,7 @@ GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx)
       ctx->handles = pos->next;
       GNUNET_free (pos);
     }
-  GNUNET_mutex_destroy(ctx->lock);
+  GNUNET_mutex_destroy (ctx->lock);
   GNUNET_free (ctx);
 }
 

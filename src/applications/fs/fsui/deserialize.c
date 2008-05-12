@@ -488,7 +488,7 @@ read_search_record_list (struct GNUNET_GE_Context *ectx, ReadBuffer * rb)
  * for this search.
  *
  * @param search_count length of search_list
- * @param search_list list of ECRS search requests 
+ * @param search_list list of ECRS search requests
  */
 struct SearchResultList *
 read_result_list (struct GNUNET_GE_Context *ectx,

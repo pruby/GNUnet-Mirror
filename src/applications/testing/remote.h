@@ -47,7 +47,7 @@ struct GNUNET_REMOTE_host_list
   unsigned short port;
 };
 
-/* Simple linked list to store friends lists for each node, 
+/* Simple linked list to store friends lists for each node,
  * for writing to the friends file
  */
 struct GNUNET_REMOTE_friends_list
@@ -72,9 +72,9 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
 
 /**
  * Because we need to copy over the friends file before actually connecting,
- * we call this function to get the information for the peers and store it 
+ * we call this function to get the information for the peers and store it
  * in a linked list, which is iterated over later to actually connect.
- * 
+ *
  * @param port1 client port of the first daemon
  * @param port2 client port of the second daemon
  * @param ip1 client ip or hostname for the first daemon

@@ -29,7 +29,7 @@
 
 #define VERBOSE GNUNET_NO
 
-/* Yes this is ugly, but for now it is nice to 
+/* Yes this is ugly, but for now it is nice to
  * have a linked list and an array
  */
 static struct GNUNET_REMOTE_host_list *head;

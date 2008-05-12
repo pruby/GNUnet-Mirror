@@ -145,7 +145,7 @@ isOSAutostartCapable ()
       if (ACCESS ("/etc/init.d/", W_OK) == 0)
         return GNUNET_YES;
     }
-      /* Gentoo */
+  /* Gentoo */
   else if (ACCESS ("/sbin/rc-update", X_OK) == 0)
     {
       if (ACCESS ("/etc/init.d/", W_OK) == 0)
@@ -403,7 +403,8 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                                    GNUNET_GE_WARNING |
                                                    GNUNET_GE_USER |
                                                    GNUNET_GE_ADMIN |
-                                                   GNUNET_GE_IMMEDIATE, "system",
+                                                   GNUNET_GE_IMMEDIATE,
+                                                   "system",
                                                    "/usr/sbin/update-rc.d");
                     }
                   else
@@ -430,7 +431,8 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                                    GNUNET_GE_WARNING |
                                                    GNUNET_GE_USER |
                                                    GNUNET_GE_ADMIN |
-                                                   GNUNET_GE_IMMEDIATE, "system",
+                                                   GNUNET_GE_IMMEDIATE,
+                                                   "system",
                                                    "/sbin/rc-update");
                     }
                   else
@@ -465,20 +467,22 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
           if (-1 != system ("/usr/sbin/update-rc.d gnunetd remove"))
             {
               GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                           GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                           GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                           "system", "/usr/sbin/update-rc.d");
+                                           GNUNET_GE_WARNING | GNUNET_GE_USER
+                                           | GNUNET_GE_ADMIN |
+                                           GNUNET_GE_IMMEDIATE, "system",
+                                           "/usr/sbin/update-rc.d");
               return GNUNET_SYSERR;
             }
-        } 
+        }
       else if (ACCESS ("/sbin/rc-update", W_OK) == 0)
         {
           if (-1 != system ("/sbin/rc-update del gnunetd"))
             {
               GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                           GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                           GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                           "system", "/sbin/rc-update");
+                                           GNUNET_GE_WARNING | GNUNET_GE_USER
+                                           | GNUNET_GE_ADMIN |
+                                           GNUNET_GE_IMMEDIATE, "system",
+                                           "/sbin/rc-update");
               return GNUNET_SYSERR;
             }
         }

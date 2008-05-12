@@ -381,9 +381,9 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_uri_expand_keywords_with_date (const
  * double quotes can not be used in the actual keywords (for
  * example, the string '""foo bar""' will be turned into two
  * "OR"ed keywords 'foo' and 'bar', not into '"foo bar"'.
- * 
+ *
  * @return an ECRS URI for the given keywords, NULL
- *  if keywords is not legal (i.e. empty). 
+ *  if keywords is not legal (i.e. empty).
  */
 struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_string_to_uri (struct
                                                            GNUNET_GE_Context
@@ -395,7 +395,7 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_string_to_uri (struct
 /**
  * Create an ECRS URI from a user-supplied command line of keywords.
  * Arguments should start with "+" to indicate mandatory
- * keywords.  
+ * keywords.
  *
  * @param argc number of keywords
  * @param argv keywords (double quotes are not required for

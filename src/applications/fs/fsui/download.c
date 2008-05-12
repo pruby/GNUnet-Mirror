@@ -506,19 +506,19 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
       ret = GNUNET_YES;
     }
   /* Trigger any recursive sub-downloads */
-  if ( ( (list->state == GNUNET_FSUI_COMPLETED) ||
-	 (list->state == GNUNET_FSUI_COMPLETED_JOINED) ) &&
-       (list->is_directory == GNUNET_YES) )
+  if (((list->state == GNUNET_FSUI_COMPLETED) ||
+       (list->state == GNUNET_FSUI_COMPLETED_JOINED)) &&
+      (list->is_directory == GNUNET_YES))
     {
       /* in case there is no sub-download, still
-	 create the (possibly empty) directory! */
+         create the (possibly empty) directory! */
       GNUNET_disk_directory_create (list->ctx->ectx, list->filename);
-      if ( (list->is_recursive == GNUNET_YES) &&
-	   (GNUNET_ECRS_uri_get_file_size (list->fi.uri) > 0) )
-	{
-	  download_recursive (list);
-	  list->is_recursive = GNUNET_NO;
-	}
+      if ((list->is_recursive == GNUNET_YES) &&
+          (GNUNET_ECRS_uri_get_file_size (list->fi.uri) > 0))
+        {
+          download_recursive (list);
+          list->is_recursive = GNUNET_NO;
+        }
     }
   dpos = list->child;
   while (dpos != NULL)

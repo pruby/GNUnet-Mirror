@@ -41,10 +41,16 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-download_persistence_test/FSUITEST") + 14);
+  fn =
+    GNUNET_malloc (strlen
+                   ("/tmp/gnunet-fsui-download_persistence_test/FSUITEST") +
+                   14);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-fsui-download_persistence_test/FSUITEST") + 14,
-                   "/tmp/gnunet-fsui-download_persistence_test/FSUITEST%u", i);
+                   strlen
+                   ("/tmp/gnunet-fsui-download_persistence_test/FSUITEST") +
+                   14,
+                   "/tmp/gnunet-fsui-download_persistence_test/FSUITEST%u",
+                   i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
@@ -175,7 +181,8 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
-  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-download_persistence_test/");
+  GNUNET_disk_directory_remove (NULL,
+                                "/tmp/gnunet-fsui-download_persistence_test/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
@@ -185,8 +192,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuidownload_persistence_test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "fsuidownload_persistence_test", 32,
+                           GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
 
   /* upload */
@@ -228,11 +235,10 @@ main (int argc, char *argv[])
   fn = makeName (43);
   download_done = 0;
   download = GNUNET_FSUI_download_start (ctx,
-					 0,
-					 GNUNET_NO,
-					 upURI,
-					 meta, fn, NULL, NULL);
-  CHECK(download != NULL);
+                                         0,
+                                         GNUNET_NO,
+                                         upURI, meta, fn, NULL, NULL);
+  CHECK (download != NULL);
   GNUNET_free (fn);
   suspendRestart = 4;
   prog = 0;
@@ -265,7 +271,7 @@ main (int argc, char *argv[])
     }
   GNUNET_FSUI_download_stop (download);
   download = NULL;
-  
+
   /* unindex */
   waitForEvent = GNUNET_FSUI_unindex_completed;
   fn = makeName (42);

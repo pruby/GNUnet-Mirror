@@ -210,7 +210,7 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
   fprintf (stderr,
            _("Connecting nodes in 2d torus topology: %u rows %u columns\n"),
            rows, cols);
-  /* Rows and columns are all sorted out, now iterate over all nodes and connect each 
+  /* Rows and columns are all sorted out, now iterate over all nodes and connect each
    * to the node to its right and above.  Once this is over, we'll have our torus!
    * Special case for the last node (if the rows and columns are not equal), connect
    * to the first in the row to maintain topology.

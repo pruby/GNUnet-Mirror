@@ -37,7 +37,8 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-searchranktest/FSUITEST") + 14);
+  fn =
+    GNUNET_malloc (strlen ("/tmp/gnunet-fsui-searchranktest/FSUITEST") + 14);
   GNUNET_snprintf (fn,
                    strlen ("/tmp/gnunet-fsui-searchranktest/FSUITEST") + 14,
                    "/tmp/gnunet-fsui-searchranktest/FSUITEST%u", i);
@@ -51,7 +52,7 @@ static volatile enum GNUNET_FSUI_EventType lastEvent;
 
 static volatile struct GNUNET_ECRS_URI *uri;
 
-static volatile int availability; 
+static volatile int availability;
 
 static volatile unsigned int rank;
 
@@ -203,7 +204,7 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (upload);
-  
+
   /* search */
   GNUNET_snprintf (keyword, 40, "%s %s", keywords[0], keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
@@ -214,10 +215,9 @@ main (int argc, char *argv[])
   CHECK (NULL != search);
   GNUNET_FSUI_search_pause (search);
   GNUNET_FSUI_search_restart (search);
-  while ( (uri == NULL) &&
-	  (availability < 3) &&
-	  (rank != 2) &&
-	  (GNUNET_shutdown_test () != GNUNET_YES))
+  while ((uri == NULL) &&
+         (availability < 3) &&
+         (rank != 2) && (GNUNET_shutdown_test () != GNUNET_YES))
     {
       prog++;
       CHECK (prog < 10000);

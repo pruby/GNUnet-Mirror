@@ -42,10 +42,15 @@ makeName (unsigned int i)
   char *fn;
 
   fn =
-    GNUNET_malloc (strlen ("/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST") + 14);
+    GNUNET_malloc (strlen
+                   ("/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST")
+                   + 14);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST") + 14,
-                   "/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST%u", i);
+                   strlen
+                   ("/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST")
+                   + 14,
+                   "/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST%u",
+                   i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
@@ -179,8 +184,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuiupload-unindex-persistence-test", 32, GNUNET_YES,
-                           &eventCallback, NULL);
+                           cfg, "fsuiupload-unindex-persistence-test", 32,
+                           GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
   fn = makeName (42);
   buf = GNUNET_malloc (FILESIZE);

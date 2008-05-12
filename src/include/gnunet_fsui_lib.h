@@ -64,7 +64,7 @@
  * client may call "abort" which will result in an "aborted"
  * event.  In either case, the event itself will NOT result in
  * the memory being released by FSUI -- the client must still
- * call "stop" explicitly.  Clients that call "stop" before an 
+ * call "stop" explicitly.  Clients that call "stop" before an
  * aborted, error or completed event will be blocked until
  * an error or completion event happens (it is illegal for a
  * client to call "abort" after calling "stop").<p>
@@ -411,7 +411,7 @@ typedef struct
       const struct GNUNET_ECRS_URI *searchURI;
 
       /**
-       * Updated availability rank (negative: 
+       * Updated availability rank (negative:
        * unavailable, positive: available)
        */
       int availability_rank;

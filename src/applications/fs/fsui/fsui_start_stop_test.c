@@ -67,13 +67,13 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  ctx = GNUNET_FSUI_start (NULL, cfg, "fsui_start_stop_test", 32, GNUNET_YES,      /* do resume! */
+  ctx = GNUNET_FSUI_start (NULL, cfg, "fsui_start_stop_test", 32, GNUNET_YES,   /* do resume! */
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
   GNUNET_FSUI_stop (ctx);
   ctx =
-    GNUNET_FSUI_start (NULL, cfg, "fsui_start_stop_test", 32, GNUNET_YES, &eventCallback,
-                       NULL);
+    GNUNET_FSUI_start (NULL, cfg, "fsui_start_stop_test", 32, GNUNET_YES,
+                       &eventCallback, NULL);
   CHECK (ctx != NULL);
 FAILURE:
   if (ctx != NULL)

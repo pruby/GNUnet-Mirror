@@ -47,9 +47,12 @@ makeName (unsigned int i)
   char *fn;
 
   fn =
-    GNUNET_malloc (strlen ("/tmp/gnunet-fsui-recursive_download_test/FSUITEST") + 15);
+    GNUNET_malloc (strlen
+                   ("/tmp/gnunet-fsui-recursive_download_test/FSUITEST") +
+                   15);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-fsui-recursive_download_test/FSUITEST") + 15,
+                   strlen
+                   ("/tmp/gnunet-fsui-recursive_download_test/FSUITEST") + 15,
                    "/tmp/gnunet-fsui-recursive_download_test/FSUITEST%u/", i);
   return fn;
 }
@@ -185,7 +188,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         download_done = 1;
 #if DEBUG_VERBOSE
       else
-	printf ("Hierarchy check not successful yet...\n");
+        printf ("Hierarchy check not successful yet...\n");
 #endif
       break;
     case GNUNET_FSUI_download_progress:
@@ -276,7 +279,8 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
-  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-recursive_download_test/");
+  GNUNET_disk_directory_remove (NULL,
+                                "/tmp/gnunet-fsui-recursive_download_test/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
@@ -322,11 +326,10 @@ main (int argc, char *argv[])
 
   fn43 = makeName (43);
   download = GNUNET_FSUI_download_start (ctx,
-					 0,
-					 GNUNET_YES,
-					 upURI,
-					 meta, fn43, NULL, NULL);
-  CHECK(download != NULL);
+                                         0,
+                                         GNUNET_YES,
+                                         upURI, meta, fn43, NULL, NULL);
+  CHECK (download != NULL);
   GNUNET_free (fn43);
   fn43 = NULL;
   prog = 0;

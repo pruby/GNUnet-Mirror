@@ -44,8 +44,7 @@
  */
 static void
 processResult (struct GNUNET_FSUI_SearchList *ctx,
-               struct SearchResultList *pos,
-	       int update)
+               struct SearchResultList *pos, int update)
 {
   GNUNET_FSUI_Event event;
 
@@ -56,7 +55,8 @@ processResult (struct GNUNET_FSUI_SearchList *ctx,
       event.data.SearchUpdate.sc.cctx = ctx->cctx;
       event.data.SearchUpdate.fi = pos->fi;
       event.data.SearchUpdate.searchURI = ctx->uri;
-      event.data.SearchUpdate.availability_rank = pos->probeSuccess - pos->probeFailure;
+      event.data.SearchUpdate.availability_rank =
+        pos->probeSuccess - pos->probeFailure;
       event.data.SearchUpdate.applicability_rank = pos->matchingSearchCount;
     }
   else
@@ -67,13 +67,17 @@ processResult (struct GNUNET_FSUI_SearchList *ctx,
       event.data.SearchResult.fi = pos->fi;
       event.data.SearchResult.searchURI = ctx->uri;
       GNUNET_URITRACK_add_state (ctx->ctx->ectx,
-				 ctx->ctx->cfg, pos->fi.uri,
-				 GNUNET_URITRACK_SEARCH_RESULT);
+                                 ctx->ctx->cfg, pos->fi.uri,
+                                 GNUNET_URITRACK_SEARCH_RESULT);
     }
   ctx->ctx->ecb (ctx->ctx->ecbClosure, &event);
 }
 
-void bug() { abort(); }
+void
+bug ()
+{
+  abort ();
+}
 
 /**
  * Process results found by ECRS.
@@ -113,8 +117,8 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
                                 sizeof (GNUNET_HashCode))))
                 {
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-			  "Received search result that I have seen before.\n");
+                  fprintf (stderr,
+                           "Received search result that I have seen before.\n");
 #endif
                   GNUNET_mutex_unlock (pos->lock);
                   return GNUNET_OK;     /* seen before */
@@ -129,7 +133,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
             {
               GNUNET_GE_BREAK (NULL, 0);
               GNUNET_mutex_unlock (pos->lock);
-	      bug();
+              bug ();
               return GNUNET_OK; /* should have matching search */
             }
           GNUNET_array_append (srl->matchingSearches,
@@ -139,29 +143,26 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
               if (srl->mandatoryMatchesRemaining > 0)
                 srl->mandatoryMatchesRemaining--;
               else
-		GNUNET_GE_BREAK (NULL, 0);
-	      update = 0;
+                GNUNET_GE_BREAK (NULL, 0);
+              update = 0;
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-			     "Received mandatory search result\n");
+              fprintf (stderr, "Received mandatory search result\n");
 #endif
             }
-	  else
-	    {
-	      update = 1;
+          else
+            {
+              update = 1;
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-			     "Received optional search result\n");
+              fprintf (stderr, "Received optional search result\n");
 #endif
-	    }
+            }
           if (srl->mandatoryMatchesRemaining == 0)
-	    {
+            {
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-			     "Passing result to client\n");
+              fprintf (stderr, "Passing result to client\n");
 #endif
-	      processResult (pos, srl, update);
-	    }
+              processResult (pos, srl, update);
+            }
           GNUNET_mutex_unlock (pos->lock);
           return GNUNET_OK;
         }
@@ -177,7 +178,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
     {
       GNUNET_GE_BREAK (NULL, 0);
       GNUNET_mutex_unlock (pos->lock);
-      bug();
+      bug ();
       return GNUNET_OK;         /* should have matching search */
     }
   srl = GNUNET_malloc (sizeof (struct SearchResultList));
@@ -191,17 +192,15 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
       if (srl->mandatoryMatchesRemaining > 0)
         srl->mandatoryMatchesRemaining--;
       else
-	GNUNET_GE_BREAK (NULL, 0);        
+        GNUNET_GE_BREAK (NULL, 0);
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-			     "Received new mandatory result\n");
+      fprintf (stderr, "Received new mandatory result\n");
 #endif
     }
   else
     {
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-			     "Received new optional result\n");
+      fprintf (stderr, "Received new optional result\n");
 #endif
     }
   srl->next = pos->resultsReceived;
@@ -209,8 +208,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   if (srl->mandatoryMatchesRemaining == 0)
     {
 #if DEBUG_SEARCH
-                  fprintf(stderr,
-		     "Passing new result to client\n");
+      fprintf (stderr, "Passing new result to client\n");
 #endif
       processResult (pos, srl, 0);
     }
@@ -221,7 +219,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
 /**
  * This function is called on each keyword in the
  * search list.  Start the corresponding ECRS search.
- * 
+ *
  * @param closure our GNUNET_FSUI_SearchList.
  */
 static int
@@ -231,10 +229,7 @@ create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
   struct SearchRecordList *srl;
 
 #if DEBUG_SEARCH
-  fprintf(stderr,
-	  "Starting search for `%s' (%d)\n",
-	  keyword,
-	  is_mandatory);
+  fprintf (stderr, "Starting search for `%s' (%d)\n", keyword, is_mandatory);
 #endif
   srl = GNUNET_malloc (sizeof (struct SearchRecordList));
   memset (srl, 0, sizeof (struct SearchRecordList));

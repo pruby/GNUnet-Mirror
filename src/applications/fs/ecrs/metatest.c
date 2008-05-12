@@ -164,10 +164,10 @@ testMetaLink ()
   m = GNUNET_ECRS_meta_data_create ();
   if (GNUNET_OK !=
       GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_UNKNOWN, "link"))
-    ABORT (m);    
+    ABORT (m);
   if (GNUNET_OK !=
       GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_FILENAME, "lib-link.m4"))
-    ABORT (m);    
+    ABORT (m);
   size =
     GNUNET_ECRS_meta_data_get_serialized_size (m, GNUNET_ECRS_SERIALIZE_FULL);
   val = GNUNET_malloc (size);

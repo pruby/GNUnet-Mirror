@@ -573,7 +573,7 @@ content_receive_callback (const GNUNET_HashCode * query,
   char *data;
 
   if (rm->abortFlag != GNUNET_NO)
-    return GNUNET_SYSERR;    
+    return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (ectx,
                     0 == memcmp (query, &node->chk.query,
                                  sizeof (GNUNET_HashCode)));

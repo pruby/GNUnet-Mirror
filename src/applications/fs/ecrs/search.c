@@ -179,7 +179,7 @@ add_search_for_uri (const struct GNUNET_ECRS_URI *uri,
         for (i = 0; i < uri->data.ksk.keywordCount; i++)
           {
             keyword = uri->data.ksk.keywords[i];
-            /* first character of the keyword is 
+            /* first character of the keyword is
                "+" or " " to indicate mandatory or
                not -- ignore for hashing! */
             GNUNET_hash (&keyword[1], strlen (&keyword[1]), &hc);

@@ -38,9 +38,11 @@ makeName (unsigned int i)
   char *fn;
 
   fn =
-    GNUNET_malloc (strlen ("/tmp/gnunet-basic_fsui_test/BASIC_FSUI_TEST") + 14);
-  GNUNET_snprintf (fn, strlen ("/tmp/gnunet-basic_fsui_test/BASIC_FSUI_TEST") + 14,
-                   "/tmp/gnunet-basic_fsui_test/BASIC_FSUI_TEST%u", i);
+    GNUNET_malloc (strlen ("/tmp/gnunet-basic_fsui_test/BASIC_FSUI_TEST") +
+                   14);
+  GNUNET_snprintf (fn,
+                   strlen ("/tmp/gnunet-basic_fsui_test/BASIC_FSUI_TEST") +
+                   14, "/tmp/gnunet-basic_fsui_test/BASIC_FSUI_TEST%u", i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
@@ -69,8 +71,10 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #if DEBUG_VERBOSE
       printf ("Received search result\n");
 #endif
-      search_uri = GNUNET_ECRS_uri_duplicate(event->data.SearchResult.fi.uri);
-      search_meta = GNUNET_ECRS_meta_data_duplicate(event->data.SearchResult.fi.meta);
+      search_uri =
+        GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
+      search_meta =
+        GNUNET_ECRS_meta_data_duplicate (event->data.SearchResult.fi.meta);
       break;
     case GNUNET_FSUI_upload_completed:
 #if DEBUG_VERBOSE
@@ -137,7 +141,7 @@ main (int argc, char *argv[])
   ok = GNUNET_YES;
 
   /* ACTUAL TEST CODE */
-  ctx = GNUNET_FSUI_start (NULL, cfg, "basic_fsui_test", 32,   /* thread pool size */
+  ctx = GNUNET_FSUI_start (NULL, cfg, "basic_fsui_test", 32,    /* thread pool size */
                            GNUNET_NO,   /* no resume */
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
@@ -150,9 +154,7 @@ main (int argc, char *argv[])
     GNUNET_ECRS_keyword_command_line_to_uri (NULL, 2,
                                              (const char **) keywords);
   /* upload */
-  upload = GNUNET_FSUI_upload_start (ctx, filename, 
-				     (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan, NULL, 
-				     0,  /* anonymity */
+  upload = GNUNET_FSUI_upload_start (ctx, filename, (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan, NULL, 0,  /* anonymity */
                                      0, /* priority */
                                      GNUNET_YES,
                                      GNUNET_NO,
@@ -193,11 +195,10 @@ main (int argc, char *argv[])
   /* download */
   fn = makeName (43);
   download = GNUNET_FSUI_download_start (ctx,
-					 0,
-					 GNUNET_NO,
-					 search_uri,
-					 search_meta,
-					 fn, NULL, NULL);
+                                         0,
+                                         GNUNET_NO,
+                                         search_uri,
+                                         search_meta, fn, NULL, NULL);
   GNUNET_free (fn);
   prog = 0;
   while (lastEvent != GNUNET_FSUI_download_completed)
@@ -208,7 +209,7 @@ main (int argc, char *argv[])
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
-  GNUNET_FSUI_download_stop(download);
+  GNUNET_FSUI_download_stop (download);
   download = NULL;
   GNUNET_ECRS_uri_destroy (search_uri);
   GNUNET_ECRS_meta_data_destroy (search_meta);
@@ -239,8 +240,8 @@ FAILURE:
     }
   if (download != NULL)
     {
-      GNUNET_FSUI_download_abort(download);
-      GNUNET_FSUI_download_stop(download);
+      GNUNET_FSUI_download_abort (download);
+      GNUNET_FSUI_download_stop (download);
     }
   filename = makeName (43);
   /* TODO: verify file 'filename(42)' == file 'filename(43)' */
