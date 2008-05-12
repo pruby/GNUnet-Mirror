@@ -418,6 +418,7 @@ CLEANUP:
     GNUNET_free_non_null ((*keywords)[i]);
   GNUNET_free (*keywords);
   *keywords = NULL;
+  GNUNET_free (dup);
   return GNUNET_SYSERR;
 }
 
