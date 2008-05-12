@@ -256,7 +256,6 @@ main (int argc, char *argv[])
   pid_t daemon;
 #endif
   int ok;
-  struct GNUNET_ECRS_URI *uri = NULL;
   char *fn = NULL;
   char *fn43 = NULL;
   char *keywords[] = {
@@ -319,11 +318,10 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (upload);
-  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
-  uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
-  waitForEvent = GNUNET_FSUI_download_completed;
-
-
+  upload = NULL;
+  CHECK(upURI != NULL);
+  
+  waitForEvent = GNUNET_FSUI_download_completed; 
   fn43 = makeName (43);
   download = GNUNET_FSUI_download_start (ctx,
                                          0,
@@ -357,8 +355,6 @@ FAILURE:
       GNUNET_disk_directory_remove (NULL, fn);
       GNUNET_free (fn);
     }
-  if (uri != NULL)
-    GNUNET_ECRS_uri_destroy (uri);
   if (kuri != NULL)
     GNUNET_ECRS_uri_destroy (kuri);
   fn43 = makeName (43);
