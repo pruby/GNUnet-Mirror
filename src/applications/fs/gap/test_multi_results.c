@@ -83,6 +83,11 @@ uploadFile (int size)
   name = makeName (size);
   fd =
     GNUNET_disk_file_open (ectx, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
+  if (fd == -1)
+    {
+      GNUNET_free(name);
+      return NULL;
+    }
   buf = GNUNET_malloc (size);
   memset (buf, size % 255, size);
   WRITE (fd, buf, size);
