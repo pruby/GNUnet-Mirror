@@ -40,7 +40,10 @@ testConfig ()
       GNUNET_GC_get_configuration_value_string (cfg, "test", "b", NULL, &c))
     return 1;
   if (0 != strcmp ("b", c))
-    return 1;
+    {
+      GNUNET_free (c);
+      return 1;
+    }
   GNUNET_free (c);
   if (0 != GNUNET_GC_get_configuration_value_number (cfg,
                                                      "test", "five", 0, 10, 9,

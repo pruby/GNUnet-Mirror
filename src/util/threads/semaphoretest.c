@@ -105,6 +105,7 @@ testMutex ()
       while (tv != 2)
         GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);    /* busy waiting may not always work */
       GNUNET_mutex_destroy (lock);
+      GNUNET_thread_join (pt, &unused);
       printf ("MUTEX test failed at %s:%u\n", __FILE__, __LINE__);
       return 1;                 /* error */
     }
