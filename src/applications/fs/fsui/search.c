@@ -221,7 +221,7 @@ create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
   struct SearchRecordList *srl;
 
 #if DEBUG_SEARCH
-  fprintf (stderr, "Starting search for `%s' (%d): %s\n", keyword, is_mandatory);
+  fprintf (stderr, "Starting search for `%s' (%d)\n", keyword, is_mandatory);
 #endif
   srl = GNUNET_malloc (sizeof (struct SearchRecordList));
   memset (srl, 0, sizeof (struct SearchRecordList));
