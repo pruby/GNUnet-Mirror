@@ -55,8 +55,8 @@ write_buffered (WriteBuffer * wb, const void *s, unsigned int size)
     {
       /* first, just use buffer */
       min = wb->size - wb->have;
-      if (min > size)
-        min = size;
+      if (min > size - pos)
+        min = size - pos;
       memcpy (&wb->buffer[wb->have], &src[pos], min);
       pos += min;
       wb->have += min;

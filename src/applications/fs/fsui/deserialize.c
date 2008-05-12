@@ -57,8 +57,8 @@ read_buffered (ReadBuffer * rb, void *d, unsigned int size)
       min = rb->have - rb->pos;
       if (min > 0)
         {
-          if (min > size)
-            min = size;
+          if (min > size - pos)
+            min = size - pos;
           memcpy (&dst[pos], &rb->buffer[rb->pos], min);
           rb->pos += min;
           pos += min;
