@@ -33,78 +33,86 @@ fsui_loader_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 check_PROGRAMS = \
-  fsuitest \
-  fsuitest2 \
-  searchtest \
-  serializetest \
-  serializetest2 \
-  serializetest3 \
-  serializetest4 \
-  downloadtest \
-  recursivetest
+  fsui_start_stop_test \
+  basic_fsui_test \
+  upload_unindex_persistence_test \
+  search_ranking_test \
+  search_persistence_test \
+  search_pause_resume_persistence_test \
+  search_linked_download_persistence_test \
+  recursive_download_test \
+  download_persistence_test \
+  recursive_download_persistence_test 
 
 TESTS = $(check_PROGRAMS)
 
-fsuitest_SOURCES = \
-  fsuitest.c 
-fsuitest_LDADD = \
+basic_fsui_test_SOURCES = \
+  basic_fsui_test.c 
+basic_fsui_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-fsuitest2_SOURCES = \
-  fsuitest2.c 
-fsuitest2_LDADD = \
+fsui_start_stop_test_SOURCES = \
+  fsui_start_stop_test.c 
+fsui_start_stop_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-searchtest_SOURCES = \
-  searchtest.c 
-searchtest_LDADD = \
+search_pause_resume_persistence_test_SOURCES = \
+  search_pause_resume_persistence_test.c 
+search_pause_resume_persistence_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-downloadtest_SOURCES = \
-  downloadtest.c 
-downloadtest_LDADD = \
+search_ranking_test_SOURCES = \
+  search_ranking_test.c 
+search_ranking_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-recursivetest_SOURCES = \
-  recursivetest.c 
-recursivetest_LDADD = \
+download_persistence_test_SOURCES = \
+  download_persistence_test.c 
+download_persistence_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-serializetest_SOURCES = \
-  serializetest.c 
-serializetest_LDADD = \
+recursive_download_test_SOURCES = \
+  recursive_download_test.c 
+recursive_download_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-serializetest2_SOURCES = \
-  serializetest2.c 
-serializetest2_LDADD = \
+upload_unindex_persistence_test_SOURCES = \
+  upload_unindex_persistence_test.c 
+upload_unindex_persistence_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-serializetest3_SOURCES = \
-  serializetest3.c 
-serializetest3_LDADD = \
+search_linked_download_persistence_test_SOURCES = \
+  search_linked_download_persistence_test.c 
+search_linked_download_persistence_test_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+search_persistence_test_SOURCES = \
+  search_persistence_test.c 
+search_persistence_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 
-serializetest4_SOURCES = \
-  serializetest4.c 
-serializetest4_LDADD = \
+recursive_download_persistence_test_SOURCES = \
+  recursive_download_persistence_test.c 
+recursive_download_persistence_test_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 

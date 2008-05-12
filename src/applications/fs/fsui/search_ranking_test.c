@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,8 +19,8 @@
 */
 
 /**
- * @file applications/fs/fsui/searchtest.c
- * @brief testcase for fsui search persistence
+ * @file applications/fs/fsui/search_ranking_test.c
+ * @brief testcase for search ranking (availability, etc)
  * @author Christian Grothoff
  */
 
@@ -37,23 +37,23 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14);
+  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-searchranktest/FSUITEST") + 14);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14,
-                   "/tmp/gnunet-fsui-searchtest/FSUITEST%u", i);
+                   strlen ("/tmp/gnunet-fsui-searchranktest/FSUITEST") + 14,
+                   "/tmp/gnunet-fsui-searchranktest/FSUITEST%u", i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
 
-static volatile enum GNUNET_FSUI_EventType lastEvent;
-
 static struct GNUNET_FSUI_SearchList *search;
 
-static struct GNUNET_ECRS_URI *uri;
+static volatile enum GNUNET_FSUI_EventType lastEvent;
 
-static struct GNUNET_FSUI_Context *ctx;
+static volatile struct GNUNET_ECRS_URI *uri;
 
-static struct GNUNET_Mutex *lock;
+static volatile int availability; 
+
+static volatile unsigned int rank;
 
 static volatile enum GNUNET_FSUI_EventType waitForEvent;
 
@@ -62,7 +62,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 {
   static char unused;
 
-  GNUNET_mutex_lock (lock);
   switch (event->type)
     {
     case GNUNET_FSUI_search_resumed:
@@ -71,13 +70,16 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_search_suspended:
       search = NULL;
       break;
+    case GNUNET_FSUI_search_update:
+      availability = event->data.SearchUpdate.availability_rank;
+      rank = event->data.SearchUpdate.applicability_rank;
+      break;
     case GNUNET_FSUI_search_paused:
     case GNUNET_FSUI_search_restarted:
       break;
     case GNUNET_FSUI_download_resumed:
     case GNUNET_FSUI_upload_resumed:
     case GNUNET_FSUI_unindex_resumed:
-      GNUNET_mutex_unlock (lock);
       return &unused;
     case GNUNET_FSUI_search_result:
 #if CHECK_VERBOSE
@@ -114,7 +116,6 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     }
   if (lastEvent != waitForEvent)
     lastEvent = event->type;
-  GNUNET_mutex_unlock (lock);
   return NULL;
 }
 
@@ -138,9 +139,9 @@ main (int argc, char *argv[])
   struct GNUNET_ECRS_URI *kuri;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UploadList *upload;
-  struct GNUNET_FSUI_UnindexList *unindex;
-  struct GNUNET_FSUI_DownloadList *download;
   struct GNUNET_ECRS_URI *luri;
+  struct GNUNET_FSUI_Context *ctx;
+
 
   ok = GNUNET_YES;
   cfg = GNUNET_GC_create ();
@@ -150,7 +151,7 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
-  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-check-fsui/");
+  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-searchranktest/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
@@ -159,30 +160,11 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
-  lock = GNUNET_mutex_create (GNUNET_NO);
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuisearchtest", 32, GNUNET_YES,
+                           cfg, "fsuisearchranktest", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
-  GNUNET_snprintf (keyword, 40, "+%s +%s", keywords[0], keywords[1]);
-  luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
-  uri = NULL;
-  search = GNUNET_FSUI_search_start (ctx, 0, luri);
-  GNUNET_ECRS_uri_destroy (luri);
-  CHECK (NULL != search);
-  GNUNET_FSUI_stop (ctx);
-  /* resume search! */
-  ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuisearchtest", 32, GNUNET_YES,
-                           &eventCallback, NULL);
-  GNUNET_FSUI_search_pause (search);
-  GNUNET_FSUI_stop (ctx);
-  /* resume search! */
-  ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuisearchtest", 32, GNUNET_YES,
-                           &eventCallback, NULL);
-  GNUNET_FSUI_search_restart (search);
-
+  /* upload */
   fn = makeName (42);
   GNUNET_disk_file_write (NULL,
                           fn, "foo bar test!", strlen ("foo bar test!"),
@@ -221,9 +203,21 @@ main (int argc, char *argv[])
         break;
     }
   GNUNET_FSUI_upload_stop (upload);
+  
+  /* search */
+  GNUNET_snprintf (keyword, 40, "%s %s", keywords[0], keywords[1]);
+  luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
+  uri = NULL;
+  search = GNUNET_FSUI_search_start (ctx, 0, luri);
+  GNUNET_ECRS_uri_destroy (luri);
+  luri = NULL;
+  CHECK (NULL != search);
   GNUNET_FSUI_search_pause (search);
   GNUNET_FSUI_search_restart (search);
-  while ((uri == NULL) && (GNUNET_shutdown_test () != GNUNET_YES))
+  while ( (uri == NULL) &&
+	  (availability < 3) &&
+	  (rank != 2) &&
+	  (GNUNET_shutdown_test () != GNUNET_YES))
     {
       prog++;
       CHECK (prog < 10000);
@@ -232,49 +226,12 @@ main (int argc, char *argv[])
   GNUNET_FSUI_search_abort (search);
   GNUNET_FSUI_search_stop (search);
   CHECK (uri != NULL);
-  fn = makeName (43);
-  meta = GNUNET_ECRS_meta_data_create ();
-  waitForEvent = GNUNET_FSUI_download_completed;
-  download =
-    GNUNET_FSUI_download_start (ctx, 0, GNUNET_NO, uri, meta, fn, NULL, NULL);
-  GNUNET_ECRS_meta_data_destroy (meta);
-  GNUNET_free (fn);
-  fn = NULL;
-  GNUNET_ECRS_uri_destroy (uri);
 
-  prog = 0;
-  while (lastEvent != GNUNET_FSUI_download_completed)
-    {
-      prog++;
-      CHECK (prog < 10000);
-      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-      if (GNUNET_shutdown_test () == GNUNET_YES)
-        break;
-    }
-  GNUNET_FSUI_download_stop (download);
-  fn = makeName (42);
-  waitForEvent = GNUNET_FSUI_unindex_completed;
-  unindex = GNUNET_FSUI_unindex_start (ctx, fn);
-  GNUNET_free (fn);
-  fn = NULL;
-  CHECK (NULL != unindex);
-  prog = 0;
-  while (lastEvent != GNUNET_FSUI_unindex_completed)
-    {
-      prog++;
-      CHECK (prog < 10000);
-      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-      if (GNUNET_shutdown_test () == GNUNET_YES)
-        break;
-    }
-  GNUNET_FSUI_unindex_stop (unindex);
 
   /* END OF TEST CODE */
 FAILURE:
   if (ctx != NULL)
     GNUNET_FSUI_stop (ctx);
-  if (lock != NULL)
-    GNUNET_mutex_destroy (lock);
   GNUNET_free_non_null (fn);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   fn = makeName (42);

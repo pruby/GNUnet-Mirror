@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/serializetest2.c
+ * @file applications/fs/fsui/search_linked_download_persistence_test.c
  * @brief testcase for fsui download persistence for recursive
  *        download linked to search
  * @author Christian Grothoff
@@ -31,7 +31,7 @@
 
 #define DEBUG_VERBOSE GNUNET_NO
 
-#define UPLOAD_PREFIX "/tmp/gnunet-fsui-serializetest2"
+#define UPLOAD_PREFIX "/tmp/gnunet-fsui-search_linked_download_persistence_test"
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -354,7 +354,7 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "serializetest2", 32, GNUNET_YES,
+                           cfg, "search_linked_download_persistence_test", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 256; j += 4)
@@ -416,7 +416,7 @@ main (int argc, char *argv[])
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
                                    cfg,
-                                   "serializetest2", 32, GNUNET_YES,
+                                   "search_linked_download_persistence_test", 32, GNUNET_YES,
                                    &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
@@ -465,4 +465,4 @@ FAILURE:
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 
-/* end of serializetest2.c */
+/* end of search_linked_download_persistence_test.c */

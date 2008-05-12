@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/serializetest.c
+ * @file applications/fs/fsui/upload_unindex_persistence_test.c
  * @brief testcase for fsui upload persistence
  * @author Christian Grothoff
  */
@@ -42,10 +42,10 @@ makeName (unsigned int i)
   char *fn;
 
   fn =
-    GNUNET_malloc (strlen ("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14);
+    GNUNET_malloc (strlen ("/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST") + 14);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14,
-                   "/tmp/gnunet-fsui-serializetest/FSUITEST%u", i);
+                   strlen ("/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST") + 14,
+                   "/tmp/gnunet-fsui-upload-unindex-persistence-test/FSUITEST%u", i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
@@ -179,7 +179,7 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "fsuiserializetest", 32, GNUNET_YES,
+                           cfg, "fsuiupload-unindex-persistence-test", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
   fn = makeName (42);
@@ -219,7 +219,7 @@ main (int argc, char *argv[])
                                            at this point, thus testing resume */
           ctx = GNUNET_FSUI_start (NULL,
                                    cfg,
-                                   "fsuiserializetest",
+                                   "fsuiupload-unindex-persistence-test",
                                    32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
@@ -252,7 +252,7 @@ main (int argc, char *argv[])
                                            at this point, thus testing resume */
           ctx = GNUNET_FSUI_start (NULL,
                                    cfg,
-                                   "fsuiserializetest",
+                                   "fsuiupload-unindex-persistence-test",
                                    32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
@@ -297,4 +297,4 @@ FAILURE:
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 
-/* end of downloadtest.c */
+/* end of upload-unindex-persistence-test.c */

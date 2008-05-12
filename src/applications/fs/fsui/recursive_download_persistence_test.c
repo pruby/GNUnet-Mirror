@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/serializetest4.c
+ * @file applications/fs/fsui/recursive_download_persistence_test.c
  * @brief testcase for fsui download persistence for recursive
  *        download
  * @author Christian Grothoff
@@ -31,7 +31,7 @@
 
 #define DEBUG_VERBOSE GNUNET_NO
 
-#define UPLOAD_PREFIX "/tmp/gnunet-fsui-serializetest4"
+#define UPLOAD_PREFIX "/tmp/gnunet-fsui-recursive_download_persistence_test"
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -325,7 +325,7 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                           cfg, "serializetest4", 32, GNUNET_YES,
+                           cfg, "recursive_download_persistence_test", 32, GNUNET_YES,
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 16; j += 4)
@@ -383,7 +383,7 @@ main (int argc, char *argv[])
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
                                    cfg,
-                                   "serializetest4", 32, GNUNET_YES,
+                                   "recursive_download_persistence_test", 32, GNUNET_YES,
                                    &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
@@ -423,4 +423,4 @@ FAILURE:
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 
-/* end of serializetest4.c */
+/* end of recursive_download_persistence_test.c */

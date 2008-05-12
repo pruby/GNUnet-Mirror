@@ -154,6 +154,40 @@ testMetaMore (int i)
   return 0;
 }
 
+static int
+testMetaLink ()
+{
+  struct GNUNET_ECRS_MetaData *m;
+  char *val;
+  unsigned int size;
+
+  m = GNUNET_ECRS_meta_data_create ();
+  if (GNUNET_OK !=
+      GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_UNKNOWN, "link"))
+    ABORT (m);    
+  if (GNUNET_OK !=
+      GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_FILENAME, "lib-link.m4"))
+    ABORT (m);    
+  size =
+    GNUNET_ECRS_meta_data_get_serialized_size (m, GNUNET_ECRS_SERIALIZE_FULL);
+  val = GNUNET_malloc (size);
+  if (size != GNUNET_ECRS_meta_data_serialize (NULL,
+                                               m, val, size,
+                                               GNUNET_ECRS_SERIALIZE_FULL))
+    {
+      GNUNET_free (val);
+      ABORT (m);
+    }
+  GNUNET_ECRS_meta_data_destroy (m);
+  m = GNUNET_ECRS_meta_data_deserialize (NULL, val, size);
+  GNUNET_free (val);
+  if (m == NULL)
+    ABORT (m);
+  GNUNET_ECRS_meta_data_destroy (m);
+  return 0;
+}
+
+
 int
 main (int argc, char *argv[])
 {
@@ -164,6 +198,7 @@ main (int argc, char *argv[])
     failureCount += testMeta (i);
   for (i = 1; i < 255; i++)
     failureCount += testMetaMore (i);
+  failureCount += testMetaLink ();
 
   if (failureCount != 0)
     return 1;

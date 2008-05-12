@@ -19,8 +19,8 @@
 */
 
 /**
- * @file applications/fs/fsui/fsuitest2.c
- * @brief testcase for fsui (upload-download)
+ * @file applications/fs/fsui/fsui_start_stop_test.c
+ * @brief testcase for fsui (start-stop only)
  * @author Christian Grothoff
  */
 
@@ -67,12 +67,12 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  ctx = GNUNET_FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES,      /* do resume! */
+  ctx = GNUNET_FSUI_start (NULL, cfg, "fsui_start_stop_test", 32, GNUNET_YES,      /* do resume! */
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
   GNUNET_FSUI_stop (ctx);
   ctx =
-    GNUNET_FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES, &eventCallback,
+    GNUNET_FSUI_start (NULL, cfg, "fsui_start_stop_test", 32, GNUNET_YES, &eventCallback,
                        NULL);
   CHECK (ctx != NULL);
 FAILURE:
@@ -86,4 +86,4 @@ FAILURE:
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 
-/* end of fsuitest2.c */
+/* end of fsui_start_stop_test.c */

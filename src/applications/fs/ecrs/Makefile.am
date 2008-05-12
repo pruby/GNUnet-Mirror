@@ -34,7 +34,6 @@ check_PROGRAMS = \
   namespacetest \
   uritest \
   metatest \
-  metatest2 \
   searchtest \
   directorytest \
   ecrstest \
