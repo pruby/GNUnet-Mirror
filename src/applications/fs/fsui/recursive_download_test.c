@@ -153,8 +153,6 @@ static struct GNUNET_FSUI_DownloadList *download;
 static void *
 eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 {
-  char *fn;
-
   switch (event->type)
     {
     case GNUNET_FSUI_download_suspended:
@@ -264,7 +262,7 @@ main (int argc, char *argv[])
   };
   char keyword[40];
   int prog;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_ECRS_MetaData *meta = NULL;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UnindexList *unindex = NULL;
@@ -278,7 +276,7 @@ main (int argc, char *argv[])
       return -1;
     }
 #if START_DAEMON
-  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-test/content/");
+  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-fsui-recursive_download_test/");
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
@@ -327,7 +325,7 @@ main (int argc, char *argv[])
 					 0,
 					 GNUNET_YES,
 					 upURI,
-					 meta, fn, NULL, NULL);
+					 meta, fn43, NULL, NULL);
   CHECK(download != NULL);
   GNUNET_free (fn43);
   fn43 = NULL;
