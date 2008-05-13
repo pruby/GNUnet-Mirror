@@ -95,30 +95,24 @@ main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
-
   pid_t daemon1;
   GNUNET_PeerIdentity p1;
   char *c1 = NULL;
-
   struct GNUNET_CHAT_Room *r1;
   struct GNUNET_CHAT_Room *r2;
-
   GNUNET_RSA_PublicKey me;
   struct GNUNET_RSA_PrivateKey *key = NULL;
 
-
-  key = GNUNET_RSA_create_key ();
-  GNUNET_RSA_get_public_key (key, &me);
-
   ret = 0;
-
-
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
       GNUNET_GC_free (cfg);
       return -1;
     }
+  GNUNET_disable_entropy_gathering();
+  key = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (key, &me);
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "chat stats",
@@ -131,17 +125,24 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-
-
   r1 =
     GNUNET_CHAT_join_room (NULL, cfg, "nicktest1", "testroom", &me, key, "",
                            &receive_callback1, NULL, &member_list_callback1,
                            NULL);
-
+  if (r1 == NULL)
+    {
+      ret = 1;
+      goto CLEANUP;
+    }
   r2 =
     GNUNET_CHAT_join_room (NULL, cfg, "nicktest2", "testroom", &me, key, "",
                            &receive_callback2, NULL, &member_list_callback2,
                            NULL);
+  if (r2 == NULL)
+    {
+      ret = 1;
+      goto CLEANUP;
+    }
 
   GNUNET_CHAT_send_message (r1, "test message 1", NULL, NULL,
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL);
@@ -149,21 +150,17 @@ main (int argc, char **argv)
   GNUNET_CHAT_send_message (r2, "test message 2", NULL, NULL,
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL);
 
+ CLEANUP:
   if (r1 != NULL)
     GNUNET_CHAT_leave_room (r1);
   if (r2 != NULL)
     GNUNET_CHAT_leave_room (r2);
 
-
-
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  //GNUNET_shutdown_wait_for ();
   GNUNET_GC_free (cfg);
-
-
-  return 0;
+  return ret;
 }
 
 /* end of chattest.c */
