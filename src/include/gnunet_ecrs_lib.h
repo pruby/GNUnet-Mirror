@@ -278,6 +278,12 @@ struct GNUNET_ECRS_URI;
 char *GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri);
 
 /**
+ * Convert keyword URI to a human readable format
+ * (i.e. the search query that was used in the first place)
+ */
+char *GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI *uri);
+
+/**
  * Convert a UTF-8 String to a URI.
  */
 struct GNUNET_ECRS_URI *GNUNET_ECRS_string_to_uri (struct GNUNET_GE_Context
@@ -428,15 +434,6 @@ int GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *u1,
  * Is this a namespace URI?
  */
 int GNUNET_ECRS_uri_test_sks (const struct GNUNET_ECRS_URI *uri);
-
-/**
- * Get the (globally unique) name for the given
- * namespace.
- *
- * @return the name (GNUNET_hash) of the namespace, caller
- *  must free it.
- */
-char *GNUNET_ECRS_get_namespace_name (const GNUNET_HashCode * nsid);
 
 /**
  * Get the ID of a namespace from the given

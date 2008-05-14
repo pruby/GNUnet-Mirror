@@ -43,6 +43,7 @@ main (int argc, char *argv[])
   struct GNUNET_ECRS_URI *euri = NULL;
   struct GNUNET_ECRS_MetaData *meta = NULL;
   GNUNET_HashCode root;
+  GNUNET_HashCode nsid;
   int old;
   int newVal;
   struct GNUNET_GC_Configuration *cfg;
@@ -60,7 +61,6 @@ main (int argc, char *argv[])
          GNUNET_wait_for_daemon_running (NULL, cfg,
                                          30 * GNUNET_CRON_SECONDS));
   ok = GNUNET_YES;
-  GNUNET_NS_namespace_delete (ectx, cfg, "test");
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
@@ -77,20 +77,21 @@ main (int argc, char *argv[])
                                     10 * GNUNET_CRON_MINUTES, "test", meta,
                                     NULL, &root);
   CHECK (uri != NULL);
+  GNUNET_ECRS_uri_get_namespace_from_sks(uri, &nsid);
   newVal = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
-  old = GNUNET_NS_namespace_list_contents (ectx, cfg, "test", NULL, NULL);
+  old = GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, NULL, NULL);
   euri = GNUNET_NS_add_to_namespace (ectx,
                                      cfg,
                                      1,
                                      1,
                                      GNUNET_get_time () +
-                                     10 * GNUNET_CRON_MINUTES, "test", 42,
+                                     10 * GNUNET_CRON_MINUTES, &nsid, 42,
                                      NULL, &root, NULL, uri, meta);
   CHECK (euri != NULL);
-  newVal = GNUNET_NS_namespace_list_contents (ectx, cfg, "test", NULL, NULL);
+  newVal = GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, NULL, NULL);
   CHECK (old < newVal);
-  CHECK (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, "test"));
+  CHECK (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid));
   /* END OF TEST CODE */
 FAILURE:
   if (uri != NULL)

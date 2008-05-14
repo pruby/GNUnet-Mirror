@@ -132,6 +132,7 @@ namespacePrinter (void *unused,
                   const struct GNUNET_ECRS_MetaData *md, int rating)
 {
   GNUNET_EncName enc;
+  GNUNET_HashCode nsid;
   int cpos;
 
   GNUNET_hash_to_enc (id, &enc);
@@ -166,8 +167,16 @@ namespacePrinter (void *unused,
 
       if (delta != 0)
         {
-          rating = GNUNET_NS_namespace_rank (ectx, cfg, namespaceName, delta);
-          printf (_("\tRating (after update): %d\n"), rating);
+	  if (GNUNET_OK ==
+	      GNUNET_NS_name_to_nsid(ectx, cfg, namespaceName, &nsid))
+	    {
+	      rating = GNUNET_NS_namespace_rank (ectx, cfg, &nsid, delta);
+	      printf (_("\tRating (after update): %d\n"), rating);
+	    }
+	  else
+	    {
+	      printf (_("\tUnknown namespace `%s'\n"), namespaceName);
+	    }
         }
     }
   printf ("\n");
@@ -181,6 +190,7 @@ main (int argc, char *const *argv)
   int success;
   int i;
   GNUNET_HashCode hc;
+  GNUNET_HashCode nsid;
 
   meta = GNUNET_ECRS_meta_data_create ();
   i = GNUNET_init (argc,
@@ -208,16 +218,24 @@ main (int argc, char *const *argv)
   /* delete pseudonyms */
   if (delete_name != NULL)
     {
-      if (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, delete_name))
-        {
-          printf (_("Pseudonym `%s' deleted.\n"), delete_name);
-        }
+      if (GNUNET_OK ==
+	  GNUNET_NS_name_to_nsid(ectx, cfg, delete_name, &nsid))
+	{
+	  if (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid))
+	    {
+	      printf (_("Pseudonym `%s' deleted.\n"), delete_name);
+	    }
+	  else
+	    {
+	      success += 2;
+	      printf (_("Error deleting pseudonym `%s' (does not exist?).\n"),
+		      delete_name);
+	    }
+	}
       else
-        {
-          success += 2;
-          printf (_("Error deleting pseudonym `%s' (does not exist?).\n"),
-                  delete_name);
-        }
+	{
+	  printf (_("\tUnknown namespace `%s'\n"), delete_name);
+	}
       GNUNET_free (delete_name);
     }
 

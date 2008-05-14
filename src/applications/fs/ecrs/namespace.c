@@ -32,7 +32,7 @@
 #include "ecrs_core.h"
 #include "ecrs.h"
 
-#define PSEUDODIR "data/pseudonyms/"
+#define PSEUDODIR "data/namespace/keys/"
 #define INITVALUE "GNUnet!!"
 #define MAX_NBLOCK_SIZE 32000
 #define MAX_SBLOCK_SIZE 32000

@@ -110,6 +110,7 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
   GNUNET_HashCode prevId;
   GNUNET_HashCode thisId;
   GNUNET_HashCode nextId;
+  GNUNET_HashCode nsid;
   struct GNUNET_ECRS_URI *nsuri;
   char *us;
 
@@ -118,12 +119,18 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
   convertId (next_id, &nextId);
   convertId (this_id, &thisId);
   convertId (prev_id, &prevId);
+  if (GNUNET_OK !=
+      GNUNET_NS_name_to_nsid(ectx, cfg, pseudonym, &nsid))
+    {
+      printf (_("\tUnknown namespace `%s'\n"), pseudonym);
+      return;
+    } 
   nsuri = GNUNET_NS_add_to_namespace (ectx,
                                       cfg,
                                       anonymity,
                                       priority,
                                       GNUNET_get_time () +
-                                      2 * GNUNET_CRON_YEARS, pseudonym,
+                                      2 * GNUNET_CRON_YEARS, &nsid,
                                       (GNUNET_Int32Time) interval,
                                       prev_id == NULL ? NULL : &prevId,
                                       this_id == NULL ? NULL : &thisId,

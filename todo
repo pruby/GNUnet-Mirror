@@ -4,6 +4,8 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [5'08] (aka "new protocol"):
+- FS-APIs:
+  => improve gnunet-gtk to use new namespace APIs!
 - test new asynchronous ECRS API (and resulting FSUI changes):
   * make sure error handling & reporting are nice [RC]
     (see also: #1338!)

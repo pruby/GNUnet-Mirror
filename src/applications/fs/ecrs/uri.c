@@ -275,6 +275,53 @@ GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri)
 }
 
 /**
+ * Convert keyword URI to a human readable format
+ * (i.e. the search query that was used in the first place)
+ */
+char *
+GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI *uri)
+{
+  size_t n;
+  char *ret;
+  unsigned int i;
+  const char *keyword;
+  char **keywords;
+  unsigned int keywordCount;
+
+  if ( (uri == NULL) ||
+       (uri->type != ksk) )
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return NULL;
+    }
+  keywords = uri->data.ksk.keywords;
+  keywordCount = uri->data.ksk.keywordCount;
+  n = keywordCount + 1;
+  for (i = 0; i < keywordCount; i++)
+    {
+      keyword = keywords[i];
+      n += strlen(keyword);
+      if (NULL != strstr(keyword, " "))
+	n += 2;
+    }
+  ret = GNUNET_malloc (n);
+  strcpy (ret, "");
+  for (i = 0; i < keywordCount; i++)
+    {
+      keyword = keywords[i];
+      if (NULL != strstr(keyword, " "))
+	{
+	  strcat(ret, "\"");
+	  strcat(ret, keyword);
+	  strcat(ret, "\"");
+	}
+      else
+	strcat(ret, keyword);
+    }
+  return ret;
+}
+
+/**
  * Given a keyword with %-encoding (and possibly quotes to protect
  * spaces), return a copy of the keyword without %-encoding and
  * without double-quotes (%22).  Also, add a space at the beginning
@@ -683,22 +730,6 @@ int
 GNUNET_ECRS_uri_test_sks (const struct GNUNET_ECRS_URI *uri)
 {
   return uri->type == sks;
-}
-
-/**
- * Get the (globally unique) name for the given namespace.
- *
- * @return the name (GNUNET_hash) of the namespace, caller
- *  must free it.
- */
-char *
-GNUNET_ECRS_get_namespace_name (const GNUNET_HashCode * id)
-{
-  char *ret;
-
-  ret = GNUNET_malloc (sizeof (GNUNET_EncName));
-  GNUNET_hash_to_enc (id, (GNUNET_EncName *) ret);
-  return ret;
 }
 
 /**
