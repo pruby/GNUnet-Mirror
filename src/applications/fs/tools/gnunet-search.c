@@ -108,6 +108,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_search_started:
     case GNUNET_FSUI_search_stopped:
+    case GNUNET_FSUI_search_update:
       break;
     default:
       GNUNET_GE_BREAK (NULL, 0);
