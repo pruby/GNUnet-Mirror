@@ -83,7 +83,8 @@ GNUNET_ECRS_meta_data_insert (MetaData * md,
                               EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
-
+  char *p;
+  
   GNUNET_GE_ASSERT (NULL, data != NULL);
   for (idx = 0; idx < md->itemCount; idx++)
     {
@@ -94,7 +95,14 @@ GNUNET_ECRS_meta_data_insert (MetaData * md,
   idx = md->itemCount;
   GNUNET_array_grow (md->items, md->itemCount, md->itemCount + 1);
   md->items[idx].type = type;
-  md->items[idx].data = GNUNET_strdup (data);
+  md->items[idx].data = p = GNUNET_strdup (data);
+  
+  /* remove hints to OS */
+  if (type == EXTRACTOR_FILENAME) {
+	  while (p = strchr(p, '\\'))
+		  *p = '/';
+  }
+  
   return GNUNET_OK;
 }
 
