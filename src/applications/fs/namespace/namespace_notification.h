@@ -35,7 +35,8 @@
  */
 void
 GNUNET_NS_internal_notify_ (const char *name,
-			    const GNUNET_HashCode * id,
-			    const struct GNUNET_ECRS_MetaData *md, int rating);
+                            const GNUNET_HashCode * id,
+                            const struct GNUNET_ECRS_MetaData *md,
+                            int rating);
 
 #endif

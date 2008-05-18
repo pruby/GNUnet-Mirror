@@ -252,7 +252,7 @@ GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_UnindexList *dl)
   GNUNET_FSUI_Event event;
 
   if (dl == NULL)
-    return GNUNET_SYSERR;    
+    return GNUNET_SYSERR;
   ctx = dl->ctx;
   ectx = ctx->ectx;
 #if 0

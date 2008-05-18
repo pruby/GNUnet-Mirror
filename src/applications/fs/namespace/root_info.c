@@ -38,16 +38,13 @@ int
 GNUNET_NS_namespace_get_root (struct GNUNET_GE_Context *ectx,
                               struct GNUNET_GC_Configuration *cfg,
                               const GNUNET_HashCode * ns_id,
-			      GNUNET_HashCode * root)
+                              GNUNET_HashCode * root)
 {
   char *fn;
   int ret;
 
-  fn = GNUNET_NS_internal_get_data_filename_(ectx,
-					     cfg,
-					     NS_ROOTS_DIR,
-					     ns_id,
-					     NULL);
+  fn = GNUNET_NS_internal_get_data_filename_ (ectx,
+                                              cfg, NS_ROOTS_DIR, ns_id, NULL);
   if (sizeof (GNUNET_HashCode)
       == GNUNET_disk_file_read (ectx, fn, sizeof (GNUNET_HashCode), root))
     ret = GNUNET_OK;
@@ -71,13 +68,10 @@ GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_BREAK (ectx, 0);
       return;
     }
-  fn = GNUNET_NS_internal_get_data_filename_(ectx,
-					     cfg,
-					     NS_ROOTS_DIR,
-					     &ns,
-					     NULL);
+  fn = GNUNET_NS_internal_get_data_filename_ (ectx,
+                                              cfg, NS_ROOTS_DIR, &ns, NULL);
   if (GNUNET_OK == GNUNET_ECRS_uri_get_content_hash_from_sks (uri, &rt))
-    GNUNET_disk_file_write (ectx, fn, &rt, sizeof (GNUNET_HashCode), "644");    
+    GNUNET_disk_file_write (ectx, fn, &rt, sizeof (GNUNET_HashCode), "644");
   GNUNET_free (fn);
 }
 

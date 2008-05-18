@@ -81,7 +81,7 @@ uploadFile (unsigned int size)
     GNUNET_disk_file_open (NULL, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
   if (fd == -1)
     {
-      GNUNET_free(name);
+      GNUNET_free (name);
       return GNUNET_SYSERR;
     }
   buf = GNUNET_malloc (size);
@@ -196,10 +196,10 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
     {
       fd = GNUNET_disk_file_open (NULL, tmpName, O_RDONLY);
       if (fd == -1)
-	{
-	  GNUNET_free(tmpName);
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_free (tmpName);
+          return GNUNET_SYSERR;
+        }
       buf = GNUNET_malloc (size);
       in = GNUNET_malloc (size);
       memset (buf, size + size / 253, size);

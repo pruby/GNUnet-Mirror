@@ -281,7 +281,8 @@ char *GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri);
  * Convert keyword URI to a human readable format
  * (i.e. the search query that was used in the first place)
  */
-char *GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI *uri);
+char *GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct
+                                                    GNUNET_ECRS_URI *uri);
 
 /**
  * Convert a UTF-8 String to a URI.

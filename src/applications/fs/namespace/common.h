@@ -44,11 +44,10 @@
  * @param nsid maybe NULL
  * @param lastId maybe NULL
  */
-char *
-GNUNET_NS_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
-				       struct GNUNET_GC_Configuration *cfg,
-				       const char * prefix,
-				       const GNUNET_HashCode *nsid, 
-				       const GNUNET_HashCode * lastId);
+char *GNUNET_NS_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
+                                             struct GNUNET_GC_Configuration
+                                             *cfg, const char *prefix,
+                                             const GNUNET_HashCode * nsid,
+                                             const GNUNET_HashCode * lastId);
 
 #endif

@@ -119,12 +119,11 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
   convertId (next_id, &nextId);
   convertId (this_id, &thisId);
   convertId (prev_id, &prevId);
-  if (GNUNET_OK !=
-      GNUNET_NS_name_to_nsid(ectx, cfg, pseudonym, &nsid))
+  if (GNUNET_OK != GNUNET_NS_name_to_nsid (ectx, cfg, pseudonym, &nsid))
     {
       printf (_("\tUnknown namespace `%s'\n"), pseudonym);
       return;
-    } 
+    }
   nsuri = GNUNET_NS_add_to_namespace (ectx,
                                       cfg,
                                       anonymity,

@@ -46,8 +46,8 @@ static struct GNUNET_Mutex *lock;
  */
 void
 GNUNET_NS_internal_notify_ (const char *name,
-			    const GNUNET_HashCode * id,
-			    const struct GNUNET_ECRS_MetaData *md, int rating)
+                            const GNUNET_HashCode * id,
+                            const struct GNUNET_ECRS_MetaData *md, int rating)
 {
   struct DiscoveryCallback *pos;
 

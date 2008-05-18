@@ -50,13 +50,13 @@ struct UpdateData
  */
 static int
 read_update_data (struct GNUNET_GE_Context *ectx,
-		  struct GNUNET_GC_Configuration *cfg,
-		  const GNUNET_HashCode * nsid,
-		  const GNUNET_HashCode * lastId,
-		  GNUNET_HashCode * nextId,
-		  GNUNET_ECRS_FileInfo * fi,
-		  GNUNET_Int32Time * updateInterval,
-		  GNUNET_Int32Time * lastPubTime)
+                  struct GNUNET_GC_Configuration *cfg,
+                  const GNUNET_HashCode * nsid,
+                  const GNUNET_HashCode * lastId,
+                  GNUNET_HashCode * nextId,
+                  GNUNET_ECRS_FileInfo * fi,
+                  GNUNET_Int32Time * updateInterval,
+                  GNUNET_Int32Time * lastPubTime)
 {
   char *fn;
   struct UpdateData *buf;
@@ -64,11 +64,9 @@ read_update_data (struct GNUNET_GE_Context *ectx,
   unsigned long long size;
   size_t pos;
 
-  fn = GNUNET_NS_internal_get_data_filename_(ectx,
-					     cfg,
-					     NS_UPDATE_DIR,
-					     nsid,
-					     lastId);
+  fn = GNUNET_NS_internal_get_data_filename_ (ectx,
+                                              cfg,
+                                              NS_UPDATE_DIR, nsid, lastId);
   if (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES))
     {
       GNUNET_free (fn);
@@ -140,13 +138,13 @@ read_update_data (struct GNUNET_GE_Context *ectx,
  */
 static int
 write_update_data (struct GNUNET_GE_Context *ectx,
-		   struct GNUNET_GC_Configuration *cfg,
-		   const GNUNET_HashCode * nsid,
-		   const GNUNET_HashCode * thisId,
-		   const GNUNET_HashCode * nextId,
-		   const GNUNET_ECRS_FileInfo * fi,
-		   const GNUNET_Int32Time updateInterval,
-		   const GNUNET_Int32Time lastPubTime)
+                   struct GNUNET_GC_Configuration *cfg,
+                   const GNUNET_HashCode * nsid,
+                   const GNUNET_HashCode * thisId,
+                   const GNUNET_HashCode * nextId,
+                   const GNUNET_ECRS_FileInfo * fi,
+                   const GNUNET_Int32Time updateInterval,
+                   const GNUNET_Int32Time lastPubTime)
 {
   char *fn;
   char *uri;
@@ -174,11 +172,9 @@ write_update_data (struct GNUNET_GE_Context *ectx,
                                                                 1], metaSize,
                                                      GNUNET_ECRS_SERIALIZE_FULL));
   GNUNET_free (uri);
-  fn = GNUNET_NS_internal_get_data_filename_(ectx,
-					     cfg,
-					     NS_UPDATE_DIR,
-					     nsid,
-					     thisId);
+  fn = GNUNET_NS_internal_get_data_filename_ (ectx,
+                                              cfg,
+                                              NS_UPDATE_DIR, nsid, thisId);
   GNUNET_disk_file_write (ectx, fn, buf, size, "400");  /* no editing, just deletion */
   GNUNET_free (fn);
   GNUNET_free (buf);
@@ -212,8 +208,8 @@ GNUNET_NS_compute_next_identifier (struct GNUNET_GE_Context *ectx,
     return GNUNET_SYSERR;
 
   if (GNUNET_OK != read_update_data (ectx,
-                                   cfg, nsid, lastId, NULL, NULL, &ui,
-                                   &lastTime))
+                                     cfg, nsid, lastId, NULL, NULL, &ui,
+                                     &lastTime))
     return GNUNET_SYSERR;
   GNUNET_hash_difference (lastId, thisId, &delta);
   now = GNUNET_get_time ();
@@ -266,26 +262,23 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
   GNUNET_ECRS_FileInfo fi;
   char *old;
   struct GNUNET_ECRS_URI *uri;
-  char * name;
+  char *name;
   GNUNET_EncName enc;
 
-  if ( (GNUNET_OK !=
-	GNUNET_NS_internal_read_namespace_info_(ectx,
-						cfg,
-						nsid,
-						NULL,
-						NULL,
-						&name)) ||
-       (name == NULL) )
+  if ((GNUNET_OK !=
+       GNUNET_NS_internal_read_namespace_info_ (ectx,
+                                                cfg,
+                                                nsid,
+                                                NULL,
+                                                NULL,
+                                                &name)) || (name == NULL))
     {
-      GNUNET_hash_to_enc(nsid, &enc);
+      GNUNET_hash_to_enc (nsid, &enc);
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_WARNING | GNUNET_GE_BULK |
-		     GNUNET_GE_USER,
-		     _
-		     ("Could not determine namespace name for `%s'."),
-		     &enc);
-      return NULL;    
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                     GNUNET_GE_USER,
+                     _("Could not determine namespace name for `%s'."), &enc);
+      return NULL;
     }
 
   /* computation of IDs of update(s).  Not as terrible as
@@ -296,11 +289,11 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
     {
       if ((lastId != NULL) &&
           (GNUNET_OK == read_update_data (ectx,
-                                        cfg,
-                                        nsid,
-                                        lastId,
-                                        &tid, NULL, &lastInterval,
-                                        &lastTime)))
+                                          cfg,
+                                          nsid,
+                                          lastId,
+                                          &tid, NULL, &lastInterval,
+                                          &lastTime)))
         {
           if (lastInterval != updateInterval)
             {
@@ -400,19 +393,17 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
                                            md);
   if ((uri != NULL) && (dst != NULL))
     {
-      fi.uri = (struct GNUNET_ECRS_URI*) dst;
+      fi.uri = (struct GNUNET_ECRS_URI *) dst;
       fi.meta = (struct GNUNET_ECRS_MetaData *) md;
       write_update_data (ectx,
-			 cfg,
-			 nsid, &tid, &nid, &fi, updateInterval, 
-			 creationTime);
+                         cfg,
+                         nsid, &tid, &nid, &fi, updateInterval, creationTime);
       if (lastId != NULL)
         {
-	  old = GNUNET_NS_internal_get_data_filename_(ectx,
-						      cfg,
-						      NS_UPDATE_DIR,
-						      nsid,
-						      lastId);
+          old = GNUNET_NS_internal_get_data_filename_ (ectx,
+                                                       cfg,
+                                                       NS_UPDATE_DIR,
+                                                       nsid, lastId);
           UNLINK (old);
           GNUNET_free (old);
         }
@@ -450,11 +441,10 @@ list_namespace_contents_helper (const char *fil, const char *dir, void *ptr)
   fi.uri = NULL;
   fi.meta = NULL;
   if (GNUNET_OK != read_update_data (cls->ectx,
-				     cls->cfg,
-				     &cls->nsid,
-				     &lastId,
-				     &nextId, &fi, &pubFreq,
-				     &lastTime))
+                                     cls->cfg,
+                                     &cls->nsid,
+                                     &lastId,
+                                     &nextId, &fi, &pubFreq, &lastTime))
     {
       GNUNET_GE_BREAK (cls->ectx, 0);
       return GNUNET_OK;
@@ -492,7 +482,7 @@ list_namespace_contents_helper (const char *fil, const char *dir, void *ptr)
 int
 GNUNET_NS_namespace_list_contents (struct GNUNET_GE_Context *ectx,
                                    struct GNUNET_GC_Configuration *cfg,
-                                   const GNUNET_HashCode *nsid,
+                                   const GNUNET_HashCode * nsid,
                                    GNUNET_NS_UpdateIterator iterator,
                                    void *closure)
 {
@@ -505,14 +495,13 @@ GNUNET_NS_namespace_list_contents (struct GNUNET_GE_Context *ectx,
   cls.cnt = 0;
   cls.ectx = ectx;
   cls.cfg = cfg;
-  dirName = GNUNET_NS_internal_get_data_filename_(ectx,
-						  cfg,
-						  NS_UPDATE_DIR,
-						  nsid,
-						  NULL);
+  dirName = GNUNET_NS_internal_get_data_filename_ (ectx,
+                                                   cfg,
+                                                   NS_UPDATE_DIR, nsid, NULL);
   GNUNET_disk_directory_create (ectx, dirName);
   if (GNUNET_SYSERR ==
-      GNUNET_disk_directory_scan (ectx, dirName, &list_namespace_contents_helper, &cls))
+      GNUNET_disk_directory_scan (ectx, dirName,
+                                  &list_namespace_contents_helper, &cls))
     {
       GNUNET_free (dirName);
       return GNUNET_SYSERR;

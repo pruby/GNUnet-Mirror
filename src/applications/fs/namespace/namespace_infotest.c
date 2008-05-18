@@ -77,7 +77,7 @@ main (int argc, char *argv[])
                                     10 * GNUNET_CRON_MINUTES, "test", meta,
                                     NULL, &root);
   CHECK (uri != NULL);
-  GNUNET_ECRS_uri_get_namespace_from_sks(uri, &nsid);
+  GNUNET_ECRS_uri_get_namespace_from_sks (uri, &nsid);
   newVal = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
   old = GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, NULL, NULL);

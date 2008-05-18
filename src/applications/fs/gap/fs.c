@@ -153,8 +153,8 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
     {
       cectx = coreAPI->cs_log_context_create (sock);
       GNUNET_GE_LOG (cectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("Datastore full.\n"));      
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Datastore full.\n"));
       GNUNET_GE_free_context (cectx);
     }
   GNUNET_free (datum);

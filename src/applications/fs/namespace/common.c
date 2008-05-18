@@ -40,10 +40,10 @@
  */
 char *
 GNUNET_NS_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
-				       struct GNUNET_GC_Configuration *cfg,
-				       const char * prefix,
-				       const GNUNET_HashCode *nsid, 
-				       const GNUNET_HashCode * lastId)
+                                       struct GNUNET_GC_Configuration *cfg,
+                                       const char *prefix,
+                                       const GNUNET_HashCode * nsid,
+                                       const GNUNET_HashCode * lastId)
 {
   char *tmp;
   char *ret;
@@ -57,17 +57,17 @@ GNUNET_NS_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
                                               &tmp);
   ret =
     GNUNET_malloc (strlen (tmp) + strlen (prefix) +
-                   sizeof (GNUNET_EncName)*2 + 20);
+                   sizeof (GNUNET_EncName) * 2 + 20);
   strcpy (ret, tmp);
   GNUNET_free (tmp);
-  if (ret[strlen(ret)-1] != DIR_SEPARATOR)
+  if (ret[strlen (ret) - 1] != DIR_SEPARATOR)
     strcat (ret, DIR_SEPARATOR_STR);
   strcat (ret, prefix);
   GNUNET_disk_directory_create (ectx, ret);
   if (nsid != NULL)
     {
-      GNUNET_hash_to_enc(nsid, &enc);
-      strcat (ret, (const char*)&enc);
+      GNUNET_hash_to_enc (nsid, &enc);
+      strcat (ret, (const char *) &enc);
     }
   if (lastId != NULL)
     {

@@ -38,28 +38,30 @@
  * Convert namespace URI to a human readable format
  * (using the namespace description, if available).
  */
-char * GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
-						   struct GNUNET_GC_Configuration *cfg,
-						   const struct GNUNET_ECRS_URI *uri)
+char *
+GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
+                                            struct GNUNET_GC_Configuration
+                                            *cfg,
+                                            const struct GNUNET_ECRS_URI *uri)
 {
   GNUNET_EncName enc;
-  char * ret;
+  char *ret;
   char *name;
   GNUNET_HashCode nsid;
   GNUNET_HashCode chk;
 
-  if (! GNUNET_ECRS_uri_test_sks(uri))
+  if (!GNUNET_ECRS_uri_test_sks (uri))
     return NULL;
   GNUNET_ECRS_uri_get_namespace_from_sks (uri, &nsid);
-  name = GNUNET_NS_nsid_to_name(ectx, cfg, &nsid);
+  name = GNUNET_NS_nsid_to_name (ectx, cfg, &nsid);
   if (name == NULL)
-    return GNUNET_ECRS_uri_to_string(uri);
-  GNUNET_ECRS_uri_get_content_hash_from_sks(uri, &chk);
-  GNUNET_hash_to_enc(&chk, &enc);
-  ret = GNUNET_malloc(strlen(name) + 4 + sizeof(GNUNET_EncName));
-  strcpy(ret, name);
-  strcat(ret, ": ");
-  strcat(ret, (const char*)&enc);
+    return GNUNET_ECRS_uri_to_string (uri);
+  GNUNET_ECRS_uri_get_content_hash_from_sks (uri, &chk);
+  GNUNET_hash_to_enc (&chk, &enc);
+  ret = GNUNET_malloc (strlen (name) + 4 + sizeof (GNUNET_EncName));
+  strcpy (ret, name);
+  strcat (ret, ": ");
+  strcat (ret, (const char *) &enc);
   return ret;
 }
 

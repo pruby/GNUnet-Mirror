@@ -32,17 +32,16 @@
 static int
 testReadWrite ()
 {
-  char tmp[100+1];
+  char tmp[100 + 1];
   int ret;
 
   GNUNET_disk_file_write (NULL, ".testfile", TESTSTRING, strlen (TESTSTRING),
                           "644");
   ret = GNUNET_disk_file_read (NULL, ".testfile", 100, tmp);
   if (ret < 0)
-    { 
+    {
       fprintf (stderr,
-               "Error reading file `%s' in testReadWrite\n",
-               ".testfile"); 
+               "Error reading file `%s' in testReadWrite\n", ".testfile");
       return 1;
     }
   tmp[ret] = '\0';

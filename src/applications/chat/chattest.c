@@ -110,7 +110,7 @@ main (int argc, char **argv)
       GNUNET_GC_free (cfg);
       return -1;
     }
-  GNUNET_disable_entropy_gathering();
+  GNUNET_disable_entropy_gathering ();
   key = GNUNET_RSA_create_key ();
   GNUNET_RSA_get_public_key (key, &me);
 #if START_PEERS
@@ -150,7 +150,7 @@ main (int argc, char **argv)
   GNUNET_CHAT_send_message (r2, "test message 2", NULL, NULL,
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL);
 
- CLEANUP:
+CLEANUP:
   if (r1 != NULL)
     GNUNET_CHAT_leave_room (r1);
   if (r2 != NULL)

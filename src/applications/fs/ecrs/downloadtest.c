@@ -88,7 +88,7 @@ uploadFile (unsigned int size)
     GNUNET_disk_file_open (NULL, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
   if (fd == -1)
     {
-      GNUNET_free(name);
+      GNUNET_free (name);
       return NULL;
     }
   buf = GNUNET_malloc (size);

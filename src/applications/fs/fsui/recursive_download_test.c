@@ -321,9 +321,9 @@ main (int argc, char *argv[])
     }
   GNUNET_FSUI_upload_stop (upload);
   upload = NULL;
-  CHECK(upURI != NULL);
-  
-  waitForEvent = GNUNET_FSUI_download_completed; 
+  CHECK (upURI != NULL);
+
+  waitForEvent = GNUNET_FSUI_download_completed;
   fn43 = makeName (43);
   download = GNUNET_FSUI_download_start (ctx,
                                          0,

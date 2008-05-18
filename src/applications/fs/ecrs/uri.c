@@ -279,7 +279,8 @@ GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri)
  * (i.e. the search query that was used in the first place)
  */
 char *
-GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI *uri)
+GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI
+                                              *uri)
 {
   size_t n;
   char *ret;
@@ -288,8 +289,7 @@ GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI *uri)
   char **keywords;
   unsigned int keywordCount;
 
-  if ( (uri == NULL) ||
-       (uri->type != ksk) )
+  if ((uri == NULL) || (uri->type != ksk))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return NULL;
@@ -300,23 +300,23 @@ GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI *uri)
   for (i = 0; i < keywordCount; i++)
     {
       keyword = keywords[i];
-      n += strlen(keyword);
-      if (NULL != strstr(keyword, " "))
-	n += 2;
+      n += strlen (keyword);
+      if (NULL != strstr (keyword, " "))
+        n += 2;
     }
   ret = GNUNET_malloc (n);
   strcpy (ret, "");
   for (i = 0; i < keywordCount; i++)
     {
       keyword = keywords[i];
-      if (NULL != strstr(keyword, " "))
-	{
-	  strcat(ret, "\"");
-	  strcat(ret, keyword);
-	  strcat(ret, "\"");
-	}
+      if (NULL != strstr (keyword, " "))
+        {
+          strcat (ret, "\"");
+          strcat (ret, keyword);
+          strcat (ret, "\"");
+        }
       else
-	strcat(ret, keyword);
+        strcat (ret, keyword);
     }
   return ret;
 }
