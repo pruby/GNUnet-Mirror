@@ -277,12 +277,14 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
                  ntohl (value->priority) + comp_prio);
 #endif
   /* check if we have enough space / priority */
-  if ((available < ntohl (value->size)) &&
-      (minPriority > ntohl (value->priority) + comp_prio))
+  if ( (available < ntohl (value->size)) ||
+       (minPriority >= ntohl (value->priority) + comp_prio) )
     {
+      /* new content either does not fit (for sure)
+	 or has such a low priority that we should 
+	 not even bother! */
       GNUNET_mutex_unlock (lock);
-      return GNUNET_NO;         /* new content has such a low priority that
-                                   we should not even bother! */
+      return GNUNET_NO;         
     }
   if (ntohl (value->priority) + comp_prio < minPriority)
     minPriority = ntohl (value->priority) + comp_prio;
@@ -317,6 +319,7 @@ freeSpaceExpired (const GNUNET_HashCode * key,
   if (GNUNET_get_time () < GNUNET_ntohll (value->expiration_time))
     return GNUNET_SYSERR;       /* not expired */
   available += ntohl (value->size);
+  minPriority = 0;
   return GNUNET_NO;
 }
 
@@ -327,7 +330,8 @@ freeSpaceLow (const GNUNET_HashCode * key,
 {
   if ((available > 0) && (available >= MIN_GNUNET_free))
     return GNUNET_SYSERR;
-  minPriority = ntohl (value->priority);
+  if (ntohl (value->priority) > minPriority)
+    minPriority = ntohl (value->priority);
   available += ntohl (value->size);
   return GNUNET_NO;
 }
@@ -349,10 +353,6 @@ cronMaintenance (void *unused)
       if ((available < 0) || (available < MIN_GNUNET_free))
         sq->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY,
                                 &freeSpaceLow, NULL);
-    }
-  else
-    {
-      minPriority = 0;
     }
 }
 

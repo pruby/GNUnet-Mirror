@@ -107,6 +107,7 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
 {
   const CS_fs_request_insert_MESSAGE *ri;
   GNUNET_DatastoreValue *datum;
+  struct GNUNET_GE_Context *cectx;
   GNUNET_HashCode query;
   int ret;
 #if DEBUG_FS
@@ -148,6 +149,14 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
   memcpy (&datum[1],
           &ri[1], ntohs (req->size) - sizeof (CS_fs_request_insert_MESSAGE));
   ret = datastore->putUpdate (&query, datum);
+  if (ret == GNUNET_NO)
+    {
+      cectx = coreAPI->cs_log_context_create (sock);
+      GNUNET_GE_LOG (cectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("Datastore full.\n"));      
+      GNUNET_GE_free_context (cectx);
+    }
   GNUNET_free (datum);
   return coreAPI->cs_send_value (sock, ret);
 }

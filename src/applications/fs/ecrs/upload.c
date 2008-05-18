@@ -132,6 +132,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
   unsigned int treedepth;
   int fd;
   int i;
+  int ret;
   unsigned int size;
   GNUNET_DatastoreValue **iblocks;
   GNUNET_DatastoreValue *dblock;
@@ -329,9 +330,9 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           GNUNET_GE_ASSERT (ectx, value != NULL);
           *value = *dblock;     /* copy options! */
           if ((doIndex == GNUNET_NO) &&
-              (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)))
+              (GNUNET_OK != (ret = GNUNET_FS_insert (sock, value))))
             {
-              GNUNET_GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, ret == GNUNET_NO);
               GNUNET_free (value);
               goto FAILURE;
             }

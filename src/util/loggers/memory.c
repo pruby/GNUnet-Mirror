@@ -69,7 +69,7 @@ memorylogger (void *cls, GNUNET_GE_KIND kind, const char *date,
   if (ctx->pos == ctx->maxSize - 1)
     {
       ctx->messages[ctx->pos].msg =
-        GNUNET_strdup (_("Out of memory (for logging)"));
+        GNUNET_strdup (_("Out of memory (for logging)\n"));
       ctx->messages[ctx->pos].mask =
         GNUNET_GE_STATUS | GNUNET_GE_USER | GNUNET_GE_BULK;
     }

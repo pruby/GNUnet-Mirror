@@ -20,7 +20,7 @@
 
 /**
  * @file server/tcpserver.c
- * @brief TCP server (gnunetd-client communication using util/tcpio.c).
+ * @brief TCP server (gnunetd-client communication using util/network_client/tcpio.c).
  * @author Christian Grothoff
  *
  * TODO: configuration management (signaling of configuration change)
@@ -655,7 +655,7 @@ GNUNET_CORE_cs_send_error_to_client (struct GNUNET_ClientHandle *sock,
     msgLen = 60000;
   rv = GNUNET_malloc (sizeof (GNUNET_MessageReturnErrorMessage) + msgLen);
   memset (rv, 0, sizeof (GNUNET_MessageReturnErrorMessage) + msgLen);
-  rv->header.size = htons (sizeof (GNUNET_MessageHeader) + msgLen);
+  rv->header.size = htons (sizeof (GNUNET_MessageReturnErrorMessage) + msgLen);
   rv->header.type = htons (GNUNET_CS_PROTO_RETURN_ERROR);
   rv->kind = htonl (kind);
   memcpy (&rv[1], message, strlen (message));

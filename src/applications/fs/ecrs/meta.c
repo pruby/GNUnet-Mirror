@@ -99,8 +99,8 @@ GNUNET_ECRS_meta_data_insert (MetaData * md,
   
   /* remove hints to OS */
   if (type == EXTRACTOR_FILENAME) {
-	  while (p = strchr(p, '\\'))
-		  *p = '/';
+    while ((p = strchr(p, '\\')))
+      *p = '/';
   }
   
   return GNUNET_OK;
