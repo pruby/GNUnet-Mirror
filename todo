@@ -4,11 +4,6 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [5'08] (aka "new protocol"):
-- FS-APIs:
-  => improve gnunet-gtk to use new namespace APIs!
-- google-style search support:
-  * gnunet-gtk and gnunet-qt support (visualization, sorting, event handling)
-- uritracker: need tests => also: better gnunet-gtk support?
 - gnunet-chat (CS-only) [RC]
 - Windows: bug #1337 [RC]
 - Windows: gnunet-auto-share
