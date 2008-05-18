@@ -61,12 +61,6 @@ metatest_SOURCES = \
 metatest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
-metatest2_SOURCES = \
-  metatest2.c 
-metatest2_LDADD = \
-  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
-
-
 ecrstest_SOURCES = \
   ecrstest.c
 ecrstest_LDADD = \
