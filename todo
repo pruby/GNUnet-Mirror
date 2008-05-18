@@ -6,9 +6,6 @@ Annotations:
 0.8.0 [5'08] (aka "new protocol"):
 - FS-APIs:
   => improve gnunet-gtk to use new namespace APIs!
-- test new asynchronous ECRS API (and resulting FSUI changes):
-  * make sure error handling & reporting are nice [RC]
-    (see also: #1338!)
 - google-style search support:
   * gnunet-gtk and gnunet-qt support (visualization, sorting, event handling)
 - uritracker: need tests => also: better gnunet-gtk support?
