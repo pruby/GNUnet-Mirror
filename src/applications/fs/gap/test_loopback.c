@@ -91,7 +91,7 @@ uploadFile (unsigned int size)
   if (fd == -1)
     {
       GNUNET_free (name);
-      return GNUNET_SYSERR;
+      return NULL;
     }
   buf = GNUNET_malloc (size);
   memset (buf, size + size / 253, size);
@@ -285,7 +285,6 @@ main (int argc, char **argv)
       GNUNET_GC_free (cfg);
       return -1;
     }
-
   uri = uploadFile (12345);
   CHECK (NULL != uri);
   GNUNET_GC_set_configuration_value_string (cfg,

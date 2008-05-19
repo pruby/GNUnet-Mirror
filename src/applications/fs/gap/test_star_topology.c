@@ -96,7 +96,7 @@ uploadFile (unsigned int size)
   if (fd == -1)
     {
       GNUNET_free (name);
-      return GNUNET_SYSERR;
+      return NULL;
     }
   buf = GNUNET_malloc_large (size);
   memset (buf, size + size / 253, size);
