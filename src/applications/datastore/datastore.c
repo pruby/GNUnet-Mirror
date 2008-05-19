@@ -96,8 +96,8 @@ comp_priority ()
   GNUNET_Int32Time now;
   GNUNET_get_time_int32 (&now);
   if (db_creation_time < now)
-    return 0;
-  return (db_creation_time - now) / 60 / 60 / 24 / 30;
+    return 1;
+  return 1 + (db_creation_time - now) / 60 / 60 / 24 / 30;
 }
 
 static unsigned long long
