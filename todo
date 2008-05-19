@@ -5,7 +5,6 @@ Annotations:
 
 0.8.0 [5'08] (aka "new protocol"):
 - gnunet-chat (CS-only) [RC]
-- Windows: bug #1337 [RC]
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
 
