@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/dht/tools/dhttest.c
+ * @file applications/dht/tools/dht_multipeer_test.c
  * @brief DHT testcase
  * @author Christian Grothoff
  */
@@ -191,4 +191,4 @@ FAILURE:
   return ret;
 }
 
-/* end of dhttest.c */
+/* end of dht_multipeer_test.c */

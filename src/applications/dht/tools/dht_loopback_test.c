@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,8 +19,8 @@
 */
 
 /**
- * @file applications/dht/tools/dhttest2.c
- * @brief DHT testcase
+ * @file applications/dht/tools/dht_loopback_test.c
+ * @brief DHT testcase using only a single peer
  * @author Christian Grothoff
  */
 
@@ -76,117 +76,52 @@ main (int argc, const char **argv)
       return -1;
     }
 #if START_PEERS
-  peers = GNUNET_TESTING_start_daemons ("tcp",
+  peers = GNUNET_TESTING_start_daemons ("",
                                         "advertising dht stats",
-                                        "/tmp/gnunet-dht-test",
-                                        2087, 10000, 2);
+                                        "/tmp/gnunet-dht-loopback-test",
+                                        2087, 10000, 1);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);
       return -1;
     }
 #endif
-  if (GNUNET_OK != GNUNET_TESTING_connect_daemons (2087, 12087))
-    {
-      GNUNET_TESTING_stop_daemons (peers);
-      fprintf (stderr, "Failed to connect the peers!\n");
-      GNUNET_GC_free (cfg);
-      return -1;
-    }
-
-  /* wait for DHT's to find each other! */
-  sock = GNUNET_client_connection_create (NULL, cfg);
-  left = 60;                    /* how many iterations should we wait? */
-  while (GNUNET_OK ==
-         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
-    {
-      printf ("Waiting for peers to DHT-connect (%u iterations left)...\n",
-              left);
-      sleep (5);
-      left--;
-      if (left == 0)
-        break;
-    }
-  GNUNET_client_connection_destroy (sock);
-  if (ok == 0)
-    {
-      GNUNET_TESTING_stop_daemons (peers);
-      fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
-      GNUNET_GC_free (cfg);
-      return -1;
-    }
-
-  /* switch to peer2 */
-  GNUNET_GC_set_configuration_value_string (cfg,
-                                            ectx,
-                                            "NETWORK", "HOST",
-                                            "localhost:12087");
-  /* verify that peer2 also sees the other DHT! */
-  ok = 0;
-  sock = GNUNET_client_connection_create (NULL, cfg);
-  left = 60;                    /* how many iterations should we wait? */
-  while (GNUNET_OK ==
-         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
-    {
-      printf ("Waiting for peers to DHT-connect (%u iterations left)...\n",
-              left);
-      sleep (5);
-      left--;
-      if (left == 0)
-        break;
-    }
-  GNUNET_client_connection_destroy (sock);
-  if (ok == 0)
-    {
-      GNUNET_TESTING_stop_daemons (peers);
-      fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
-      GNUNET_GC_free (cfg);
-      return -1;
-    }
-
-
-  /* switch to peer1 */
   GNUNET_GC_set_configuration_value_string (cfg,
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-
+  sock = GNUNET_client_connection_create (NULL, cfg);
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
   value = GNUNET_malloc (8);
   memset (&value[1], 'A', 8);
-  printf ("Peer1 stores key2\n");
+  printf ("Storing key2\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  printf ("Peer1 gets key2\n");
+  printf ("Getting key2\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
-  /* switch to peer2 */
-  GNUNET_GC_set_configuration_value_string (cfg,
-                                            ectx,
-                                            "NETWORK", "HOST",
-                                            "localhost:12087");
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
   memset (&value[1], 'B', 8);
-  printf ("Peer2 stores key.\n");
+  printf ("Storing key.\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  printf ("Peer2 gets key.\n");
+  printf ("Getting key.\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
   GNUNET_hash ("key2", 4, &key);
-  fprintf (stderr, "Peer2 gets key2");
+  printf ("Getting key2");
   left = 10;
   do
     {
@@ -200,28 +135,6 @@ main (int argc, const char **argv)
     }
   while (left > 0);
   fprintf (stderr, left > 0 ? "!\n" : "?\n");
-
-  CHECK (left > 0);
-  /* switch to peer1 */
-  GNUNET_GC_set_configuration_value_string (cfg,
-                                            ectx,
-                                            "NETWORK", "HOST",
-                                            "localhost:2087");
-  fprintf (stderr, "Peer1 gets key");
-  left = 10;
-  do
-    {
-      fprintf (stderr, ".");
-      if (1 == GNUNET_DHT_get (cfg,
-                               ectx,
-                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key, 15 * GNUNET_CRON_SECONDS, NULL, NULL))
-        break;
-      left--;
-    }
-  while (left > 0);
-  fprintf (stderr, left > 0 ? "!\n" : "?\n");
-  CHECK (left > 0);
   /* end of actual test code */
 
 FAILURE:
@@ -232,4 +145,4 @@ FAILURE:
   return ret;
 }
 
-/* end of dhttest2.c */
+/* end of dht_loopback_test.c */
