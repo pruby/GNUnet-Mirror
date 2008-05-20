@@ -21,9 +21,9 @@ gnunet_dht_query_LDADD =  \
 
 
 check_PROGRAMS = \
-  dhttest_loopback_test \
-  dhttest_twopeer_test \
-  dhttest_multipeer_test 
+  dht_loopback_test \
+  dht_twopeer_test \
+  dht_multipeer_test 
 
 TESTS = $(check_PROGRAMS)
 

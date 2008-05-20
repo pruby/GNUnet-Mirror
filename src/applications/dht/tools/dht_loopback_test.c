@@ -34,20 +34,6 @@
 
 #define START_PEERS 1
 
-
-static int ok;
-
-static int
-waitForConnect (const char *name, unsigned long long value, void *cls)
-{
-  if ((value > 0) && (0 == strcmp (_("# dht connections"), name)))
-    {
-      ok = 1;
-      return GNUNET_SYSERR;
-    }
-  return GNUNET_OK;
-}
-
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
