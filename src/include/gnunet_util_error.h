@@ -228,6 +228,8 @@ const char *GNUNET_GE_strerror (int errnum);
  */
 #define GNUNET_GE_BREAK(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
+#define GNUNET_GE_BREAK_RETURN(ctx, cond, retval)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); return retval; } } while(0)
+
 /**
  * Use this for assertion violations caused by other
  * peers (i.e. protocol violations).  We do not want to
