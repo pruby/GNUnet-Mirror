@@ -57,6 +57,8 @@ processResult (struct GNUNET_FSUI_SearchList *ctx,
       event.data.SearchUpdate.searchURI = ctx->uri;
       event.data.SearchUpdate.availability_rank =
         pos->probeSuccess - pos->probeFailure;
+      event.data.SearchUpdate.availability_certainty =
+        pos->probeSuccess + pos->probeFailure;
       event.data.SearchUpdate.applicability_rank = pos->matchingSearchCount;
     }
   else

@@ -160,10 +160,11 @@ main (int argc, const char **argv)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
           GNUNET_hash (buf, 4, &key);
-          fprintf (stderr, "Peer %d gets key %d", i, j);
+          printf ("Peer %d gets key %d", i, j);
           for (k = 0; k < NUM_ROUNDS; k++)
             {
-              fprintf (stderr, ".");
+              printf (".");
+	      fflush(stdout);
               if (0 < GNUNET_DHT_get (cfg,
                                       ectx,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -173,18 +174,17 @@ main (int argc, const char **argv)
             }
           if (k < NUM_ROUNDS)
             {
-              fprintf (stderr, "!\n");
+              printf ("!\n");
               found++;
             }
           else
             {
-              fprintf (stderr, "?\n");
+              printf ("?\n");
             }
         }
     }
   /* end of actual test code */
-  fprintf (stderr,
-           "Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);
+  printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);
 FAILURE:
   GNUNET_TESTING_stop_daemons (peers);
   GNUNET_GC_free (cfg);

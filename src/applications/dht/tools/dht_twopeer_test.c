@@ -186,11 +186,12 @@ main (int argc, const char **argv)
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
   GNUNET_hash ("key2", 4, &key);
-  fprintf (stderr, "Peer2 gets key2");
+  printf ("Peer2 gets key2");
   left = 10;
   do
     {
-      fprintf (stderr, ".");
+      printf (".");
+      fflush(stdout);
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -199,7 +200,7 @@ main (int argc, const char **argv)
       left--;
     }
   while (left > 0);
-  fprintf (stderr, left > 0 ? "!\n" : "?\n");
+  printf (left > 0 ? "!\n" : "?\n");
 
   CHECK (left > 0);
   /* switch to peer1 */
@@ -207,11 +208,12 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  fprintf (stderr, "Peer1 gets key");
+  printf ("Peer1 gets key");
   left = 10;
   do
     {
-      fprintf (stderr, ".");
+      printf (".");
+      fflush(stdout);
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -220,7 +222,7 @@ main (int argc, const char **argv)
       left--;
     }
   while (left > 0);
-  fprintf (stderr, left > 0 ? "!\n" : "?\n");
+  printf (left > 0 ? "!\n" : "?\n");
   CHECK (left > 0);
   /* end of actual test code */
 

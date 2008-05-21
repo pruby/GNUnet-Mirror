@@ -62,7 +62,7 @@ main (int argc, const char **argv)
       return -1;
     }
 #if START_PEERS
-  peers = GNUNET_TESTING_start_daemons ("",
+  peers = GNUNET_TESTING_start_daemons ("nat",
                                         "advertising dht stats",
                                         "/tmp/gnunet-dht-loopback-test",
                                         2087, 10000, 1);
@@ -120,7 +120,7 @@ main (int argc, const char **argv)
       left--;
     }
   while (left > 0);
-  fprintf (stderr, left > 0 ? "!\n" : "?\n");
+  printf (left > 0 ? "!\n" : "?\n");
   /* end of actual test code */
 
 FAILURE:

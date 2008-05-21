@@ -336,6 +336,9 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   unsigned int valid;
   unsigned int i;
   GNUNET_ECRS_FileInfo *fis;
+  int * av_ranks;
+  unsigned int * av_certs;
+  unsigned int * ap_ranks;
   char *fn;
   char *gh;
   unsigned long long size;
@@ -404,15 +407,27 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
           pos = pos->next;
         }
       fis = NULL;
+      av_ranks = NULL;
+      av_certs = NULL;
+      ap_ranks = NULL;
       if (valid > 0)
         {
           fis = GNUNET_malloc (sizeof (GNUNET_ECRS_FileInfo) * valid);
+	  av_ranks = GNUNET_malloc (sizeof (int) * valid);
+	  av_certs = GNUNET_malloc (sizeof (unsigned int) * valid);
+	  ap_ranks = GNUNET_malloc (sizeof (unsigned int) * valid);
           pos = list->resultsReceived;
           i = 0;
           while (pos != NULL)
             {
               if (pos->mandatoryMatchesRemaining == 0)
-                fis[i++] = pos->fi;
+		{
+		  fis[i] = pos->fi;
+		  av_ranks[i] = pos->probeSuccess - pos->probeFailure;
+		  av_certs[i] = pos->probeSuccess + pos->probeFailure;
+		  ap_ranks[i] = pos->matchingSearchCount;
+		  i++;
+		}
               pos = pos->next;
             }
         }
@@ -424,8 +439,14 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
       event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
       event.data.SearchResumed.searchURI = list->uri;
       event.data.SearchResumed.state = list->state;
+      event.data.SearchResumed.availability_rank = av_ranks;
+      event.data.SearchResumed.availability_certainty = av_certs;
+      event.data.SearchResumed.applicability_rank = ap_ranks;
       list->cctx = cb (closure, &event);
       GNUNET_free_non_null (fis);
+      GNUNET_free_non_null (av_ranks);
+      GNUNET_free_non_null (av_certs);
+      GNUNET_free_non_null (ap_ranks);
       list = list->next;
     }
   /* 2b) signal download restarts */

@@ -348,13 +348,42 @@ typedef struct
 
       GNUNET_FSUI_SearchContext sc;
 
+      /**
+       * URI used for this search.
+       */
       struct GNUNET_ECRS_URI *searchURI;
 
+      /**
+       * Array of search results.
+       */
       const GNUNET_ECRS_FileInfo *fis;
 
-      unsigned int anonymityLevel;
+      /**
+       * Updated availability rank (negative:
+       * unavailable, positive: available)
+       */
+      int * availability_rank;
 
+      /**
+       * On how many total queries is the given 
+       * availability rank based?
+       */
+      unsigned int * availability_certainty;
+
+      /**
+       * Updated applicability rank (the larger,
+       * the better the result fits the search
+       * criteria).
+       */
+      unsigned int * applicability_rank;
+
+      /**
+       * Size of the fis, availability and
+       * applicability arrays.
+       */
       unsigned int fisSize;
+
+      unsigned int anonymityLevel;
 
       GNUNET_FSUI_State state;
 
@@ -415,6 +444,12 @@ typedef struct
        * unavailable, positive: available)
        */
       int availability_rank;
+
+      /**
+       * On how many total queries is the given 
+       * availability rank based?
+       */
+      unsigned int availability_certainty;
 
       /**
        * Updated applicability rank (the larger,
