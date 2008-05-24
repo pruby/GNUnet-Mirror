@@ -154,7 +154,7 @@ main (int argc, const char **argv)
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
   value = GNUNET_malloc (8);
-  memset (&value[1], 'A', 8);
+  memset (value, 'A', 8);
   printf ("Peer1 stores key2\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
@@ -173,7 +173,7 @@ main (int argc, const char **argv)
                                             "localhost:12087");
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
-  memset (&value[1], 'B', 8);
+  memset (value, 'B', 8);
   printf ("Peer2 stores key.\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,

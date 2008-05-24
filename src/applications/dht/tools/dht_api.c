@@ -100,7 +100,8 @@ poll_thread (void *cls)
       size = ntohs (reply->size) - sizeof (CS_dht_request_put_MESSAGE);
       put = (CS_dht_request_put_MESSAGE *) reply;
       if ((info->processor != NULL) &&
-          (GNUNET_OK != info->processor (&put->key, 0 /* unknown! */ ,
+          (GNUNET_OK != info->processor (&put->key, 
+					 ntohl(put->type),
                                          size,
                                          (const char *) &put[1],
                                          info->closure)))

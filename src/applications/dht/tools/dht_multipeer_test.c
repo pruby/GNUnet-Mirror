@@ -140,7 +140,7 @@ main (int argc, const char **argv)
 
       GNUNET_hash (buf, 4, &key);
       value = GNUNET_malloc (8);
-      memset (&value[1], 'A' + i, 8);
+      memset (value, 'A' + i, 8);
       CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                           ectx,
                                           &key,

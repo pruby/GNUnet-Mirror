@@ -34,6 +34,37 @@
 
 #define START_PEERS 1
 
+static int err;
+
+static int
+result_callback(const GNUNET_HashCode * key,
+		unsigned int type,
+		unsigned int size,
+		const char * data,
+		void * cls)
+{
+  int * i = cls;
+  char expect[8];
+
+#if 0
+  fprintf(stderr,
+	  "Got %u %u `%.*s'\n",
+	  type,
+	  size,
+	  size,
+	  data);
+#endif
+  memset(expect, (*i), sizeof(expect));
+  if ( (8 != size) ||
+       (0 != memcmp(expect, data, size) ) ||
+       (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING) )
+    {
+      err = 1;
+      return GNUNET_SYSERR;
+    }
+  return GNUNET_OK;
+}
+
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
@@ -53,6 +84,7 @@ main (int argc, const char **argv)
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
   int left;
+  int i;
 
   ectx = NULL;
   cfg = GNUNET_GC_create ();
@@ -80,47 +112,49 @@ main (int argc, const char **argv)
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
   value = GNUNET_malloc (8);
-  memset (&value[1], 'A', 8);
-  printf ("Storing key2\n");
+  memset (value, 'A', 8);
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  printf ("Getting key2\n");
+  i = 'A';
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback, &i));
+  CHECK (err == 0);
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
-  memset (&value[1], 'B', 8);
-  printf ("Storing key.\n");
+  memset (value, 'B', 8);
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  printf ("Getting key.\n");
+  CHECK (err == 0);
+  i = 'B';
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback, &i));
   GNUNET_hash ("key2", 4, &key);
-  printf ("Getting key2");
+  CHECK (err == 0);
   left = 10;
   do
     {
       fprintf (stderr, ".");
+      i = 'A';
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key, 15 * GNUNET_CRON_SECONDS, NULL, NULL))
+                               &key, 2 * GNUNET_CRON_SECONDS, &result_callback, &i))
         break;
+      CHECK (err == 0);
       left--;
     }
   while (left > 0);
-  printf (left > 0 ? "!\n" : "?\n");
+  CHECK (left > 0);
   /* end of actual test code */
 
 FAILURE:
