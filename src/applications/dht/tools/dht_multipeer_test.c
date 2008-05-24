@@ -119,16 +119,19 @@ main (int argc, const char **argv)
       /* wait for some DHT's to find each other! */
       sock = GNUNET_client_connection_create (NULL, cfg);
       left = 30;                /* how many iterations should we wait? */
+      printf ("Waiting for peer %u to DHT-connect",
+	      i);
       while (GNUNET_OK ==
              GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
         {
-          printf ("Waiting for peer to DHT-connect (%u iterations left)...\n",
-                  left);
-          sleep (5);
+	  printf (".");
+	  fflush(stdout);
+          sleep (2);
           left--;
           if (left == 0)
             break;
         }
+      printf (left > 0 ? " OK!\n" : "?\n");
       GNUNET_client_connection_destroy (sock);
       if (ok == 0)
         {
@@ -137,7 +140,6 @@ main (int argc, const char **argv)
           GNUNET_GC_free (cfg);
           return -1;
         }
-
       GNUNET_hash (buf, 4, &key);
       value = GNUNET_malloc (8);
       memset (value, 'A' + i, 8);
@@ -174,7 +176,7 @@ main (int argc, const char **argv)
             }
           if (k < NUM_ROUNDS)
             {
-              printf ("!\n");
+              printf (" OK!\n");
               found++;
             }
           else
