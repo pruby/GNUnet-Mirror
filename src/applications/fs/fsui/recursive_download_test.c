@@ -265,7 +265,6 @@ main (int argc, char *argv[])
     "down_foo",
     "down_bar",
   };
-  char keyword[40];
   int prog;
   struct GNUNET_ECRS_MetaData *meta = NULL;
   struct GNUNET_ECRS_URI *kuri = NULL;
