@@ -98,11 +98,12 @@ statHandle (const char *name)
         return i;
       }
   GNUNET_array_grow (entries, statCounters, statCounters + 1);
-  entries[statCounters - 1].description = GNUNET_strdup (name);
-  entries[statCounters - 1].descStrLen = strlen (name);
-  entries[statCounters - 1].value = 0;
+  i = statCounters - 1;
+  entries[i].description = GNUNET_strdup (name);
+  entries[i].descStrLen = strlen (name);
+  entries[i].value = 0;
   GNUNET_mutex_unlock (statLock);
-  return statCounters - 1;
+  return i;
 }
 
 /**
