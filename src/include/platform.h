@@ -181,6 +181,11 @@
 #include <sys/mman.h>
 #endif
 
+#ifdef FREEBSD
+#define __BYTE_ORDER BYTE_ORDER
+#define __BIG_ENDIAN BIG_ENDIAN
+#endif
+
 #ifdef OSX
 #define socklen_t unsigned int
 #define __BYTE_ORDER BYTE_ORDER
