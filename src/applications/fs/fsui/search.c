@@ -377,8 +377,8 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_SearchList *sl)
   while (sl->searches != NULL)
     {
       rec = sl->searches;
-      sl->searches = rec->next;
       GNUNET_ECRS_search_stop (rec->search);
+      sl->searches = rec->next;
       GNUNET_ECRS_uri_destroy (rec->uri);
       GNUNET_free (rec);
     }
