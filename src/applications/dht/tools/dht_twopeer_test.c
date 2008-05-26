@@ -96,7 +96,7 @@ main (int argc, const char **argv)
 
   /* wait for DHT's to find each other! */
   sock = GNUNET_client_connection_create (NULL, cfg);
-  left = 10;                    /* how many iterations should we wait? */
+  left = 50;                    /* how many iterations should we wait? */
   printf ("Waiting for peers to DHT-connect (1->2)");
   while (GNUNET_OK ==
          GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
@@ -126,7 +126,7 @@ main (int argc, const char **argv)
   /* verify that peer2 also sees the other DHT! */
   ok = 0;
   sock = GNUNET_client_connection_create (NULL, cfg);
-  left = 10;                    /* how many iterations should we wait? */
+  left = 50;                    /* how many iterations should we wait? */
   printf ("Waiting for peers to DHT-connect (2->1)");
   while (GNUNET_OK ==
          GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))

@@ -485,13 +485,14 @@ static int
 handleGet (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
-  GNUNET_PeerIdentity next[GET_TRIES];
+  GNUNET_PeerIdentity next[GET_TRIES+1];
   const DHT_MESSAGE *get;
   DHT_MESSAGE aget;
   unsigned int target_value;
   unsigned int hop_count;
   int total;
   int i;
+  int j;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   GNUNET_EncName henc;
@@ -545,29 +546,33 @@ handleGet (const GNUNET_PeerIdentity * sender,
            GNUNET_DHT_estimate_network_diameter ());
   if (target_value > GET_TRIES)
     target_value = GET_TRIES;
+  j = 0;
+  if (sender != NULL)
+    next[j++] = *sender; /* do not send back to sender! */
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
-          GNUNET_DHT_select_peer (&next[i], &get->key, &next[0], i))
+          GNUNET_DHT_select_peer (&next[j], &get->key, &next[0], j))
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                          GNUNET_GE_DEVELOPER,
                          "Failed to select peer for fowarding in round %d/%d\n",
-                         i, GET_TRIES);
+                         i+1, GET_TRIES);
 #endif
           break;
         }
 #if DEBUG_ROUTING
-      GNUNET_hash_to_enc (&next[i].hashPubKey, &enc);
+      GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                      GNUNET_GE_DEVELOPER,
                      "Forwarding DHT GET request to peer `%s'.\n", &enc);
 #endif
-      coreAPI->ciphertext_send (&next[i], &aget.header, DHT_PRIORITY,
+      coreAPI->ciphertext_send (&next[j], &aget.header, DHT_PRIORITY,
                                 DHT_DELAY);
+      j++;
     }
   return GNUNET_OK;
 }
@@ -579,7 +584,7 @@ static int
 handlePut (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
-  GNUNET_PeerIdentity next[PUT_TRIES];
+  GNUNET_PeerIdentity next[PUT_TRIES+1];
   const DHT_MESSAGE *put;
   DHT_MESSAGE *aput;
   GNUNET_CronTime now;
@@ -618,6 +623,8 @@ handlePut (const GNUNET_PeerIdentity * sender,
   if (target_value > PUT_TRIES)
     target_value = PUT_TRIES;
   j = 0;
+  if (sender != NULL)
+    next[j++] = *sender; /* do not send back to sender! */
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
@@ -628,7 +635,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                          GNUNET_GE_DEVELOPER,
                          "Failed to select peer for PUT fowarding in round %d/%d\n",
-                         i, PUT_TRIES);
+                         i+1, PUT_TRIES);
 #endif
           store = 1;
           continue;

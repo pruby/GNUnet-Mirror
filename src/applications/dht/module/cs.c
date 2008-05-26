@@ -139,7 +139,7 @@ get_result (const GNUNET_HashCode * key,
 }
 
 /**
- * CS handler for inserting <key,value>-pair into DHT-table.
+ * CS handler for getting key from DHT.
  */
 static int
 csGet (struct GNUNET_ClientHandle *client,
