@@ -32,7 +32,7 @@
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
-#define DEBUG_CS GNUNET_YES
+#define DEBUG_CS GNUNET_NO
 
 /**
  * Global core API.
