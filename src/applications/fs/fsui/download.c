@@ -280,7 +280,8 @@ downloadProgressCallback (unsigned long long totalBytes,
   if ((lastBlockOffset == 0) && (dl->is_directory == GNUNET_SYSERR))
     {
       /* check if this is a directory */
-      if ((lastBlockSize > strlen (GNUNET_DIRECTORY_MAGIC)) &&
+      if ((dl->filename[strlen(dl->filename)-1] == '/') &&
+	  (lastBlockSize > strlen (GNUNET_DIRECTORY_MAGIC)) &&
           (0 == strncmp (GNUNET_DIRECTORY_MAGIC,
                          lastBlock, strlen (GNUNET_DIRECTORY_MAGIC))))
         dl->is_directory = GNUNET_YES;
@@ -290,23 +291,10 @@ downloadProgressCallback (unsigned long long totalBytes,
   if (totalBytes == completedBytes)
     {
       dl->state = GNUNET_FSUI_COMPLETED;
-      event.type = GNUNET_FSUI_download_completed;
-      event.data.DownloadCompleted.dc.pos = dl;
-      event.data.DownloadCompleted.dc.cctx = dl->cctx;
-      event.data.DownloadCompleted.dc.ppos =
-        dl->parent == &dl->ctx->activeDownloads ? NULL : dl->parent;
-      event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
-      event.data.DownloadCompleted.dc.spos = dl->search;
-      event.data.DownloadCompleted.dc.sctx =
-        dl->search == NULL ? NULL : dl->search->cctx;
-      event.data.DownloadCompleted.total = dl->total;
-      event.data.DownloadCompleted.filename = dl->filename;
-      event.data.DownloadCompleted.uri = dl->fi.uri;
       GNUNET_URITRACK_add_state (dl->ctx->ectx,
                                  dl->ctx->cfg,
                                  dl->fi.uri,
                                  GNUNET_URITRACK_DOWNLOAD_COMPLETED);
-      dl->ctx->ecb (dl->ctx->ecbClosure, &event);
     }
 }
 
@@ -422,6 +410,7 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
 {
   struct GNUNET_GE_Context *ectx;
   GNUNET_FSUI_DownloadList *dpos;
+  GNUNET_FSUI_Event event;
   int ret;
 
   if (list == NULL)
@@ -488,23 +477,7 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
       ret = GNUNET_YES;
     }
 
-  /* has this one "died naturally"? */
-  if ((list->state == GNUNET_FSUI_COMPLETED) ||
-      (list->state == GNUNET_FSUI_ABORTED)
-      || (list->state == GNUNET_FSUI_ERROR))
-    {
-#if DEBUG_DTM
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Download thread manager collects inactive download of file `%s'\n",
-                     list->filename);
-#endif
-      GNUNET_ECRS_file_download_partial_stop (list->handle);
-      list->handle = NULL;
-      list->ctx->activeDownloadThreads--;
-      list->state++;            /* adds _JOINED */
-      ret = GNUNET_YES;
-    }
+
   /* Trigger any recursive sub-downloads */
   if (((list->state == GNUNET_FSUI_COMPLETED) ||
        (list->state == GNUNET_FSUI_COMPLETED_JOINED)) &&
@@ -520,6 +493,42 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
           list->is_recursive = GNUNET_NO;
         }
     }
+
+  /* has this one "died naturally"? */
+  if ((list->state == GNUNET_FSUI_COMPLETED) ||
+      (list->state == GNUNET_FSUI_ABORTED) ||
+      (list->state == GNUNET_FSUI_ERROR))
+    {
+#if DEBUG_DTM
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Download thread manager collects inactive download of file `%s'\n",
+                     list->filename);
+#endif
+      GNUNET_ECRS_file_download_partial_stop (list->handle);
+      list->handle = NULL;
+      list->ctx->activeDownloadThreads--;
+      if (list->state == GNUNET_FSUI_COMPLETED)
+	{
+	  /* generate event */
+	  event.type = GNUNET_FSUI_download_completed;
+	  event.data.DownloadCompleted.dc.pos = list;
+	  event.data.DownloadCompleted.dc.cctx = list->cctx;
+	  event.data.DownloadCompleted.dc.ppos =
+	    list->parent == &list->ctx->activeDownloads ? NULL : list->parent;
+	  event.data.DownloadCompleted.dc.pcctx = list->parent->cctx;
+	  event.data.DownloadCompleted.dc.spos = list->search;
+	  event.data.DownloadCompleted.dc.sctx =
+	    list->search == NULL ? NULL : list->search->cctx;
+	  event.data.DownloadCompleted.total = list->total;
+	  event.data.DownloadCompleted.filename = list->filename;
+	  event.data.DownloadCompleted.uri = list->fi.uri;
+	  list->ctx->ecb (list->ctx->ecbClosure, &event);
+	}
+      list->state++;            /* adds _JOINED */
+      ret = GNUNET_YES;
+    }
+
   dpos = list->child;
   while (dpos != NULL)
     {
