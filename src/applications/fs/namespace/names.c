@@ -35,7 +35,7 @@
 
 /**
  * Return the unique, human readable name for the given namespace.
- * 
+ *
  * @return NULL on failure (should never happen)
  */
 char *

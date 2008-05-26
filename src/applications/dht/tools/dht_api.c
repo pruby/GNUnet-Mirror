@@ -100,8 +100,8 @@ poll_thread (void *cls)
       size = ntohs (reply->size) - sizeof (CS_dht_request_put_MESSAGE);
       put = (CS_dht_request_put_MESSAGE *) reply;
       if ((info->processor != NULL) &&
-          (GNUNET_OK != info->processor (&put->key, 
-					 ntohl(put->type),
+          (GNUNET_OK != info->processor (&put->key,
+                                         ntohl (put->type),
                                          size,
                                          (const char *) &put[1],
                                          info->closure)))
@@ -186,7 +186,7 @@ GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
   GNUNET_thread_join (thread, &unused);
   GNUNET_thread_release_self (info.parent);
   GNUNET_client_connection_destroy (sock);
-  fprintf(stderr, "returning %d\n", info.total);
+  fprintf (stderr, "returning %d\n", info.total);
   return info.total;
 }
 

@@ -211,7 +211,7 @@ int GNUNET_NS_namespace_list_contents (struct GNUNET_GE_Context *ectx, struct GN
 
 /**
  * Return the unique, human readable name for the given namespace.
- * 
+ *
  * @return NULL on failure (should never happen)
  */
 char *GNUNET_NS_nsid_to_name (struct GNUNET_GE_Context *ectx,

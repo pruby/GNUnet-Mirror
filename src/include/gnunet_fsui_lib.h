@@ -362,20 +362,20 @@ typedef struct
        * Updated availability rank (negative:
        * unavailable, positive: available)
        */
-      int * availability_rank;
+      int *availability_rank;
 
       /**
-       * On how many total queries is the given 
+       * On how many total queries is the given
        * availability rank based?
        */
-      unsigned int * availability_certainty;
+      unsigned int *availability_certainty;
 
       /**
        * Updated applicability rank (the larger,
        * the better the result fits the search
        * criteria).
        */
-      unsigned int * applicability_rank;
+      unsigned int *applicability_rank;
 
       /**
        * Size of the fis, availability and
@@ -446,7 +446,7 @@ typedef struct
       int availability_rank;
 
       /**
-       * On how many total queries is the given 
+       * On how many total queries is the given
        * availability rank based?
        */
       unsigned int availability_certainty;

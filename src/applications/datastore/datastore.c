@@ -281,7 +281,7 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
       (minPriority >= ntohl (value->priority) + comp_prio))
     {
       /* new content either does not fit (for sure)
-         or has such a low priority that we should 
+         or has such a low priority that we should
          not even bother! */
       GNUNET_mutex_unlock (lock);
       return GNUNET_NO;

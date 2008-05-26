@@ -23,7 +23,7 @@ Hostlist for network testing:
 - test RPC code (write a small demo)
 - tune DHT
 - tune GAP query planning code
-
+- make GET function of DHT client LIB API asynchronous
 
 1.0.0 (aka "userfriendly"):
 

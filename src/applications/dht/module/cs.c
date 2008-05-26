@@ -32,7 +32,7 @@
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
-#define DEBUG_CS GNUNET_NO
+#define DEBUG_CS GNUNET_YES
 
 /**
  * Global core API.
@@ -116,7 +116,7 @@ get_result (const GNUNET_HashCode * key,
   msg = GNUNET_malloc (n);
   msg->header.size = htons (n);
   msg->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
-  msg->type = htonl(type);
+  msg->type = htonl (type);
   msg->key = *key;
   memcpy (&msg[1], value, size);
 #if DEBUG_CS

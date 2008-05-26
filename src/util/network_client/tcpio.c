@@ -264,74 +264,75 @@ GNUNET_client_connection_ensure_connected (struct
     return GNUNET_SYSERR;
   af_index = -1;
   /* loop over all possible address families */
-  while (1) 
+  while (1)
     {
       if (addr_families[++af_index] == -1)
-	return GNUNET_SYSERR;      
+        return GNUNET_SYSERR;
       soaddr = NULL;
       socklen = 0;
       if (GNUNET_SYSERR ==
-	  GNUNET_get_ip_from_hostname (sock->ectx, host, addr_families[af_index], &soaddr,
-				       &socklen))
-	{
-	  GNUNET_free (host);
-	  continue;
-	}
+          GNUNET_get_ip_from_hostname (sock->ectx, host,
+                                       addr_families[af_index], &soaddr,
+                                       &socklen))
+        {
+          GNUNET_free (host);
+          continue;
+        }
       GNUNET_mutex_lock (sock->destroylock);
       if (sock->sock != NULL)
-	{
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  GNUNET_free (soaddr);
-	  return GNUNET_OK;
-	}
+        {
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          GNUNET_free (soaddr);
+          return GNUNET_OK;
+        }
       if (sock->dead == GNUNET_YES)
-	{
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  GNUNET_free (soaddr);
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          GNUNET_free (soaddr);
+          return GNUNET_SYSERR;
+        }
       if (soaddr->sa_family == AF_INET)
-	{
-	  ((struct sockaddr_in *) soaddr)->sin_port = htons (port);
-	  osock = SOCKET (PF_INET, SOCK_STREAM, 0);
-	}
+        {
+          ((struct sockaddr_in *) soaddr)->sin_port = htons (port);
+          osock = SOCKET (PF_INET, SOCK_STREAM, 0);
+        }
       else
-	{
-	  ((struct sockaddr_in6 *) soaddr)->sin6_port = htons (port);
-	  osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
-	}
+        {
+          ((struct sockaddr_in6 *) soaddr)->sin6_port = htons (port);
+          osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
+        }
       if (osock == -1)
-	{
-	  GNUNET_GE_LOG_STRERROR (sock->ectx,
-				  GNUNET_GE_ERROR | GNUNET_GE_USER |
-				  GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  GNUNET_free (soaddr);
-	  continue;
-	}
+        {
+          GNUNET_GE_LOG_STRERROR (sock->ectx,
+                                  GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                  GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          GNUNET_free (soaddr);
+          continue;
+        }
       sock->sock = GNUNET_socket_create (sock->ectx, NULL, osock);
       GNUNET_socket_set_blocking (sock->sock, GNUNET_NO);
       ret = CONNECT (osock, soaddr, socklen);
       GNUNET_free (soaddr);
       if ((ret != 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
-	{
-	  GNUNET_GE_LOG (sock->ectx,
-			 GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-			 _("Cannot connect to %s:%u: %s\n"),
-			 host, port, STRERROR (errno));
-	  GNUNET_socket_destroy (sock->sock);
-	  sock->sock = NULL;
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  continue;
-	}
+        {
+          GNUNET_GE_LOG (sock->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Cannot connect to %s:%u: %s\n"),
+                         host, port, STRERROR (errno));
+          GNUNET_socket_destroy (sock->sock);
+          sock->sock = NULL;
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          continue;
+        }
       /* we call select() first with a timeout of WAIT_SECONDS to
-	 avoid blocking on a later write indefinitely;
-	 Important if a local firewall decides to just drop
-	 the TCP handshake... */
+         avoid blocking on a later write indefinitely;
+         Important if a local firewall decides to just drop
+         the TCP handshake... */
       FD_ZERO (&rset);
       FD_ZERO (&wset);
       FD_ZERO (&eset);
@@ -343,40 +344,40 @@ GNUNET_client_connection_ensure_connected (struct
       errno = 0;
       ret = SELECT (osock + 1, &rset, &wset, &eset, &timeout);
       if (ret == -1)
-	{
-	  if (errno != EINTR)
-	    GNUNET_GE_LOG_STRERROR (sock->ectx,
-				    GNUNET_GE_WARNING | GNUNET_GE_USER |
-				    GNUNET_GE_BULK, "select");
-	  GNUNET_socket_destroy (sock->sock);
-	  sock->sock = NULL;
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  continue;
-	}
+        {
+          if (errno != EINTR)
+            GNUNET_GE_LOG_STRERROR (sock->ectx,
+                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                    GNUNET_GE_BULK, "select");
+          GNUNET_socket_destroy (sock->sock);
+          sock->sock = NULL;
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          continue;
+        }
       if (FD_ISSET (osock, &eset))
-	{
-	  GNUNET_GE_LOG (sock->ectx,
-			 GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-			 _("Error connecting to %s:%u\n"), host, port);
-	  GNUNET_socket_destroy (sock->sock);
-	  sock->sock = NULL;
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  continue;
-	}
+        {
+          GNUNET_GE_LOG (sock->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Error connecting to %s:%u\n"), host, port);
+          GNUNET_socket_destroy (sock->sock);
+          sock->sock = NULL;
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          continue;
+        }
       if (!FD_ISSET (osock, &wset))
-	{
-	  GNUNET_GE_LOG (sock->ectx,
-			 GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-			 _("Failed to connect to %s:%u in %ds\n"),
-			 host, port, WAIT_SECONDS);
-	  GNUNET_socket_destroy (sock->sock);
-	  sock->sock = NULL;
-	  GNUNET_free (host);
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  continue;
-	}
+        {
+          GNUNET_GE_LOG (sock->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Failed to connect to %s:%u in %ds\n"),
+                         host, port, WAIT_SECONDS);
+          GNUNET_socket_destroy (sock->sock);
+          sock->sock = NULL;
+          GNUNET_free (host);
+          GNUNET_mutex_unlock (sock->destroylock);
+          continue;
+        }
       break;
     }
   GNUNET_free (host);

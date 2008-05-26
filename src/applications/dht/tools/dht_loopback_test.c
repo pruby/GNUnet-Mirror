@@ -37,27 +37,20 @@
 static int err;
 
 static int
-result_callback(const GNUNET_HashCode * key,
-		unsigned int type,
-		unsigned int size,
-		const char * data,
-		void * cls)
+result_callback (const GNUNET_HashCode * key,
+                 unsigned int type,
+                 unsigned int size, const char *data, void *cls)
 {
-  int * i = cls;
+  int *i = cls;
   char expect[8];
 
 #if 0
-  fprintf(stderr,
-	  "Got %u %u `%.*s'\n",
-	  type,
-	  size,
-	  size,
-	  data);
+  fprintf (stderr, "Got %u %u `%.*s'\n", type, size, size, data);
 #endif
-  memset(expect, (*i), sizeof(expect));
-  if ( (8 != size) ||
-       (0 != memcmp(expect, data, size) ) ||
-       (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING) )
+  memset (expect, (*i), sizeof (expect));
+  if ((8 != size) ||
+      (0 != memcmp (expect, data, size)) ||
+      (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
     {
       err = 1;
       return GNUNET_SYSERR;
@@ -122,7 +115,8 @@ main (int argc, const char **argv)
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback, &i));
+                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback,
+                              &i));
   CHECK (err == 0);
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
@@ -137,7 +131,8 @@ main (int argc, const char **argv)
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback, &i));
+                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback,
+                              &i));
   GNUNET_hash ("key2", 4, &key);
   CHECK (err == 0);
   left = 10;
@@ -148,7 +143,8 @@ main (int argc, const char **argv)
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key, 2 * GNUNET_CRON_SECONDS, &result_callback, &i))
+                               &key, 2 * GNUNET_CRON_SECONDS,
+                               &result_callback, &i))
         break;
       CHECK (err == 0);
       left--;

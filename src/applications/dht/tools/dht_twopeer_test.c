@@ -97,12 +97,12 @@ main (int argc, const char **argv)
   /* wait for DHT's to find each other! */
   sock = GNUNET_client_connection_create (NULL, cfg);
   left = 10;                    /* how many iterations should we wait? */
-  printf ("Waiting for peers to DHT-connect (1->2)");  
+  printf ("Waiting for peers to DHT-connect (1->2)");
   while (GNUNET_OK ==
          GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf (".");
-      fflush(stdout);
+      fflush (stdout);
       sleep (2);
       left--;
       if (left == 0)
@@ -127,12 +127,12 @@ main (int argc, const char **argv)
   ok = 0;
   sock = GNUNET_client_connection_create (NULL, cfg);
   left = 10;                    /* how many iterations should we wait? */
-  printf ("Waiting for peers to DHT-connect (2->1)");  
+  printf ("Waiting for peers to DHT-connect (2->1)");
   while (GNUNET_OK ==
          GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf (".");
-      fflush(stdout);
+      fflush (stdout);
       sleep (2);
       left--;
       if (left == 0)
@@ -178,11 +178,11 @@ main (int argc, const char **argv)
                                       8, value));
   GNUNET_hash ("key2", 4, &key);
   left = 10;
-  printf("Getting key 2 from peer 2 (stored at peer 1)");
+  printf ("Getting key 2 from peer 2 (stored at peer 1)");
   do
     {
       printf (".");
-      fflush(stdout);
+      fflush (stdout);
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -199,12 +199,12 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  printf("Getting key 1 from peer 1 (stored at peer 2)");
+  printf ("Getting key 1 from peer 1 (stored at peer 2)");
   left = 10;
   do
     {
       printf (".");
-      fflush(stdout);
+      fflush (stdout);
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
