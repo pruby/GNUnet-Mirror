@@ -211,8 +211,11 @@ GNUNET_init (int argc,
 #if ENABLE_NLS
   setlocale (LC_ALL, "");
   path = GNUNET_get_installation_path (GNUNET_IPK_LOCALEDIR);
-  BINDTEXTDOMAIN ("GNUnet", path);
-  GNUNET_free (path);
+  if (path != NULL)
+    {
+      BINDTEXTDOMAIN ("GNUnet", path);
+      GNUNET_free (path);
+    }
   textdomain ("GNUnet");
 #endif
   is_daemon = 0 == strcmp (GNUNET_DEFAULT_DAEMON_CONFIG_FILE, *cfgFileName);
