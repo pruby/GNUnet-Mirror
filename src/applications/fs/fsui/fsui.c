@@ -113,8 +113,10 @@ updateDownloadThreads (void *c)
                   event.data.SearchUpdate.searchURI = sl->uri;
                   event.data.SearchUpdate.availability_rank =
                     srl->probeSuccess - srl->probeFailure;
+		  event.data.SearchUpdate.availability_certainty =
+		    srl->probeSuccess + srl->probeFailure;
                   event.data.SearchUpdate.applicability_rank =
-                    srl->matchingSearchCount;
+                    srl->matchingSearchCount;   
                   ctx->ecb (ctx->ecbClosure, &event);
                   ctx->active_probes--;
                   srl->last_probe_time = now;
@@ -139,6 +141,8 @@ updateDownloadThreads (void *c)
                       event.data.SearchUpdate.searchURI = sl->uri;
                       event.data.SearchUpdate.availability_rank =
                         srl->probeSuccess - srl->probeFailure;
+		      event.data.SearchUpdate.availability_certainty =
+			srl->probeSuccess + srl->probeFailure;
                       event.data.SearchUpdate.applicability_rank =
                         srl->matchingSearchCount;
                       ctx->ecb (ctx->ecbClosure, &event);
