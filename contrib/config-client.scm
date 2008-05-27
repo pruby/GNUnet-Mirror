@@ -345,7 +345,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
    (_ "This option is useful to eliminate files that the user already has from the search.  Naturally, enabling this option maybe confusing because some obviously expected search results would no longer show up.  This option only works if the URI_DB_SIZE option under FS is not zero (since the URI DB is used to determine which files the user is sharing)")
    '()
    #t
-   #t
+   #f
    #f
    'fs-loaded) )
 

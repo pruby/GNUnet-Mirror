@@ -93,6 +93,11 @@ extern "C"
 #endif
 
 /**
+ * How many probes do we do at most per search?
+ */
+#define GNUNET_FSUI_MAX_PROBES 10
+
+/**
  * Entry representing an FSUI download.  FSUI downloads form a tree
  * (for properly representing recursive downloads) with an invisible
  * root (for multiple parallel downloads).<p>

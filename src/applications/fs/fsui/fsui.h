@@ -31,11 +31,6 @@
 #include "gnunet_ecrs_lib.h"
 
 /**
- * How many probes do we do at most per search?
- */
-#define GNUNET_FSUI_MAX_PROBES 10
-
-/**
  * How many seconds do we spend on the first test download?
  * (each additional probe will take exponentially longer)
  */
