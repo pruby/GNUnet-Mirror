@@ -303,6 +303,8 @@ GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI
       n += strlen (keyword) - 1;
       if (NULL != strstr (&keyword[1], " "))
         n += 2;
+      if (keyword[0] == '+')
+	n++;
     }
   ret = GNUNET_malloc (n);
   strcpy (ret, "");
@@ -312,11 +314,20 @@ GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI
       if (NULL != strstr (&keyword[1], " "))
         {
           strcat (ret, "\"");
-          strcat (ret, &keyword[1]);
+	  if (keyword[0] == '+')
+	    strcat (ret, keyword);
+	  else
+	    strcat (ret, &keyword[1]);
           strcat (ret, "\"");
         }
       else
-        strcat (ret, &keyword[1]);
+	{
+	  if (keyword[0] == '+')
+	    strcat (ret, keyword);
+	  else
+	    strcat (ret, &keyword[1]);
+	}
+      strcat(ret, " ");
     }
   return ret;
 }

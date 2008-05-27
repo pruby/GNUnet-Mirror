@@ -55,21 +55,27 @@ GNUNET_NS_nsid_to_name (struct GNUNET_GE_Context *ectx,
 
   meta = NULL;
   name = NULL;
-  GNUNET_NS_internal_read_namespace_info_ (ectx, cfg, nsid, &meta, NULL,
-                                           &name);
-  if ((meta != NULL) && (name == NULL))
-    name = GNUNET_ECRS_meta_data_get_first_by_types (meta,
-                                                     EXTRACTOR_TITLE,
-                                                     EXTRACTOR_FILENAME,
-                                                     EXTRACTOR_DESCRIPTION,
-                                                     EXTRACTOR_SUBJECT,
-                                                     EXTRACTOR_PUBLISHER,
-                                                     EXTRACTOR_AUTHOR,
-                                                     EXTRACTOR_COMMENT,
-                                                     EXTRACTOR_SUMMARY,
-                                                     EXTRACTOR_OWNER, -1);
-  if (meta != NULL)
-    GNUNET_ECRS_meta_data_destroy (meta);
+  if (GNUNET_OK == 
+      GNUNET_NS_internal_read_namespace_info_ (ectx, cfg, nsid, &meta, NULL,
+					       &name))
+    {
+      if ((meta != NULL) && (name == NULL))
+	name = GNUNET_ECRS_meta_data_get_first_by_types (meta,
+							 EXTRACTOR_TITLE,
+							 EXTRACTOR_FILENAME,
+							 EXTRACTOR_DESCRIPTION,
+							 EXTRACTOR_SUBJECT,
+							 EXTRACTOR_PUBLISHER,
+							 EXTRACTOR_AUTHOR,
+							 EXTRACTOR_COMMENT,
+							 EXTRACTOR_SUMMARY,
+							 EXTRACTOR_OWNER, -1);
+      if (meta != NULL)
+	{
+	  GNUNET_ECRS_meta_data_destroy (meta);
+	  meta = NULL;
+	}
+    }
   if (name == NULL)
     name = GNUNET_strdup (_("no-name"));
   GNUNET_hash (name, strlen (name), &nh);
