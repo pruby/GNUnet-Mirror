@@ -35,12 +35,7 @@
 
 #define START_PEERS 1
 
-static struct GNUNET_GE_Context *ectx;
-
 static struct GNUNET_GC_Configuration *cfg;
-
-static struct GNUNET_ClientServerConnection *sock;
-
 
 static int
 receive_callback1 (void *cls,
@@ -95,9 +90,6 @@ main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
-  pid_t daemon1;
-  GNUNET_PeerIdentity p1;
-  char *c1 = NULL;
   struct GNUNET_CHAT_Room *r1;
   struct GNUNET_CHAT_Room *r2;
   GNUNET_RSA_PublicKey me;
