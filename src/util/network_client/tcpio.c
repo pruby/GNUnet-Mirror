@@ -275,7 +275,6 @@ GNUNET_client_connection_ensure_connected (struct
                                        addr_families[af_index], &soaddr,
                                        &socklen))
         {
-          GNUNET_free (host);
           continue;
         }
       GNUNET_mutex_lock (sock->destroylock);
@@ -308,7 +307,6 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_GE_LOG_STRERROR (sock->ectx,
                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
-          GNUNET_free (host);
           GNUNET_mutex_unlock (sock->destroylock);
           GNUNET_free (soaddr);
           continue;
@@ -325,7 +323,6 @@ GNUNET_client_connection_ensure_connected (struct
                          host, port, STRERROR (errno));
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
-          GNUNET_free (host);
           GNUNET_mutex_unlock (sock->destroylock);
           continue;
         }
@@ -351,7 +348,6 @@ GNUNET_client_connection_ensure_connected (struct
                                     GNUNET_GE_BULK, "select");
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
-          GNUNET_free (host);
           GNUNET_mutex_unlock (sock->destroylock);
           continue;
         }
@@ -362,7 +358,6 @@ GNUNET_client_connection_ensure_connected (struct
                          _("Error connecting to %s:%u\n"), host, port);
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
-          GNUNET_free (host);
           GNUNET_mutex_unlock (sock->destroylock);
           continue;
         }
@@ -374,7 +369,6 @@ GNUNET_client_connection_ensure_connected (struct
                          host, port, WAIT_SECONDS);
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
-          GNUNET_free (host);
           GNUNET_mutex_unlock (sock->destroylock);
           continue;
         }
