@@ -924,7 +924,14 @@ typedef void *(*GNUNET_FSUI_EventProcessor) (void *cls,
  * @param closure extra argument to cb
  * @return NULL on error
  */
-struct GNUNET_FSUI_Context *GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *name, unsigned int threadPoolSize, int doResume, GNUNET_FSUI_EventProcessor cb, void *closure); /* fsui.c */
+struct GNUNET_FSUI_Context *
+GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx, 
+		   struct GNUNET_GC_Configuration *cfg, 
+		   const char *name, 
+		   unsigned int threadPoolSize, 
+		   int doResume,
+		   GNUNET_FSUI_EventProcessor cb,
+		   void *closure); /* fsui.c */
 
 /**
  * Stop all processes under FSUI control (may serialize
@@ -939,7 +946,10 @@ void GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx);        /* fsui.c */
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_SearchList *GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, const struct GNUNET_ECRS_URI *uri);      /* search.c */
+struct GNUNET_FSUI_SearchList *
+GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx, 
+			  unsigned int anonymityLevel, 
+			  const struct GNUNET_ECRS_URI *uri);      /* search.c */
 
 /**
  * Abort a search.
@@ -974,7 +984,15 @@ int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl);        /* searc
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_ECRS_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload);    /* download.c */
+struct GNUNET_FSUI_DownloadList *
+GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx,
+			    unsigned int anonymityLevel, 
+			    int doRecursive, 
+			    const struct GNUNET_ECRS_URI *uri, 
+			    const struct GNUNET_ECRS_MetaData *meta, 
+			    const char *filename, 
+			    struct GNUNET_FSUI_SearchList *parentSearch,
+			    struct GNUNET_FSUI_DownloadList *parentDownload);    /* download.c */
 
 /**
  * Abort a download.  If the dl is for a recursive download, all
@@ -1024,32 +1042,20 @@ typedef int (*GNUNET_FSUI_DirectoryScanCallback) (void *data,
  * @param keyURI keywords for top-level file
  * @return NULL on error
  */
-struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_start (struct
-                                                         GNUNET_FSUI_Context
-                                                         *ctx,
-                                                         const char *filename,
-                                                         GNUNET_FSUI_DirectoryScanCallback
-                                                         dsc,
-                                                         void *dscClosure,
-                                                         unsigned int
-                                                         anonymityLevel,
-                                                         unsigned int
-                                                         priority,
-                                                         int doIndex,
-                                                         int doExtract,
-                                                         int
-                                                         individualKeywords,
-                                                         GNUNET_CronTime
-                                                         expiration,
-                                                         const struct
-                                                         GNUNET_ECRS_MetaData
-                                                         *topLevelMetaData,
-                                                         const struct
-                                                         GNUNET_ECRS_URI
-                                                         *globalURI,
-                                                         const struct
-                                                         GNUNET_ECRS_URI
-                                                         *keyUri);
+struct GNUNET_FSUI_UploadList *
+GNUNET_FSUI_upload_start (struct GNUNET_FSUI_Context *ctx,
+			  const char *filename,
+			  GNUNET_FSUI_DirectoryScanCallback dsc,
+			  void *dscClosure,
+			  unsigned int anonymityLevel,
+			  unsigned int priority,
+			  int doIndex,
+			  int doExtract,
+			  int individualKeywords,
+			  GNUNET_CronTime expiration,
+			  const struct GNUNET_ECRS_MetaData *topLevelMetaData,
+			  const struct GNUNET_ECRS_URI *globalURI,
+			  const struct GNUNET_ECRS_URI*keyUri);
 
 
 /**
@@ -1075,11 +1081,9 @@ int GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_UploadList *ul);
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_UnindexList *GNUNET_FSUI_unindex_start (struct
-                                                           GNUNET_FSUI_Context
-                                                           *ctx,
-                                                           const char
-                                                           *filename);
+struct GNUNET_FSUI_UnindexList *
+GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Context *ctx,
+			   const char *filename);
 
 
 /**

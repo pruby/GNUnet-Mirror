@@ -46,7 +46,7 @@
 /**
  * Strict upper limit on the number of concurrent probes.
  */
-#define GNUNET_FSUI_HARD_PROBE_LIMIT 128
+#define GNUNET_FSUI_HARD_PROBE_LIMIT 32
 
 /**
  * Track record for a given result.
