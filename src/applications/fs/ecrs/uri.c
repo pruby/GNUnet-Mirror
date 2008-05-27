@@ -300,8 +300,8 @@ GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI
   for (i = 0; i < keywordCount; i++)
     {
       keyword = keywords[i];
-      n += strlen (keyword);
-      if (NULL != strstr (keyword, " "))
+      n += strlen (keyword) - 1;
+      if (NULL != strstr (&keyword[1], " "))
         n += 2;
     }
   ret = GNUNET_malloc (n);
@@ -309,14 +309,14 @@ GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct GNUNET_ECRS_URI
   for (i = 0; i < keywordCount; i++)
     {
       keyword = keywords[i];
-      if (NULL != strstr (keyword, " "))
+      if (NULL != strstr (&keyword[1], " "))
         {
           strcat (ret, "\"");
-          strcat (ret, keyword);
+          strcat (ret, &keyword[1]);
           strcat (ret, "\"");
         }
       else
-        strcat (ret, keyword);
+        strcat (ret, &keyword[1]);
     }
   return ret;
 }
@@ -358,6 +358,7 @@ percent_decode_keyword (const char *in)
           out[wpos++] = out[rpos++];
         }
     }
+  out[wpos] = '\0';
   if (out[0] == '+')
     {
       ret = GNUNET_strdup (out);
@@ -821,7 +822,7 @@ GNUNET_ECRS_uri_get_keywords_from_ksk (const struct GNUNET_ECRS_URI *uri,
     {
       keyword = uri->data.ksk.keywords[i];
       /* first character of keyword indicates
-         if it is mandator or not */
+         if it is mandatory or not */
       if (GNUNET_OK != iterator (&keyword[1], keyword[0] == '+', cls))
         return i;
     }
