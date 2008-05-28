@@ -393,6 +393,7 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_SearchList *sl)
         {
           GNUNET_ECRS_file_download_partial_stop (srl->test_download);
           srl->test_download = NULL;
+	  ctx->active_probes--;
         }
       srl = srl->next;
     }
@@ -441,6 +442,7 @@ GNUNET_FSUI_search_pause (struct GNUNET_FSUI_SearchList *sl)
         {
           GNUNET_ECRS_file_download_partial_stop (srl->test_download);
           srl->test_download = NULL;
+	  ctx->active_probes--;
         }
       srl = srl->next;
     }
@@ -558,7 +560,10 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
       GNUNET_ECRS_uri_destroy (srl->fi.uri);
       GNUNET_ECRS_meta_data_destroy (srl->fi.meta);
       if (srl->test_download != NULL)
-        GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+	{
+	  GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+	  ctx->active_probes--;
+	}
       GNUNET_free (srl);
     }
   GNUNET_mutex_destroy (pos->lock);

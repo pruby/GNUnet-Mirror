@@ -186,8 +186,11 @@ updateDownloadThreads (void *c)
                                                                GNUNET_YES,
                                                                &test_download_progress,
                                                                srl);
-                  srl->test_download_start_time = now;
-                  ctx->active_probes++;
+		  if (srl->test_download != NULL)
+		    {
+		      srl->test_download_start_time = now;
+		      ctx->active_probes++;
+		    }
                 }
             }
 
