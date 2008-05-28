@@ -32,9 +32,13 @@
 typedef struct
 {
   GNUNET_MessageHeader header;
+
   unsigned short nick_len;
+
   unsigned short msg_len;
+
   /*int room_name_len; */
+
   char nick[1];
 
 } CS_chat_MESSAGE;
@@ -42,56 +46,25 @@ typedef struct
 typedef struct
 {
   GNUNET_MessageHeader header;
+
   GNUNET_RSA_PublicKey pkey;
+
   unsigned short nick_len;
+
   char nick[1];
+
 } CS_chat_JOIN_MESSAGE;
 
 typedef struct
 {
   GNUNET_MessageHeader header;
+
   unsigned short nick_len;
+
   char nick[1];
 
 } CS_chat_ROOM_MEMBER_MESSAGE;
-/**
- * Handle for a (joined) chat room.
- */
-struct GNUNET_CHAT_Room
-{
-  struct GNUNET_ClientServerConnection *sock;
 
-  struct GNUNET_ThreadHandle *listen_thread;
-
-  struct GNUNET_GE_Context *ectx;
-
-  struct GNUNET_GC_Configuration *cfg;
-
-  char *nickname;
-
-  char *room_name;
-
-  const GNUNET_RSA_PublicKey *my_public_key;
-
-  GNUNET_HashCode my_public_key_hash;
-
-  const struct GNUNET_RSA_PrivateKey *my_private_key;
-
-  char *memberInfo;
-
-  GNUNET_CHAT_MessageCallback callback;
-
-  GNUNET_CHAT_MemberListCallback member_list_callback;
-
-  int shutdown_flag;
-
-  void *callback_cls;
-
-  void *member_list_callback_cls;
-
-};
-
-int GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room);
 
 #endif
 

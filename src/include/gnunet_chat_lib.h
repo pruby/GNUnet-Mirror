@@ -146,21 +146,16 @@ typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
  * @param cls argument to callback
  * @return NULL on error
  */
-struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
-                                                *ectx,
-                                                struct GNUNET_GC_Configuration
-                                                *cfg, const char *nickname,
-                                                const char *room_name,
-                                                const GNUNET_RSA_PublicKey *
-                                                me,
-                                                const struct
-                                                GNUNET_RSA_PrivateKey *key,
-                                                const char *memberInfo,
-                                                GNUNET_CHAT_MessageCallback
-                                                callback, void *cls,
-                                                GNUNET_CHAT_MemberListCallback
-                                                memberCallback,
-                                                void *member_cls);
+struct GNUNET_CHAT_Room *
+GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
+		       struct GNUNET_GC_Configuration*cfg, 
+		       const char *nickname,
+		       const char *room_name,
+		       const char *memberInfo,
+		       GNUNET_CHAT_MessageCallback callback, 
+		       void *cls,
+		       GNUNET_CHAT_MemberListCallback memberCallback,
+		       void *member_cls);
 
 /**
  * Leave a chat room.
@@ -209,16 +204,6 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           GNUNET_CHAT_MSG_OPTIONS options,
                           const GNUNET_RSA_PublicKey * receiver);
 
-
-struct GNUNET_RSA_PrivateKey *GNUNET_CHAT_initPrivateKey (struct
-                                                          GNUNET_GE_Context
-                                                          *ectx,
-                                                          struct
-                                                          GNUNET_GC_Configuration
-                                                          *cfg,
-                                                          char *room_name,
-                                                          GNUNET_RSA_PublicKey
-                                                          * pubKey);
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
