@@ -51,7 +51,9 @@ typedef struct
 
   unsigned short nick_len;
 
-  char nick[1];
+  /* followed by nick_len bytes of
+     the nickname; then followed
+     by the name of the chat room */
 
 } CS_chat_JOIN_MESSAGE;
 
