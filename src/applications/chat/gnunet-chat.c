@@ -82,16 +82,15 @@ static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
                   const GNUNET_HashCode * sender,
-                  const char *message,
-		  GNUNET_CHAT_MSG_OPTIONS options)
+                  const char *message, GNUNET_CHAT_MSG_OPTIONS options)
 {
   fprintf (stdout, _("`%s' said: %s\n"), "FIXME", message);
   return GNUNET_OK;
 }
 
 static int
-member_list_callback (void *cls, 
-		      const struct GNUNET_ECRS_MetaData * member_info,
+member_list_callback (void *cls,
+                      const struct GNUNET_ECRS_MetaData *member_info,
                       const GNUNET_RSA_PublicKey * member_id)
 {
   fprintf (stdout, member_info != NULL
@@ -114,11 +113,11 @@ member_list_callback (void *cls,
 static int
 confirmation_callback (void *cls,
                        struct GNUNET_CHAT_Room *room,
-		       unsigned int orig_seq_number,
-		       GNUNET_CronTime timestamp,
+                       unsigned int orig_seq_number,
+                       GNUNET_CronTime timestamp,
                        const GNUNET_HashCode * receiver,
                        const GNUNET_HashCode * msg_hash,
-		       const GNUNET_RSA_Signature * receipt)
+                       const GNUNET_RSA_Signature * receipt)
 {
   return GNUNET_OK;
 }
@@ -135,7 +134,7 @@ main (int argc, char **argv)
 {
   struct GNUNET_CHAT_Room *room;
   struct GNUNET_RSA_PrivateKey *my_priv;
-  struct GNUNET_ECRS_MetaData * meta;
+  struct GNUNET_ECRS_MetaData *meta;
   char message[MAX_MESSAGE_LENGTH + 1];
   unsigned int seq;
 
@@ -152,19 +151,17 @@ main (int argc, char **argv)
       return -1;
     }
 
-  meta = GNUNET_ECRS_meta_data_create();
-  GNUNET_ECRS_meta_data_insert(meta,
-			       EXTRACTOR_TITLE,
-			       nickname);
+  meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, nickname);
   room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
-                                nickname, 
-				meta,
-				room_name,
+                                nickname,
+                                meta,
+                                room_name,
                                 &receive_callback,
                                 NULL, &member_list_callback, NULL,
-				&confirmation_callback, NULL);
-  GNUNET_ECRS_meta_data_destroy(meta);
+                                &confirmation_callback, NULL);
+  GNUNET_ECRS_meta_data_destroy (meta);
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join room `%s'\n"), room_name);
@@ -190,8 +187,7 @@ main (int argc, char **argv)
       if (GNUNET_OK != GNUNET_CHAT_send_message (room,
                                                  message,
                                                  GNUNET_CHAT_MSG_OPTION_NONE,
-                                                 NULL,
-						 &seq))
+                                                 NULL, &seq))
         fprintf (stderr, _("Failed to send message.\n"));
     }
 

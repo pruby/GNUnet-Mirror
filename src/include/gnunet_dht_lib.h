@@ -46,29 +46,32 @@ struct GNUNET_DHT_Context;
 
 /**
  * Set up a context for performing asynchronous DHT operations.
- * 
+ *
  * @param resultCallback function to call for results,
  *        the operation also aborts if the callback returns
  *        GNUNET_SYSERR
  * @return NULL on error
  */
-struct GNUNET_DHT_Context * 
-GNUNET_DHT_context_create (struct GNUNET_GC_Configuration *cfg,
-                    struct GNUNET_GE_Context *ectx,
-                    GNUNET_ResultProcessor resultCallback,
-                    void *resCallbackClosure);
+struct GNUNET_DHT_Context *GNUNET_DHT_context_create (struct
+                                                      GNUNET_GC_Configuration
+                                                      *cfg,
+                                                      struct GNUNET_GE_Context
+                                                      *ectx,
+                                                      GNUNET_ResultProcessor
+                                                      resultCallback,
+                                                      void
+                                                      *resCallbackClosure);
 
 /**
  * Start an asynchronous GET operation on the DHT looking for
  * key.
- * 
+ *
  * @param type the type of key to look up
  * @param key the key to look up
  * @return GNUNET_OK on sucess, GNUNET_SYSERR on error
  */
 int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
-                    unsigned int type,
-                    const GNUNET_HashCode * key);
+                          unsigned int type, const GNUNET_HashCode * key);
 
 
 /**
@@ -79,8 +82,7 @@ int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
  * @return GNUNET_OK on sucess, GNUNET_SYSERR on error
  */
 int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
-                    unsigned int type,
-                    const GNUNET_HashCode * key);
+                         unsigned int type, const GNUNET_HashCode * key);
 
 /**
  * Destroy a previously created context for DHT operations.

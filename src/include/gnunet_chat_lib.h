@@ -135,26 +135,33 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  * @param member_id hash of public key of the user (for unique identification)
  */
 typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
-                                               const struct GNUNET_ECRS_MetaData* member_info,
-					       const GNUNET_RSA_PublicKey *member_id);
+                                               const struct
+                                               GNUNET_ECRS_MetaData *
+                                               member_info,
+                                               const GNUNET_RSA_PublicKey *
+                                               member_id);
 
 
 /**
  * Callback used for message delivery confirmations.
  *
  * @param timestamp when was the message received?
- * @param msg_hash hash fo the original message 
+ * @param msg_hash hash fo the original message
  * @param room in which room was the message received?
  * @param receipt signature confirming delivery
- * @return GNUNET_OK 
+ * @return GNUNET_OK
  */
 typedef int (*GNUNET_CHAT_MessageConfirmation) (void *cls,
-                                                struct GNUNET_CHAT_Room *room,
+                                                struct GNUNET_CHAT_Room *
+                                                room,
                                                 unsigned int orig_seq_number,
                                                 GNUNET_CronTime timestamp,
-                                                const GNUNET_HashCode * receiver,
-                                                const GNUNET_HashCode * msg_hash,
-                                                const GNUNET_RSA_Signature * receipt);
+                                                const GNUNET_HashCode *
+                                                receiver,
+                                                const GNUNET_HashCode *
+                                                msg_hash,
+                                                const GNUNET_RSA_Signature *
+                                                receipt);
 
 
 
@@ -168,24 +175,28 @@ typedef int (*GNUNET_CHAT_MessageConfirmation) (void *cls,
  * @param member_info information about the joining member
  * @param memberInfo public information about you
  * @param messageCallback which function to call if a message has
- *        been received? 
+ *        been received?
  * @param message_cls argument to callback
  * @param memberCallback which function to call for join/leave notifications
  * @param confirmationCallback which function to call for confirmations (maybe NULL)
  * @return NULL on error
  */
-struct GNUNET_CHAT_Room *
-GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
-		       struct GNUNET_GC_Configuration*cfg,
-		       const char *nick_name,
-		       struct GNUNET_ECRS_MetaData * member_info,
-		       const char *room_name,
-		       GNUNET_CHAT_MessageCallback messageCallback, 
-		       void *message_cls,
-		       GNUNET_CHAT_MemberListCallback memberCallback,
-		       void *member_cls,
-		       GNUNET_CHAT_MessageConfirmation confirmationCallback,
-		       void *confirmation_cls);
+struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
+                                                *ectx,
+                                                struct GNUNET_GC_Configuration
+                                                *cfg, const char *nick_name,
+                                                struct GNUNET_ECRS_MetaData
+                                                *member_info,
+                                                const char *room_name,
+                                                GNUNET_CHAT_MessageCallback
+                                                messageCallback,
+                                                void *message_cls,
+                                                GNUNET_CHAT_MemberListCallback
+                                                memberCallback,
+                                                void *member_cls,
+                                                GNUNET_CHAT_MessageConfirmation
+                                                confirmationCallback,
+                                                void *confirmation_cls);
 
 /**
  * Leave a chat room.
@@ -207,7 +218,7 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           const char *message,
                           GNUNET_CHAT_MSG_OPTIONS options,
                           const GNUNET_RSA_PublicKey * receiver,
-			  unsigned int * sequence_number);
+                          unsigned int *sequence_number);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

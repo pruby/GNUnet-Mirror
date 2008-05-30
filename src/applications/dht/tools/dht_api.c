@@ -60,14 +60,14 @@ typedef struct
    * connection or the processor callback requesting
    * it).
    */
-  struct GNUNET_ThreadHandle *parent;/*Poll thread instead..*/
+  struct GNUNET_ThreadHandle *parent;   /*Poll thread instead.. */
 
   /**
    * Are we done (for whichever reason)?
    */
   int aborted;
 
-} GetInfo;/*Change name*/
+} GetInfo;                      /*Change name */
 
 
 static void *
@@ -137,7 +137,7 @@ GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
                 GNUNET_CronTime timeout, GNUNET_ResultProcessor processor,
                 void *closure)
 {
-  /*Lots of changes, get rid of timeouts, split into requisite functions*/ 
+  /*Lots of changes, get rid of timeouts, split into requisite functions */
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_get_MESSAGE req;
   struct GNUNET_ThreadHandle *thread;

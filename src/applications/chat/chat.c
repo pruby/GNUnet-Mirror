@@ -42,7 +42,7 @@ struct GNUNET_CS_chat_client
 
   struct GNUNET_ClientHandle *client;
 
-  struct GNUNET_RSA_PrivateKey * private_key;
+  struct GNUNET_RSA_PrivateKey *private_key;
 
   char *room;
 
@@ -63,7 +63,7 @@ static struct GNUNET_Mutex *chatMutex;
 
 static int
 csHandleTransmitRequest (struct GNUNET_ClientHandle *client,
-			 const GNUNET_MessageHeader * message)
+                         const GNUNET_MessageHeader * message)
 {
   const CS_chat_MESSAGE_TransmitRequest *cmsg;
   CS_chat_MESSAGE_ReceiveNotification *rmsg;
@@ -77,12 +77,12 @@ csHandleTransmitRequest (struct GNUNET_ClientHandle *client,
       return GNUNET_SYSERR;     /* invalid message */
     }
   cmsg = (const CS_chat_MESSAGE_TransmitRequest *) message;
-  msg_len = ntohs(message->size) - sizeof(CS_chat_MESSAGE_TransmitRequest);
-  rmsg = GNUNET_malloc(sizeof(CS_chat_MESSAGE_ReceiveNotification) + 
-		       msg_len);
-  rmsg->header.size = htons(sizeof(CS_chat_MESSAGE_ReceiveNotification) + 
-			    msg_len);
-  rmsg->header.type = htons(GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION);
+  msg_len = ntohs (message->size) - sizeof (CS_chat_MESSAGE_TransmitRequest);
+  rmsg = GNUNET_malloc (sizeof (CS_chat_MESSAGE_ReceiveNotification) +
+                        msg_len);
+  rmsg->header.size = htons (sizeof (CS_chat_MESSAGE_ReceiveNotification) +
+                             msg_len);
+  rmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION);
   rmsg->msg_options = cmsg->msg_options;
   GNUNET_mutex_lock (chatMutex);
 
@@ -93,30 +93,27 @@ csHandleTransmitRequest (struct GNUNET_ClientHandle *client,
     {
       GNUNET_mutex_unlock (chatMutex);
       GNUNET_GE_BREAK (NULL, 0);
-      GNUNET_free(rmsg);
+      GNUNET_free (rmsg);
       return GNUNET_SYSERR;     /* not member of chat room! */
     }
-  room = pos->room;  
-  if ((ntohl(cmsg->msg_options) & GNUNET_CHAT_MSG_ANONYMOUS) == 0)
+  room = pos->room;
+  if ((ntohl (cmsg->msg_options) & GNUNET_CHAT_MSG_ANONYMOUS) == 0)
     rmsg->sender = pos->id;
   else
-    memset(&rmsg->sender, 0, sizeof(GNUNET_HashCode));
+    memset (&rmsg->sender, 0, sizeof (GNUNET_HashCode));
   pos = client_list_head;
-  while (pos != NULL) 
+  while (pos != NULL)
     {
-      if (0 == strcmp(room,
-		      pos->room))
-	{
-	  /* FIXME: private msg delivery, blocking options,
-	     confirmation */
-	  coreAPI->cs_send_message (pos->client,
-				    &rmsg->header,
-				    GNUNET_YES);
-	}
+      if (0 == strcmp (room, pos->room))
+        {
+          /* FIXME: private msg delivery, blocking options,
+             confirmation */
+          coreAPI->cs_send_message (pos->client, &rmsg->header, GNUNET_YES);
+        }
       pos = pos->next;
     }
   GNUNET_mutex_unlock (chatMutex);
-  GNUNET_free(rmsg);
+  GNUNET_free (rmsg);
   return GNUNET_OK;
 }
 
@@ -126,13 +123,13 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 {
   const CS_chat_MESSAGE_JoinRequest *cmsg;
   char *room_name;
-  const char * roomptr;
+  const char *roomptr;
   unsigned int header_size;
   unsigned int meta_len;
   unsigned int room_name_len;
   struct GNUNET_CS_chat_client *entry;
   GNUNET_RSA_PublicKey pkey;
-  CS_chat_MESSAGE_JoinNotification * nmsg;
+  CS_chat_MESSAGE_JoinNotification *nmsg;
 
   if (ntohs (message->size) < sizeof (CS_chat_MESSAGE_JoinRequest))
     {
@@ -141,61 +138,55 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
     }
   cmsg = (const CS_chat_MESSAGE_JoinRequest *) message;
   header_size = ntohs (cmsg->header.size);
-  room_name_len = ntohs (cmsg->room_name_len);  
+  room_name_len = ntohs (cmsg->room_name_len);
   if (header_size - sizeof (CS_chat_MESSAGE_JoinRequest) <= room_name_len)
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  meta_len = header_size - sizeof (CS_chat_MESSAGE_JoinRequest) - room_name_len;  
+  meta_len =
+    header_size - sizeof (CS_chat_MESSAGE_JoinRequest) - room_name_len;
 
-  roomptr = (const char*) &cmsg[1];
+  roomptr = (const char *) &cmsg[1];
   room_name = GNUNET_malloc (room_name_len + 1);
   memcpy (room_name, roomptr, room_name_len);
   room_name[room_name_len] = '\0';
-  
+
   entry = GNUNET_malloc (sizeof (struct GNUNET_CS_chat_client));
   memset (entry, 0, sizeof (struct GNUNET_CS_chat_client));
   entry->client = client;
-  entry->room = room_name; 
-  entry->private_key = GNUNET_RSA_decode_key(&cmsg->private_key);
+  entry->room = room_name;
+  entry->private_key = GNUNET_RSA_decode_key (&cmsg->private_key);
   if (entry->private_key == NULL)
     {
-      GNUNET_GE_BREAK(NULL, 0);
-      GNUNET_free(room_name);
-      GNUNET_free(entry);
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_free (room_name);
+      GNUNET_free (entry);
       return GNUNET_SYSERR;
     }
-  GNUNET_RSA_get_public_key(entry->private_key,
-			    &pkey);
-  GNUNET_hash(&pkey,
-	      sizeof(GNUNET_RSA_PublicKey),
-	      &entry->id);
-  entry->msg_options = ntohl(cmsg->msg_options);
+  GNUNET_RSA_get_public_key (entry->private_key, &pkey);
+  GNUNET_hash (&pkey, sizeof (GNUNET_RSA_PublicKey), &entry->id);
+  entry->msg_options = ntohl (cmsg->msg_options);
 
 
-  nmsg = GNUNET_malloc(sizeof(CS_chat_MESSAGE_JoinNotification) + meta_len);
-  nmsg->header.type = htons(GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION);
-  nmsg->header.size = htons(sizeof(CS_chat_MESSAGE_JoinNotification) + meta_len);
+  nmsg = GNUNET_malloc (sizeof (CS_chat_MESSAGE_JoinNotification) + meta_len);
+  nmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION);
+  nmsg->header.size =
+    htons (sizeof (CS_chat_MESSAGE_JoinNotification) + meta_len);
   nmsg->msg_options = cmsg->msg_options;
   nmsg->public_key = pkey;
-  memcpy(&nmsg[1],
-	 &roomptr[room_name_len],
-	 meta_len);
+  memcpy (&nmsg[1], &roomptr[room_name_len], meta_len);
   GNUNET_mutex_lock (chatMutex);
   entry->next = client_list_head;
   client_list_head = entry;
   while (entry != NULL)
     {
-      if (0 == strcmp(room_name,
-		      entry->room))	
-	coreAPI->cs_send_message (entry->client,
-				  &nmsg->header,
-				  GNUNET_YES);	
+      if (0 == strcmp (room_name, entry->room))
+        coreAPI->cs_send_message (entry->client, &nmsg->header, GNUNET_YES);
       entry = entry->next;
     }
   GNUNET_mutex_unlock (chatMutex);
-  GNUNET_free(nmsg);
+  GNUNET_free (nmsg);
   return GNUNET_OK;
 }
 
@@ -218,25 +209,21 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
   if (pos == NULL)
     {
       GNUNET_mutex_unlock (chatMutex);
-      return; /* nothing to do */
+      return;                   /* nothing to do */
     }
   if (prev == NULL)
     client_list_head = pos->next;
   else
     prev->next = pos->next;
   entry = client_list_head;
-  lmsg.header.size = htons(sizeof(CS_chat_MESSAGE_LeaveNotification));
-  lmsg.header.type = htons(GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION);
-  lmsg.reserved = htonl(0);
-  GNUNET_RSA_get_public_key(pos->private_key,
-			    &lmsg.user);
-  while (entry != NULL) 
+  lmsg.header.size = htons (sizeof (CS_chat_MESSAGE_LeaveNotification));
+  lmsg.header.type = htons (GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION);
+  lmsg.reserved = htonl (0);
+  GNUNET_RSA_get_public_key (pos->private_key, &lmsg.user);
+  while (entry != NULL)
     {
-      if (0 == strcmp(entry->room,
-		      pos->room))
-	coreAPI->cs_send_message (entry->client,
-				  &lmsg.header,
-				  GNUNET_YES);	
+      if (0 == strcmp (entry->room, pos->room))
+        coreAPI->cs_send_message (entry->client, &lmsg.header, GNUNET_YES);
       entry = entry->next;
     }
   GNUNET_mutex_unlock (chatMutex);
@@ -251,21 +238,23 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   int ok = GNUNET_OK;
 
   coreAPI = capi;
-  GNUNET_GE_LOG (capi->ectx, 
-		 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+  GNUNET_GE_LOG (capi->ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering CS handlers %d and %d\n"),
-                 "chat", 
-		 GNUNET_CS_PROTO_CHAT_JOIN_REQUEST, GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST);
+                 "chat",
+                 GNUNET_CS_PROTO_CHAT_JOIN_REQUEST,
+                 GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST);
 
   if (GNUNET_SYSERR ==
       capi->cs_disconnect_handler_register (&chatClientExitHandler))
-    ok = GNUNET_SYSERR;  
+    ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->cs_handler_register (GNUNET_CS_PROTO_CHAT_JOIN_REQUEST,
                                  &csHandleChatJoinRequest))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->cs_handler_register (GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST,
-                                                  &csHandleTransmitRequest))
+  if (GNUNET_SYSERR ==
+      capi->cs_handler_register (GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST,
+                                 &csHandleTransmitRequest))
     ok = GNUNET_SYSERR;
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -282,7 +271,8 @@ void
 done_module_chat ()
 {
   coreAPI->cs_disconnect_handler_unregister (&chatClientExitHandler);
-  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST, &csHandleTransmitRequest);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST,
+                                  &csHandleTransmitRequest);
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_CHAT_JOIN_REQUEST,
                                   &csHandleChatJoinRequest);
   GNUNET_mutex_destroy (chatMutex);

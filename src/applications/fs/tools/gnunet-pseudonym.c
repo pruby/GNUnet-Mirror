@@ -136,7 +136,7 @@ namespacePrinter (void *unused,
   int cpos;
   char *namespaceName;
 
-  namespaceName = GNUNET_PSEUDO_id_to_name(ectx, cfg, id);
+  namespaceName = GNUNET_PSEUDO_id_to_name (ectx, cfg, id);
   GNUNET_hash_to_enc (id, &enc);
   if (0 == strcmp (namespaceName, (char *) &enc))
     printf (_("Namespace `%s' has rating %d.\n"), namespaceName, rating);
@@ -144,7 +144,7 @@ namespacePrinter (void *unused,
     printf (_("Namespace `%s' (%s) has rating %d.\n"),
             namespaceName, (char *) &enc, rating);
   printMeta (md);
-  GNUNET_free(namespaceName);
+  GNUNET_free (namespaceName);
   if (set_rating != NULL)
     {
       int delta;
@@ -220,7 +220,8 @@ main (int argc, char *const *argv)
   /* delete pseudonyms */
   if (delete_name != NULL)
     {
-      if (GNUNET_OK == GNUNET_PSEUDO_name_to_id (ectx, cfg, delete_name, &nsid))
+      if (GNUNET_OK ==
+          GNUNET_PSEUDO_name_to_id (ectx, cfg, delete_name, &nsid))
         {
           if (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid))
             {

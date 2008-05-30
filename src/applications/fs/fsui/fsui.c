@@ -113,10 +113,10 @@ updateDownloadThreads (void *c)
                   event.data.SearchUpdate.searchURI = sl->uri;
                   event.data.SearchUpdate.availability_rank =
                     srl->probeSuccess - srl->probeFailure;
-		  event.data.SearchUpdate.availability_certainty =
-		    srl->probeSuccess + srl->probeFailure;
+                  event.data.SearchUpdate.availability_certainty =
+                    srl->probeSuccess + srl->probeFailure;
                   event.data.SearchUpdate.applicability_rank =
-                    srl->matchingSearchCount;   
+                    srl->matchingSearchCount;
                   ctx->ecb (ctx->ecbClosure, &event);
                   ctx->active_probes--;
                   srl->last_probe_time = now;
@@ -141,8 +141,8 @@ updateDownloadThreads (void *c)
                       event.data.SearchUpdate.searchURI = sl->uri;
                       event.data.SearchUpdate.availability_rank =
                         srl->probeSuccess - srl->probeFailure;
-		      event.data.SearchUpdate.availability_certainty =
-			srl->probeSuccess + srl->probeFailure;
+                      event.data.SearchUpdate.availability_certainty =
+                        srl->probeSuccess + srl->probeFailure;
                       event.data.SearchUpdate.applicability_rank =
                         srl->matchingSearchCount;
                       ctx->ecb (ctx->ecbClosure, &event);
@@ -186,11 +186,11 @@ updateDownloadThreads (void *c)
                                                                GNUNET_YES,
                                                                &test_download_progress,
                                                                srl);
-		  if (srl->test_download != NULL)
-		    {
-		      srl->test_download_start_time = now;
-		      ctx->active_probes++;
-		    }
+                  if (srl->test_download != NULL)
+                    {
+                      srl->test_download_start_time = now;
+                      ctx->active_probes++;
+                    }
                 }
             }
 

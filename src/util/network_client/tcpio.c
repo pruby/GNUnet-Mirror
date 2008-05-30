@@ -392,7 +392,7 @@ GNUNET_client_connection_ensure_connected (struct
               slen = sizeof (struct sockaddr_in6);
             }
           GNUNET_free (soaddr);
-          if (GETPEERNAME(osock, sa, &slen) != 0)
+          if (GETPEERNAME (osock, sa, &slen) != 0)
             {
               GNUNET_GE_LOG (sock->ectx,
                              GNUNET_GE_WARNING | GNUNET_GE_USER |
@@ -408,7 +408,7 @@ GNUNET_client_connection_ensure_connected (struct
               GNUNET_socket_destroy (sock->sock);
               sock->sock = NULL;
               GNUNET_mutex_unlock (sock->destroylock);
-              continue;              
+              continue;
             }
           GNUNET_free (sa);
         }

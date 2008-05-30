@@ -37,12 +37,15 @@
  * Get the filename (or directory name) for the given
  * pseudonym identifier and directory prefix.
  *
- * @param prefix PS_METADATA_DIR or PS_NAMES_DIR 
+ * @param prefix PS_METADATA_DIR or PS_NAMES_DIR
  * @param psid maybe NULL
  */
-char *GNUNET_PSEUDO_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
-						 struct GNUNET_GC_Configuration
-						 *cfg, const char *prefix,
-						 const GNUNET_HashCode * psid);
+char *GNUNET_PSEUDO_internal_get_data_filename_ (struct GNUNET_GE_Context
+                                                 *ectx,
+                                                 struct
+                                                 GNUNET_GC_Configuration *cfg,
+                                                 const char *prefix,
+                                                 const GNUNET_HashCode *
+                                                 psid);
 
 #endif

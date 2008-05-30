@@ -485,7 +485,7 @@ static int
 handleGet (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
-  GNUNET_PeerIdentity next[GET_TRIES+1];
+  GNUNET_PeerIdentity next[GET_TRIES + 1];
   const DHT_MESSAGE *get;
   DHT_MESSAGE aget;
   unsigned int target_value;
@@ -548,7 +548,7 @@ handleGet (const GNUNET_PeerIdentity * sender,
     target_value = GET_TRIES;
   j = 0;
   if (sender != NULL)
-    next[j++] = *sender; /* do not send back to sender! */
+    next[j++] = *sender;        /* do not send back to sender! */
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
@@ -559,7 +559,7 @@ handleGet (const GNUNET_PeerIdentity * sender,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                          GNUNET_GE_DEVELOPER,
                          "Failed to select peer for fowarding in round %d/%d\n",
-                         i+1, GET_TRIES);
+                         i + 1, GET_TRIES);
 #endif
           break;
         }
@@ -584,7 +584,7 @@ static int
 handlePut (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
-  GNUNET_PeerIdentity next[PUT_TRIES+1];
+  GNUNET_PeerIdentity next[PUT_TRIES + 1];
   const DHT_MESSAGE *put;
   DHT_MESSAGE *aput;
   GNUNET_CronTime now;
@@ -624,7 +624,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
     target_value = PUT_TRIES;
   j = 0;
   if (sender != NULL)
-    next[j++] = *sender; /* do not send back to sender! */
+    next[j++] = *sender;        /* do not send back to sender! */
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
@@ -635,7 +635,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                          GNUNET_GE_DEVELOPER,
                          "Failed to select peer for PUT fowarding in round %d/%d\n",
-                         i+1, PUT_TRIES);
+                         i + 1, PUT_TRIES);
 #endif
           store = 1;
           continue;

@@ -54,8 +54,8 @@ main (int argc, char *argv[])
   old = GNUNET_PSEUDO_list_all (ectx, cfg, NULL, NULL);
   meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_insert (meta, 0, "test");
-  GNUNET_create_random_hash (&id); 
-  GNUNET_PSEUDO_add(ectx, cfg, &id, meta);
+  GNUNET_create_random_hash (&id);
+  GNUNET_PSEUDO_add (ectx, cfg, &id, meta);
   newVal = GNUNET_PSEUDO_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
   /* END OF TEST CODE */

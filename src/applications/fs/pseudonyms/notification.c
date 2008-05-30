@@ -46,8 +46,8 @@ static struct GNUNET_Mutex *lock;
  */
 void
 GNUNET_PSEUDO_internal_notify_ (const GNUNET_HashCode * id,
-				const struct GNUNET_ECRS_MetaData *md, 
-				int rating)
+                                const struct GNUNET_ECRS_MetaData *md,
+                                int rating)
 {
   struct DiscoveryCallback *pos;
 
@@ -69,9 +69,10 @@ GNUNET_PSEUDO_internal_notify_ (const GNUNET_HashCode * id,
  */
 int
 GNUNET_PSEUDO_register_discovery_callback (struct GNUNET_GE_Context *ectx,
-					   struct GNUNET_GC_Configuration *cfg,
-					   GNUNET_PSEUDO_PseudonymIterator iterator,
-					   void *closure)
+                                           struct GNUNET_GC_Configuration
+                                           *cfg,
+                                           GNUNET_PSEUDO_PseudonymIterator
+                                           iterator, void *closure)
 {
   struct DiscoveryCallback *list;
 
@@ -90,8 +91,8 @@ GNUNET_PSEUDO_register_discovery_callback (struct GNUNET_GE_Context *ectx,
  * Unregister pseudonym discovery callback.
  */
 int
-GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator iterator,
-                                         void *closure)
+GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator
+                                             iterator, void *closure)
 {
   struct DiscoveryCallback *prev;
   struct DiscoveryCallback *pos;

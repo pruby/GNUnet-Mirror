@@ -44,9 +44,11 @@ extern "C"
  * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
  */
 typedef int (*GNUNET_PSEUDO_PseudonymIterator) (void *cls,
-						const GNUNET_HashCode *pseudonym,
-						const struct GNUNET_ECRS_MetaData *md, 
-						int rating);
+                                                const GNUNET_HashCode *
+                                                pseudonym,
+                                                const struct
+                                                GNUNET_ECRS_MetaData * md,
+                                                int rating);
 
 /**
  * Change the ranking of a pseudonym.
@@ -55,10 +57,9 @@ typedef int (*GNUNET_PSEUDO_PseudonymIterator) (void *cls,
  * @param delta by how much should the rating be changed?
  * @return new rating of the namespace
  */
-int GNUNET_PSEUDO_rank (struct GNUNET_GE_Context *ectx, 
-			struct GNUNET_GC_Configuration *cfg, 
-			const GNUNET_HashCode *pseudonym, 
-			int delta);
+int GNUNET_PSEUDO_rank (struct GNUNET_GE_Context *ectx,
+                        struct GNUNET_GC_Configuration *cfg,
+                        const GNUNET_HashCode * pseudonym, int delta);
 
 /**
  * Add a pseudonym to the set of known pseudonyms.
@@ -66,33 +67,35 @@ int GNUNET_PSEUDO_rank (struct GNUNET_GE_Context *ectx,
  * @param pseudonym the pseudonym's identifier
  */
 void GNUNET_PSEUDO_add (struct GNUNET_GE_Context *ectx,
-			struct GNUNET_GC_Configuration *cfg,
-			const GNUNET_HashCode * pseudo,
-			const struct GNUNET_ECRS_MetaData *meta);
+                        struct GNUNET_GC_Configuration *cfg,
+                        const GNUNET_HashCode * pseudo,
+                        const struct GNUNET_ECRS_MetaData *meta);
 
 
 /**
  * List all known pseudonyms.
  */
 int GNUNET_PSEUDO_list_all (struct GNUNET_GE_Context *ectx,
-			    struct GNUNET_GC_Configuration *cfg, 
-			    GNUNET_PSEUDO_PseudonymIterator iterator, 
-			    void *closure);
+                            struct GNUNET_GC_Configuration *cfg,
+                            GNUNET_PSEUDO_PseudonymIterator iterator,
+                            void *closure);
 
 /**
  * Register callback to be invoked whenever we discover
  * a new pseudonym.
  */
 int GNUNET_PSEUDO_register_discovery_callback (struct GNUNET_GE_Context *ectx,
-					       struct GNUNET_GC_Configuration *cfg,
-					       GNUNET_PSEUDO_PseudonymIterator iterator, 
-					       void *closure);
+                                               struct GNUNET_GC_Configuration
+                                               *cfg,
+                                               GNUNET_PSEUDO_PseudonymIterator
+                                               iterator, void *closure);
 
 /**
  * Unregister namespace discovery callback.
  */
-int GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator iterator, 
-						 void *closure);
+int
+GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator
+                                             iterator, void *closure);
 
 /**
  * Return the unique, human readable name for the given pseudonym.
@@ -100,8 +103,8 @@ int GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator
  * @return NULL on failure (should never happen)
  */
 char *GNUNET_PSEUDO_id_to_name (struct GNUNET_GE_Context *ectx,
-				struct GNUNET_GC_Configuration *cfg,
-				const GNUNET_HashCode * pseudo);
+                                struct GNUNET_GC_Configuration *cfg,
+                                const GNUNET_HashCode * pseudo);
 
 /**
  * Get the pseudonym ID belonging to the given human readable name.
@@ -109,9 +112,8 @@ char *GNUNET_PSEUDO_id_to_name (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_OK on success
  */
 int GNUNET_PSEUDO_name_to_id (struct GNUNET_GE_Context *ectx,
-			      struct GNUNET_GC_Configuration *cfg,
-			      const char *hname,
-			      GNUNET_HashCode * psid);
+                              struct GNUNET_GC_Configuration *cfg,
+                              const char *hname, GNUNET_HashCode * psid);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

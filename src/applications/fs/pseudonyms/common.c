@@ -35,9 +35,9 @@
  */
 char *
 GNUNET_PSEUDO_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
-                                       struct GNUNET_GC_Configuration *cfg,
-                                       const char *prefix,
-                                       const GNUNET_HashCode * psid)
+                                           struct GNUNET_GC_Configuration
+                                           *cfg, const char *prefix,
+                                           const GNUNET_HashCode * psid)
 {
   char *tmp;
   char *ret;

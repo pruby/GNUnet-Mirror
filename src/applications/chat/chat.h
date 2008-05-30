@@ -157,7 +157,7 @@ typedef struct
 typedef struct
 {
   GNUNET_MessageHeader header;
- 
+
   /**
    * Options.  Set to all options that the new user is willing to
    * process.  For example, if the client does not want to receive
@@ -176,18 +176,18 @@ typedef struct
 
 
 /**
- * Message send by server to client to indicate 
+ * Message send by server to client to indicate
  * leaving of another room member.
  */
 typedef struct
 {
   GNUNET_MessageHeader header;
- 
+
   /**
    * Reserved (for alignment).
    */
   unsigned int reserved;
- 
+
   /**
    * Who is leaving?
    */

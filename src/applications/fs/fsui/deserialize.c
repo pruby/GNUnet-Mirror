@@ -529,15 +529,15 @@ read_result_list (struct GNUNET_GE_Context *ectx,
       ret->mandatoryMatchesRemaining = remaining;
       ret->probeSuccess = probeSucc;
       ret->probeFailure = probeFail;
-      if ( (ret->probeSuccess + ret->probeFailure > GNUNET_FSUI_MAX_PROBES) ||
-	   (ret->probeSuccess > GNUNET_FSUI_MAX_PROBES) ||
-	   (ret->probeFailure > GNUNET_FSUI_MAX_PROBES) )
-	{
-	  GNUNET_GE_BREAK(NULL, 0);
-	  /* try to recover */
-	  ret->probeSuccess = 0;
-	  ret->probeFailure = 0;
-	}
+      if ((ret->probeSuccess + ret->probeFailure > GNUNET_FSUI_MAX_PROBES) ||
+          (ret->probeSuccess > GNUNET_FSUI_MAX_PROBES) ||
+          (ret->probeFailure > GNUNET_FSUI_MAX_PROBES))
+        {
+          GNUNET_GE_BREAK (NULL, 0);
+          /* try to recover */
+          ret->probeSuccess = 0;
+          ret->probeFailure = 0;
+        }
       ret->test_download = NULL;
       ret->next = NULL;
       ret->matchingSearches = NULL;
