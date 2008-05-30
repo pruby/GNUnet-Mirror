@@ -68,7 +68,7 @@ struct GNUNET_DHT_Context *GNUNET_DHT_context_create (struct
  *
  * @param type the type of key to look up
  * @param key the key to look up
- * @return GNUNET_OK on sucess, GNUNET_SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
                           unsigned int type, const GNUNET_HashCode * key);
@@ -79,7 +79,7 @@ int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
  * key.
  * @param type the type of key to look up
  * @param key the key to look up
- * @return GNUNET_OK on sucess, GNUNET_SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
                          unsigned int type, const GNUNET_HashCode * key);

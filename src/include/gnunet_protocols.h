@@ -269,7 +269,7 @@ extern "C"
 /* ********** CS DHT application messages ********** */
 
 /**
- * Client to CS or CS to client: get from table
+ * Client to CS or CS to client: get from table (starts request)
  */
 #define GNUNET_CS_PROTO_DHT_REQUEST_GET      60
 
@@ -277,8 +277,10 @@ extern "C"
  * Client to CS or CS to client: put into table
  */
 #define GNUNET_CS_PROTO_DHT_REQUEST_PUT      61
-
-
+/** 
+ * Client to CS: end get from table (ends request)
+ */ 
+#define GNUNET_CS_PROTO_DHT_REQUEST_GET_END      62
 /* ************* CS VPN messages ************* */
 
 /**
