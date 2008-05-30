@@ -4,7 +4,18 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [5'08] (aka "new protocol"):
-- gnunet-chat (CS-only) [RC]
+- namespaces: 
+  + need way to map nsid to namespace name (for ECRS interaction!)
+    => additional store? (used to have it, gone with libpseudonym!)
+    => rather: use pseudo's mapping (used already in gnunet-insert, etc!)
+    => need to inform user creating pseudonym about mapped name!!!
+  + need better / actual / compiling testcase!
+  + FSUI: compile errors!
+  + tools: compile errors!
+- chat:  [RC]
+  + adapt gnunet-chat for new client api
+  + adapt clientapi.c for new API and message format
+  + adapt chat.c for new message format and requirements
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
 

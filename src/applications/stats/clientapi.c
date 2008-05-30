@@ -223,8 +223,23 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
       name = "GNUNET_CS_PROTO_TRACEKIT_REPLY";
       break;
 
-    case GNUNET_CS_PROTO_CHAT_MSG:
-      name = "GNUNET_CS_PROTO_CHAT_MSG";
+    case GNUNET_CS_PROTO_CHAT_JOIN_REQUEST:
+      name = "GNUNET_CS_PROTO_CHAT_JOIN_REQUEST";
+      break;
+    case GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION:
+      name = "GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION";
+      break;
+    case GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION:
+      name = "GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION";
+      break;
+    case GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION:
+      name = "GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION";
+      break;
+    case GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST:
+      name = "GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST";
+      break;
+    case GNUNET_CS_PROTO_CHAT_CONFIRMATION_RECEIPT:
+      name = "GNUNET_CS_PROTO_CHAT_CONFIRMATION_RECEIPT";
       break;
 
     case GNUNET_CS_PROTO_DHT_REQUEST_GET:
@@ -232,13 +247,6 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
       break;
     case GNUNET_CS_PROTO_DHT_REQUEST_PUT:
       name = "GNUNET_CS_PROTO_DHT_REQUEST_PUT";
-      break;
-
-    case GNUNET_CS_PROTO_TESTBED_REQUEST:
-      name = "GNUNET_CS_PROTO_TESTBED_REQUEST";
-      break;
-    case GNUNET_CS_PROTO_TESTBED_REPLY:
-      name = "GNUNET_CS_PROTO_TESTBED_REPLY";
       break;
 
     case GNUNET_CS_PROTO_VPN_MSG:

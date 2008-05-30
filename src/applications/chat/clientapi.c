@@ -47,27 +47,28 @@ struct GNUNET_CHAT_Room
 
   struct GNUNET_GC_Configuration *cfg;
 
+  struct GNUNET_ECRS_MetaData * member_info;
+
   char *nickname;
 
   char *room_name;
 
-  GNUNET_RSA_PublicKey my_public_key;
+  struct GNUNET_RSA_PrivateKeyEncoded *my_private_key;
 
-  GNUNET_HashCode my_public_key_hash;
+  GNUNET_CHAT_MessageCallback message_callback;
 
-  struct GNUNET_RSA_PrivateKey *my_private_key;
-
-  char *memberInfo;
-
-  GNUNET_CHAT_MessageCallback callback;
+  void *message_callback_cls;
 
   GNUNET_CHAT_MemberListCallback member_list_callback;
 
+  void *member_list_callback_cls;
+
+  GNUNET_CHAT_MessageConfirmation confirmation_callback;
+
+  void *confirmation_cls;
+
   int shutdown_flag;
 
-  void *callback_cls;
-
-  void *member_list_callback_cls;
 
 };
 
@@ -75,45 +76,30 @@ static int
 GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
 {
   CS_chat_JOIN_MESSAGE *join_msg;
-  GNUNET_MessageHeader csHdr;
-  GNUNET_HashCode hash_of_me;
-  GNUNET_HashCode hash_of_room_name;
-  int size_of_join;
+  unsigned int size_of_join;
+  unsigned int nick_len;
+  char * nick;
 
-  csHdr.size = htons (sizeof (CS_chat_JOIN_MESSAGE));
-  csHdr.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_MSG);
-
-  GNUNET_hash (&chat_room->my_public_key, sizeof (GNUNET_RSA_PublicKey),
-               &hash_of_me);
-  GNUNET_hash (chat_room->room_name, strlen (chat_room->room_name),
-               &hash_of_room_name);
+  nick_len = strlen(chat_room->nickname);
   size_of_join =
-    sizeof (CS_chat_JOIN_MESSAGE) + strlen (chat_room->nickname) +
+    sizeof (CS_chat_JOIN_MESSAGE) + nick_len +
     strlen (chat_room->room_name);
+  if (size_of_join >= GNUNET_MAX_BUFFER_SIZE - 8)
+    return GNUNET_SYSERR;
   join_msg = GNUNET_malloc (size_of_join);
-  join_msg->nick_len = htons (strlen (chat_room->nickname));
-  memcpy (&join_msg->pkey, &chat_room->my_public_key,
-          sizeof (GNUNET_RSA_PublicKey));
-
-#if FIXED
-  char *nick = (char *) &join_msg[1];
-  memcpy (nick, chat_room->nickname, strlen (chat_room->nickname));
-#endif
-
-  memcpy (&join_msg->nick[0], chat_room->nickname,
-          strlen (chat_room->nickname));
-  memcpy (&join_msg->
-          nick[strlen (chat_room->nickname)],
-          chat_room->room_name, strlen (chat_room->room_name));
-  join_msg->header = csHdr;
   join_msg->header.size = htons (size_of_join);
+  join_msg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_MSG);
+  join_msg->nick_len = htons (nick_len);
+  nick = (char *) &join_msg[1];
+  memcpy (nick, chat_room->nickname, nick_len);
+  memcpy (&nick[nick_len],
+          chat_room->room_name, strlen (chat_room->room_name));
   if (GNUNET_SYSERR ==
       GNUNET_client_connection_write (chat_room->sock, &join_msg->header))
     {
       GNUNET_free (join_msg);
       return GNUNET_SYSERR;
-    }
-
+    }  
   GNUNET_free (join_msg);
   return GNUNET_OK;
 }
@@ -275,7 +261,7 @@ GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
  * Returns the private key on success,
  * NULL on error.
  */
-static struct GNUNET_RSA_PrivateKey *
+static struct GNUNET_RSA_PrivateKeyEncoded *
 GNUNET_CHAT_initPrivateKey (struct GNUNET_GE_Context *ectx,
                             struct GNUNET_GC_Configuration *cfg,
                             const char *nick_name)
@@ -285,7 +271,6 @@ GNUNET_CHAT_initPrivateKey (struct GNUNET_GE_Context *ectx,
   GNUNET_RSA_PrivateKeyEncoded *encPrivateKey;
   unsigned short len;
   int res;
-  struct GNUNET_RSA_PrivateKey *privKey;
 
   if (-1 == GNUNET_GC_get_configuration_value_filename (cfg,
 							"PATHS",
@@ -355,51 +340,50 @@ GNUNET_CHAT_initPrivateKey (struct GNUNET_GE_Context *ectx,
                               keyfile,
                               encPrivateKey, ntohs (encPrivateKey->len),
                               "600");
-      GNUNET_free (encPrivateKey);
+      GNUNET_RSA_free_key(key);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                      _("Done creating key.\n"));
     }
-  else
-    {
-      privKey = GNUNET_RSA_decode_key (encPrivateKey);
-      GNUNET_free (encPrivateKey);
-    }
   GNUNET_free (keyfile);
   GNUNET_GE_ASSERT (ectx, privKey != NULL);
-  return privKey;
+  return encPrivateKey;
 }
 
 /**
  * Join a chat room.
  *
- * @param nickname the nick you want to use
+ * @param nick_name nickname of the user joining (used to
+ *                  determine which public key to use);
+ *                  the nickname should probably also
+ *                  be used in the member_info (as "EXTRACTOR_TITLE")
+ * @param member_info information about the joining member
  * @param memberInfo public information about you
- * @param callback which function to call if a message has
- *        been received?
- * @param cls argument to callback
+ * @param messageCallback which function to call if a message has
+ *        been received? 
+ * @param message_cls argument to callback
+ * @param memberCallback which function to call for join/leave notifications
+ * @param confirmationCallback which function to call for confirmations (maybe NULL)
  * @return NULL on error
  */
 struct GNUNET_CHAT_Room *
 GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
-                       struct GNUNET_GC_Configuration *cfg,
-                       const char *nickname,
-                       const char *room_name,
-                       
-                       const char *memberInfo,
-                       GNUNET_CHAT_MessageCallback callback, void *cls,
-                       GNUNET_CHAT_MemberListCallback memberCallback,
-                       void *membercls)
+		       struct GNUNET_GC_Configuration*cfg,
+		       const char *nick_name,
+		       struct GNUNET_ECRS_MetaData * member_info,
+		       const char *room_name,
+		       GNUNET_CHAT_MessageCallback messageCallback, 
+		       void *message_cls,
+		       GNUNET_CHAT_MemberListCallback memberCallback,
+		       void *member_cls,
+		       GNUNET_CHAT_MessageConfirmation confirmationCallback,
+		       void *confirmation_cls) 
 {
-  CS_chat_JOIN_MESSAGE *join_msg;
-  GNUNET_HashCode hash_of_me;
   struct GNUNET_CHAT_Room *chat_room;
   struct GNUNET_ClientServerConnection *sock;
-  int size_of_join;
-  GNUNET_RSA_PublicKey me;
-  struct GNUNET_RSA_PrivateKey *key;
+  struct GNUNET_RSA_PrivateKeyEncoded *key;
 
-  key = GNUNET_CHAT_initPrivateKey(ectx, cfg, nickname);
+  key = GNUNET_CHAT_initPrivateKey(ectx, cfg, nick_name);
   if (key == NULL)
     return NULL;
   sock = GNUNET_client_connection_create (ectx, cfg);
@@ -408,47 +392,38 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
       GNUNET_RSA_free_key(key);
       return NULL;
     }
-  GNUNET_RSA_get_public_key (key, &me);
-  GNUNET_hash (&me, sizeof (GNUNET_RSA_PublicKey), &hash_of_me);
-  size_of_join =
-    sizeof (CS_chat_JOIN_MESSAGE) + strlen (nickname) + strlen (room_name);
-  join_msg = GNUNET_malloc (size_of_join);
-  join_msg->header.size = htons (size_of_join);
-  join_msg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_MSG);
-  join_msg->nick_len = htons (strlen (nickname));
-  memcpy (&join_msg->pkey, &me, sizeof (GNUNET_RSA_PublicKey));
-  //join_msg->pubkey_len = htons (sizeof (GNUNET_RSA_PublicKey));
-  memcpy (&join_msg->nick[0], nickname, strlen (nickname));
-  //memcpy (&join_msg->nick[strlen (nickname)], me,
-  //        sizeof (GNUNET_RSA_PublicKey));
-  memcpy (&join_msg->nick[strlen (nickname)], room_name, strlen (room_name));
-  if (GNUNET_SYSERR ==
-      GNUNET_client_connection_write (sock, &join_msg->header))
-    {
-      /* ALREADY LOGGED */
-      fprintf (stderr, _("Error writing to socket.\n"));
-      GNUNET_client_connection_destroy (sock);
-      GNUNET_free (join_msg);
-      GNUNET_RSA_free_key(key);
-      return NULL;
-    }
-  GNUNET_free (join_msg);
   chat_room = GNUNET_malloc (sizeof (struct GNUNET_CHAT_Room));
-  chat_room->nickname = GNUNET_strdup (nickname);
+  chat_room->nickname = GNUNET_strdup (nick_name);
   chat_room->room_name = GNUNET_strdup (room_name);
-  chat_room->my_public_key = me;
-  chat_room->my_public_key_hash = hash_of_me;
+  chat_room->member_info = GNUNET_ECRS_meta_data_duplicate(member_info);
   chat_room->my_private_key = key;
-  chat_room->callback = callback;
-  chat_room->callback_cls = cls;
+  chat_room->message_callback = callback;
+  chat_room->message_callback_cls = cls;
   chat_room->member_list_callback = memberCallback;
   chat_room->member_list_callback_cls = membercls;
+  chat_room->confirmation_callback = confirmation_callback;
+  chat_room->confirmation_cls = confirmation_cls;
   chat_room->ectx = ectx;
   chat_room->cfg = cfg;
-  chat_room->memberInfo = GNUNET_strdup (memberInfo);
   chat_room->sock = sock;
   chat_room->listen_thread =
     GNUNET_thread_create (&poll_thread, chat_room, 1024 * 2);
+  if (chat_room->listen_thread == NULL)
+    {
+      GNUNET_free(chat_room->nickname);
+      GNUNET_free(chat_room->room_name);
+      GNUNET_client_connection_destroy (chat_room->sock);
+      GNUNET_ECRS_meta_data_destroy(chat_room->member_info);
+      GNUNET_free(chat_room);
+      GNUNET_free(key);
+      return NULL;
+    }
+  if (GNUNET_SYSERR ==
+      GNUNET_CHAT_rejoin_room(chat_room))
+    {
+      GNUNET_CHAT_leave_room(chat_room);
+      return NULL;
+    }
   return chat_room;
 }
 
@@ -458,19 +433,18 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
 void
 GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
-
   void *unused;
+
   chat_room->shutdown_flag = GNUNET_YES;
   GNUNET_client_connection_close_forever (chat_room->sock);
   GNUNET_thread_stop_sleep (chat_room->listen_thread);
   GNUNET_thread_join (chat_room->listen_thread, &unused);
   GNUNET_free (chat_room->room_name);
   GNUNET_free (chat_room->nickname);
-  GNUNET_free (chat_room->memberInfo);
+  GNUNET_ECRS_meta_data_destroy(chat_room->member_info);
   GNUNET_client_connection_destroy (chat_room->sock);
   GNUNET_RSA_free_key(chat_room->my_private_key);
   GNUNET_free (chat_room);
-
 }
 
 /**
@@ -488,30 +462,29 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           const GNUNET_RSA_PublicKey * receiver)
 {
   int ret = GNUNET_OK;
-  GNUNET_MessageHeader cs_msg_hdr;
   CS_chat_MESSAGE *msg_to_send;
+  unsigned int msg_size;
 
-  cs_msg_hdr.size =
-    htons (sizeof (CS_chat_MESSAGE) +
-           strlen (room->nickname) + strlen (message) +
-           strlen (room->room_name));
-  cs_msg_hdr.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
-  msg_to_send = GNUNET_malloc (ntohs (cs_msg_hdr.size));
-  msg_to_send->nick_len = htons (strlen (room->nickname));
-  msg_to_send->msg_len = htons (strlen (message));
-  memcpy (&msg_to_send->nick[0], room->nickname, strlen (room->nickname));
-  memcpy (&msg_to_send->nick[strlen (room->nickname)], message,
-          strlen (message));
-  memcpy (&msg_to_send->nick[strlen (room->nickname) + strlen (message)],
-          room->room_name, strlen (room->room_name));
-  msg_to_send->header = cs_msg_hdr;
-  if (GNUNET_SYSERR ==
-      GNUNET_client_connection_write (room->sock, &msg_to_send->header))
-    {
-      fprintf (stderr, _("Error writing to socket.\n"));
-      ret = GNUNET_SYSERR;
-    }
-
+  msg_size = strlen(message) + sizeof(CS_chat_MESSAGE_TransmitRequest);
+  if (msg_size > GNUNET_MAX_BUFFER_SIZE - 8)
+    return GNUNET_SYSERR;
+  msg_to_send = GNUNET_malloc (msg_size);
+  msg_to_send->header.size = htons(msg_size);
+  msg_to_send->header.type = htons(GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST);
+  msg_to_send->msg_options = htonl(options);
+  msg_to_send->sequence_number = room->sequence_number++;
+  msg_to_send->reserved = htonl(0);
+  if (receiver == NULL)
+    memset(&msg_to_send->target, 0, sizeof(GNUNET_HashCode));
+  else
+    GNUNET_hash(receiver,
+		sizeof(GNUNET_RSA_PublicKey),
+		&msg_to_send->target);
+  memcpy(&msg_to_send[1],
+	 message,
+	 strlen(message));
+  ret = GNUNET_client_connection_write (room->sock, &msg_to_send->header);
+  GNUNET_free(msg_to_send);
   return ret;
 }
 

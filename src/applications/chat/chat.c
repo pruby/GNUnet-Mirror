@@ -134,7 +134,10 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
     {
       if (0 == strcmp(room,
 		      pos->room))
-	coreAPI->cs_send_message (pos->client, message, GNUNET_YES);
+	{
+	  /* fixme: private / anonymous delivery options! */
+	  coreAPI->cs_send_message (pos->client, message, GNUNET_YES);
+	}
       pos = pos->next;
     }
   GNUNET_mutex_unlock (chatMutex);

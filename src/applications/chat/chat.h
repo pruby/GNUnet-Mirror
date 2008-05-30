@@ -29,25 +29,115 @@
 #include "gnunet_core.h"
 #include "gnunet_chat_lib.h"
 
+/**
+ * We have received a chat message (server to client).  After this
+ * struct, the remaining bytes are the actual message in plaintext.
+ */
 typedef struct
 {
   GNUNET_MessageHeader header;
 
-  unsigned short nick_len;
+  /**
+   * Message options, see GNUNET_CHAT_MSG_OPTIONS.
+   */
+  unsigned int msg_options;
 
-  unsigned short msg_len;
+  /**
+   * Hash of the public key of the pseudonym of the
+   * sender of the message (all zeros for anonymous).
+   */
+  GNUNET_HashCode sender;
 
-  /*int room_name_len; */
+} CS_chat_MESSAGE_ReceiveNotification;
 
-  char nick[1];
-
-} CS_chat_MESSAGE;
-
+/**
+ * Send a chat message (client to server).  After this struct, the
+ * remaining bytes are the actual message in plaintext.
+ */
 typedef struct
 {
   GNUNET_MessageHeader header;
 
-  GNUNET_RSA_PublicKey pkey;
+  /**
+   * Desired message options, see GNUNET_CHAT_MSG_OPTIONS.
+   */
+  unsigned int msg_options;
+
+  /**
+   * Sequence number of the message (unique per sender).
+   */
+  unsigned int sequence_number;
+
+  /**
+   * Reserved (for alignment).
+   */
+  unsigned int reserved;
+
+  /**
+   * Who should receive this message?  Set to all zeros
+   * for "everyone".
+   */
+  GNUNET_HashCode target;
+
+} CS_chat_MESSAGE_TransmitRequest;
+
+/**
+ * Confirm receipt of a chat message (this is the receipt
+ * send from the daemon to the original sender; clients
+ * do not have to ever generate receipts on their own).
+ */
+typedef struct
+{
+  GNUNET_MessageHeader header;
+
+  /**
+   * Sequence number of the original message.
+   */
+  unsigned int sequence_number;
+
+  /**
+   * Time of receipt.
+   */
+  GNUNET_CronTime timestamp;
+
+  /**
+   * Who is confirming the receipt?
+   */
+  GNUNET_HashCode target;
+
+  /**
+   * Hash of the (possibly encrypted) content.
+   */
+  GNUNET_HashCode content;
+
+  /**
+   * Signature confirming receipt.  Signature
+   * covers everything from header through content.
+   */
+  GNUNET_RSA_Signature signature;
+
+} CS_chat_MESSAGE_ConfirmationReceipt;
+
+/**
+ * Message send from client to daemon to join a chat room.
+ */
+typedef struct
+{
+  GNUNET_MessageHeader header;
+
+  /**
+   * Options.  Set all options that this client is willing to receive.
+   * For example, if the client does not want to receive anonymous or
+   * OTR messages but is willing to generate acknowledgements and
+   * receive private messages, this should be set to
+   * GNUNET_CHAT_MSG_PRIVATE | GNUNET_CHAT_MSG_ACKNOWLEDGED.
+   */
+  unsigned int msg_options;
+
+  /**
+   * Private key of the joining member.
+   */
+  GNUNET_RSA_PrivateKeyEncoded private_key;
 
   unsigned short nick_len;
 
@@ -55,17 +145,54 @@ typedef struct
      the nickname; then followed
      by the name of the chat room */
 
-} CS_chat_JOIN_MESSAGE;
+} CS_chat_MESSAGE_JoinRequest;
 
+/**
+ * Message send by server to client to indicate joining
+ * or leaving of another room member.  This struct is
+ * followed by the serialized ECRS MetaData describing
+ * the new member.
+ */
 typedef struct
 {
   GNUNET_MessageHeader header;
+ 
+  /**
+   * Options.  Set to all options that the new user is willing to
+   * process.  For example, if the client does not want to receive
+   * anonymous or OTR messages but is willing to generate
+   * acknowledgements and receive private messages, this should be set
+   * to GNUNET_CHAT_MSG_PRIVATE | GNUNET_CHAT_MSG_ACKNOWLEDGED.
+   */
+  unsigned int msg_options;
 
-  unsigned short nick_len;
+  /**
+   * Public key of the new user.
+   */
+  GNUNET_RSA_PublicKey public_key;
 
-  char nick[1];
+} CS_chat_MESSAGE_JoinNotification;
 
-} CS_chat_ROOM_MEMBER_MESSAGE;
+
+/**
+ * Message send by server to client to indicate 
+ * leaving of another room member.
+ */
+typedef struct
+{
+  GNUNET_MessageHeader header;
+ 
+  /**
+   * Reserved (for alignment).
+   */
+  unsigned int reserved;
+ 
+  /**
+   * Who is leaving?
+   */
+  GNUNET_HashCode user;
+
+} CS_chat_MESSAGE_LeaveNotification;
 
 
 #endif

@@ -31,6 +31,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_namespace_lib.h"
+#include "gnunet_pseudonym_lib.h"
 #include "gnunet_util.h"
 
 /* hmm. Man says time.h, but that doesn't yield the
@@ -119,7 +120,7 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
   convertId (next_id, &nextId);
   convertId (this_id, &thisId);
   convertId (prev_id, &prevId);
-  if (GNUNET_OK != GNUNET_NS_name_to_nsid (ectx, cfg, pseudonym, &nsid))
+  if (GNUNET_OK != GNUNET_PSEUDO_name_to_id (ectx, cfg, pseudonym, &nsid))
     {
       printf (_("\tUnknown namespace `%s'\n"), pseudonym);
       return;

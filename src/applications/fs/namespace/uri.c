@@ -33,6 +33,7 @@
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_namespace_lib.h"
+#include "gnunet_pseudonym_lib.h"
 
 /**
  * Convert namespace URI to a human readable format
@@ -53,7 +54,7 @@ GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
   if (!GNUNET_ECRS_uri_test_sks (uri))
     return NULL;
   GNUNET_ECRS_uri_get_namespace_from_sks (uri, &nsid);
-  name = GNUNET_NS_nsid_to_name (ectx, cfg, &nsid);
+  name = GNUNET_PSEUDO_id_to_name (ectx, cfg, &nsid);
   if (name == NULL)
     return GNUNET_ECRS_uri_to_string (uri);
   GNUNET_ECRS_uri_get_content_hash_from_sks (uri, &chk);

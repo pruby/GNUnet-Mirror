@@ -259,30 +259,24 @@ extern "C"
 
 /* ********** CS CHAT application messages ********** */
 
-#define GNUNET_CS_PROTO_CHAT_JOIN_MSG 44
-#define GNUNET_CS_PROTO_CHAT_MSG 45
-#define GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_MESSAGE 46
-#define GNUNET_CS_PROTO_CHAT_ROOM_MEMBER_LEAVE_MESSAGE 47
+#define GNUNET_CS_PROTO_CHAT_JOIN_REQUEST 44
+#define GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION 45
+#define GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION 46
+#define GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION 47
+#define GNUNET_CS_PROTO_CHAT_TRANSMIT_REQUEST 48
+#define GNUNET_CS_PROTO_CHAT_CONFIRMATION_RECEIPT 49
 
 /* ********** CS DHT application messages ********** */
 
 /**
  * Client to CS or CS to client: get from table
  */
-#define GNUNET_CS_PROTO_DHT_REQUEST_GET      48
+#define GNUNET_CS_PROTO_DHT_REQUEST_GET      60
 
 /**
  * Client to CS or CS to client: put into table
  */
-#define GNUNET_CS_PROTO_DHT_REQUEST_PUT      49
-
-
-/* ********** CS TESTBED application messages ********** */
-
-#define GNUNET_CS_PROTO_TESTBED_REQUEST 50
-
-#define GNUNET_CS_PROTO_TESTBED_REPLY   51
-
+#define GNUNET_CS_PROTO_DHT_REQUEST_PUT      61
 
 
 /* ************* CS VPN messages ************* */

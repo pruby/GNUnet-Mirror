@@ -24,6 +24,7 @@ gnunet_insert_SOURCES = \
   gnunet-insert.c 	
 
 gnunet_insert_LDADD = \
+  $(top_builddir)/src/applications/fs/pseudonyms/libgnunetpseudonym.la \
   $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
@@ -45,6 +46,7 @@ gnunet_directory_LDADD = \
 gnunet_pseudonym_SOURCES = \
   gnunet-pseudonym.c
 gnunet_pseudonym_LDADD = \
+  $(top_builddir)/src/applications/fs/pseudonyms/libgnunetpseudonym.la \
   $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/collection/libgnunetcollection.la \

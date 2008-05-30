@@ -240,13 +240,10 @@ unsigned int GNUNET_ECRS_meta_data_get_serialized_size (const struct
  * @return MD on success, NULL on error (i.e.
  *         bad format)
  */
-struct GNUNET_ECRS_MetaData *GNUNET_ECRS_meta_data_deserialize (struct
-                                                                GNUNET_GE_Context
-                                                                *ectx,
-                                                                const char
-                                                                *input,
-                                                                unsigned int
-                                                                size);
+struct GNUNET_ECRS_MetaData *
+GNUNET_ECRS_meta_data_deserialize (struct GNUNET_GE_Context*ectx,
+				   const char *input,
+				   unsigned int size);
 
 /**
  * Does the meta-data claim that this is a directory?
@@ -287,8 +284,9 @@ char *GNUNET_ECRS_ksk_uri_to_human_readable_string (const struct
 /**
  * Convert a UTF-8 String to a URI.
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_string_to_uri (struct GNUNET_GE_Context
-                                                   *ectx, const char *uri);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_string_to_uri (struct GNUNET_GE_Context *ectx, 
+			   const char *uri);
 
 /**
  * Free URI.
@@ -326,9 +324,8 @@ int GNUNET_ECRS_uri_get_peer_identity_from_loc (const struct GNUNET_ECRS_URI
  *
  * @return NULL if argument is not a location URI
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_uri_get_content_uri_from_loc (const struct
-                                                                  GNUNET_ECRS_URI
-                                                                  *uri);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_uri_get_content_uri_from_loc (const struct GNUNET_ECRS_URI *uri);
 
 /**
  * Function that produces a signature for
@@ -349,33 +346,27 @@ typedef int (*GNUNET_ECRS_SignFunction) (void *cls,
  *        RSA signatures for "sender".
  * @return the location URI
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_location_to_uri (const struct
-                                                     GNUNET_ECRS_URI *baseUri,
-                                                     const
-                                                     GNUNET_RSA_PublicKey *
-                                                     peer,
-                                                     GNUNET_Int32Time
-                                                     expirationTime,
-                                                     GNUNET_ECRS_SignFunction
-                                                     signer,
-                                                     void *signer_cls);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_location_to_uri (const struct GNUNET_ECRS_URI *baseUri,
+			     const GNUNET_RSA_PublicKey *peer,
+			     GNUNET_Int32Time expirationTime,
+			     GNUNET_ECRS_SignFunction signer,
+			     void *signer_cls);
 
 
 /**
  * Duplicate URI.
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_uri_duplicate (const struct
-                                                   GNUNET_ECRS_URI *uri);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_uri_duplicate (const struct GNUNET_ECRS_URI *uri);
 
 /**
  * Expand a keyword-URI by duplicating all keywords,
  * adding the current date (YYYY-MM-DD) after each
  * keyword.
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_uri_expand_keywords_with_date (const
-                                                                   struct
-                                                                   GNUNET_ECRS_URI
-                                                                   *uri);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_uri_expand_keywords_with_date (const struct GNUNET_ECRS_URI *uri);
 
 /**
  * Create an ECRS URI from a single user-supplied string of keywords.
@@ -392,12 +383,9 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_uri_expand_keywords_with_date (const
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_string_to_uri (struct
-                                                           GNUNET_GE_Context
-                                                           *ectx,
-                                                           const char
-                                                           *keywords);
-                                                           /* helper.c */
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
+				   const char *keywords);
 
 /**
  * Create an ECRS URI from a user-supplied command line of keywords.
@@ -416,14 +404,10 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_string_to_uri (struct
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_keyword_command_line_to_uri (struct
-                                                                 GNUNET_GE_Context
-                                                                 *ectx,
-                                                                 unsigned int
-                                                                 argc,
-                                                                 const char
-                                                                 **argv);
-                                                                 /* helper.c */
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context*ectx,
+					 unsigned int argc,
+					 const char **argv);
 
 /**
  * Test if two URIs are equal.
@@ -478,9 +462,8 @@ int GNUNET_ECRS_uri_test_loc (const struct GNUNET_ECRS_URI *uri);
  * in the meta-data and construct one large keyword URI
  * that lists all keywords that can be found in the meta-data).
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_meta_data_to_uri (const struct
-                                                      GNUNET_ECRS_MetaData
-                                                      *md);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_meta_data_to_uri (const struct GNUNET_ECRS_MetaData *md);
 
 
 typedef struct
@@ -551,8 +534,18 @@ typedef int (*GNUNET_ECRS_TestTerminate) (void *closure);
  * @return GNUNET_SYSERR if the upload failed (i.e. not enough space
  *  or gnunetd not running)
  */
-int GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *filename, int doIndex, unsigned int anonymityLevel, unsigned int priority, GNUNET_CronTime expirationTime,        /* absolute time */
-                             GNUNET_ECRS_UploadProgressCallback upcb, void *upcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure, struct GNUNET_ECRS_URI **uri);  /* upload.c */
+int GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx, 
+			     struct GNUNET_GC_Configuration *cfg, 
+			     const char *filename, 
+			     int doIndex, 
+			     unsigned int anonymityLevel, 
+			     unsigned int priority, 
+			     GNUNET_CronTime expirationTime,        /* absolute time */
+                             GNUNET_ECRS_UploadProgressCallback upcb, 
+			     void *upcbClosure, 
+			     GNUNET_ECRS_TestTerminate tt,
+			     void *ttClosure,
+			     struct GNUNET_ECRS_URI **uri);  /* upload.c */
 
 /**
  * Test if a file is indexed.
@@ -594,7 +587,13 @@ int GNUNET_ECRS_get_indexed_files (struct GNUNET_GE_Context *ectx,
  *
  * @return GNUNET_SYSERR if the unindexing failed (i.e. not indexed)
  */
-int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *filename, GNUNET_ECRS_UploadProgressCallback upcb, void *upcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure);    /* unindex.c */
+int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx, 
+			      struct GNUNET_GC_Configuration *cfg, 
+			      const char *filename, 
+			      GNUNET_ECRS_UploadProgressCallback upcb,
+			      void *upcbClosure, 
+			      GNUNET_ECRS_TestTerminate tt, 
+			      void *ttClosure);    /* unindex.c */
 
 
 /**
@@ -617,24 +616,16 @@ int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_C
  *
  * @return URI on success, NULL on error (namespace already exists)
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context
-                                                      *ectx,
-                                                      struct
-                                                      GNUNET_GC_Configuration
-                                                      *cfg, const char *name,
-                                                      const struct
-                                                      GNUNET_ECRS_MetaData
-                                                      *meta,
-                                                      unsigned int
-                                                      anonymityLevel,
-                                                      unsigned int priority,
-                                                      GNUNET_CronTime
-                                                      expiration,
-                                                      const struct
-                                                      GNUNET_ECRS_URI
-                                                      *advertisementURI,
-                                                      const GNUNET_HashCode *
-                                                      rootEntry);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
+			      struct GNUNET_GC_Configuration *cfg, 
+			      const char *name,
+			      const struct GNUNET_ECRS_MetaData *meta,
+			      unsigned int anonymityLevel,
+			      unsigned int priority,
+			      GNUNET_CronTime expiration,
+			      const struct GNUNET_ECRS_URI *advertisementURI,
+			      const GNUNET_HashCode *rootEntry);
                               /* namespace.c */
 
 /**
@@ -655,7 +646,9 @@ int GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *namespaceName);      /* namespace.c */
+int GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx, 
+				  struct GNUNET_GC_Configuration *cfg, 
+				  const char *namespaceName);      /* namespace.c */
 
 /**
  * Callback with information about local (!) namespaces.
@@ -674,7 +667,10 @@ typedef int (*GNUNET_ECRS_NamespaceInfoProcessor) (const GNUNET_HashCode * id,
  * @param list where to store the names (is allocated, caller frees)
  * @return GNUNET_SYSERR on error, otherwise the number of pseudonyms in list
  */
-int GNUNET_ECRS_get_namespaces (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, GNUNET_ECRS_NamespaceInfoProcessor cb, void *cls); /* namespace.c */
+int GNUNET_ECRS_get_namespaces (struct GNUNET_GE_Context *ectx, 
+				struct GNUNET_GC_Configuration *cfg, 
+				GNUNET_ECRS_NamespaceInfoProcessor cb,
+				void *cls); /* namespace.c */
 
 /**
  * Add an entry into a namespace.
@@ -686,35 +682,19 @@ int GNUNET_ECRS_get_namespaces (struct GNUNET_GE_Context *ectx, struct GNUNET_GC
  *        entry?
  * @return URI on success, NULL on error
  */
-struct GNUNET_ECRS_URI *GNUNET_ECRS_namespace_add_content (struct
-                                                           GNUNET_GE_Context
-                                                           *ectx,
-                                                           struct
-                                                           GNUNET_GC_Configuration
-                                                           *cfg,
-                                                           const char *name,
-                                                           unsigned int
-                                                           anonymityLevel,
-                                                           unsigned int
-                                                           priority,
-                                                           GNUNET_CronTime
-                                                           expirationTime,
-                                                           GNUNET_Int32Time
-                                                           creationTime,
-                                                           GNUNET_Int32Time
-                                                           updateInterval,
-                                                           const
-                                                           GNUNET_HashCode *
-                                                           thisId,
-                                                           const
-                                                           GNUNET_HashCode *
-                                                           nextId,
-                                                           const struct
-                                                           GNUNET_ECRS_URI
-                                                           *dst,
-                                                           const struct
-                                                           GNUNET_ECRS_MetaData
-                                                           *md);
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context*ectx,
+				   struct GNUNET_GC_Configuration *cfg,
+				   const char *name,
+				   unsigned int anonymityLevel,
+				   unsigned int priority,
+				   GNUNET_CronTime expirationTime,
+				   GNUNET_Int32Time creationTime,
+				   GNUNET_Int32Time updateInterval,
+				   const GNUNET_HashCode *thisId,
+				   const GNUNET_HashCode *nextId,
+				   const struct GNUNET_ECRS_URI *dst,
+				   const struct GNUNET_ECRS_MetaData *md);
                                    /* namespace.c */
 
 /**
@@ -760,7 +740,13 @@ struct GNUNET_ECRS_SearchContext;
  *        this must be a simple URI (with a single
  *        keyword)
  */
-struct GNUNET_ECRS_SearchContext *GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure);    /* search.c */
+struct GNUNET_ECRS_SearchContext *
+GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
+			  struct GNUNET_GC_Configuration *cfg,
+			  const struct GNUNET_ECRS_URI *uri, 
+			  unsigned int anonymityLevel, 
+			  GNUNET_ECRS_SearchResultProcessor spcb, 
+			  void *spcbClosure);    /* search.c */
 
 /**
  * Stop search for content.
@@ -776,7 +762,14 @@ void GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext *sctx);
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
-int GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure); /* search.c */
+int GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx, 
+			struct GNUNET_GC_Configuration *cfg, 
+			const struct GNUNET_ECRS_URI *uri, 
+			unsigned int anonymityLevel,
+			GNUNET_ECRS_SearchResultProcessor spcb,
+			void *spcbClosure, 
+			GNUNET_ECRS_TestTerminate tt, 
+			void *ttClosure); /* search.c */
 
 /**
  * Notification of ECRS to a client about the progress of an insertion
@@ -850,7 +843,15 @@ GNUNET_ECRS_file_download_partial_stop (struct GNUNET_ECRS_DownloadContext
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
  */
-int GNUNET_ECRS_file_download (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, const char *filename, unsigned int anonymityLevel, GNUNET_ECRS_DownloadProgressCallback dpcb, void *dpcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure); /* download.c */
+int GNUNET_ECRS_file_download (struct GNUNET_GE_Context *ectx, 
+			       struct GNUNET_GC_Configuration *cfg, 
+			       const struct GNUNET_ECRS_URI *uri, 
+			       const char *filename, 
+			       unsigned int anonymityLevel, 
+			       GNUNET_ECRS_DownloadProgressCallback dpcb,
+			       void *dpcbClosure, 
+			       GNUNET_ECRS_TestTerminate tt,
+			       void *ttClosure); /* download.c */
 
 /**
  * DOWNLOAD parts of a file.  Note that this will store
@@ -871,7 +872,18 @@ int GNUNET_ECRS_file_download (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_
  * @param start starting offset
  * @param length length of the download (starting at offset)
  */
-int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, const char *filename, unsigned long long offset, unsigned long long length, unsigned int anonymityLevel, int no_temporaries, GNUNET_ECRS_DownloadProgressCallback dpcb, void *dpcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure);       /* download.c */
+int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
+				       struct GNUNET_GC_Configuration *cfg, 
+				       const struct GNUNET_ECRS_URI *uri, 
+				       const char *filename, 
+				       unsigned long long offset, 
+				       unsigned long long length, 
+				       unsigned int anonymityLevel, 
+				       int no_temporaries, 
+				       GNUNET_ECRS_DownloadProgressCallback dpcb,
+				       void *dpcbClosure, 
+				       GNUNET_ECRS_TestTerminate tt,
+				       void *ttClosure);       /* download.c */
 
 /**
  * Iterate over all entries in a directory.  Note that directories
@@ -887,7 +899,12 @@ int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx, struct GN
  * @return number of entries on success, GNUNET_SYSERR if the
  *         directory is malformed
  */
-int GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx, const char *data, unsigned long long len, struct GNUNET_ECRS_MetaData **md, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure);        /* directory.c */
+int GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx, 
+					 const char *data,
+					 unsigned long long len,
+					 struct GNUNET_ECRS_MetaData **md, 
+					 GNUNET_ECRS_SearchResultProcessor spcb, 
+					 void *spcbClosure);        /* directory.c */
 
 /**
  * Create a directory.

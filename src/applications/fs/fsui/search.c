@@ -34,6 +34,7 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_namespace_lib.h"
+#include "gnunet_pseudonym_lib.h"
 #include "fsui.h"
 
 #define DEBUG_SEARCH GNUNET_NO
@@ -89,14 +90,18 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   struct SearchResultList *srl;
   struct SearchRecordList *rec;
   int update;
+  GNUNET_HashCode nsid;
 
   ectx = pos->ctx->ectx;
   GNUNET_URITRACK_track (ectx, pos->ctx->cfg, fi);
   if (isRoot)
     {
       GNUNET_NS_namespace_set_root (ectx, pos->ctx->cfg, fi->uri);
-      GNUNET_NS_namespace_add_information (ectx, pos->ctx->cfg, fi->uri,
-                                           fi->meta);
+      GNUNET_ECRS_uri_get_namespace_from_sks(fi->uri,
+					     &nsid);
+      GNUNET_PSEUDO_add (ectx, pos->ctx->cfg, 
+			 &nsid,
+			 fi->meta);
       return GNUNET_OK;
     }
   GNUNET_mutex_lock (pos->lock);

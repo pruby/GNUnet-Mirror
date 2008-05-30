@@ -33,6 +33,7 @@ gnunetinclude_HEADERS = \
   gnunet_namespace_lib.h \
   gnunet_pingpong_service.h \
   gnunet_protocols.h \
+  gnunet_pseudonym_lib.h \
   gnunet_remote_lib.h \
   gnunet_rpc_lib.h \
   gnunet_rpc_service.h \

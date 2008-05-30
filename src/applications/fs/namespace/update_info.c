@@ -28,8 +28,6 @@
 #include "gnunet_directories.h"
 #include "gnunet_namespace_lib.h"
 #include "gnunet_util.h"
-#include "namespace_info.h"
-#include "namespace_notification.h"
 #include "common.h"
 
 
@@ -263,23 +261,8 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
   char *old;
   struct GNUNET_ECRS_URI *uri;
   char *name;
-  GNUNET_EncName enc;
 
-  if ((GNUNET_OK !=
-       GNUNET_NS_internal_read_namespace_info_ (ectx,
-                                                cfg,
-                                                nsid,
-                                                NULL,
-                                                NULL,
-                                                &name)) || (name == NULL))
-    {
-      GNUNET_hash_to_enc (nsid, &enc);
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK |
-                     GNUNET_GE_USER,
-                     _("Could not determine namespace name for `%s'."), &enc);
-      return NULL;
-    }
+  name = "FIXME";
 
   /* computation of IDs of update(s).  Not as terrible as
      it looks, just enumerating all of the possible cases

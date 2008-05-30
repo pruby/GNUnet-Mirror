@@ -28,6 +28,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_collection_lib.h"
 #include "gnunet_namespace_lib.h"
+#include "gnunet_pseudonym_lib.h"
 #include "gnunet_util.h"
 
 static struct GNUNET_GE_Context *ectx;
@@ -127,14 +128,15 @@ printMeta (const struct GNUNET_ECRS_MetaData *m)
 
 static int
 namespacePrinter (void *unused,
-                  const char *namespaceName,
                   const GNUNET_HashCode * id,
                   const struct GNUNET_ECRS_MetaData *md, int rating)
 {
   GNUNET_EncName enc;
   GNUNET_HashCode nsid;
   int cpos;
+  char *namespaceName;
 
+  namespaceName = GNUNET_PSEUDO_id_to_name(ectx, cfg, id);
   GNUNET_hash_to_enc (id, &enc);
   if (0 == strcmp (namespaceName, (char *) &enc))
     printf (_("Namespace `%s' has rating %d.\n"), namespaceName, rating);
@@ -142,7 +144,7 @@ namespacePrinter (void *unused,
     printf (_("Namespace `%s' (%s) has rating %d.\n"),
             namespaceName, (char *) &enc, rating);
   printMeta (md);
-
+  GNUNET_free(namespaceName);
   if (set_rating != NULL)
     {
       int delta;
@@ -168,9 +170,9 @@ namespacePrinter (void *unused,
       if (delta != 0)
         {
           if (GNUNET_OK ==
-              GNUNET_NS_name_to_nsid (ectx, cfg, namespaceName, &nsid))
+              GNUNET_PSEUDO_name_to_id (ectx, cfg, namespaceName, &nsid))
             {
-              rating = GNUNET_NS_namespace_rank (ectx, cfg, &nsid, delta);
+              rating = GNUNET_PSEUDO_rank (ectx, cfg, &nsid, delta);
               printf (_("\tRating (after update): %d\n"), rating);
             }
           else
@@ -218,7 +220,7 @@ main (int argc, char *const *argv)
   /* delete pseudonyms */
   if (delete_name != NULL)
     {
-      if (GNUNET_OK == GNUNET_NS_name_to_nsid (ectx, cfg, delete_name, &nsid))
+      if (GNUNET_OK == GNUNET_PSEUDO_name_to_id (ectx, cfg, delete_name, &nsid))
         {
           if (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid))
             {
@@ -322,7 +324,7 @@ main (int argc, char *const *argv)
   if (0 == be_quiet)
     {
       /* print information about pseudonyms */
-      cnt = GNUNET_NS_namespace_list_all (ectx, cfg, &namespacePrinter, NULL);
+      cnt = GNUNET_PSEUDO_list_all (ectx, cfg, &namespacePrinter, NULL);
       if (cnt == -1)
         printf (_("Could not access namespace information.\n"));
     }
