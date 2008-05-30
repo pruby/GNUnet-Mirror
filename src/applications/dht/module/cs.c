@@ -23,7 +23,7 @@
  * @brief DHT application protocol using the DHT service.
  *   This is merely for the dht-client library.  The code
  *   of this file is mostly converting from and to TCP messages.
- * @author Marko Räihä, Christian Grothoff
+ * @author Marko RÃ¤ihÃ¤, Christian Grothoff
  */
 
 #include "platform.h"
@@ -31,6 +31,7 @@
 #include "gnunet_protocols.h"
 #include "dht.h"
 #include "gnunet_dht_service.h"
+#include "service.h"
 
 #define DEBUG_CS GNUNET_NO
 
@@ -172,6 +173,58 @@ csGet (struct GNUNET_ClientHandle *client,
 }
 
 /**
+ * CS handler for stopping existing get from DHT.
+ */
+static int
+csGetEnd (struct GNUNET_ClientHandle *client,
+       const GNUNET_MessageHeader * message)
+{
+  const CS_dht_request_get_MESSAGE *get;
+  struct DHT_CLIENT_GET_RECORD *pos;
+  struct DHT_CLIENT_GET_RECORD *prev;
+
+  if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;
+    }
+#if DEBUG_CS
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "`%s' at %s:%d processes get\n", __FUNCTION__, __FILE__,
+                 __LINE__);
+#endif
+
+  get = (const CS_dht_request_get_MESSAGE *) message;
+  GNUNET_mutex_lock (lock);
+  pos = getRecords;
+  prev = NULL;
+  while (pos != NULL)
+    {
+      if ((memcmp(pos->client,client,sizeof(client)) == 0) &&
+       (memcmp(&pos->get_record->key,&get->key,sizeof(GNUNET_HashCode))) && 
+       (ntohs(get->type) == pos->get_record->type))
+        break;
+      prev = pos;
+      pos = pos->next;
+    }
+  if (pos == NULL)
+    {
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_OK;
+    }
+  if (prev == NULL)
+    getRecords = pos->next;
+  else
+    prev->next = pos->next;
+  GNUNET_mutex_unlock (lock);
+  dhtAPI->get_stop (pos->get_record);
+  GNUNET_free (pos);
+  
+  return GNUNET_OK;
+}
+
+/**
  * CS handler for handling exiting client.  Triggers
  * get_stop for all operations that rely on this client.
  */
@@ -228,6 +281,9 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
+    status = GNUNET_SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET_END, &csGetEnd))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->cs_disconnect_handler_register (&csClientExit))
     status = GNUNET_SYSERR;

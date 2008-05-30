@@ -23,44 +23,16 @@
  * @brief internal GNUnet DHT service
  * @author Christian Grothoff
  */
-
-#include "platform.h"
+ 
 #include "table.h"
 #include "routing.h"
 #include "gnunet_dht_service.h"
-#include "gnunet_util.h"
+#include "service.h"
 
 /**
  * Global core API.
  */
 static GNUNET_CoreAPIForPlugins *coreAPI;
-
-/**
- * Handle used to track GET activity.
- */
-struct GNUNET_DHT_GetHandle
-{
-  /**
-   * Key that we are looking for.
-   */
-  GNUNET_HashCode key;
-
-  /**
-   * Function to call for each result.
-   */
-  GNUNET_ResultProcessor callback;
-
-  /**
-   * Extra argument to callback.
-   */
-  void *cls;
-
-  /**
-   * Type of the content that we are looking for.
-   */
-  unsigned int type;
-
-};
 
 /**
  * Perform an asynchronous GET operation on the DHT identified by
