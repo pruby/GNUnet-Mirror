@@ -14,8 +14,8 @@ Annotations:
   + tools: compile errors!
 - chat:  [RC]
   + adapt gnunet-chat for new client api
-  + adapt clientapi.c for new API and message format
-  + adapt chat.c for new message format and requirements
+  + support private message delivery, confirmations and
+    blocking options in chat.c
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
 
