@@ -29,6 +29,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_directories.h"
 #include "gnunet_chat_lib.h"
+#include "gnunet_ecrs_lib.h"
 
 #define MAX_MESSAGE_LENGTH 1024
 
@@ -80,33 +81,31 @@ static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
 static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
-                  const char *senderNick,
+                  const GNUNET_HashCode * sender,
                   const char *message,
-                  GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+		  GNUNET_CHAT_MSG_OPTIONS options)
 {
-  fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
+  fprintf (stdout, _("`%s' said: %s\n"), "FIXME", message);
   return GNUNET_OK;
 }
 
 static int
-member_list_callback (void *cls, const char *senderNick,
-                      int is_joining, GNUNET_CronTime timestamp)
+member_list_callback (void *cls, 
+		      const struct GNUNET_ECRS_MetaData * member_info,
+                      const GNUNET_RSA_PublicKey * member_id)
 {
-  fprintf (stdout, is_joining
+  fprintf (stdout, member_info != NULL
            ? _("`%s' entered the room\n")
-           : _("`%s' left the room\n"), senderNick);
+           : _("`%s' left the room\n"), "FIXME");
   return GNUNET_OK;
 }
 
 /**
  * Message delivery confirmations.
  *
- * @param timestamp when was the message sent?
- * @param senderNick what is the nickname of the receiver?
+ * @param timestamp when was the message received?
  * @param message the message (maybe NULL)
  * @param room in which room was the message received?
- * @param options what were the options of the message
- * @param response what was the receivers response (GNUNET_OK, GNUNET_NO, GNUNET_SYSERR).
  * @param receipt signature confirming delivery (maybe NULL, only
  *        if confirmation was requested)
  * @return GNUNET_OK to continue, GNUNET_SYSERR to refuse processing further
@@ -115,12 +114,11 @@ member_list_callback (void *cls, const char *senderNick,
 static int
 confirmation_callback (void *cls,
                        struct GNUNET_CHAT_Room *room,
-                       const char *receiverNick,
-                       const GNUNET_RSA_PublicKey * receiverKey,
-                       const char *message,
-                       GNUNET_CronTime timestamp,
-                       GNUNET_CHAT_MSG_OPTIONS options,
-                       int response, const GNUNET_RSA_Signature * receipt)
+		       unsigned int orig_seq_number,
+		       GNUNET_CronTime timestamp,
+                       const GNUNET_HashCode * receiver,
+                       const GNUNET_HashCode * msg_hash,
+		       const GNUNET_RSA_Signature * receipt)
 {
   return GNUNET_OK;
 }
@@ -137,7 +135,9 @@ main (int argc, char **argv)
 {
   struct GNUNET_CHAT_Room *room;
   struct GNUNET_RSA_PrivateKey *my_priv;
+  struct GNUNET_ECRS_MetaData * meta;
   char message[MAX_MESSAGE_LENGTH + 1];
+  unsigned int seq;
 
   if (GNUNET_SYSERR == GNUNET_init (argc,
                                     argv,
@@ -152,13 +152,19 @@ main (int argc, char **argv)
       return -1;
     }
 
-
-
+  meta = GNUNET_ECRS_meta_data_create();
+  GNUNET_ECRS_meta_data_insert(meta,
+			       EXTRACTOR_TITLE,
+			       nickname);
   room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
-                                nickname, room_name,
-                                "", &receive_callback,
-                                NULL, &member_list_callback, NULL);
+                                nickname, 
+				meta,
+				room_name,
+                                &receive_callback,
+                                NULL, &member_list_callback, NULL,
+				&confirmation_callback, NULL);
+  GNUNET_ECRS_meta_data_destroy(meta);
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join room `%s'\n"), room_name);
@@ -183,10 +189,9 @@ main (int argc, char **argv)
         message[strlen (message) - 1] = '\0';
       if (GNUNET_OK != GNUNET_CHAT_send_message (room,
                                                  message,
-                                                 &confirmation_callback,
-                                                 NULL,
                                                  GNUNET_CHAT_MSG_OPTION_NONE,
-                                                 NULL))
+                                                 NULL,
+						 &seq))
         fprintf (stderr, _("Failed to send message.\n"));
     }
 

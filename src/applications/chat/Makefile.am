@@ -22,6 +22,7 @@ gnunet_chat_LDADD = \
 libgnunetchat_api_la_SOURCES = \
   clientapi.c 
 libgnunetchat_api_la_LIBADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 libgnunetmodule_chat_la_SOURCES = \

@@ -49,7 +49,7 @@ struct GNUNET_CHAT_Room
 
   struct GNUNET_ECRS_MetaData * member_info;
 
-  char *nickname;
+  char *nickname; /* not really required */
 
   char *room_name;
 
