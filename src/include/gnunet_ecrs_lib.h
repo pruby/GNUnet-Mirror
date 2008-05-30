@@ -106,14 +106,16 @@ typedef int (*GNUNET_ECRS_KeywordIterator) (const char *keyword,
 /**
  * Create a fresh MetaData token.
  */
-struct GNUNET_ECRS_MetaData *GNUNET_ECRS_meta_data_create (void);
+struct GNUNET_ECRS_MetaData *
+GNUNET_ECRS_meta_data_create (void);
 
 /**
  * Duplicate a MetaData token.
  */
-struct GNUNET_ECRS_MetaData *GNUNET_ECRS_meta_data_duplicate (const struct
-                                                              GNUNET_ECRS_MetaData
-                                                              *meta);
+struct GNUNET_ECRS_MetaData *
+GNUNET_ECRS_meta_data_duplicate (const struct
+				 GNUNET_ECRS_MetaData
+				 *meta);
 
 /**
  * Free meta data.

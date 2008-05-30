@@ -29,7 +29,7 @@
 #define GNUNET_CHAT_LIB_H
 
 #include "gnunet_util_core.h"
-#include "gnunet_ecrs.h"
+#include "gnunet_ecrs_lib.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -113,7 +113,7 @@ struct GNUNET_CHAT_Room;
  * A message was sent in the chat to us.
  *
  * @param timestamp when was the message sent?
- * @param senderNick what is the nickname of the sender? (maybe NULL)
+ * @param sender what is the ID of the sender? (maybe NULL)
  * @param message the message (maybe NULL, especially if confirmation
  *        is requested before delivery; the protocol will ensure
  *        that this function is called again with the full message
@@ -126,9 +126,8 @@ struct GNUNET_CHAT_Room;
  */
 typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
                                             struct GNUNET_CHAT_Room * room,
-                                            const char *senderNick,
+                                            const GNUNET_HashCode * sender,
                                             const char *message,
-                                            GNUNET_CronTime timestamp,
                                             GNUNET_CHAT_MSG_OPTIONS options);
 
 /**
@@ -137,7 +136,7 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  */
 typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
                                                const struct GNUNET_ECRS_MetaData* member_info,
-					       const GNUNET_HashCode *member_id);
+					       const GNUNET_RSA_PublicKey *member_id);
 
 
 /**
