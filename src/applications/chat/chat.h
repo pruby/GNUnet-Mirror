@@ -120,6 +120,8 @@ typedef struct
 
 /**
  * Message send from client to daemon to join a chat room.
+ * This struct is followed by the room name and then
+ * the serialized ECRS meta data describing the new member.
  */
 typedef struct
 {
@@ -139,11 +141,10 @@ typedef struct
    */
   GNUNET_RSA_PrivateKeyEncoded private_key;
 
-  unsigned short nick_len;
-
-  /* followed by nick_len bytes of
-     the nickname; then followed
-     by the name of the chat room */
+  /**
+   * Length of the room name.
+   */
+  unsigned short room_name_len;
 
 } CS_chat_MESSAGE_JoinRequest;
 
@@ -190,7 +191,7 @@ typedef struct
   /**
    * Who is leaving?
    */
-  GNUNET_HashCode user;
+  GNUNET_RSA_PublicKey user;
 
 } CS_chat_MESSAGE_LeaveNotification;
 
