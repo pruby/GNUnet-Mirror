@@ -44,6 +44,8 @@ static struct GNUNET_GC_Configuration *cfg;
 
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
+struct GNUNET_DHT_Context *ctx;
+
 /**
  * All gnunet-dht-query command line options
  */
@@ -84,10 +86,8 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_SECONDS;
-  ret = GNUNET_DHT_get (cfg,
-                        ectx,
-                        GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                        &hc, timeout, &printCallback, (void *) key);
+  ret = GNUNET_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                        (void *) key);
   if (ret == 0)
     printf (_("%s(%s) operation returned no results.\n"), "get", key);
 }
@@ -123,7 +123,7 @@ main (int argc, char *const *argv)
 {
   int i;
   struct GNUNET_ClientServerConnection *handle;
-
+  void *unused;
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-dht-query",
@@ -135,6 +135,8 @@ main (int argc, char *const *argv)
     }
 
   handle = GNUNET_client_connection_create (ectx, cfg);
+  
+  ctx = GNUNET_DHT_context_create(cfg,ectx,&printCallback,unused);
   if (handle == NULL)
     {
       fprintf (stderr, _("Failed to connect to gnunetd.\n"));

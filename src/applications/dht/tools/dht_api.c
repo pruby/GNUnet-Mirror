@@ -116,8 +116,8 @@ poll_thread (void *cls)
  *        GNUNET_SYSERR
  * @return NULL on error
  */
-struct GNUNET_DHT_Context *GNUNET_DHT_context_create (struct
-                                                      GNUNET_GC_Configuration
+struct GNUNET_DHT_Context 
+*GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
                                                       *cfg,
                                                       struct GNUNET_GE_Context
                                                       *ectx,
