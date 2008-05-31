@@ -28,6 +28,7 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_chat_lib.h"
+#include "gnunet_ecrs_lib.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
@@ -40,42 +41,39 @@ static struct GNUNET_GC_Configuration *cfg;
 static int
 receive_callback1 (void *cls,
                    struct GNUNET_CHAT_Room *room,
-                   const char *senderNick,
+                   const GNUNET_HashCode * sender,
+		   const struct GNUNET_ECRS_MetaData * member_info,
                    const char *message,
-                   GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+		   GNUNET_CHAT_MSG_OPTIONS options)
 {
-  fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
+
   return GNUNET_OK;
 }
 
 static int
-member_list_callback1 (void *cls, const char *senderNick,
-                       int is_joining, GNUNET_CronTime timestamp)
+member_list_callback1 (void *cls,
+		       const struct GNUNET_ECRS_MetaData * member_info,
+		       const GNUNET_RSA_PublicKey * member_id) 
 {
-  fprintf (stdout, is_joining
-           ? _("`%s' entered the room\n")
-           : _("`%s' left the room\n"), senderNick);
   return GNUNET_OK;
 }
 
 static int
 receive_callback2 (void *cls,
                    struct GNUNET_CHAT_Room *room,
-                   const char *senderNick,
+                   const GNUNET_HashCode * sender,
+		   const struct GNUNET_ECRS_MetaData * member_info,
                    const char *message,
-                   GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+		   GNUNET_CHAT_MSG_OPTIONS options)
 {
-  fprintf (stdout, _("`%s' said: %s\n"), senderNick, message);
   return GNUNET_OK;
 }
 
 static int
-member_list_callback2 (void *cls, const char *senderNick,
-                       int is_joining, GNUNET_CronTime timestamp)
+member_list_callback2 (void *cls,
+		       const struct GNUNET_ECRS_MetaData * member_info,
+		       const GNUNET_RSA_PublicKey * member_id) 
 {
-  fprintf (stdout, is_joining
-           ? _("`%s' entered the room\n")
-           : _("`%s' left the room\n"), senderNick);
   return GNUNET_OK;
 }
 
@@ -92,8 +90,9 @@ main (int argc, char **argv)
   int ret;
   struct GNUNET_CHAT_Room *r1;
   struct GNUNET_CHAT_Room *r2;
-  GNUNET_RSA_PublicKey me;
-  struct GNUNET_RSA_PrivateKey *key = NULL;
+  unsigned int seq;
+  struct GNUNET_ECRS_MetaData * meta1;
+  struct GNUNET_ECRS_MetaData * meta2;
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -103,8 +102,6 @@ main (int argc, char **argv)
       return -1;
     }
   GNUNET_disable_entropy_gathering ();
-  key = GNUNET_RSA_create_key ();
-  GNUNET_RSA_get_public_key (key, &me);
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "chat stats",
@@ -112,35 +109,47 @@ main (int argc, char **argv)
                                         2087, 10, 1);
   if (peers == NULL)
     {
-      fprintf (stderr, "Failed to start the gnunetd daemons!\n");
+      fprintf (stderr, "Failed to start the gnunetd daemon!\n");
       GNUNET_GC_free (cfg);
       return -1;
     }
 #endif
+  meta1 = GNUNET_ECRS_meta_data_create();
+  GNUNET_ECRS_meta_data_insert(meta1,
+			       EXTRACTOR_TITLE,
+			       "Alice");
+  meta2 = GNUNET_ECRS_meta_data_create();
+  GNUNET_ECRS_meta_data_insert(meta2,
+			       EXTRACTOR_TITLE,
+			       "Bob");
   r1 =
-    GNUNET_CHAT_join_room (NULL, cfg, "nicktest1", "testroom", &me, key, "",
-                           &receive_callback1, NULL, &member_list_callback1,
-                           NULL);
+    GNUNET_CHAT_join_room (NULL, cfg, "nick1", 
+			   meta1, "test", -1,
+                           &receive_callback1, NULL, 
+			   &member_list_callback1, NULL,
+			   NULL, NULL);
   if (r1 == NULL)
     {
       ret = 1;
       goto CLEANUP;
     }
   r2 =
-    GNUNET_CHAT_join_room (NULL, cfg, "nicktest2", "testroom", &me, key, "",
-                           &receive_callback2, NULL, &member_list_callback2,
-                           NULL);
+    GNUNET_CHAT_join_room (NULL, cfg, "nick2",
+			   meta2, "test", -1, 
+                           &receive_callback2, NULL, 
+			   &member_list_callback2, NULL,
+			   NULL, NULL);
   if (r2 == NULL)
     {
       ret = 1;
       goto CLEANUP;
     }
 
-  GNUNET_CHAT_send_message (r1, "test message 1", NULL, NULL,
-                            GNUNET_CHAT_MSG_OPTION_NONE, NULL);
+  GNUNET_CHAT_send_message (r1, "test message 1",
+                            GNUNET_CHAT_MSG_OPTION_NONE, NULL, &seq);
 
-  GNUNET_CHAT_send_message (r2, "test message 2", NULL, NULL,
-                            GNUNET_CHAT_MSG_OPTION_NONE, NULL);
+  GNUNET_CHAT_send_message (r2, "test message 2", 
+                            GNUNET_CHAT_MSG_OPTION_NONE, NULL, &seq);
 
 CLEANUP:
   if (r1 != NULL)
@@ -155,4 +164,4 @@ CLEANUP:
   return ret;
 }
 
-/* end of chattest.c */
+/* end of loopback_test.c */
