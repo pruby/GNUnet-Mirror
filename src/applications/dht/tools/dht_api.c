@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -21,54 +21,12 @@
 /**
  * @file dht/tools/dht_api.c
  * @brief DHT-module's core API's implementation.
- * @author Tomi Tukiainen, Christian Grothoff
+ * @author Tomi Tukiainen, Christian Grothoff, Nathan Evans
  */
 
-#include "platform.h"
-#include "gnunet_protocols.h"
-#include "dht.h"
-#include "gnunet_dht_lib.h"
-#include "gnunet_util.h"
+#include "dht_api.h"
 
 #define DEBUG_DHT_API GNUNET_NO
-
-/**
- * Data exchanged between main thread and GET thread.
- */
-struct GNUNET_DHT_Context
-{
-
-  /**
-   * Connection with gnunetd.
-   */
-  struct GNUNET_ClientServerConnection *sock;
-
-  /**
-   * Callback to call for each result.
-   */
-  GNUNET_ResultProcessor processor;
-
-  /**
-   * Extra argument for processor.
-   */
-  void *closure;
-
-  /**
-   * Parent thread that is waiting for the
-   * timeout (used to notify if we are exiting
-   * early, i.e. because of gnunetd closing the
-   * connection or the processor callback requesting
-   * it).
-   */
-  struct GNUNET_ThreadHandle *poll_thread;      /*Poll thread instead.. */
-
-  /**
-   * Are we done (for whichever reason)?
-   */
-  int aborted;
-
-};
-
 
 static void *
 poll_thread (void *cls)

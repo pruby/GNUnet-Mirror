@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2007 Christian Grothoff (and other contributing authors)
+     (C) 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -22,6 +22,7 @@
  * @file applications/dht/tools/dht_multipeer_test.c
  * @brief DHT testcase
  * @author Christian Grothoff
+ * @author Nathan Evans
  */
 
 #include "platform.h"
@@ -30,6 +31,7 @@
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
+#include "dht_api.h"
 
 /**
  * How many peers should the testcase run?  Note that
@@ -44,6 +46,30 @@
 #define NUM_ROUNDS 10
 
 static int ok;
+static int found;
+
+static int
+result_callback (const GNUNET_HashCode * key,
+                 unsigned int type,
+                 unsigned int size, const char *data, void *cls)
+{
+  int *i = cls;
+  char expect[8];
+
+#if 0
+  fprintf (stderr, "Got %u %u `%.*s'\n", type, size, size, data);
+#endif
+  memset (expect, (*i), sizeof (expect));
+  if ((8 != size) ||
+      (0 != memcmp (expect, data, size)) ||
+      (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
+    {
+      return GNUNET_SYSERR;
+    }
+  found++;
+  return GNUNET_OK;
+}
+
 
 static int
 waitForConnect (const char *name, unsigned long long value, void *cls)
@@ -72,11 +98,12 @@ main (int argc, const char **argv)
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_DHT_Context *ctx_array[NUM_PEERS];
   int left;
   int i;
   int j;
   int k;
-  int found;
+
   char buf[128];
 
   ectx = NULL;
@@ -157,6 +184,7 @@ main (int argc, const char **argv)
       GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
       GNUNET_GC_set_configuration_value_string (cfg,
                                                 ectx, "NETWORK", "HOST", buf);
+      ctx_array[i] = GNUNET_DHT_context_create(cfg,ectx,&result_callback,NULL);                                                
       for (j = 0; j < NUM_PEERS; j++)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
@@ -166,23 +194,25 @@ main (int argc, const char **argv)
             {
               printf (".");
               fflush (stdout);
-              if (0 < GNUNET_DHT_get (cfg,
-                                      ectx,
+              if (0 < GNUNET_DHT_get_start (ctx_array[i],
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      &key,
-                                      15 * GNUNET_CRON_SECONDS, NULL, NULL))
+                                      &key))
                 break;
             }
           if (k < NUM_ROUNDS)
             {
               printf (" OK!\n");
-              found++;
             }
           else
             {
               printf ("?\n");
             }
         }
+    }
+    
+  for (i = 0; i < NUM_PEERS; i++)
+    {
+      GNUNET_DHT_context_destroy(ctx_array[i]); 
     }
   /* end of actual test code */
   printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);

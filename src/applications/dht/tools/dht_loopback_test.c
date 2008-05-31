@@ -22,6 +22,7 @@
  * @file applications/dht/tools/dht_loopback_test.c
  * @brief DHT testcase using only a single peer
  * @author Christian Grothoff
+ * @author Nathan Evans
  */
 
 #include "platform.h"
@@ -75,10 +76,12 @@ main (int argc, const char **argv)
   char *value;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_DHT_Context *ctx;
+  void *unused_cls = NULL;
   int left;
   int i;
 
+  
   ectx = NULL;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
@@ -101,7 +104,8 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  sock = GNUNET_client_connection_create (NULL, cfg);
+  ctx = GNUNET_DHT_context_create(cfg,ectx,&result_callback,unused_cls);
+                                            
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
   value = GNUNET_malloc (8);
@@ -112,11 +116,9 @@ main (int argc, const char **argv)
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
   i = 'A';
-  CHECK (1 == GNUNET_DHT_get (cfg,
-                              ectx,
+  CHECK (1 == GNUNET_DHT_get_start (ctx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback,
-                              &i));
+                              &key));
   CHECK (err == 0);
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
@@ -128,11 +130,9 @@ main (int argc, const char **argv)
                                       8, value));
   CHECK (err == 0);
   i = 'B';
-  CHECK (1 == GNUNET_DHT_get (cfg,
-                              ectx,
+  CHECK (1 == GNUNET_DHT_get_start (ctx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 2 * GNUNET_CRON_SECONDS, &result_callback,
-                              &i));
+                              &key));
   GNUNET_hash ("key2", 4, &key);
   CHECK (err == 0);
   left = 10;
@@ -140,11 +140,9 @@ main (int argc, const char **argv)
     {
       fprintf (stderr, ".");
       i = 'A';
-      if (1 == GNUNET_DHT_get (cfg,
-                               ectx,
+      if (1 == GNUNET_DHT_get_start (ctx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key, 2 * GNUNET_CRON_SECONDS,
-                               &result_callback, &i))
+                               &key))
         break;
       CHECK (err == 0);
       left--;
@@ -152,6 +150,8 @@ main (int argc, const char **argv)
   while (left > 0);
   CHECK (left > 0);
   /* end of actual test code */
+
+GNUNET_DHT_context_destroy(ctx);
 
 FAILURE:
 #if START_PEERS
