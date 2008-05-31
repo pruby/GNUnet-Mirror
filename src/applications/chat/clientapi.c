@@ -49,8 +49,6 @@ struct GNUNET_CHAT_Room
 
   struct GNUNET_ECRS_MetaData *member_info;
 
-  char *nickname;               /* not really required */
-
   char *room_name;
 
   GNUNET_RSA_PrivateKeyEncoded *my_private_key;
@@ -400,7 +398,6 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
       return NULL;
     }
   chat_room = GNUNET_malloc (sizeof (struct GNUNET_CHAT_Room));
-  chat_room->nickname = GNUNET_strdup (nick_name);
   chat_room->room_name = GNUNET_strdup (room_name);
   chat_room->member_info = GNUNET_ECRS_meta_data_duplicate (member_info);
   chat_room->my_private_key = key;
@@ -417,7 +414,6 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
     GNUNET_thread_create (&poll_thread, chat_room, 1024 * 2);
   if (chat_room->listen_thread == NULL)
     {
-      GNUNET_free (chat_room->nickname);
       GNUNET_free (chat_room->room_name);
       GNUNET_client_connection_destroy (chat_room->sock);
       GNUNET_ECRS_meta_data_destroy (chat_room->member_info);
@@ -446,7 +442,6 @@ GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
   GNUNET_thread_stop_sleep (chat_room->listen_thread);
   GNUNET_thread_join (chat_room->listen_thread, &unused);
   GNUNET_free (chat_room->room_name);
-  GNUNET_free (chat_room->nickname);
   GNUNET_ECRS_meta_data_destroy (chat_room->member_info);
   GNUNET_client_connection_destroy (chat_room->sock);
   GNUNET_free (chat_room->my_private_key);

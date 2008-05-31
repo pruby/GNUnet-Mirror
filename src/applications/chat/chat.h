@@ -21,10 +21,10 @@
 /**
  * @author Christian Grothoff
  * @author Nathan Evans
- * @file applications/chat/chat.h
+ * @file chat.h
  **/
-#ifndef CHAT_CHAT_H
-#define CHAT_CHAT_H
+#ifndef CHAT_H
+#define CHAT_H
 
 #include "gnunet_core.h"
 #include "gnunet_chat_lib.h"
