@@ -322,12 +322,12 @@ buildReply (unsigned int countTimeUnits)
     if (counters[i] != NULL)
       {
         if (counters[i]->send.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
-                        counters[count++], &counters[i]->send,
+          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->counters
+                        [count++], &counters[i]->send,
                         GNUNET_TRAFFIC_TYPE_SENT, countTimeUnits, i);
         if (counters[i]->receive.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
-                        counters[count++], &counters[i]->receive,
+          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->counters
+                        [count++], &counters[i]->receive,
                         GNUNET_TRAFFIC_TYPE_RECEIVED, countTimeUnits, i);
       }
 
@@ -662,9 +662,8 @@ done_module_traffic ()
   GNUNET_GE_ASSERT (NULL, myCoreAPI != NULL);
   GNUNET_GE_ASSERT (myCoreAPI->ectx,
                     GNUNET_SYSERR !=
-                    myCoreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_TRAFFIC_QUERY,
-                                           &trafficQueryHandler));
+                    myCoreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_TRAFFIC_QUERY, &trafficQueryHandler));
   myCoreAPI->service_release (myApi);
   myApi = NULL;
   myCoreAPI = NULL;

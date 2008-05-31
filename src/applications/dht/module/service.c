@@ -23,7 +23,7 @@
  * @brief internal GNUnet DHT service
  * @author Christian Grothoff
  */
- 
+
 #include "table.h"
 #include "routing.h"
 #include "gnunet_dht_service.h"

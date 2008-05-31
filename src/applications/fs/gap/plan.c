@@ -951,19 +951,18 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    cs_disconnect_handler_register (&handle_client_exit));
+                    capi->cs_disconnect_handler_register
+                    (&handle_client_exit));
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    peer_disconnect_notification_register
+                    capi->peer_disconnect_notification_register
                     (&peer_disconnect_handler, NULL));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    send_callback_register (sizeof (P2P_gap_query_MESSAGE),
-                                            GNUNET_FS_GAP_QUERY_POLL_PRIORITY,
-                                            &query_fill_callback));
+                    coreAPI->send_callback_register (sizeof
+                                                     (P2P_gap_query_MESSAGE),
+                                                     GNUNET_FS_GAP_QUERY_POLL_PRIORITY,
+                                                     &query_fill_callback));
   stats = capi->service_request ("stats");
   if (stats != NULL)
     {
@@ -994,19 +993,17 @@ GNUNET_FS_PLAN_done ()
     handle_client_exit (clients->client);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_disconnect_handler_unregister (&handle_client_exit));
+                    coreAPI->cs_disconnect_handler_unregister
+                    (&handle_client_exit));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    peer_disconnect_notification_unregister
+                    coreAPI->peer_disconnect_notification_unregister
                     (&peer_disconnect_handler, NULL));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    send_callback_unregister (sizeof
-                                              (P2P_gap_query_MESSAGE),
-                                              &query_fill_callback));
+                    coreAPI->send_callback_unregister (sizeof
+                                                       (P2P_gap_query_MESSAGE),
+                                                       &query_fill_callback));
   if (stats != NULL)
     {
       coreAPI->service_release (stats);

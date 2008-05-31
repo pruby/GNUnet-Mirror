@@ -445,8 +445,8 @@ GNUNET_FSUI_uploadThread (void *cls)
             {
               loc = GNUNET_ECRS_location_to_uri (utc->uri,
                                                  &hello->publicKey,
-                                                 ntohl (hello->
-                                                        expiration_time),
+                                                 ntohl
+                                                 (hello->expiration_time),
                                                  (GNUNET_ECRS_SignFunction) &
                                                  GNUNET_IDENTITY_sign_function,
                                                  sock);

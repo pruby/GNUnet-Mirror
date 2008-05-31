@@ -889,34 +889,29 @@ initialize_module_advertising (GNUNET_CoreAPIForPlugins * capi)
       stat_hello_in =
         stats->create (gettext_noop ("# Peer advertisements received"));
       stat_hello_nat_in =
-        stats->
-        create (gettext_noop ("# Peer advertisements of type NAT received"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements of type NAT received"));
       stat_hello_verified =
-        stats->
-        create (gettext_noop ("# Peer advertisements confirmed via PONG"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements confirmed via PONG"));
       stat_hello_update =
-        stats->
-        create (gettext_noop
-                ("# Peer advertisements updating earlier HELLOs"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements updating earlier HELLOs"));
       stat_hello_discard =
-        stats->
-        create (gettext_noop ("# Peer advertisements discarded due to load"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements discarded due to load"));
       stat_hello_no_transport =
-        stats->
-        create (gettext_noop
-                ("# Peer advertisements for unsupported transport"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements for unsupported transport"));
       stat_hello_ping_busy =
-        stats->
-        create (gettext_noop
-                ("# Peer advertisements not confirmed due to ping busy"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements not confirmed due to ping busy"));
       stat_hello_noselfad =
-        stats->
-        create (gettext_noop
-                ("# Peer advertisements not confirmed due to lack of self ad"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements not confirmed due to lack of self ad"));
       stat_hello_send_error =
-        stats->
-        create (gettext_noop
-                ("# Peer advertisements not confirmed due to send error"));
+        stats->create (gettext_noop
+                       ("# Peer advertisements not confirmed due to send error"));
       stat_hello_out =
         stats->create (gettext_noop ("# Self advertisments transmitted"));
       stat_hello_fwd =

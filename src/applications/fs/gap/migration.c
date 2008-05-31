@@ -423,8 +423,7 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
   unsigned long long option_value;
 
   coreAPI = capi;
-  coreAPI->
-    send_callback_register
+  coreAPI->send_callback_register
     (GNUNET_GAP_ESTIMATED_DATA_SIZE,
      GNUNET_FS_GAP_CONTENT_MIGRATION_PRIORITY, &activeMigrationCallback);
   datastore = capi->service_request ("datastore");
@@ -456,8 +455,7 @@ GNUNET_FS_MIGRATION_done ()
   int i;
   struct MigrationRecord *record;
 
-  coreAPI->
-    send_callback_unregister
+  coreAPI->send_callback_unregister
     (GNUNET_GAP_ESTIMATED_DATA_SIZE, &activeMigrationCallback);
   if (stats != NULL)
     {

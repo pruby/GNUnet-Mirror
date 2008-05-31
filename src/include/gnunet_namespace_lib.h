@@ -65,15 +65,25 @@ typedef int (*GNUNET_NS_UpdateIterator) (void *cls,
  * @param meta meta-data about the namespace (maybe NULL)
  * @return URI on success, NULL on error (namespace already exists)
  */
-struct GNUNET_ECRS_URI *
-GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
-			    struct GNUNET_GC_Configuration *cfg,
-			    unsigned int anonymityLevel,
-			    unsigned int insertPriority,
-			    GNUNET_CronTime insertExpiration,
-			    const struct GNUNET_ECRS_MetaData *meta,
-			    const struct GNUNET_ECRS_URI*advertisementURI,
-			    const GNUNET_HashCode *rootEntry);
+struct GNUNET_ECRS_URI *GNUNET_NS_namespace_create (struct GNUNET_GE_Context
+                                                    *ectx,
+                                                    struct
+                                                    GNUNET_GC_Configuration
+                                                    *cfg,
+                                                    unsigned int
+                                                    anonymityLevel,
+                                                    unsigned int
+                                                    insertPriority,
+                                                    GNUNET_CronTime
+                                                    insertExpiration,
+                                                    const struct
+                                                    GNUNET_ECRS_MetaData
+                                                    *meta,
+                                                    const struct
+                                                    GNUNET_ECRS_URI
+                                                    *advertisementURI,
+                                                    const GNUNET_HashCode *
+                                                    rootEntry);
 
 /**
  * Delete a local namespace.  Only prevents future insertions into the
@@ -137,19 +147,31 @@ void GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
  *        entry?
  * @return the resulting URI, NULL on error
  */
-struct GNUNET_ECRS_URI *
-GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
-			    struct GNUNET_GC_Configuration *cfg,
-			    unsigned int anonymityLevel, 
-			    unsigned int insertPriority, 
-			    GNUNET_CronTime insertExpiration, 
-			    const GNUNET_HashCode * nsid,
-			    GNUNET_Int32Time updateInterval, 
-			    const GNUNET_HashCode * lastId, 
-			    const GNUNET_HashCode * thisId, 
-			    const GNUNET_HashCode * nextId, 
-			    const struct GNUNET_ECRS_URI *dst, 
-			    const struct GNUNET_ECRS_MetaData *md);
+struct GNUNET_ECRS_URI *GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context
+                                                    *ectx,
+                                                    struct
+                                                    GNUNET_GC_Configuration
+                                                    *cfg,
+                                                    unsigned int
+                                                    anonymityLevel,
+                                                    unsigned int
+                                                    insertPriority,
+                                                    GNUNET_CronTime
+                                                    insertExpiration,
+                                                    const GNUNET_HashCode *
+                                                    nsid,
+                                                    GNUNET_Int32Time
+                                                    updateInterval,
+                                                    const GNUNET_HashCode *
+                                                    lastId,
+                                                    const GNUNET_HashCode *
+                                                    thisId,
+                                                    const GNUNET_HashCode *
+                                                    nextId,
+                                                    const struct
+                                                    GNUNET_ECRS_URI *dst,
+                                                    const struct
+                                                    GNUNET_ECRS_MetaData *md);
 
 /**
  * Compute the next ID for peridodically updated content.
@@ -168,20 +190,23 @@ int GNUNET_NS_compute_next_identifier (struct GNUNET_GE_Context *ectx,
 /**
  * List all updateable content in a given namespace.
  */
-int GNUNET_NS_namespace_list_contents (struct GNUNET_GE_Context *ectx, 
-				       struct GNUNET_GC_Configuration *cfg,
-				       const GNUNET_HashCode * nsid, 
-				       GNUNET_NS_UpdateIterator iterator, 
-				       void *closure);
+int GNUNET_NS_namespace_list_contents (struct GNUNET_GE_Context *ectx,
+                                       struct GNUNET_GC_Configuration *cfg,
+                                       const GNUNET_HashCode * nsid,
+                                       GNUNET_NS_UpdateIterator iterator,
+                                       void *closure);
 
 /**
  * Convert namespace URI to a human readable format
  * (using the namespace description, if available).
  */
-char *
-GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
-					    struct GNUNET_GC_Configuration*cfg,
-					    const struct GNUNET_ECRS_URI *uri);
+char *GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context
+                                                  *ectx,
+                                                  struct
+                                                  GNUNET_GC_Configuration
+                                                  *cfg,
+                                                  const struct GNUNET_ECRS_URI
+                                                  *uri);
 
 
 

@@ -656,8 +656,7 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
   memset (table, 0, sizeof (struct RequestList *) * table_size);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    peer_disconnect_notification_register
+                    coreAPI->peer_disconnect_notification_register
                     (&cleanup_on_peer_disconnect, NULL));
   GNUNET_cron_add_job (capi->cron,
                        &have_more_processor,
@@ -675,8 +674,8 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_content_found_locally =
         stats->create (gettext_noop ("# gap content found locally"));
       stat_gap_query_refreshed =
-        stats->
-        create (gettext_noop ("# gap queries refreshed existing record"));
+        stats->create (gettext_noop
+                       ("# gap queries refreshed existing record"));
       stat_trust_earned = stats->create (gettext_noop ("# trust earned"));
     }
   cron = GNUNET_cron_create (coreAPI->ectx);
@@ -706,8 +705,7 @@ GNUNET_FS_GAP_done ()
   table = NULL;
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    peer_disconnect_notification_unregister
+                    coreAPI->peer_disconnect_notification_unregister
                     (&cleanup_on_peer_disconnect, NULL));
   coreAPI->service_release (datastore);
   datastore = NULL;

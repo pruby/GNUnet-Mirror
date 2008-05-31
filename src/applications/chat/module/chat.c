@@ -104,44 +104,45 @@ csHandleTransmitRequest (struct GNUNET_ClientHandle *client,
     rmsg->sender = pos->id;
   else
     memset (&rmsg->sender, 0, sizeof (GNUNET_HashCode));
-  priv_msg = (0 == memcmp(&all_zeros,
-			  &cmsg->target,
-			  sizeof(GNUNET_HashCode)));
-  memcpy(&rmsg[1],
-	 &cmsg[1],
-	 msg_len);
+  priv_msg = (0 == memcmp (&all_zeros,
+                           &cmsg->target, sizeof (GNUNET_HashCode)));
+  memcpy (&rmsg[1], &cmsg[1], msg_len);
   pos = client_list_head;
   while (pos != NULL)
     {
       if (0 == strcmp (room, pos->room))
         {
-	  if ( ( (!priv_msg) ||
-		 (0 == memcmp(&cmsg->target,
-			      &pos->id,
-			      sizeof(GNUNET_HashCode))) ) &&
-	       ( (0 == ntohl(cmsg->msg_options)) & (~pos->msg_options) ) )
-	    {
-	      coreAPI->cs_send_message (pos->client, &rmsg->header, GNUNET_YES);
-	      if (0 != (ntohl(cmsg->msg_options)&GNUNET_CHAT_MSG_ACKNOWLEDGED))
-		{
-		  receipt.header.size = htons(sizeof(CS_chat_MESSAGE_ConfirmationReceipt));
-		  receipt.header.type = htons(GNUNET_CS_PROTO_CHAT_CONFIRMATION_RECEIPT);
-		  receipt.sequence_number = cmsg->sequence_number;
-		  receipt.timestamp = GNUNET_htonll(GNUNET_get_time());
-		  receipt.target = pos->id;
-		  /* FIXME: this will currently *always* be the plaintext message;
-		     once we have P2P, we want to sign the encrypted message
-		     (which we currently do not even generate!) */
-		  GNUNET_hash(&cmsg[1],
-			      msg_len,
-			      &receipt.content);
-		  GNUNET_RSA_sign(pos->private_key,
-				  sizeof(CS_chat_MESSAGE_ConfirmationReceipt) - sizeof(GNUNET_RSA_Signature),
-				  &receipt,
-				  &receipt.signature);		  
-		  coreAPI->cs_send_message (client, &receipt.header, GNUNET_YES);
-		}
-	    }
+          if (((!priv_msg) ||
+               (0 == memcmp (&cmsg->target,
+                             &pos->id,
+                             sizeof (GNUNET_HashCode)))) &&
+              ((0 == ntohl (cmsg->msg_options)) & (~pos->msg_options)))
+            {
+              coreAPI->cs_send_message (pos->client, &rmsg->header,
+                                        GNUNET_YES);
+              if (0 !=
+                  (ntohl (cmsg->msg_options) & GNUNET_CHAT_MSG_ACKNOWLEDGED))
+                {
+                  receipt.header.size =
+                    htons (sizeof (CS_chat_MESSAGE_ConfirmationReceipt));
+                  receipt.header.type =
+                    htons (GNUNET_CS_PROTO_CHAT_CONFIRMATION_RECEIPT);
+                  receipt.sequence_number = cmsg->sequence_number;
+                  receipt.timestamp = GNUNET_htonll (GNUNET_get_time ());
+                  receipt.target = pos->id;
+                  /* FIXME: this will currently *always* be the plaintext message;
+                     once we have P2P, we want to sign the encrypted message
+                     (which we currently do not even generate!) */
+                  GNUNET_hash (&cmsg[1], msg_len, &receipt.content);
+                  GNUNET_RSA_sign (pos->private_key,
+                                   sizeof
+                                   (CS_chat_MESSAGE_ConfirmationReceipt) -
+                                   sizeof (GNUNET_RSA_Signature), &receipt,
+                                   &receipt.signature);
+                  coreAPI->cs_send_message (client, &receipt.header,
+                                            GNUNET_YES);
+                }
+            }
         }
       pos = pos->next;
     }

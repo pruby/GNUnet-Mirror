@@ -96,15 +96,18 @@ static struct sembuf op_lock[2] = {
   {2, 1, SEM_UNDO}              /* then increment [2] to 1 - this locks it */
   /* UNDO to release the lock if processes exits *//* before explicitly unlocking */
 };
+
 static struct sembuf op_unlock[1] = {
   {2, -1, SEM_UNDO}             /* decrement [2] (lock) back to 0 */
 };
+
 static struct sembuf op_endcreate[2] = {
   {1, -1, SEM_UNDO},            /* decrement [1] (proc counter) with undo on exit */
   /* UNDO to adjust proc counter if process exits
      before explicitly calling sem_close() */
   {2, -1, SEM_UNDO}             /* then decrement [2] (lock) back to 0 */
 };
+
 static struct sembuf op_close[3] = {
   {2, 0, 0},                    /* wait for [2] (lock) to equal 0 */
   {2, 1, SEM_UNDO},             /* then increment [2] to 1 - this locks it */
@@ -136,6 +139,7 @@ FLOCK (int fd, int operation)
     }
   fsync (fd);
 }
+
 static int
 SEMA_LSEEK (int fd, off_t pos, int mode)
 {

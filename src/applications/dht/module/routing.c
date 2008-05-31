@@ -913,8 +913,8 @@ GNUNET_DHT_done_routing ()
   unsigned int i;
   struct DHT_Source_Route *pos;
 
-  coreAPI->
-    send_callback_unregister (sizeof (DHT_MESSAGE), &extra_get_callback);
+  coreAPI->send_callback_unregister (sizeof (DHT_MESSAGE),
+                                     &extra_get_callback);
   coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_GET,
                                               &handleGet);
   coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_PUT,

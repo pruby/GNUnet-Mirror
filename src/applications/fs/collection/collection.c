@@ -435,9 +435,8 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
     }
   collectionData = GNUNET_malloc (sizeof (CollectionInfo));
   memset (collectionData, 0, sizeof (CollectionInfo));
-  GNUNET_create_random_hash (&collectionData->data.lastId);  
-  GNUNET_ECRS_uri_get_namespace_from_sks(rootURI,
-					 &collectionData->data.pid);
+  GNUNET_create_random_hash (&collectionData->data.lastId);
+  GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &collectionData->data.pid);
   collectionData->data.nextId = nextId;
   collectionData->data.updateInterval = htonl (updateInterval);
   collectionData->data.anonymityLevel = htonl (anonymityLevel);

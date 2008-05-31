@@ -1769,7 +1769,8 @@ lt_int_dyld_NSlookupSymbolInLinkedLibs (symbol, mh)
                 lt_int_dyld_match_loaded_lib_by_install_name ((char
                                                                *) (((struct
                                                                      dylib_command
-                                                                     *) lc)->
+                                                                     *)
+                                                                    lc)->
                                                                    dylib.name.
                                                                    offset +
                                                                    (unsigned
@@ -1779,9 +1780,10 @@ lt_int_dyld_NSlookupSymbolInLinkedLibs (symbol, mh)
                 {
                   /* Maybe NSAddImage can find it */
                   mh1 =
-                    ltdl_NSAddImage ((char *) (((struct dylib_command *) lc)->
-                                               dylib.name.offset +
-                                               (unsigned long) lc),
+                    ltdl_NSAddImage ((char
+                                      *) (((struct dylib_command *)
+                                           lc)->dylib.name.offset +
+                                          (unsigned long) lc),
                                      NSADDIMAGE_OPTION_RETURN_ONLY_IF_LOADED +
                                      NSADDIMAGE_OPTION_WITH_SEARCHING +
                                      NSADDIMAGE_OPTION_RETURN_ON_ERROR);

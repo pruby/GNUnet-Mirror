@@ -130,8 +130,8 @@ updateDownloadThreads (void *c)
                               1) * GNUNET_FSUI_PROBE_TIME_FACTOR)
                     {
                       /* timeout hit! */
-                      GNUNET_ECRS_file_download_partial_stop (srl->
-                                                              test_download);
+                      GNUNET_ECRS_file_download_partial_stop
+                        (srl->test_download);
                       srl->test_download = NULL;
                       srl->probeFailure++;
                       event.type = GNUNET_FSUI_search_update;

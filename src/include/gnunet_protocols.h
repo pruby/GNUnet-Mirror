@@ -279,7 +279,7 @@ extern "C"
 #define GNUNET_CS_PROTO_DHT_REQUEST_PUT      61
 /** 
  * Client to CS: end get from table (ends request)
- */ 
+ */
 #define GNUNET_CS_PROTO_DHT_REQUEST_GET_END      62
 /* ************* CS VPN messages ************* */
 

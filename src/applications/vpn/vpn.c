@@ -645,9 +645,10 @@ tunThread (void *arg)
                            sizeof (struct tun_pi));
                   coreAPI->ciphertext_send (&((store1 + i)->peer), gp,
                                             GNUNET_EXTREME_PRIORITY, 1);
-                  coreAPI->
-                    p2p_connection_preference_increase (&((store1 + i)->peer),
-                                                        1000);
+                  coreAPI->p2p_connection_preference_increase (&
+                                                               ((store1 +
+                                                                 i)->peer),
+                                                               1000);
                 }
             }
           /* we do this here as we get a race if the p2p handler tries it */

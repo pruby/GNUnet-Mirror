@@ -228,10 +228,11 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
       fprintf (stderr, "connecting node %u to %u\n", i, nodeToConnect);
       GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname,
                                              list_as_array[i]->port,
-                                             list_as_array[nodeToConnect]->
-                                             hostname,
-                                             list_as_array[nodeToConnect]->
-                                             port, &node1, &node2);
+                                             list_as_array
+                                             [nodeToConnect]->hostname,
+                                             list_as_array
+                                             [nodeToConnect]->port, &node1,
+                                             &node2);
 
       node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
       node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));

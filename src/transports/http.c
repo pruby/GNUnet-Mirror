@@ -1653,8 +1653,9 @@ httpSend (GNUNET_TSession * tsession,
           getData->woff = 0;
         }
       /* append */
-      hdr = (GNUNET_MessageHeader *) & getData->
-        wbuff[getData->woff + getData->wpos];
+      hdr =
+        (GNUNET_MessageHeader *) & getData->wbuff[getData->woff +
+                                                  getData->wpos];
       hdr->size = htons (size);
       hdr->type = htons (0);
       memcpy (&hdr[1], msg, size - sizeof (GNUNET_MessageHeader));

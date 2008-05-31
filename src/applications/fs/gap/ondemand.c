@@ -409,9 +409,8 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
     }
 
   if (GNUNET_ntohll (odb->fileOffset) != LSEEK (fileHandle,
-                                                GNUNET_ntohll (odb->
-                                                               fileOffset),
-                                                SEEK_SET))
+                                                GNUNET_ntohll
+                                                (odb->fileOffset), SEEK_SET))
     {
       GNUNET_GE_LOG_STRERROR_FILE (coreAPI->ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_ADMIN |

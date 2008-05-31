@@ -251,10 +251,10 @@ main (int argc, char *const *argv)
       GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, create_name);
       if (start_collection)
         {
-	  /* FIXME: allow other update policies */
+          /* FIXME: allow other update policies */
           if (GNUNET_OK == GNUNET_CO_collection_start (anonymity,
-						       priority, 
-						       GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC, 
+                                                       priority,
+                                                       GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC,
                                                        meta))
             {
               printf ("%s", _("Started collection.\n"));
@@ -303,13 +303,12 @@ main (int argc, char *const *argv)
             }
           else
             {
-	      GNUNET_ECRS_uri_get_namespace_from_sks(rootURI,
-						     &nsid);
-	      ns_name = GNUNET_PSEUDO_id_to_name(ectx, cfg, &nsid);
+              GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &nsid);
+              ns_name = GNUNET_PSEUDO_id_to_name (ectx, cfg, &nsid);
               root = GNUNET_ECRS_uri_to_string (rootURI);
               printf (_("Namespace `%s' created (root: %s).\n"),
                       ns_name, root);
-	      GNUNET_free (ns_name);
+              GNUNET_free (ns_name);
               GNUNET_free (root);
               GNUNET_ECRS_uri_destroy (rootURI);
             }

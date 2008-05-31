@@ -239,10 +239,10 @@ handle_cs_index_request (struct GNUNET_ClientHandle *sock,
   ret = GNUNET_FS_ONDEMAND_add_indexed_content (cectx,
                                                 datastore,
                                                 ntohl (ri->priority),
-                                                GNUNET_ntohll (ri->
-                                                               expiration),
-                                                GNUNET_ntohll (ri->
-                                                               fileOffset),
+                                                GNUNET_ntohll
+                                                (ri->expiration),
+                                                GNUNET_ntohll
+                                                (ri->fileOffset),
                                                 ntohl (ri->anonymity_level),
                                                 &ri->fileId,
                                                 ntohs (ri->header.size) -
@@ -825,19 +825,17 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_P2P_PROTO_GAP_QUERY, GNUNET_P2P_PROTO_GAP_RESULT);
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    p2p_ciphertext_handler_register
+                    capi->p2p_ciphertext_handler_register
                     (GNUNET_P2P_PROTO_GAP_QUERY, &handle_p2p_query));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    p2p_ciphertext_handler_register
+                    capi->p2p_ciphertext_handler_register
                     (GNUNET_P2P_PROTO_GAP_RESULT, &handle_p2p_content));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    cs_handler_register (GNUNET_CS_PROTO_GAP_QUERY_START,
-                                         &handle_cs_query_start_request));
+                    capi->cs_handler_register
+                    (GNUNET_CS_PROTO_GAP_QUERY_START,
+                     &handle_cs_query_start_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->cs_handler_register (GNUNET_CS_PROTO_GAP_INSERT,
@@ -880,51 +878,46 @@ done_module_fs ()
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    p2p_ciphertext_handler_unregister
+                    coreAPI->p2p_ciphertext_handler_unregister
                     (GNUNET_P2P_PROTO_GAP_QUERY, &handle_p2p_query));
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    p2p_ciphertext_handler_unregister
+                    coreAPI->p2p_ciphertext_handler_unregister
                     (GNUNET_P2P_PROTO_GAP_RESULT, &handle_p2p_content));
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_QUERY_START,
-                                           &handle_cs_query_start_request));
+                    coreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_GAP_QUERY_START,
+                     &handle_cs_query_start_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_INSERT,
-                                           &handle_cs_insert_request));
+                    coreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_GAP_INSERT, &handle_cs_insert_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_INDEX,
-                                           &handle_cs_index_request));
+                    coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_GAP_INDEX,
+                                                    &handle_cs_index_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_INIT_INDEX,
-                                           &handle_cs_init_index_request));
+                    coreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_GAP_INIT_INDEX,
+                     &handle_cs_init_index_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_DELETE,
-                                           &handle_cs_delete_request));
+                    coreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_GAP_DELETE, &handle_cs_delete_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_UNINDEX,
-                                           &handle_cs_unindex_request));
+                    coreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_GAP_UNINDEX,
+                     &handle_cs_unindex_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_handler_unregister (GNUNET_CS_PROTO_GAP_TESTINDEX,
-                                           &handle_cs_test_indexed_request));
+                    coreAPI->cs_handler_unregister
+                    (GNUNET_CS_PROTO_GAP_TESTINDEX,
+                     &handle_cs_test_indexed_request));
   GNUNET_FS_MIGRATION_done ();
   GNUNET_FS_GAP_done ();
   GNUNET_FS_DHT_done ();

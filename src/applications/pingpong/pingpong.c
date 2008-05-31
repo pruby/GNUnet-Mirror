@@ -532,8 +532,8 @@ provide_module_pingpong (GNUNET_CoreAPIForPlugins * capi)
         = stats->create (gettext_noop ("# plaintext PONG messages sent"));
       stat_plaintextPongFailed
         =
-        stats->
-        create (gettext_noop ("# plaintext PONG transmissions failed"));
+        stats->create (gettext_noop
+                       ("# plaintext PONG transmissions failed"));
 
     }
   pingPongLock = capi->global_lock_get ();

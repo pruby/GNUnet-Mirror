@@ -628,8 +628,8 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
-                    capi->
-                    cs_disconnect_handler_register (&handle_client_exit));
+                    capi->cs_disconnect_handler_register
+                    (&handle_client_exit));
   datastore = capi->service_request ("datastore");
   stats = capi->service_request ("stats");
   if (stats != NULL)
@@ -643,8 +643,8 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_client_query_injected =
         stats->create (gettext_noop ("# gap client requests injected"));
       stat_gap_client_bf_updates =
-        stats->
-        create (gettext_noop ("# gap query bloomfilter resizing updates"));
+        stats->create (gettext_noop
+                       ("# gap query bloomfilter resizing updates"));
     }
   GNUNET_cron_add_job (capi->cron,
                        &repeat_requests_job,
@@ -659,8 +659,8 @@ GNUNET_FS_QUERYMANAGER_done ()
                        &repeat_requests_job, CHECK_REPEAT_FREQUENCY, NULL);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->
-                    cs_disconnect_handler_unregister (&handle_client_exit));
+                    coreAPI->cs_disconnect_handler_unregister
+                    (&handle_client_exit));
   while (clients != NULL)
     handle_client_exit (clients->client);
   coreAPI->service_release (datastore);

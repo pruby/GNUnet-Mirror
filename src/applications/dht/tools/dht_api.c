@@ -60,7 +60,7 @@ struct GNUNET_DHT_Context
    * connection or the processor callback requesting
    * it).
    */
-  struct GNUNET_ThreadHandle *poll_thread;   /*Poll thread instead.. */
+  struct GNUNET_ThreadHandle *poll_thread;      /*Poll thread instead.. */
 
   /**
    * Are we done (for whichever reason)?
@@ -116,32 +116,30 @@ poll_thread (void *cls)
  *        GNUNET_SYSERR
  * @return NULL on error
  */
-struct GNUNET_DHT_Context 
-*GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
-                                                      *cfg,
-                                                      struct GNUNET_GE_Context
-                                                      *ectx,
-                                                      GNUNET_ResultProcessor
-                                                      resultCallback,
-                                                      void
-                                                      *resCallbackClosure)
+struct GNUNET_DHT_Context *
+GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
+                           *cfg,
+                           struct GNUNET_GE_Context
+                           *ectx,
+                           GNUNET_ResultProcessor
+                           resultCallback, void *resCallbackClosure)
 {
   struct GNUNET_DHT_Context *ctx;
   struct GNUNET_ClientServerConnection *sock;
-  
+
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
-  {
+    {
       return NULL;
-  }
-  
-  ctx = GNUNET_malloc(sizeof (struct GNUNET_DHT_Context));
+    }
+
+  ctx = GNUNET_malloc (sizeof (struct GNUNET_DHT_Context));
   ctx->sock = sock;
   ctx->closure = resCallbackClosure;
   ctx->processor = resultCallback;
-  ctx->poll_thread = GNUNET_thread_create (&poll_thread, ctx, 1024 * 8); /* Should this be here, or will we create on the first request? */
+  ctx->poll_thread = GNUNET_thread_create (&poll_thread, ctx, 1024 * 8);        /* Should this be here, or will we create on the first request? */
   ctx->aborted = GNUNET_NO;
-  return NULL;  
+  return NULL;
 }
 
 
@@ -153,11 +151,12 @@ struct GNUNET_DHT_Context
  * @param key the key to look up
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
-                          unsigned int type, const GNUNET_HashCode * key)
+int
+GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
+                      unsigned int type, const GNUNET_HashCode * key)
 {
   CS_dht_request_get_MESSAGE req;
-  
+
   if (ctx->sock == NULL)
     return GNUNET_SYSERR;
   req.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
@@ -167,10 +166,10 @@ int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req.header))
     {
       return GNUNET_SYSERR;
-    }  
-  
-  return GNUNET_OK; 
-}                          
+    }
+
+  return GNUNET_OK;
+}
 
 
 /**
@@ -180,12 +179,13 @@ int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
  * @param key the key to look up
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
-                         unsigned int type, const GNUNET_HashCode * key)
+int
+GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
+                     unsigned int type, const GNUNET_HashCode * key)
 {
-  
+
   CS_dht_request_get_MESSAGE req;
-  
+
   if (ctx->sock == NULL)
     return GNUNET_SYSERR;
   req.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
@@ -195,11 +195,11 @@ int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req.header))
     {
       return GNUNET_SYSERR;
-    }  
-  
-  return GNUNET_OK; 
-   
-}                         
+    }
+
+  return GNUNET_OK;
+
+}
 
 /**
  * Destroy a previously created context for DHT operations.
@@ -207,15 +207,16 @@ int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
  * @param ctx context to destroy
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_DHT_context_destroy (struct GNUNET_DHT_Context *ctx)
+int
+GNUNET_DHT_context_destroy (struct GNUNET_DHT_Context *ctx)
 {
   void *unused;
   ctx->aborted = GNUNET_YES;
   GNUNET_client_connection_close_forever (ctx->sock);
   GNUNET_thread_join (ctx->poll_thread, &unused);
   GNUNET_client_connection_destroy (ctx->sock);
-  return GNUNET_OK; 
-}                                                      
+  return GNUNET_OK;
+}
 
 /**
  * Perform a synchronous put operation.   The peer does not have

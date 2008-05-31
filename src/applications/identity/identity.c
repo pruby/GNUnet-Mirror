@@ -696,9 +696,8 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
 
   if (protocol == GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY)
     protocol =
-      host->
-      protocols[GNUNET_random_u32
-                (GNUNET_RANDOM_QUALITY_WEAK, host->protocolCount)];
+      host->protocols[GNUNET_random_u32
+                      (GNUNET_RANDOM_QUALITY_WEAK, host->protocolCount)];
 
   for (i = 0; i < host->helloCount; i++)
     {
@@ -1458,9 +1457,8 @@ release_module_identity ()
                                   &identityHelloHandler);
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
                                   &identityRequestHelloHandler);
-  coreAPI->
-    cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
-                           &identityRequestSignatureHandler);
+  coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
+                                  &identityRequestSignatureHandler);
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
                                   &identityRequestInfoHandler);
   for (i = 0; i < MAX_TEMP_HOSTS; i++)

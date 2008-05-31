@@ -83,15 +83,14 @@ static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
                   const GNUNET_HashCode * sender,
-		  const struct GNUNET_ECRS_MetaData * meta,
-                  const char *message,
-		  GNUNET_CHAT_MSG_OPTIONS options)
+                  const struct GNUNET_ECRS_MetaData *meta,
+                  const char *message, GNUNET_CHAT_MSG_OPTIONS options)
 {
-  char * nick;
+  char *nick;
 
-  nick = GNUNET_PSEUDO_id_to_name(ectx, cfg, sender);
+  nick = GNUNET_PSEUDO_id_to_name (ectx, cfg, sender);
   fprintf (stdout, _("`%s' said: %s\n"), nick, message);
-  GNUNET_free(nick);
+  GNUNET_free (nick);
   return GNUNET_OK;
 }
 
@@ -100,17 +99,14 @@ member_list_callback (void *cls,
                       const struct GNUNET_ECRS_MetaData *member_info,
                       const GNUNET_RSA_PublicKey * member_id)
 {
-  char * nick;
+  char *nick;
   GNUNET_HashCode id;
 
-  GNUNET_hash(member_id,
-	      sizeof(GNUNET_RSA_PublicKey),
-	      &id);
-  nick = GNUNET_PSEUDO_id_to_name(ectx, cfg, &id);
+  GNUNET_hash (member_id, sizeof (GNUNET_RSA_PublicKey), &id);
+  nick = GNUNET_PSEUDO_id_to_name (ectx, cfg, &id);
   fprintf (stdout, member_info != NULL
-           ? _("`%s' entered the room\n")
-           : _("`%s' left the room\n"), nick);
-  GNUNET_free(nick);
+           ? _("`%s' entered the room\n") : _("`%s' left the room\n"), nick);
+  GNUNET_free (nick);
   return GNUNET_OK;
 }
 
@@ -173,8 +169,8 @@ main (int argc, char **argv)
                                 nickname,
                                 meta,
                                 room_name,
-                                &receive_callback, NULL, 
-				&member_list_callback, NULL,
+                                &receive_callback, NULL,
+                                &member_list_callback, NULL,
                                 &confirmation_callback, NULL);
   GNUNET_ECRS_meta_data_destroy (meta);
   if (room == NULL)

@@ -1411,8 +1411,8 @@ get (const GNUNET_HashCode * query,
       if (type != 0)
         stmt =
           (vhash !=
-           NULL) ? dbh->select_entry_by_hash_vhash_and_type : dbh->
-          select_entry_by_hash_and_type;
+           NULL) ? dbh->select_entry_by_hash_vhash_and_type :
+          dbh->select_entry_by_hash_and_type;
       else
         stmt =
           (vhash !=

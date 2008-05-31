@@ -226,9 +226,8 @@ test (GNUNET_SQstore_ServiceAPI * api)
                                            (GNUNET_DatastoreValueIterator) &
                                            priorityCheck, &i));
   ASSERT (1 ==
-          api->
-          iterateAllNow ((GNUNET_DatastoreValueIterator) & iteratePriority,
-                         api));
+          api->iterateAllNow ((GNUNET_DatastoreValueIterator) &
+                              iteratePriority, api));
   i += 4;
   ASSERT (1 == api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                            (GNUNET_DatastoreValueIterator) &

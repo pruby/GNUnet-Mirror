@@ -173,12 +173,11 @@ GNUNET_FS_PT_init (struct GNUNET_GE_Context *e, GNUNET_Stats_ServiceAPI * s)
     {
       stat_pid_entries
         =
-        stats->
-        create (gettext_noop ("# distinct interned peer IDs in pid table"));
+        stats->create (gettext_noop
+                       ("# distinct interned peer IDs in pid table"));
       stat_pid_rc =
-        stats->
-        create (gettext_noop
-                ("# total RC of interned peer IDs in pid table"));
+        stats->create (gettext_noop
+                       ("# total RC of interned peer IDs in pid table"));
     }
 }
 

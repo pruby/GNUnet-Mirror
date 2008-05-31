@@ -2569,7 +2569,8 @@ scheduleInboundTraffic ()
   firstRound = GNUNET_YES;
   for (u = 0; u < activePeerCount; u++)
     {
-      GNUNET_CORE_connection_reserve_downstream_bandwidth (&entries[u]->
+      GNUNET_CORE_connection_reserve_downstream_bandwidth (&entries
+                                                           [u]->
                                                            session.sender, 0);
       entries[u]->idealized_limit = 0;
     }
@@ -2596,19 +2597,17 @@ scheduleInboundTraffic ()
               if ((share < MIN_BPM_PER_PEER) &&
                   ((minCon > 0) &&
                    ((guardCon < minCon) ||
-                    (topology->
-                     isConnectionGuarded (&entries[u]->session.sender,
-                                          &remaining_connection_iterator,
-                                          &utl)))))
+                    (topology->isConnectionGuarded
+                     (&entries[u]->session.sender,
+                      &remaining_connection_iterator, &utl)))))
                 {
                   /* use one of the minCon's to keep the connection! */
                   share += MIN_BPM_PER_PEER;
                   decrementSB -= MIN_BPM_PER_PEER;      /* do not count */
                   minCon--;
-                  if (topology->
-                      isConnectionGuarded (&entries[u]->session.sender,
-                                           &remaining_connection_iterator,
-                                           &utl))
+                  if (topology->isConnectionGuarded
+                      (&entries[u]->session.sender,
+                       &remaining_connection_iterator, &utl))
                     guardCon--;
                 }
               if (share > entries[u]->idealized_limit)
@@ -3650,9 +3649,8 @@ connectionConfigChangeCallback (void *ctx,
 
                   next = be->overflowChain;
                   j =
-                    GNUNET_CORE_connection_compute_index_of_peer (&be->
-                                                                  session.
-                                                                  sender);
+                    GNUNET_CORE_connection_compute_index_of_peer
+                    (&be->session.sender);
                   be->overflowChain = newBuffer[j];
                   newBuffer[j] = be;
                   be = next;
@@ -3733,8 +3731,8 @@ GNUNET_CORE_connection_init (struct GNUNET_GE_Context *e,
         = stats->create (gettext_noop ("# connections closed (HANGUP sent)"));
       stat_closedTransport
         =
-        stats->
-        create (gettext_noop ("# connections closed (transport issue)"));
+        stats->create (gettext_noop
+                       ("# connections closed (transport issue)"));
       stat_encrypted = stats->create (gettext_noop (    /* includes encrypted but then
                                                            not transmitted data */
                                                      "# bytes encrypted"));
@@ -3753,44 +3751,41 @@ GNUNET_CORE_connection_init (struct GNUNET_GE_Context *e,
         =
         stats->create (gettext_noop ("# total bytes per second send limit"));
       stat_total_allowed_recv =
-        stats->
-        create (gettext_noop ("# total bytes per second receive limit"));
+        stats->create (gettext_noop
+                       ("# total bytes per second receive limit"));
       stat_total_send_buffer_size =
-        stats->
-        create (gettext_noop ("# total number of messages in send buffers"));
+        stats->create (gettext_noop
+                       ("# total number of messages in send buffers"));
       stat_total_lost_sent =
-        stats->
-        create (gettext_noop
-                ("# total number of bytes we were allowed to send but did not"));
+        stats->create (gettext_noop
+                       ("# total number of bytes we were allowed to send but did not"));
       stat_total_allowed_inc =
-        stats->
-        create (gettext_noop
-                ("# total number of bytes we were allowed to sent"));
+        stats->create (gettext_noop
+                       ("# total number of bytes we were allowed to sent"));
       stat_total_allowed_now =
-        stats->
-        create (gettext_noop
-                ("# total number of bytes we are currently allowed to send"));
+        stats->create (gettext_noop
+                       ("# total number of bytes we are currently allowed to send"));
       stat_transport_switches =
-        stats->
-        create (gettext_noop ("# transports switched to stream transport"));
+        stats->create (gettext_noop
+                       ("# transports switched to stream transport"));
       stat_avg_lifetime =
-        stats->
-        create (gettext_noop ("# average connection lifetime (in ms)"));
+        stats->create (gettext_noop
+                       ("# average connection lifetime (in ms)"));
       stat_shutdown_excessive_bandwidth =
-        stats->
-        create (gettext_noop ("# conn. shutdown: other peer sent too much"));
+        stats->create (gettext_noop
+                       ("# conn. shutdown: other peer sent too much"));
       stat_shutdown_insufficient_bandwidth =
-        stats->
-        create (gettext_noop ("# conn. shutdown: we lacked bandwidth"));
+        stats->create (gettext_noop
+                       ("# conn. shutdown: we lacked bandwidth"));
       stat_shutdown_timeout =
-        stats->
-        create (gettext_noop ("# conn. shutdown: other peer timed out"));
+        stats->create (gettext_noop
+                       ("# conn. shutdown: other peer timed out"));
       stat_shutdown_connect_timeout =
-        stats->
-        create (gettext_noop ("# conn. shutdown: timed out during connect"));
+        stats->create (gettext_noop
+                       ("# conn. shutdown: timed out during connect"));
       stat_shutdown_hangup_received =
-        stats->
-        create (gettext_noop ("# conn. shutdown: other peer requested it"));
+        stats->create (gettext_noop
+                       ("# conn. shutdown: other peer requested it"));
     }
   transport->start (&GNUNET_CORE_p2p_receive);
   EXIT ();

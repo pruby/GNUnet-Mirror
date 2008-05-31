@@ -125,8 +125,7 @@ createSignedhello (void *cls)
   tapi->hello->header.type = htons (GNUNET_P2P_PROTO_HELLO);
   tapi->hello->header.size = htons (GNUNET_sizeof_hello (tapi->hello));
   if (GNUNET_SYSERR == identity->signData (&(tapi->hello)->senderIdentity,
-                                           GNUNET_sizeof_hello (tapi->
-                                                                hello) -
+                                           GNUNET_sizeof_hello (tapi->hello) -
                                            sizeof (GNUNET_RSA_Signature) -
                                            sizeof (GNUNET_RSA_PublicKey) -
                                            sizeof (GNUNET_MessageHeader),

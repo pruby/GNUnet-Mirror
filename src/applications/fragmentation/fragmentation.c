@@ -606,9 +606,8 @@ release_module_fragmentation ()
 {
   int i;
 
-  coreAPI->
-    p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
-                                       &processFragment);
+  coreAPI->p2p_ciphertext_handler_unregister
+    (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT, &processFragment);
   GNUNET_cron_del_job (coreAPI->cron, &defragmentationPurgeCron,
                        60 * GNUNET_CRON_SECONDS, NULL);
   for (i = 0; i < DEFRAG_BUCKET_COUNT; i++)

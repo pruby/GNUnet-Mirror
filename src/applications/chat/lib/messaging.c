@@ -70,25 +70,27 @@ struct GNUNET_CHAT_Room
 
   unsigned int sequence_number;
 
+  unsigned int msg_options;
+
 };
 
 /**
  * Linked list of members in the chat room.
  */
-struct MemberList 
+struct MemberList
 {
-  struct MemberList * next;
-  
+  struct MemberList *next;
+
   /**
    * Description of the member.
    */
-  struct GNUNET_ECRS_MetaData * meta;
+  struct GNUNET_ECRS_MetaData *meta;
 
   /**
    * Member ID (pseudonym).
    */
   GNUNET_HashCode id;
-  
+
 };
 
 static int
@@ -110,6 +112,8 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
   join_msg = GNUNET_malloc (size_of_join);
   join_msg->header.size = htons (size_of_join);
   join_msg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_REQUEST);
+  join_msg->msg_options = htonl (chat_room->msg_options);
+  join_msg->private_key = *chat_room->my_private_key;
   join_msg->room_name_len = htons (room_len);
   room = (char *) &join_msg[1];
   memcpy (room, chat_room->room_name, room_len);
@@ -147,9 +151,9 @@ poll_thread (void *rcls)
   CS_chat_MESSAGE_JoinNotification *join_msg;
   CS_chat_MESSAGE_ReceiveNotification *received_msg;
   struct GNUNET_ECRS_MetaData *meta;
-  struct MemberList * members;
-  struct MemberList * pos;
-  struct MemberList * prev;
+  struct MemberList *members;
+  struct MemberList *pos;
+  struct MemberList *prev;
   unsigned int size;
   unsigned int meta_len;
   unsigned int msg_len;
@@ -216,19 +220,15 @@ poll_thread (void *rcls)
               malformed = GNUNET_YES;
               continue;
             }
-	  pos = GNUNET_malloc(sizeof(struct MemberList));
-	  pos->meta = meta;
-	  GNUNET_hash(&join_msg->public_key,
-		      sizeof(GNUNET_RSA_PublicKey),
-		      &pos->id);
-	  GNUNET_PSEUDO_add(room->ectx,
-			    room->cfg,
-			    &pos->id,
-			    meta);
+          pos = GNUNET_malloc (sizeof (struct MemberList));
+          pos->meta = meta;
+          GNUNET_hash (&join_msg->public_key,
+                       sizeof (GNUNET_RSA_PublicKey), &pos->id);
+          GNUNET_PSEUDO_add (room->ectx, room->cfg, &pos->id, meta);
           room->member_list_callback (room->member_list_callback_cls,
                                       meta, &join_msg->public_key);
-	  pos->next = members;
-	  members = pos;
+          pos->next = members;
+          members = pos;
           break;
         case GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION:
           if (size < sizeof (CS_chat_MESSAGE_LeaveNotification))
@@ -239,23 +239,22 @@ poll_thread (void *rcls)
           leave_msg = (CS_chat_MESSAGE_LeaveNotification *) reply;
           room->member_list_callback (room->member_list_callback_cls,
                                       NULL, &leave_msg->user);
-	  prev = NULL;
-	  pos = members;
-	  while ( (pos != NULL) &&
-		  (0 != memcmp(&pos->id,
-			       &leave_msg->user,
-			       sizeof(GNUNET_HashCode))) )
-	    {
-	      prev = pos;
-	      pos = pos->next;
-	    }
-	  GNUNET_GE_ASSERT(NULL, pos != NULL);
-	  if (prev == NULL)
-	    members = pos->next;
-	  else
-	    prev->next = pos->next;
-	  GNUNET_ECRS_meta_data_destroy(pos->meta);
-	  GNUNET_free(pos);
+          prev = NULL;
+          pos = members;
+          while ((pos != NULL) &&
+                 (0 != memcmp (&pos->id,
+                               &leave_msg->user, sizeof (GNUNET_HashCode))))
+            {
+              prev = pos;
+              pos = pos->next;
+            }
+          GNUNET_GE_ASSERT (NULL, pos != NULL);
+          if (prev == NULL)
+            members = pos->next;
+          else
+            prev->next = pos->next;
+          GNUNET_ECRS_meta_data_destroy (pos->meta);
+          GNUNET_free (pos);
           break;
         case GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION:
           if (size < sizeof (CS_chat_MESSAGE_ReceiveNotification))
@@ -268,17 +267,17 @@ poll_thread (void *rcls)
           message_content = GNUNET_malloc (msg_len + 1);
           memcpy (message_content, &received_msg[1], msg_len);
           message_content[msg_len] = '\0';
-	  pos = members;
-	  while ( (pos != NULL) &&
-		  (0 != memcmp(&pos->id,
-			       &received_msg->sender,
-			       sizeof(GNUNET_HashCode))) )
-	    pos = pos->next;
-	  GNUNET_GE_ASSERT(NULL, pos != NULL);
-	  room->message_callback (room->message_callback_cls,
+          pos = members;
+          while ((pos != NULL) &&
+                 (0 != memcmp (&pos->id,
+                               &received_msg->sender,
+                               sizeof (GNUNET_HashCode))))
+            pos = pos->next;
+          GNUNET_GE_ASSERT (NULL, pos != NULL);
+          room->message_callback (room->message_callback_cls,
                                   room,
                                   &received_msg->sender,
-				  pos->meta,
+                                  pos->meta,
                                   message_content,
                                   ntohl (received_msg->msg_options));
           GNUNET_free (message_content);
@@ -309,8 +308,8 @@ poll_thread (void *rcls)
     {
       pos = members;
       members = pos->next;
-      GNUNET_ECRS_meta_data_destroy(pos->meta);
-      GNUNET_free(pos);
+      GNUNET_ECRS_meta_data_destroy (pos->meta);
+      GNUNET_free (pos);
     }
   return NULL;
 }
@@ -430,6 +429,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
                        const char *nick_name,
                        struct GNUNET_ECRS_MetaData *member_info,
                        const char *room_name,
+                       GNUNET_CHAT_MSG_OPTIONS msg_options,
                        GNUNET_CHAT_MessageCallback messageCallback,
                        void *message_cls,
                        GNUNET_CHAT_MemberListCallback memberCallback,
@@ -451,6 +451,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
       return NULL;
     }
   chat_room = GNUNET_malloc (sizeof (struct GNUNET_CHAT_Room));
+  chat_room->msg_options = msg_options;
   chat_room->room_name = GNUNET_strdup (room_name);
   chat_room->member_info = GNUNET_ECRS_meta_data_duplicate (member_info);
   chat_room->my_private_key = key;

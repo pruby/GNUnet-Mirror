@@ -568,8 +568,7 @@ GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
 
   applicationCore.peer_send_notification_register =
     &GNUNET_CORE_connection_register_send_notification_callback;
-  applicationCore.
-    peer_send_notification_unregister =
+  applicationCore.peer_send_notification_unregister =
     &GNUNET_CORE_connection_unregister_send_notification_callback;
   applicationCore.p2p_ciphertext_handler_register = &GNUNET_CORE_p2p_register_handler;  /* handler.c */
   applicationCore.p2p_ciphertext_handler_unregister = &GNUNET_CORE_p2p_unregister_handler;      /* handler.c */

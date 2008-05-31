@@ -71,8 +71,7 @@ int GNUNET_CO_collection_stop (void);
  *
  * @return NULL if there is no collection, otherwise its metadata
  */
-struct GNUNET_ECRS_MetaData *
-GNUNET_CO_collection_get_name (void);
+struct GNUNET_ECRS_MetaData *GNUNET_CO_collection_get_name (void);
 
 /**
  * GNUNET_ND_UPLOAD an update of the current collection information to the

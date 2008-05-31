@@ -327,8 +327,8 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
         {
           memcpy (&
                   ((char
-                    *) (((CS_stats_reply_MESSAGE_GENERIC *) statMsg))->
-                   values)[mpos], entries[pos].description,
+                    *) (((CS_stats_reply_MESSAGE_GENERIC *)
+                         statMsg))->values)[mpos], entries[pos].description,
                   entries[pos].descStrLen + 1);
           mpos += entries[pos].descStrLen + 1;
         }
@@ -430,12 +430,10 @@ initialize_module_stats (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_P2P_PROTO_NOISE);
   capi->cs_handler_register (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
                              &sendStatistics);
-  capi->
-    cs_handler_register
+  capi->cs_handler_register
     (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
      &handleMessageSupported);
-  capi->
-    cs_handler_register
+  capi->cs_handler_register
     (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED, &handleMessageSupported);
   capi->cs_handler_register (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                              &processGetConnectionCountRequest);
@@ -464,12 +462,10 @@ done_module_stats ()
   GNUNET_GE_ASSERT (NULL, myCoreAPI != NULL);
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
                                   &sendStatistics);
-  coreAPI->
-    cs_handler_unregister
+  coreAPI->cs_handler_unregister
     (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
      &handleMessageSupported);
-  coreAPI->
-    cs_handler_unregister
+  coreAPI->cs_handler_unregister
     (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED, &handleMessageSupported);
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                                   &processGetConnectionCountRequest);

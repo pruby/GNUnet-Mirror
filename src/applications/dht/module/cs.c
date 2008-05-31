@@ -177,7 +177,7 @@ csGet (struct GNUNET_ClientHandle *client,
  */
 static int
 csGetEnd (struct GNUNET_ClientHandle *client,
-       const GNUNET_MessageHeader * message)
+          const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_get_MESSAGE *get;
   struct DHT_CLIENT_GET_RECORD *pos;
@@ -201,9 +201,10 @@ csGetEnd (struct GNUNET_ClientHandle *client,
   prev = NULL;
   while (pos != NULL)
     {
-      if ((memcmp(pos->client,client,sizeof(client)) == 0) &&
-       (memcmp(&pos->get_record->key,&get->key,sizeof(GNUNET_HashCode))) && 
-       (ntohs(get->type) == pos->get_record->type))
+      if ((memcmp (pos->client, client, sizeof (client)) == 0) &&
+          (memcmp
+           (&pos->get_record->key, &get->key, sizeof (GNUNET_HashCode)))
+          && (ntohs (get->type) == pos->get_record->type))
         break;
       prev = pos;
       pos = pos->next;
@@ -220,7 +221,7 @@ csGetEnd (struct GNUNET_ClientHandle *client,
   GNUNET_mutex_unlock (lock);
   dhtAPI->get_stop (pos->get_record);
   GNUNET_free (pos);
-  
+
   return GNUNET_OK;
 }
 
@@ -283,7 +284,8 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
       capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET_END, &csGetEnd))
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET_END,
+                                 &csGetEnd))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->cs_disconnect_handler_register (&csClientExit))
     status = GNUNET_SYSERR;
