@@ -875,6 +875,9 @@ src/applications/Makefile
 src/applications/advertising/Makefile
 src/applications/bootstrap_http/Makefile
 src/applications/chat/Makefile
+src/applications/chat/lib/Makefile
+src/applications/chat/module/Makefile
+src/applications/chat/tools/Makefile
 src/applications/datastore/Makefile
 src/applications/dht/Makefile
 src/applications/dht/tools/Makefile

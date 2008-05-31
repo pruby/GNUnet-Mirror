@@ -1,6 +1,7 @@
 SUBDIRS = .
 
 EXTRA_DIST = \
+  chat.h \
   core.h \
   dht.h \
   ecrs_core.h \
