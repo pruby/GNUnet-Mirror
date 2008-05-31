@@ -20,7 +20,7 @@
 
 /**
  * @file applications/chat/lib/messaging.c
- * @brief convenience API to the chat application
+ * @brief convenience API for sending and receiving chat messages
  * @author Christian Grothoff
  * @author Nathan Evans
  */
@@ -29,6 +29,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_chat_lib.h"
+#include "gnunet_pseudonym_lib.h"
 #include "gnunet_directories.h"
 #include "chat.h"
 
@@ -69,6 +70,25 @@ struct GNUNET_CHAT_Room
 
   unsigned int sequence_number;
 
+};
+
+/**
+ * Linked list of members in the chat room.
+ */
+struct MemberList 
+{
+  struct MemberList * next;
+  
+  /**
+   * Description of the member.
+   */
+  struct GNUNET_ECRS_MetaData * meta;
+
+  /**
+   * Member ID (pseudonym).
+   */
+  GNUNET_HashCode id;
+  
 };
 
 static int
@@ -127,6 +147,9 @@ poll_thread (void *rcls)
   CS_chat_MESSAGE_JoinNotification *join_msg;
   CS_chat_MESSAGE_ReceiveNotification *received_msg;
   struct GNUNET_ECRS_MetaData *meta;
+  struct MemberList * members;
+  struct MemberList * pos;
+  struct MemberList * prev;
   unsigned int size;
   unsigned int meta_len;
   unsigned int msg_len;
@@ -139,6 +162,7 @@ poll_thread (void *rcls)
   malformed = GNUNET_NO;
   ret = GNUNET_OK;
   reply = NULL;
+  members = NULL;
   while ((ret == GNUNET_OK) && (room->shutdown_flag != GNUNET_YES))
     {
       if (malformed)
@@ -192,8 +216,19 @@ poll_thread (void *rcls)
               malformed = GNUNET_YES;
               continue;
             }
+	  pos = GNUNET_malloc(sizeof(struct MemberList));
+	  pos->meta = meta;
+	  GNUNET_hash(&join_msg->public_key,
+		      sizeof(GNUNET_RSA_PublicKey),
+		      &pos->id);
+	  GNUNET_PSEUDO_add(room->ectx,
+			    room->cfg,
+			    &pos->id,
+			    meta);
           room->member_list_callback (room->member_list_callback_cls,
                                       meta, &join_msg->public_key);
+	  pos->next = members;
+	  members = pos;
           break;
         case GNUNET_CS_PROTO_CHAT_LEAVE_NOTIFICATION:
           if (size < sizeof (CS_chat_MESSAGE_LeaveNotification))
@@ -204,6 +239,23 @@ poll_thread (void *rcls)
           leave_msg = (CS_chat_MESSAGE_LeaveNotification *) reply;
           room->member_list_callback (room->member_list_callback_cls,
                                       NULL, &leave_msg->user);
+	  prev = NULL;
+	  pos = members;
+	  while ( (pos != NULL) &&
+		  (0 != memcmp(&pos->id,
+			       &leave_msg->user,
+			       sizeof(GNUNET_HashCode))) )
+	    {
+	      prev = pos;
+	      pos = pos->next;
+	    }
+	  GNUNET_GE_ASSERT(NULL, pos != NULL);
+	  if (prev == NULL)
+	    members = pos->next;
+	  else
+	    prev->next = pos->next;
+	  GNUNET_ECRS_meta_data_destroy(pos->meta);
+	  GNUNET_free(pos);
           break;
         case GNUNET_CS_PROTO_CHAT_MESSAGE_NOTIFICATION:
           if (size < sizeof (CS_chat_MESSAGE_ReceiveNotification))
@@ -216,10 +268,17 @@ poll_thread (void *rcls)
           message_content = GNUNET_malloc (msg_len + 1);
           memcpy (message_content, &received_msg[1], msg_len);
           message_content[msg_len] = '\0';
-          room->message_callback (room->message_callback_cls,
+	  pos = members;
+	  while ( (pos != NULL) &&
+		  (0 != memcmp(&pos->id,
+			       &received_msg->sender,
+			       sizeof(GNUNET_HashCode))) )
+	    pos = pos->next;
+	  GNUNET_GE_ASSERT(NULL, pos != NULL);
+	  room->message_callback (room->message_callback_cls,
                                   room,
                                   &received_msg->sender,
-				  NULL,
+				  pos->meta,
                                   message_content,
                                   ntohl (received_msg->msg_options));
           GNUNET_free (message_content);
@@ -246,22 +305,15 @@ poll_thread (void *rcls)
         }
     }
   GNUNET_free_non_null (reply);
+  while (members != NULL)
+    {
+      pos = members;
+      members = pos->next;
+      GNUNET_ECRS_meta_data_destroy(pos->meta);
+      GNUNET_free(pos);
+    }
   return NULL;
 }
-
-#if 0
-/**
- * List all of the (publically visible) chat rooms.
- * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
- */
-int
-GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
-                        struct GNUNET_GC_Configuration *cfg,
-                        GNUNET_CHAT_RoomIterator it, void *cls)
-{
-  return GNUNET_SYSERR;
-}
-#endif
 
 /**
  * Returns the private key on success,
@@ -487,4 +539,4 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
   return ret;
 }
 
-/* end of clientapi.c */
+/* end of messaging.c */

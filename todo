@@ -3,7 +3,7 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.8.0 [5'08] (aka "new protocol"):
+0.8.0pre1 [5'08]:
 - namespaces / pseudonyms: 
   + need better / actual / compiling testcase!
   + including testing for id_to_name and back!
@@ -11,6 +11,10 @@ Annotations:
   + adapt gnunet-chat for new client api 
     => add support for new options (private msg, anon msg, confirmation)
   + write reasonable testcase!
+
+
+0.8.0 [6'08] (aka "new protocol"):
+- move ECRS metadata and libpseudonym out of fs/
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
 

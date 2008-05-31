@@ -30,6 +30,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_chat_lib.h"
 #include "gnunet_ecrs_lib.h"
+#include "gnunet_pseudonym_lib.h"
 
 #define MAX_MESSAGE_LENGTH 1024
 
@@ -86,7 +87,11 @@ receive_callback (void *cls,
                   const char *message,
 		  GNUNET_CHAT_MSG_OPTIONS options)
 {
-  fprintf (stdout, _("`%s' said: %s\n"), "FIXME", message);
+  char * nick;
+
+  nick = GNUNET_PSEUDO_id_to_name(ectx, cfg, sender);
+  fprintf (stdout, _("`%s' said: %s\n"), nick, message);
+  GNUNET_free(nick);
   return GNUNET_OK;
 }
 
@@ -95,9 +100,17 @@ member_list_callback (void *cls,
                       const struct GNUNET_ECRS_MetaData *member_info,
                       const GNUNET_RSA_PublicKey * member_id)
 {
+  char * nick;
+  GNUNET_HashCode id;
+
+  GNUNET_hash(member_id,
+	      sizeof(GNUNET_RSA_PublicKey),
+	      &id);
+  nick = GNUNET_PSEUDO_id_to_name(ectx, cfg, &id);
   fprintf (stdout, member_info != NULL
            ? _("`%s' entered the room\n")
-           : _("`%s' left the room\n"), "FIXME");
+           : _("`%s' left the room\n"), nick);
+  GNUNET_free(nick);
   return GNUNET_OK;
 }
 

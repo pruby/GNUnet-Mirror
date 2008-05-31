@@ -9,6 +9,7 @@ LDADD = \
 libgnunetchat_api_la_SOURCES = \
   messaging.c 
 libgnunetchat_api_la_LIBADD = \
+  $(top_builddir)/src/applications/fs/pseudonyms/libgnunetpseudonym.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
