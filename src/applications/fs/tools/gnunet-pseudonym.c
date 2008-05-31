@@ -193,6 +193,10 @@ main (int argc, char *const *argv)
   int i;
   GNUNET_HashCode hc;
   GNUNET_HashCode nsid;
+  GNUNET_HashCode rootEntry;
+  struct GNUNET_ECRS_URI *rootURI;
+  char *root;
+  char *ns_name;
 
   meta = GNUNET_ECRS_meta_data_create ();
   i = GNUNET_init (argc,
@@ -263,10 +267,6 @@ main (int argc, char *const *argv)
         }
       else
         {                       /* no collection */
-          GNUNET_HashCode rootEntry;
-          struct GNUNET_ECRS_URI *rootURI;
-          char *root;
-
           if (root_name == NULL)
             {
               memset (&rootEntry, 0, sizeof (GNUNET_HashCode));
@@ -303,9 +303,13 @@ main (int argc, char *const *argv)
             }
           else
             {
+	      GNUNET_ECRS_uri_get_namespace_from_sks(rootURI,
+						     &nsid);
+	      ns_name = GNUNET_PSEUDO_id_to_name(ectx, cfg, &nsid);
               root = GNUNET_ECRS_uri_to_string (rootURI);
               printf (_("Namespace `%s' created (root: %s).\n"),
-                      create_name, root);
+                      ns_name, root);
+	      GNUNET_free (ns_name);
               GNUNET_free (root);
               GNUNET_ECRS_uri_destroy (rootURI);
             }

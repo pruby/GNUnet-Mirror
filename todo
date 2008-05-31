@@ -4,12 +4,9 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [5'08] (aka "new protocol"):
-- namespaces: 
-  + need way to map nsid to namespace name (for ECRS interaction!)
-    => additional store? (used to have it, gone with libpseudonym!)
-    => rather: use pseudo's mapping (used already in gnunet-insert, etc!)
-    => need to inform user creating pseudonym about mapped name!!!
+- namespaces / pseudonyms: 
   + need better / actual / compiling testcase!
+  + including testing for id_to_name and back!
 - chat:  [RC]
   + adapt gnunet-chat for new client api 
     => add support for new options (private msg, anon msg, confirmation)
