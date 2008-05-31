@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/chat/chattest.c
+ * @file applications/chat/lib/loopback_test.c
  * @brief chat testcase, loopback only
  * @author Christian Grothoff
  * @author Nathan Evans

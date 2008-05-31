@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/chat/gnunet-chat.c
+ * @file applications/chat/tools/gnunet-chat.c
  * @brief Minimal chat command line tool
  * @author Christian Grothoff
  * @author Nathan Evans

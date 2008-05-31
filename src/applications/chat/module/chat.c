@@ -24,7 +24,7 @@
  *
  * @author Christian Grothoff
  * @author Nathan Evans
- * @file applications/chat/chat.c
+ * @file applications/chat/module/chat.c
  */
 
 #include "platform.h"
