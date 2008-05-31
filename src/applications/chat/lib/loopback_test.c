@@ -23,6 +23,12 @@
  * @brief chat testcase, loopback only
  * @author Christian Grothoff
  * @author Nathan Evans
+ *
+ * TODO:
+ * - test private messages (need more than 2 users!)
+ * - test anonymous messages
+ * - test acknowledgements
+ * - test authenticated message
  */
 
 #include "platform.h"
@@ -41,7 +47,7 @@ static unsigned int error;
 struct Wanted {
   GNUNET_ECRS_MetaData * meta;
 
-  GNUNET_HashCode sender;
+  GNUNET_HashCode * sender;
 
   char * msg;
 
@@ -58,16 +64,35 @@ receive_callback (void *cls,
 		  GNUNET_CHAT_MSG_OPTIONS options)
 {
   struct Wanted * want = cls;
+  if (! ( (0 == strcmp(message, want->msg)) &&
+	  ( ( (sender == NULL) && (want->sender == NULL) ) ||
+	    ( (sender != NULL) && 
+	      (want->sender != NULL) && 
+	      (0 == memcmp(sender, want->sender, sizeof(GNUNET_HashCode))) ) ) &&
+	  (0 == GNUNET_ECRS_meta_data_test_equal(member_info,
+						 want->meta)) &&
+	  (options == want->opt) ) )
+    error++;
   return GNUNET_OK;
 }
 
 static int
 member_list_callback (void *cls,
 		      const struct GNUNET_ECRS_MetaData * member_info,
-		      const GNUNET_RSA_PublicKey * member_id) 
+		      const GNUNET_RSA_PublicKey * member_id,
+		      GNUNET_CHAT_MSG_OPTIONS options) 
 {
   struct Wanted * want = cls;
-  
+  GNUNET_HashCode sender;
+
+  GNUNET_hash(member_id,
+	      sizeof(GNUNET_RSA_PublicKey),
+	      &sender);  
+  if (! ( (0 == memcmp(&sender, want->sender, sizeof(GNUNET_HashCode))) &&
+          (0 == GNUNET_ECRS_meta_data_test_equal(member_info,
+						 want->meta)) &&
+	  (options == want->opt) ) )
+    error++
   return GNUNET_OK;
 }
 

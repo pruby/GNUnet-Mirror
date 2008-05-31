@@ -70,39 +70,21 @@ typedef enum
   GNUNET_CHAT_MSG_AUTHENTICATED = 4,
 
   /**
-   * Authenticate for the receiver, but
-   * ensure that receiver cannot prove
-   * authenticity to third parties later.
-   */
-  GNUNET_CHAT_MSG_OFF_THE_RECORD = 8,
-
-  /**
    * Require signed acknowledgement before
    * completing delivery (and of course, only
    * acknowledge if delivery is guaranteed).
    */
-  GNUNET_CHAT_MSG_ACKNOWLEDGED = 16,
+  GNUNET_CHAT_MSG_ACKNOWLEDGED = 8,
+
+  /**
+   * Authenticate for the receiver, but
+   * ensure that receiver cannot prove
+   * authenticity to third parties later.
+   * (not yet implemented)
+   */
+  GNUNET_CHAT_MSG_OFF_THE_RECORD = 16,
 
 } GNUNET_CHAT_MSG_OPTIONS;
-
-#if 0
-/* these are not yet implemented / supported */
-/**
- * Callback function to iterate over rooms.
- *
- * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
- */
-typedef int (*GNUNET_CHAT_RoomIterator) (const char *room,
-                                         const char *topic, void *cls);
-
-/**
- * List all of the (publically visible) chat rooms.
- * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
- */
-int GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
-                            struct GNUNET_GC_Configuration *cfg,
-                            GNUNET_CHAT_RoomIterator it, void *cls);
-#endif
 
 /**
  * Handle for a (joined) chat room.
@@ -135,13 +117,15 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
 /**
  * @param member_info will be non-null if the member is joining, NULL if he is leaving
  * @param member_id hash of public key of the user (for unique identification)
+ * @param options what types of messages is this member willing to receive?
  */
 typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
                                                const struct
                                                GNUNET_ECRS_MetaData *
                                                member_info,
                                                const GNUNET_RSA_PublicKey *
-                                               member_id);
+                                               member_id,
+					       GNUNET_CHAT_MSG_OPTIONS options);
 
 
 /**
@@ -226,6 +210,29 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           GNUNET_CHAT_MSG_OPTIONS options,
                           const GNUNET_RSA_PublicKey * receiver,
                           unsigned int *sequence_number);
+
+
+
+
+#if 0
+/* these are not yet implemented / supported */
+/**
+ * Callback function to iterate over rooms.
+ *
+ * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
+ */
+typedef int (*GNUNET_CHAT_RoomIterator) (const char *room,
+                                         const char *topic, void *cls);
+
+/**
+ * List all of the (publically visible) chat rooms.
+ * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
+ */
+int GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg,
+                            GNUNET_CHAT_RoomIterator it, void *cls);
+#endif
+
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

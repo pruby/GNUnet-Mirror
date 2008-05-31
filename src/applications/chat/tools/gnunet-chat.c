@@ -97,7 +97,8 @@ receive_callback (void *cls,
 static int
 member_list_callback (void *cls,
                       const struct GNUNET_ECRS_MetaData *member_info,
-                      const GNUNET_RSA_PublicKey * member_id)
+                      const GNUNET_RSA_PublicKey * member_id,
+		      GNUNET_CHAT_MSG_OPTIONS options)
 {
   char *nick;
   GNUNET_HashCode id;

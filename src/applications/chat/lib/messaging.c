@@ -226,7 +226,8 @@ poll_thread (void *rcls)
                        sizeof (GNUNET_RSA_PublicKey), &pos->id);
           GNUNET_PSEUDO_add (room->ectx, room->cfg, &pos->id, meta);
           room->member_list_callback (room->member_list_callback_cls,
-                                      meta, &join_msg->public_key);
+                                      meta, &join_msg->public_key,
+				      ntohl(join_msg->msg_options));
           pos->next = members;
           members = pos;
           break;
@@ -238,7 +239,8 @@ poll_thread (void *rcls)
             }
           leave_msg = (CS_chat_MESSAGE_LeaveNotification *) reply;
           room->member_list_callback (room->member_list_callback_cls,
-                                      NULL, &leave_msg->user);
+                                      NULL, &leave_msg->user,
+				      GNUNET_CHAT_MSG_OPTION_NONE);
           prev = NULL;
           pos = members;
           while ((pos != NULL) &&
