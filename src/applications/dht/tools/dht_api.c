@@ -73,7 +73,7 @@ struct GNUNET_DHT_Context
 static void *
 poll_thread (void *cls)
 {
-  GNUNET_DHT_Context *info = cls;
+  struct GNUNET_DHT_Context *info = cls;
   GNUNET_MessageHeader *reply;
   CS_dht_request_put_MESSAGE *put;
   unsigned int size;
@@ -101,11 +101,10 @@ poll_thread (void *cls)
                                          (const char *) &put[1],
                                          info->closure)))
         info->aborted = GNUNET_YES;
-      info->total++;
       GNUNET_free (reply);
     }
   info->aborted = GNUNET_YES;
-  GNUNET_thread_stop_sleep (info->parent);
+  GNUNET_thread_stop_sleep (info->poll_thread);
   return NULL;
 }
 
@@ -214,7 +213,7 @@ int GNUNET_DHT_context_destroy (struct GNUNET_DHT_Context *ctx)
   ctx->aborted = GNUNET_YES;
   GNUNET_client_connection_close_forever (ctx->sock);
   GNUNET_thread_join (ctx->poll_thread, &unused);
-  GNUNET_client_connection_destroy (sock);
+  GNUNET_client_connection_destroy (ctx->sock);
   return GNUNET_OK; 
 }                                                      
 
