@@ -169,6 +169,7 @@ main (int argc, char **argv)
                                 nickname,
                                 meta,
                                 room_name,
+				-1,
                                 &receive_callback, NULL,
                                 &member_list_callback, NULL,
                                 &confirmation_callback, NULL);
