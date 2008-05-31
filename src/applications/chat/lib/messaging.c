@@ -219,6 +219,7 @@ poll_thread (void *rcls)
           room->message_callback (room->message_callback_cls,
                                   room,
                                   &received_msg->sender,
+				  NULL,
                                   message_content,
                                   ntohl (received_msg->msg_options));
           GNUNET_free (message_content);

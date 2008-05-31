@@ -127,7 +127,8 @@ struct GNUNET_CHAT_Room;
 typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
                                             struct GNUNET_CHAT_Room * room,
                                             const GNUNET_HashCode * sender,
-                                            const char *message,
+					    const struct GNUNET_ECRS_MetaData *member_info,
+					    const char *message,
                                             GNUNET_CHAT_MSG_OPTIONS options);
 
 /**

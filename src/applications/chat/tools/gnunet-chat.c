@@ -82,7 +82,9 @@ static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
                   const GNUNET_HashCode * sender,
-                  const char *message, GNUNET_CHAT_MSG_OPTIONS options)
+		  const struct GNUNET_ECRS_MetaData * meta,
+                  const char *message,
+		  GNUNET_CHAT_MSG_OPTIONS options)
 {
   fprintf (stdout, _("`%s' said: %s\n"), "FIXME", message);
   return GNUNET_OK;
@@ -158,8 +160,8 @@ main (int argc, char **argv)
                                 nickname,
                                 meta,
                                 room_name,
-                                &receive_callback,
-                                NULL, &member_list_callback, NULL,
+                                &receive_callback, NULL, 
+				&member_list_callback, NULL,
                                 &confirmation_callback, NULL);
   GNUNET_ECRS_meta_data_destroy (meta);
   if (room == NULL)
