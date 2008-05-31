@@ -435,21 +435,31 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
                        GNUNET_CHAT_MemberListCallback memberCallback,
                        void *member_cls,
                        GNUNET_CHAT_MessageConfirmation confirmationCallback,
-                       void *confirmation_cls)
+                       void *confirmation_cls,
+		       GNUNET_HashCode * me)
 {
   struct GNUNET_CHAT_Room *chat_room;
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_RSA_PrivateKeyEncoded *key;
+  struct GNUNET_RSA_PrivateKey * priv_key;
+  GNUNET_RSA_PublicKey pub_key;
 
   key = GNUNET_CHAT_initPrivateKey (ectx, cfg, nick_name);
   if (key == NULL)
     return NULL;
+  priv_key = GNUNET_RSA_decode_key(key);
+  GNUNET_RSA_get_public_key(priv_key,
+			    &pub_key);
+  GNUNET_hash(&pub_key,
+	      sizeof(GNUNET_RSA_PublicKey),
+	      me);
+  GNUNET_RSA_free_key(priv_key);
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
       GNUNET_free (key);
       return NULL;
-    }
+    }  
   chat_room = GNUNET_malloc (sizeof (struct GNUNET_CHAT_Room));
   chat_room->msg_options = msg_options;
   chat_room->room_name = GNUNET_strdup (room_name);

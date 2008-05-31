@@ -36,48 +36,40 @@
 
 #define START_PEERS 1
 
-static struct GNUNET_GC_Configuration *cfg;
+static unsigned int error;
+
+struct Wanted {
+  GNUNET_ECRS_MetaData * meta;
+
+  GNUNET_HashCode sender;
+
+  char * msg;
+
+  GNUNET_CHAT_MSG_OPTIONS opt;
+  
+};
 
 static int
-receive_callback1 (void *cls,
-                   struct GNUNET_CHAT_Room *room,
-                   const GNUNET_HashCode * sender,
-		   const struct GNUNET_ECRS_MetaData * member_info,
-                   const char *message,
-		   GNUNET_CHAT_MSG_OPTIONS options)
+receive_callback (void *cls,
+		  struct GNUNET_CHAT_Room *room,
+		  const GNUNET_HashCode * sender,
+		  const struct GNUNET_ECRS_MetaData * member_info,
+		  const char *message,
+		  GNUNET_CHAT_MSG_OPTIONS options)
 {
-
+  struct Wanted * want = cls;
   return GNUNET_OK;
 }
 
 static int
-member_list_callback1 (void *cls,
-		       const struct GNUNET_ECRS_MetaData * member_info,
-		       const GNUNET_RSA_PublicKey * member_id) 
+member_list_callback (void *cls,
+		      const struct GNUNET_ECRS_MetaData * member_info,
+		      const GNUNET_RSA_PublicKey * member_id) 
 {
+  struct Wanted * want = cls;
+  
   return GNUNET_OK;
 }
-
-static int
-receive_callback2 (void *cls,
-                   struct GNUNET_CHAT_Room *room,
-                   const GNUNET_HashCode * sender,
-		   const struct GNUNET_ECRS_MetaData * member_info,
-                   const char *message,
-		   GNUNET_CHAT_MSG_OPTIONS options)
-{
-  return GNUNET_OK;
-}
-
-static int
-member_list_callback2 (void *cls,
-		       const struct GNUNET_ECRS_MetaData * member_info,
-		       const GNUNET_RSA_PublicKey * member_id) 
-{
-  return GNUNET_OK;
-}
-
-
 
 /**
  * Testcase to test chat.
@@ -86,6 +78,7 @@ member_list_callback2 (void *cls,
 int
 main (int argc, char **argv)
 {
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
   struct GNUNET_CHAT_Room *r1;
@@ -93,6 +86,10 @@ main (int argc, char **argv)
   unsigned int seq;
   struct GNUNET_ECRS_MetaData * meta1;
   struct GNUNET_ECRS_MetaData * meta2;
+  GNUNET_HashCode alice;
+  GNUNET_HashCode bob;
+  struct Wanted alice_wanted;
+  struct Wanted bob_wanted;
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -123,22 +120,24 @@ main (int argc, char **argv)
 			       EXTRACTOR_TITLE,
 			       "Bob");
   r1 =
-    GNUNET_CHAT_join_room (NULL, cfg, "nick1", 
+    GNUNET_CHAT_join_room (NULL, cfg, "alice", 
 			   meta1, "test", -1,
-                           &receive_callback1, NULL, 
-			   &member_list_callback1, NULL,
-			   NULL, NULL);
+                           &receive_callback, &alice_wanted, 
+			   &member_list_callback, &bob_wanted,
+			   NULL, NULL,
+			   &alice);
   if (r1 == NULL)
     {
       ret = 1;
       goto CLEANUP;
     }
   r2 =
-    GNUNET_CHAT_join_room (NULL, cfg, "nick2",
+    GNUNET_CHAT_join_room (NULL, cfg, "bob",
 			   meta2, "test", -1, 
-                           &receive_callback2, NULL, 
-			   &member_list_callback2, NULL,
-			   NULL, NULL);
+                           &receive_callback, &bob_wanted, 
+			   &member_list_callback, &alice_wanted,
+			   NULL, NULL,
+			   &bob);
   if (r2 == NULL)
     {
       ret = 1;

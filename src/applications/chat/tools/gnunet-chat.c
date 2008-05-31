@@ -147,7 +147,9 @@ main (int argc, char **argv)
   struct GNUNET_RSA_PrivateKey *my_priv;
   struct GNUNET_ECRS_MetaData *meta;
   char message[MAX_MESSAGE_LENGTH + 1];
+  char * my_name;
   unsigned int seq;
+  GNUNET_HashCode me;
 
   if (GNUNET_SYSERR == GNUNET_init (argc,
                                     argv,
@@ -172,7 +174,8 @@ main (int argc, char **argv)
 				-1,
                                 &receive_callback, NULL,
                                 &member_list_callback, NULL,
-                                &confirmation_callback, NULL);
+                                &confirmation_callback, NULL,
+				&me);
   GNUNET_ECRS_meta_data_destroy (meta);
   if (room == NULL)
     {
@@ -181,10 +184,14 @@ main (int argc, char **argv)
       GNUNET_fini (ectx, cfg);
       return -1;
     }
+  my_name = GNUNET_PSEUDO_id_to_name(ectx, cfg, &me);
   fprintf (stdout,
            _
-           ("Joined room `%s'.\nType message and hit return to send.\nType `%s' when ready to quit.\n"),
-           room_name, QUIT_COMMAND);
+           ("Joined room `%s' as user `%s'.\nType message and hit return to send.\nType `%s' when ready to quit.\n"),
+           room_name,
+	   my_name,
+	   QUIT_COMMAND);
+  GNUNET_free(my_name);
   /* read messages from command line and send */
   while ((0 != strcmp (message, QUIT_COMMAND)) &&
          (GNUNET_shutdown_test () == GNUNET_NO))

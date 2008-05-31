@@ -181,6 +181,8 @@ typedef int (*GNUNET_CHAT_MessageConfirmation) (void *cls,
  * @param message_cls argument to callback
  * @param memberCallback which function to call for join/leave notifications
  * @param confirmationCallback which function to call for confirmations (maybe NULL)
+ * @param pid set to the pseudonym ID of ourselves
+ *
  * @return NULL on error
  */
 struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
@@ -200,7 +202,8 @@ struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
                                                 void *member_cls,
                                                 GNUNET_CHAT_MessageConfirmation
                                                 confirmationCallback,
-                                                void *confirmation_cls);
+                                                void *confirmation_cls,
+						GNUNET_HashCode * pid);
 
 /**
  * Leave a chat room.
