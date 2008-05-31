@@ -22,7 +22,7 @@
  * @author Christian Grothoff
  * @author Nathan Evans
  * @file chat.h
- **/
+ */
 #ifndef CHAT_H
 #define CHAT_H
 
