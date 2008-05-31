@@ -45,7 +45,7 @@
 static unsigned int error;
 
 struct Wanted {
-  GNUNET_ECRS_MetaData * meta;
+  struct GNUNET_ECRS_MetaData * meta;
 
   GNUNET_HashCode * sender;
 
@@ -92,7 +92,7 @@ member_list_callback (void *cls,
           (0 == GNUNET_ECRS_meta_data_test_equal(member_info,
 						 want->meta)) &&
 	  (options == want->opt) ) )
-    error++
+    error++;
   return GNUNET_OK;
 }
 
