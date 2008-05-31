@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -56,7 +56,6 @@ void GNUNET_CO_done (void);
 int GNUNET_CO_collection_start (unsigned int anonymityLevel,
                                 unsigned int priority,
                                 GNUNET_Int32Time updateInterval,
-                                const char *name,
                                 const struct GNUNET_ECRS_MetaData *meta);
 
 /**
@@ -66,12 +65,14 @@ int GNUNET_CO_collection_start (unsigned int anonymityLevel,
  */
 int GNUNET_CO_collection_stop (void);
 
+
 /**
  * Are we using a collection?
  *
- * @return NULL if there is no collection, otherwise its name
+ * @return NULL if there is no collection, otherwise its metadata
  */
-char *GNUNET_CO_collection_get_name (void);
+struct GNUNET_ECRS_MetaData *
+GNUNET_CO_collection_get_name (void);
 
 /**
  * GNUNET_ND_UPLOAD an update of the current collection information to the

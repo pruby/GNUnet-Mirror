@@ -373,6 +373,7 @@ main (int argc, char *const *argv)
   int i;
   char *tmp;
   unsigned long long verbose;
+  GNUNET_HashCode pid;
 
   meta = GNUNET_ECRS_meta_data_create ();
   i = GNUNET_init (argc,
@@ -449,8 +450,11 @@ main (int argc, char *const *argv)
   /* check arguments */
   if (pseudonym != NULL)
     {
-      if (GNUNET_OK !=
-          GNUNET_ECRS_namespace_test_exists (ectx, cfg, pseudonym, NULL))
+      if ( (GNUNET_OK !=
+	    GNUNET_PSEUDO_name_to_id(ectx, cfg,
+				     pseudonym, &pid)) ||
+	   (GNUNET_OK !=
+	    GNUNET_ECRS_namespace_test_exists (ectx, cfg, &pid)) )
         {
           printf (_("Could not access namespace `%s' (does not exist?).\n"),
                   pseudonym);

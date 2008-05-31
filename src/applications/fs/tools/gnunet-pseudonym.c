@@ -244,21 +244,22 @@ main (int argc, char *const *argv)
   /* create collections / namespace */
   if (create_name != NULL)
     {
+      GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, create_name);
       if (start_collection)
         {
-          GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_OWNER, create_name);
-          if (GNUNET_OK == GNUNET_CO_collection_start (anonymity, priority, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
-                                                       create_name, meta))
+	  /* FIXME: allow other update policies */
+          if (GNUNET_OK == GNUNET_CO_collection_start (anonymity,
+						       priority, 
+						       GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC, 
+                                                       meta))
             {
-              printf (_("Started collection `%s'.\n"), create_name);
+              printf ("%s", _("Started collection.\n"));
             }
           else
             {
-              printf (_("Failed to start collection.\n"));
+              printf ("%s", _("Failed to start collection.\n"));
               success++;
             }
-
-          GNUNET_ECRS_meta_data_delete (meta, EXTRACTOR_OWNER, create_name);
         }
       else
         {                       /* no collection */
@@ -293,12 +294,11 @@ main (int argc, char *const *argv)
                                                 priority,
                                                 expiration +
                                                 GNUNET_get_time (),
-                                                create_name, meta,
+                                                meta,
                                                 advertisement, &rootEntry);
           if (rootURI == NULL)
             {
-              printf (_("Could not create namespace `%s' (exists?).\n"),
-                      create_name);
+              printf ("%s", _("Could not create namespace.\n"));
               success += 1;
             }
           else
@@ -312,6 +312,7 @@ main (int argc, char *const *argv)
           if (NULL != advertisement)
             GNUNET_ECRS_uri_destroy (advertisement);
         }
+      GNUNET_ECRS_meta_data_delete (meta, EXTRACTOR_TITLE, create_name);
       GNUNET_free (create_name);
       create_name = NULL;
     }

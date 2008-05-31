@@ -39,11 +39,13 @@
 
 static char *
 getPseudonymFileName (struct GNUNET_GE_Context *ectx,
-                      struct GNUNET_GC_Configuration *cfg, const char *name)
+                      struct GNUNET_GC_Configuration *cfg, 
+		      const GNUNET_HashCode * pid)
 {
   char *gnHome;
   char *fileName;
-
+  GNUNET_EncName enc;
+  
   GNUNET_GC_get_configuration_value_filename (cfg,
                                               "GNUNET",
                                               "GNUNET_HOME",
@@ -52,14 +54,38 @@ getPseudonymFileName (struct GNUNET_GE_Context *ectx,
   gnHome = GNUNET_expand_file_name (ectx, fileName);
   GNUNET_free (fileName);
   fileName =
-    GNUNET_malloc (strlen (gnHome) + strlen (PSEUDODIR) + strlen (name) + 2);
+    GNUNET_malloc (strlen (gnHome) + strlen (PSEUDODIR) + sizeof(GNUNET_EncName) + 2);
   strcpy (fileName, gnHome);
   GNUNET_free (gnHome);
   strcat (fileName, DIR_SEPARATOR_STR);
   strcat (fileName, PSEUDODIR);
   GNUNET_disk_directory_create (ectx, fileName);
-  strcat (fileName, name);
+  if (pid != NULL)
+    {
+      GNUNET_hash_to_enc(pid,
+			 &enc);     
+      strcat (fileName, (char*) &enc);
+    }
   return fileName;
+}
+
+
+/**
+ * Check if the given namespace exists (locally).
+ *
+ * @return GNUNET_OK if the namespace exists, GNUNET_SYSERR if not
+ */
+int GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
+                                       struct GNUNET_GC_Configuration *cfg,
+                                       const GNUNET_HashCode * pid)
+{
+  char *fileName;
+  int ret;
+
+  fileName = getPseudonymFileName (ectx, cfg, pid);
+  ret = GNUNET_disk_file_test (ectx, fileName);
+  GNUNET_free (fileName);
+  return ret;
 }
 
 /**
@@ -70,11 +96,11 @@ getPseudonymFileName (struct GNUNET_GE_Context *ectx,
 int
 GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
                               struct GNUNET_GC_Configuration *cfg,
-                              const char *name)
+                              const GNUNET_HashCode * pid)
 {
   char *fileName;
 
-  fileName = getPseudonymFileName (ectx, cfg, name);
+  fileName = getPseudonymFileName (ectx, cfg, pid);
   if (GNUNET_YES != GNUNET_disk_file_test (ectx, fileName))
     {
       GNUNET_free (fileName);
@@ -115,7 +141,6 @@ GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
                               struct GNUNET_GC_Configuration *cfg,
-                              const char *name,
                               const struct GNUNET_ECRS_MetaData *meta,
                               unsigned int anonymityLevel,
                               unsigned int priority,
@@ -136,6 +161,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   unsigned int size;
   unsigned int mdsize;
   struct GNUNET_RSA_PrivateKey *pk;
+  GNUNET_RSA_PublicKey pubk;
+  GNUNET_HashCode pid;
   GNUNET_EC_NBlock *nb;
   GNUNET_EC_KNBlock *knb;
   char **keywords;
@@ -150,17 +177,19 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
     }
-  fileName = getPseudonymFileName (ectx, cfg, name);
+  hk = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key(hk,
+			    &pubk);
+  GNUNET_hash(&pubk,
+	      sizeof(GNUNET_RSA_PublicKey),
+	      &pid);
+  fileName = getPseudonymFileName (ectx, cfg, &pid);
   if (GNUNET_YES == GNUNET_disk_file_test (ectx, fileName))
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Cannot create pseudonym `%s', file `%s' exists.\n"),
-                     name, fileName);
+      GNUNET_GE_BREAK(NULL, 0); /* hash collision!? */
       GNUNET_free (fileName);
       return NULL;
     }
-  hk = GNUNET_RSA_create_key ();
   hke = GNUNET_RSA_encode_key (hk);
   len = ntohs (hke->len);
   dst = (char *) hke;
@@ -169,7 +198,6 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   GNUNET_free (dst);
 
   /* create advertisements */
-
   mdsize =
     GNUNET_ECRS_meta_data_get_serialized_size (meta,
                                                GNUNET_ECRS_SERIALIZE_PART);
@@ -189,7 +217,7 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       if (mdsize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
-          GNUNET_ECRS_namespace_delete (ectx, cfg, name);
+          GNUNET_ECRS_namespace_delete (ectx, cfg, &pid);
           GNUNET_RSA_free_key (hk);
           return NULL;
         }
@@ -237,7 +265,7 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       GNUNET_free (value);
       GNUNET_client_connection_destroy (sock);
       GNUNET_RSA_free_key (hk);
-      GNUNET_ECRS_namespace_delete (ectx, cfg, name);
+      GNUNET_ECRS_namespace_delete (ectx, cfg, &pid);
       return NULL;
     }
 
@@ -291,7 +319,7 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
             {
               GNUNET_GE_BREAK (ectx, 0);
               GNUNET_free (rootURI);
-              GNUNET_ECRS_namespace_delete (ectx, cfg, name);
+              GNUNET_ECRS_namespace_delete (ectx, cfg, &pid);
               GNUNET_free (cpy);
               GNUNET_free (knvalue);
               GNUNET_free (value);
@@ -314,68 +342,6 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   return rootURI;
 }
 
-
-/**
- * Check if the given namespace exists (locally).
- * @param hc if non-null, also check that this is the
- *   hc of the public key
- * @return GNUNET_OK if the namespace exists, GNUNET_SYSERR if not
- */
-int
-GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
-                                   struct GNUNET_GC_Configuration *cfg,
-                                   const char *name,
-                                   const GNUNET_HashCode * hc)
-{
-  struct GNUNET_RSA_PrivateKey *hk;
-  char *fileName;
-  GNUNET_RSA_PrivateKeyEncoded *hke;
-  char *dst;
-  unsigned long long len;
-  GNUNET_HashCode namespace;
-  GNUNET_RSA_PublicKey pk;
-
-  /* FIRST: read and decrypt pseudonym! */
-  fileName = getPseudonymFileName (ectx, cfg, name);
-  if (GNUNET_OK != GNUNET_disk_file_size (ectx, fileName, &len, GNUNET_YES))
-    {
-      GNUNET_free (fileName);
-      return GNUNET_SYSERR;
-    }
-  if (len < 2)
-    {
-      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("File `%s' does not contain a pseudonym.\n"),
-                     fileName);
-      GNUNET_free (fileName);
-      return GNUNET_SYSERR;
-    }
-  dst = GNUNET_malloc (len);
-  len = GNUNET_disk_file_read (ectx, fileName, len, dst);
-  GNUNET_free (fileName);
-  hke = (GNUNET_RSA_PrivateKeyEncoded *) dst;
-  if (ntohs (hke->len) != len)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Format of pseudonym `%s' is invalid.\n"), name);
-      GNUNET_free (hke);
-      return GNUNET_SYSERR;
-    }
-  hk = GNUNET_RSA_decode_key (hke);
-  GNUNET_free (hke);
-  if (hk == NULL)
-    return GNUNET_SYSERR;
-  GNUNET_RSA_get_public_key (hk, &pk);
-  GNUNET_RSA_free_key (hk);
-  GNUNET_hash (&pk, sizeof (GNUNET_RSA_PublicKey), &namespace);
-  if ((hc == NULL)
-      || (0 == memcmp (hc, &namespace, sizeof (GNUNET_HashCode))))
-    return GNUNET_OK;
-  else
-    return GNUNET_SYSERR;
-}
-
 /**
  * Add an entry into a namespace.
  *
@@ -389,7 +355,7 @@ GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
                                    struct GNUNET_GC_Configuration *cfg,
-                                   const char *name,
+                                   const GNUNET_HashCode * pid,
                                    unsigned int anonymityLevel,
                                    unsigned int priority,
                                    GNUNET_CronTime expiration,
@@ -418,7 +384,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   int ret;
 
   /* FIRST: read pseudonym! */
-  fileName = getPseudonymFileName (ectx, cfg, name);
+  fileName = getPseudonymFileName (ectx, cfg, pid);
   if (GNUNET_OK != GNUNET_disk_file_size (ectx, fileName, &len, GNUNET_YES))
     {
       GNUNET_free (fileName);
@@ -439,7 +405,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   if (ntohs (hke->len) != len)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Format of pseudonym `%s' is invalid.\n"), name);
+                     _("Format of pseudonym `%s' is invalid.\n"), fileName);
       GNUNET_free (hke);
       return NULL;
     }
@@ -567,8 +533,12 @@ processFile_ (const char *name, const char *dirName, void *cls)
   unsigned long long len;
   GNUNET_HashCode namespace;
   GNUNET_RSA_PublicKey pk;
+  GNUNET_HashCode pid;
 
-  fileName = getPseudonymFileName (c->ectx, c->cfg, name);
+  if (GNUNET_OK != GNUNET_enc_to_hash(name,
+				      &pid))
+    return GNUNET_OK; /* ignore */
+  fileName = getPseudonymFileName (c->ectx, c->cfg, &pid);
   if (GNUNET_OK !=
       GNUNET_disk_file_size (c->ectx, fileName, &len, GNUNET_YES))
     {
@@ -579,8 +549,9 @@ processFile_ (const char *name, const char *dirName, void *cls)
     {
       GNUNET_GE_LOG (c->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("File `%s' does not contain a pseudonym.\n"),
+                     _("File `%s' does not contain a pseudonym, trying to remove.\n"),
                      fileName);
+      UNLINK(fileName);
       GNUNET_free (fileName);
       return GNUNET_OK;
     }
@@ -602,7 +573,8 @@ processFile_ (const char *name, const char *dirName, void *cls)
     {
       GNUNET_GE_LOG (c->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Format of file `%s' is invalid.\n"), fileName);
+                     _("Format of file `%s' is invalid, trying to remove.\n"), fileName);
+      UNLINK(fileName);
       GNUNET_free (fileName);
       GNUNET_GE_BREAK (c->ectx, 0);
       return GNUNET_SYSERR;
@@ -642,7 +614,7 @@ GNUNET_ECRS_get_namespaces (struct GNUNET_GE_Context *ectx,
   myCLS.cnt = 0;
   myCLS.ectx = ectx;
   myCLS.cfg = cfg;
-  dirName = getPseudonymFileName (ectx, cfg, "");
+  dirName = getPseudonymFileName (ectx, cfg, NULL);
   GNUNET_disk_directory_scan (ectx, dirName, &processFile_, &myCLS);
   GNUNET_free (dirName);
   return myCLS.cnt;

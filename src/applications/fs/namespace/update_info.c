@@ -260,9 +260,6 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
   GNUNET_ECRS_FileInfo fi;
   char *old;
   struct GNUNET_ECRS_URI *uri;
-  char *name;
-
-  name = "FIXME";
 
   /* computation of IDs of update(s).  Not as terrible as
      it looks, just enumerating all of the possible cases
@@ -367,7 +364,7 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
     }
   uri = GNUNET_ECRS_namespace_add_content (ectx,
                                            cfg,
-                                           name,
+                                           nsid,
                                            anonymityLevel,
                                            insertPriority,
                                            insertExpiration,

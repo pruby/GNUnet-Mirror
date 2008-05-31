@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -59,6 +59,11 @@ typedef struct CollectionData
   /**
    * What is the last ID for the publication?
    */
+  GNUNET_HashCode pid;
+
+  /**
+   * What is the last ID for the publication?
+   */
   GNUNET_HashCode lastId;
 
   /**
@@ -93,11 +98,6 @@ typedef struct
 {
 
   CollectionData data;
-
-  /**
-   * Name of the collection
-   */
-  char *name;
 
   /**
    * Metadata describing the collection
@@ -226,23 +226,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
   pos += sizeof (int);
   mlen = ntohl (*(int *) pos);
   pos += sizeof (int);
-  len = ntohl (*(int *) pos);
-  if (len > 1024)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      len = 1024;
-    }
-  collectionData->name = GNUNET_malloc (len + 1);
-  pos += sizeof (int);
   rsize -= 4 * sizeof (int);
-  if (len > rsize)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      len = rsize;
-    }
-  memcpy (collectionData->name, pos, len);
-  rsize -= len;
-  pos += len;
   if (mlen > rsize)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -364,9 +348,6 @@ writeCO ()
   WRITEINT (fd, collectionData->file_count);
   WRITEINT (fd, collectionData->changed);
   WRITEINT (fd, mlen);
-  GNUNET_GE_BREAK (ectx, strlen (collectionData->name) < 1024);
-  WRITEINT (fd, strlen (collectionData->name));
-  WRITE (fd, collectionData->name, strlen (collectionData->name));
   WRITE (fd, buf, mlen);
   GNUNET_free (buf);
   for (i = 0; i < collectionData->file_count; i++)
@@ -425,7 +406,6 @@ int
 GNUNET_CO_collection_start (unsigned int anonymityLevel,
                             unsigned int prio,
                             GNUNET_Int32Time updateInterval,
-                            const char *name,
                             const struct GNUNET_ECRS_MetaData *meta)
 {
   struct GNUNET_ECRS_URI *advertisement;
@@ -435,14 +415,12 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
 
   GNUNET_mutex_lock (lock);
   GNUNET_CO_collection_stop (); /* cancel old collection */
-  GNUNET_GE_ASSERT (ectx, name != NULL);
   advertisement = GNUNET_ECRS_keyword_string_to_uri (ectx, COLLECTION);
   GNUNET_GE_ASSERT (ectx, advertisement != NULL);
   GNUNET_get_time_int32 (&now);
   GNUNET_create_random_hash (&nextId);
   rootURI = GNUNET_ECRS_namespace_create (ectx,
                                           cfg,
-                                          name,
                                           meta,
                                           anonymityLevel,
                                           prio,
@@ -455,17 +433,18 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_ECRS_uri_destroy (advertisement);
-  GNUNET_ECRS_uri_destroy (rootURI);
   collectionData = GNUNET_malloc (sizeof (CollectionInfo));
   memset (collectionData, 0, sizeof (CollectionInfo));
-  GNUNET_create_random_hash (&collectionData->data.lastId);
+  GNUNET_create_random_hash (&collectionData->data.lastId);  
+  GNUNET_ECRS_uri_get_namespace_from_sks(rootURI,
+					 &collectionData->data.pid);
   collectionData->data.nextId = nextId;
   collectionData->data.updateInterval = htonl (updateInterval);
   collectionData->data.anonymityLevel = htonl (anonymityLevel);
   collectionData->data.priority = htonl (prio);
   collectionData->meta = GNUNET_ECRS_meta_data_duplicate (meta);
-  collectionData->name = GNUNET_strdup (name);
+  GNUNET_ECRS_uri_destroy (advertisement);
+  GNUNET_ECRS_uri_destroy (rootURI);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
@@ -486,7 +465,7 @@ GNUNET_CO_collection_stop ()
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_ECRS_namespace_delete (ectx, cfg, collectionData->name);
+  GNUNET_ECRS_namespace_delete (ectx, cfg, &collectionData->data.pid);
   GNUNET_ECRS_meta_data_destroy (collectionData->meta);
   for (i = 0; i < collectionData->file_count; i++)
     {
@@ -494,7 +473,6 @@ GNUNET_CO_collection_stop ()
       GNUNET_ECRS_uri_destroy (collectionData->files[i].uri);
     }
   GNUNET_array_grow (collectionData->files, collectionData->file_count, 0);
-  GNUNET_free (collectionData->name);
   GNUNET_free (collectionData);
   collectionData = NULL;
   GNUNET_mutex_unlock (lock);
@@ -504,12 +482,12 @@ GNUNET_CO_collection_stop ()
 /**
  * Are we using a collection?
  *
- * @return NULL if there is no collection, otherwise its name
+ * @return NULL if there is no collection, otherwise its metadata
  */
-char *
+struct GNUNET_ECRS_MetaData *
 GNUNET_CO_collection_get_name ()
 {
-  char *name;
+  struct GNUNET_ECRS_MetaData *meta;
 
   GNUNET_mutex_lock (lock);
   if (collectionData == NULL)
@@ -517,9 +495,9 @@ GNUNET_CO_collection_get_name ()
       GNUNET_mutex_unlock (lock);
       return NULL;
     }
-  name = GNUNET_strdup (collectionData->name);
+  meta = GNUNET_ECRS_meta_data_duplicate (collectionData->meta);
   GNUNET_mutex_unlock (lock);
-  return name;
+  return meta;
 }
 
 /**
@@ -636,7 +614,7 @@ GNUNET_CO_collection_publish_now ()
   GNUNET_free (tmpName);
   uri = GNUNET_ECRS_namespace_add_content (ectx,
                                            cfg,
-                                           collectionData->name,
+                                           &collectionData->data.pid,
                                            ntohl (collectionData->data.
                                                   anonymityLevel),
                                            ntohl (collectionData->data.

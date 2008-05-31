@@ -45,7 +45,6 @@ GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
                             unsigned int anonymityLevel,
                             unsigned int insertPriority,
                             GNUNET_CronTime insertExpiration,
-                            const char *namespaceName,
                             const struct GNUNET_ECRS_MetaData *meta,
                             const struct GNUNET_ECRS_URI *advertisementURI,
                             const GNUNET_HashCode * rootEntry)
@@ -55,7 +54,6 @@ GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
 
   ret = GNUNET_ECRS_namespace_create (ectx,
                                       cfg,
-                                      namespaceName,
                                       meta,
                                       anonymityLevel,
                                       insertPriority,
@@ -82,10 +80,8 @@ GNUNET_NS_namespace_delete (struct GNUNET_GE_Context *ectx,
 {
   int ret;
   char *fn;
-  char *ns_name;
 
-  ns_name = "FIXME";
-  ret = GNUNET_ECRS_namespace_delete (ectx, cfg, ns_name);
+  ret = GNUNET_ECRS_namespace_delete (ectx, cfg, nsid);
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
                                               cfg, NS_UPDATE_DIR, nsid, NULL);
   GNUNET_disk_directory_remove (ectx, fn);
