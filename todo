@@ -10,8 +10,6 @@ Annotations:
 - chat:  [RC]
   + adapt gnunet-chat for new client api 
     => add support for new options (private msg, anon msg, confirmation)
-  + support private message delivery, confirmations and
-    blocking options in chat.c
   + write reasonable testcase!
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
