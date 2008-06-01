@@ -29,6 +29,8 @@
  * TODO:
  * - signatures are currently always generated for the
  *   plaintext, even if ciphertext was requested
+ * - consider keeping private keys entirely on the
+ *   client side (tricky bit: generating Confirmations)
  */
 
 #include "platform.h"

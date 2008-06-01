@@ -27,8 +27,8 @@
  * TODO:
  * - test private messages (need more than 2 users!)
  * - test anonymous messages
- * - test acknowledgements
- * - test authenticated message
+ * - test acknowledgements (verify sig!)
+ * - test authenticated message (flags only)
  */
 
 #include "platform.h"
@@ -41,6 +41,8 @@
 #include "gnunet_core.h"
 
 #define START_PEERS 1
+
+#define DEBUG 0
 
 static unsigned int error;
 
@@ -71,11 +73,13 @@ receive_callback (void *cls,
 {
   struct Wanted * want = cls;
 
+#if DEBUG
   fprintf(stderr, "%s - told that %s says %s\n",
 	  want->me,
 	  member_info == NULL ? NULL 
 	  : GNUNET_ECRS_meta_data_get_by_type(member_info, EXTRACTOR_TITLE),
 	  message);
+#endif
   GNUNET_semaphore_down(want->pre, GNUNET_YES);
   if (! ( (0 == strcmp(message, want->msg)) &&
 	  ( ( (sender == NULL) && (want->sender == NULL) ) ||
@@ -102,10 +106,12 @@ member_list_callback (void *cls,
   struct Wanted * want = cls;
   GNUNET_HashCode sender;
 
+#if DEBUG
   fprintf(stderr, "%s - told that %s joins\n",
 	  want->me,
 	  member_info == NULL ? NULL 
 	  : GNUNET_ECRS_meta_data_get_by_type(member_info, EXTRACTOR_TITLE));
+#endif
   GNUNET_semaphore_down(want->pre, GNUNET_YES);
   GNUNET_hash(member_id,
 	      sizeof(GNUNET_RSA_PublicKey),
@@ -198,8 +204,10 @@ main (int argc, char **argv)
 			       "Bob");
 
   /* alice joining */
+#if DEBUG
   fprintf(stderr,
 	  "Alice joining\n");
+#endif
   alice_wanted.recv = GNUNET_semaphore_create(0);
   alice_wanted.pre = GNUNET_semaphore_create(1);
   alice_wanted.meta = meta1;
@@ -221,8 +229,10 @@ main (int argc, char **argv)
   check_down(&alice_wanted);
 
   /* bob joining */
+#if DEBUG
   fprintf(stderr,
 	  "Bob joining\n");
+#endif
   alice_wanted.meta = meta2;
   alice_wanted.sender = &bob;
   alice_wanted.msg = NULL;
@@ -258,8 +268,10 @@ main (int argc, char **argv)
   /* end of Bob joining */
 
   /* alice to bob */
+#if DEBUG
   fprintf(stderr,
 	  "Alice says 'Hi!'\n");
+#endif
   GNUNET_CHAT_send_message (r1, "Hi!",
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL, &seq);
   alice_wanted.meta = meta1;
@@ -276,12 +288,31 @@ main (int argc, char **argv)
   check_down(&bob_wanted);
 
 
-#if 0
   /* bob to alice */
+#if DEBUG
+  fprintf(stderr,
+	  "Bob says 'Rehi!'\n");
+#endif
   GNUNET_CHAT_send_message (r2, "Rehi!", 
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL, &seq);
-#endif
+  alice_wanted.meta = meta2;
+  alice_wanted.sender = &bob;
+  alice_wanted.msg = "Rehi!";
+  alice_wanted.opt = 0;
+  GNUNET_semaphore_up(alice_wanted.pre);
+  bob_wanted.meta = meta2;
+  bob_wanted.sender = &bob;
+  bob_wanted.msg = "Rehi!";
+  bob_wanted.opt = 0;
+  GNUNET_semaphore_up(bob_wanted.pre);
+  check_down(&alice_wanted);
+  check_down(&bob_wanted);
+
   /* alice leaving */
+#if DEBUG
+  fprintf(stderr,
+	  "Alice is leaving.\n");
+#endif
   GNUNET_CHAT_leave_room (r1);
   r1 = NULL;
   bob_wanted.meta = NULL;
@@ -292,6 +323,10 @@ main (int argc, char **argv)
   check_down(&bob_wanted);
 
   /* bob leaving */
+#if DEBUG
+  fprintf(stderr,
+	  "Bob is leaving.\n");
+#endif
   GNUNET_CHAT_leave_room (r2);
   r2 = NULL;
 
