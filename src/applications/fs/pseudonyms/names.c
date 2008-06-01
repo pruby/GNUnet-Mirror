@@ -80,13 +80,8 @@ GNUNET_PSEUDO_id_to_name (struct GNUNET_GE_Context *ectx,
   GNUNET_hash (name, strlen (name), &nh);
   fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,
                                                   cfg, PS_NAMES_DIR, &nh);
-  if ((GNUNET_OK != GNUNET_disk_file_test (ectx,
-                                           fn) ||
-       (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES))))
-    {
-      GNUNET_free (fn);
-      return NULL;
-    }
+  len = 0;
+  GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES);
   fd = GNUNET_disk_file_open (ectx, fn, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   i = 0;
   idx = -1;
@@ -140,7 +135,7 @@ GNUNET_PSEUDO_name_to_id (struct GNUNET_GE_Context *ectx,
   if (slen == 0)
     return GNUNET_SYSERR;
   name = GNUNET_strdup (ns_uname);
-  name[slen] = '\0';
+  name[slen-1] = '\0';
   GNUNET_hash (name, strlen (name), &nh);
   GNUNET_free (name);
   fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,
