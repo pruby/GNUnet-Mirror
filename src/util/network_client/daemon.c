@@ -81,8 +81,7 @@ GNUNET_client_connection_request_daemon_shutdown (struct
 }
 
 /**
- * Wait until the gnunet daemon is
- * running.
+ * Wait until the gnunet daemon is running.
  *
  * @param timeout how long to wait at most
  * @return GNUNET_OK if gnunetd is now running
