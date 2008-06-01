@@ -51,6 +51,8 @@ struct Wanted {
 
   char * msg;
 
+  struct GNUNET_Semaphore * recv;
+
   GNUNET_CHAT_MSG_OPTIONS opt;
   
 };
@@ -64,15 +66,20 @@ receive_callback (void *cls,
 		  GNUNET_CHAT_MSG_OPTIONS options)
 {
   struct Wanted * want = cls;
+
   if (! ( (0 == strcmp(message, want->msg)) &&
 	  ( ( (sender == NULL) && (want->sender == NULL) ) ||
 	    ( (sender != NULL) && 
 	      (want->sender != NULL) && 
 	      (0 == memcmp(sender, want->sender, sizeof(GNUNET_HashCode))) ) ) &&
-	  (0 == GNUNET_ECRS_meta_data_test_equal(member_info,
-						 want->meta)) &&
+	  (GNUNET_ECRS_meta_data_test_equal(member_info,
+					    want->meta)) &&
 	  (options == want->opt) ) )
-    error++;
+    {
+      abort();
+      error++;
+    }
+  GNUNET_semaphore_up(want->recv);
   return GNUNET_OK;
 }
 
@@ -89,11 +96,32 @@ member_list_callback (void *cls,
 	      sizeof(GNUNET_RSA_PublicKey),
 	      &sender);  
   if (! ( (0 == memcmp(&sender, want->sender, sizeof(GNUNET_HashCode))) &&
-          (0 == GNUNET_ECRS_meta_data_test_equal(member_info,
+          (GNUNET_ECRS_meta_data_test_equal(member_info,
 						 want->meta)) &&
 	  (options == want->opt) ) )
-    error++;
+    {
+      abort();
+      error++;
+    }
+  GNUNET_semaphore_up(want->recv);
   return GNUNET_OK;
+}
+
+static void
+check_down(struct Wanted * want)
+{
+  int tries;
+  tries = 10;
+  while (tries > 0)
+    {
+      if (GNUNET_OK ==
+	  GNUNET_semaphore_down(want->recv,
+				GNUNET_YES))
+	break;
+      tries--;
+    }
+  if (tries == 0)
+    error++;
 }
 
 /**
@@ -144,11 +172,20 @@ main (int argc, char **argv)
   GNUNET_ECRS_meta_data_insert(meta2,
 			       EXTRACTOR_TITLE,
 			       "Bob");
+
+  /* alice joining */
+  fprintf(stderr,
+	  "Alice joining\n");
+  alice_wanted.recv = GNUNET_semaphore_create(0);
+  alice_wanted.meta = meta1;
+  alice_wanted.sender = &alice;
+  alice_wanted.msg = NULL;
+  alice_wanted.opt = -1;
   r1 =
     GNUNET_CHAT_join_room (NULL, cfg, "alice", 
 			   meta1, "test", -1,
                            &receive_callback, &alice_wanted, 
-			   &member_list_callback, &bob_wanted,
+			   &member_list_callback, &alice_wanted,
 			   NULL, NULL,
 			   &alice);
   if (r1 == NULL)
@@ -156,11 +193,26 @@ main (int argc, char **argv)
       ret = 1;
       goto CLEANUP;
     }
+  check_down(&alice_wanted);
+
+  /* bob joining */
+  fprintf(stderr,
+	  "Bob joining\n");
+  alice_wanted.meta = meta2;
+  alice_wanted.sender = &bob;
+  alice_wanted.msg = NULL;
+  alice_wanted.opt = -1;
+
+  bob_wanted.recv = GNUNET_semaphore_create(0);
+  bob_wanted.meta = meta2;
+  bob_wanted.sender = &bob;
+  bob_wanted.msg = NULL;
+  bob_wanted.opt = -1;
   r2 =
     GNUNET_CHAT_join_room (NULL, cfg, "bob",
 			   meta2, "test", -1, 
                            &receive_callback, &bob_wanted, 
-			   &member_list_callback, &alice_wanted,
+			   &member_list_callback, &bob_wanted,
 			   NULL, NULL,
 			   &bob);
   if (r2 == NULL)
@@ -168,14 +220,33 @@ main (int argc, char **argv)
       ret = 1;
       goto CLEANUP;
     }
+  check_down(&alice_wanted);
+  check_down(&bob_wanted);
+  bob_wanted.meta = meta1;
+  bob_wanted.sender = &alice;
+  bob_wanted.msg = NULL;
+  bob_wanted.opt = -1;
+  check_down(&bob_wanted);
+  /* end of Bob joining */
 
+#if 0
+  /* alice to bob */
   GNUNET_CHAT_send_message (r1, "test message 1",
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL, &seq);
 
+  /* bob to alice */
   GNUNET_CHAT_send_message (r2, "test message 2", 
                             GNUNET_CHAT_MSG_OPTION_NONE, NULL, &seq);
+#endif
+  /* alice leaving */
+  GNUNET_CHAT_leave_room (r1);
+  r1 = NULL;
 
-CLEANUP:
+  /* bob leaving */
+  GNUNET_CHAT_leave_room (r2);
+  r2 = NULL;
+
+ CLEANUP:
   if (r1 != NULL)
     GNUNET_CHAT_leave_room (r1);
   if (r2 != NULL)

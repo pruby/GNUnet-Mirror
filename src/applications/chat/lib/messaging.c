@@ -106,16 +106,21 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
     GNUNET_ECRS_meta_data_get_serialized_size (chat_room->member_info,
                                                GNUNET_YES);
   room_len = strlen (chat_room->room_name);
-  size_of_join = sizeof (CS_chat_MESSAGE_JoinRequest) + meta_len + room_len;
+  size_of_join = sizeof (CS_chat_MESSAGE_JoinRequest) + meta_len 
+    + room_len + ntohs(chat_room->my_private_key->len) - sizeof(GNUNET_RSA_PrivateKeyEncoded);
   if (size_of_join >= GNUNET_MAX_BUFFER_SIZE - 8)
     return GNUNET_SYSERR;
   join_msg = GNUNET_malloc (size_of_join);
   join_msg->header.size = htons (size_of_join);
   join_msg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_REQUEST);
   join_msg->msg_options = htonl (chat_room->msg_options);
-  join_msg->private_key = *chat_room->my_private_key;
   join_msg->room_name_len = htons (room_len);
+  join_msg->reserved = htons (0);
+  memcpy(&join_msg->private_key,
+	 chat_room->my_private_key,
+	 ntohs(chat_room->my_private_key->len));
   room = (char *) &join_msg[1];
+  room += ntohs(chat_room->my_private_key->len) - sizeof(GNUNET_RSA_PrivateKeyEncoded);
   memcpy (room, chat_room->room_name, room_len);
   if (GNUNET_SYSERR ==
       GNUNET_ECRS_meta_data_serialize (chat_room->ectx,

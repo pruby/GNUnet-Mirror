@@ -36,7 +36,7 @@
 /**
  * Linked list of our current clients.
  */
-struct GNUNET_CS_chat_client
+struct GNUNET_CS_chat_client 
 {
   struct GNUNET_CS_chat_client *next;
 
@@ -46,12 +46,19 @@ struct GNUNET_CS_chat_client
 
   char *room;
 
+  char *member_info;
+
   /**
    * Hash of the public key (for convenience).
    */
   GNUNET_HashCode id;
 
   unsigned int msg_options;
+
+  /**
+   * Length of serialized metadata in member_info.
+   */
+  unsigned int meta_len;
 
 };
 
@@ -164,6 +171,7 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   struct GNUNET_CS_chat_client *entry;
   GNUNET_RSA_PublicKey pkey;
   CS_chat_MESSAGE_JoinNotification *nmsg;
+  CS_chat_MESSAGE_JoinNotification *emsg;
 
   if (ntohs (message->size) < sizeof (CS_chat_MESSAGE_JoinRequest))
     {
@@ -173,15 +181,17 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   cmsg = (const CS_chat_MESSAGE_JoinRequest *) message;
   header_size = ntohs (cmsg->header.size);
   room_name_len = ntohs (cmsg->room_name_len);
-  if (header_size - sizeof (CS_chat_MESSAGE_JoinRequest) <= room_name_len)
+  if (header_size - sizeof (CS_chat_MESSAGE_JoinRequest) + sizeof(GNUNET_RSA_PrivateKeyEncoded)
+      <= room_name_len + ntohs(cmsg->private_key.len))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   meta_len =
-    header_size - sizeof (CS_chat_MESSAGE_JoinRequest) - room_name_len;
-
+    header_size - sizeof (CS_chat_MESSAGE_JoinRequest) - room_name_len
+    - ntohs(cmsg->private_key.len) + sizeof(GNUNET_RSA_PrivateKeyEncoded);
   roomptr = (const char *) &cmsg[1];
+  roomptr += ntohs(cmsg->private_key.len) - sizeof(GNUNET_RSA_PrivateKeyEncoded);
   room_name = GNUNET_malloc (room_name_len + 1);
   memcpy (room_name, roomptr, room_name_len);
   room_name[room_name_len] = '\0';
@@ -191,9 +201,20 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   entry->client = client;
   entry->room = room_name;
   entry->private_key = GNUNET_RSA_decode_key (&cmsg->private_key);
+  entry->meta_len = meta_len;
+  if (meta_len > 0)
+    {
+      entry->member_info = GNUNET_malloc(meta_len);
+      memcpy(entry->member_info,
+	     &roomptr[room_name_len],
+	     meta_len);
+    }
+  else
+    entry->member_info = NULL;
   if (entry->private_key == NULL)
     {
       GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_free_non_null (entry->member_info);
       GNUNET_free (room_name);
       GNUNET_free (entry);
       return GNUNET_SYSERR;
@@ -201,8 +222,6 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   GNUNET_RSA_get_public_key (entry->private_key, &pkey);
   GNUNET_hash (&pkey, sizeof (GNUNET_RSA_PublicKey), &entry->id);
   entry->msg_options = ntohl (cmsg->msg_options);
-
-
   nmsg = GNUNET_malloc (sizeof (CS_chat_MESSAGE_JoinNotification) + meta_len);
   nmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION);
   nmsg->header.size =
@@ -216,7 +235,22 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   while (entry != NULL)
     {
       if (0 == strcmp (room_name, entry->room))
-        coreAPI->cs_send_message (entry->client, &nmsg->header, GNUNET_YES);
+	{
+	  coreAPI->cs_send_message (entry->client, &nmsg->header, GNUNET_YES);
+	  emsg = GNUNET_malloc(sizeof(CS_chat_MESSAGE_JoinNotification) +
+			       entry->meta_len);
+	  emsg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION);
+	  emsg->header.size =
+	    htons (sizeof (CS_chat_MESSAGE_JoinNotification) + entry->meta_len);
+	  emsg->msg_options = entry->msg_options;
+	  GNUNET_RSA_get_public_key (entry->private_key,
+				     &emsg->public_key);
+	  memcpy(&emsg[1],
+		 entry->member_info,
+		 entry->meta_len);
+	  coreAPI->cs_send_message (client, &emsg->header, GNUNET_YES);
+	  GNUNET_free(emsg);
+	}
       entry = entry->next;
     }
   GNUNET_mutex_unlock (chatMutex);
@@ -263,6 +297,7 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
   GNUNET_mutex_unlock (chatMutex);
   GNUNET_free (pos->room);
   GNUNET_RSA_free_key (pos->private_key);
+  GNUNET_free_non_null (pos->member_info);
   GNUNET_free (pos);
 }
 

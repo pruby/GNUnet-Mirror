@@ -1,1 +1,1 @@
-SUBDIRS = module tools
+SUBDIRS = module 

@@ -137,14 +137,19 @@ typedef struct
   unsigned int msg_options;
 
   /**
-   * Private key of the joining member.
-   */
-  GNUNET_RSA_PrivateKeyEncoded private_key;
-
-  /**
    * Length of the room name.
    */
   unsigned short room_name_len;
+
+  /**
+   * Reserved (should be zero).
+   */ 
+  unsigned short reserved;
+
+  /**
+   * Private key of the joining member.
+   */
+  GNUNET_RSA_PrivateKeyEncoded private_key;
 
 } CS_chat_MESSAGE_JoinRequest;
 
