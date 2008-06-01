@@ -385,10 +385,10 @@ GNUNET_client_connection_ensure_connected (struct
               (ret != 0 && (errno == ENOTSOCK || errno == EBADF)))
             {
               GNUNET_GE_LOG (sock->ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_USER |
+                             GNUNET_GE_DEBUG | GNUNET_GE_USER |
                              GNUNET_GE_BULK,
-                             _("Failed to connect to %s:%u in %ds\n"),
-                             host, port, WAIT_SECONDS);
+                             _("Failed to connect to %s:%u\n"),
+                             host, port);
               GNUNET_socket_destroy (sock->sock);
               sock->sock = NULL;
               GNUNET_mutex_unlock (sock->destroylock);
