@@ -8,12 +8,14 @@ Annotations:
   + need better / actual / compiling testcase!
   + including testing for id_to_name and back!
 - chat:  [RC]
-  + adapt gnunet-chat for new client api 
-    => add support for new options (private msg, anon msg, confirmation)
+  + fix join-notification in module!
   + write reasonable testcase!
 
 
 0.8.0 [6'08] (aka "new protocol"):
+- chat:  [RC]
+  + add support for new options (private msg, anon msg, confirmation)
+    to gnunet-chat
 - move ECRS metadata and libpseudonym out of fs/
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]

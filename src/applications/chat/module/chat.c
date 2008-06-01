@@ -25,6 +25,10 @@
  * @author Christian Grothoff
  * @author Nathan Evans
  * @file applications/chat/module/chat.c
+ *
+ * TODO:
+ * - signatures are currently always generated for the
+ *   plaintext, even if ciphertext was requested
  */
 
 #include "platform.h"
