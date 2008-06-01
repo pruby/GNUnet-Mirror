@@ -274,9 +274,7 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_get_ip_from_hostname (sock->ectx, host,
                                        addr_families[af_index], &soaddr,
                                        &socklen))
-        {
-          continue;
-        }
+	continue;
       GNUNET_mutex_lock (sock->destroylock);
       if (sock->sock != NULL)
         {
@@ -375,43 +373,20 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_mutex_unlock (sock->destroylock);
           continue;
         }
+      if (soaddr->sa_family == AF_INET)
+	{
+	  sa = GNUNET_malloc (sizeof (struct sockaddr_in));
+	  memset (sa, 0, sizeof (struct sockaddr_in));
+	  slen = sizeof (struct sockaddr_in);
+	}
       else
-        {
-          struct sockaddr *sa;
-          socklen_t slen;
-          if (soaddr->sa_family == AF_INET)
-            {
-              sa = GNUNET_malloc (sizeof (struct sockaddr_in));
-              memset (sa, 0, sizeof (struct sockaddr_in));
-              slen = sizeof (struct sockaddr_in);
-            }
-          else
-            {
-              sa = GNUNET_malloc (sizeof (struct sockaddr_in6));
-              memset (sa, 0, sizeof (struct sockaddr_in6));
-              slen = sizeof (struct sockaddr_in6);
-            }
-          GNUNET_free (soaddr);
-          if (GETPEERNAME (osock, sa, &slen) != 0)
-            {
-              GNUNET_GE_LOG (sock->ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_USER |
-                             GNUNET_GE_BULK,
-                             _("Failed to connect to %s:%u in %ds\n"),
-                             host, port, WAIT_SECONDS);
-              if (errno != ENOTCONN)
-                GNUNET_GE_LOG_STRERROR (sock->ectx,
-                                        GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                        GNUNET_GE_BULK, "getpeername");
-
-              GNUNET_free (sa);
-              GNUNET_socket_destroy (sock->sock);
-              sock->sock = NULL;
-              GNUNET_mutex_unlock (sock->destroylock);
-              continue;
-            }
-          GNUNET_free (sa);
-        }
+	{
+	  sa = GNUNET_malloc (sizeof (struct sockaddr_in6));
+	  memset (sa, 0, sizeof (struct sockaddr_in6));
+	  slen = sizeof (struct sockaddr_in6);
+	}
+      GNUNET_free (soaddr);
+      GNUNET_free (sa);
       break;
     }
   GNUNET_free (host);
