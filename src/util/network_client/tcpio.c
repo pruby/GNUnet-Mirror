@@ -250,6 +250,8 @@ GNUNET_client_connection_ensure_connected (struct
   unsigned short port;
   char *host;
   int af_index;
+  struct sockaddr *sa;
+  socklen_t slen;
 
   GNUNET_GE_ASSERT (NULL, sock != NULL);
   if (sock->sock != NULL)
