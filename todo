@@ -7,10 +7,6 @@ Annotations:
 - namespaces / pseudonyms: 
   + need better / actual / compiling testcase!
   + including testing for id_to_name and back!
-- chat:  [RC]
-  + fix join-notification in module!
-  + write reasonable testcase!
-
 
 0.8.0 [6'08] (aka "new protocol"):
 - chat:  [RC]
