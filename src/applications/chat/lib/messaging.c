@@ -155,6 +155,7 @@ poll_thread (void *rcls)
   CS_chat_MESSAGE_LeaveNotification *leave_msg;
   CS_chat_MESSAGE_JoinNotification *join_msg;
   CS_chat_MESSAGE_ReceiveNotification *received_msg;
+  GNUNET_HashCode id;
   struct GNUNET_ECRS_MetaData *meta;
   struct MemberList *members;
   struct MemberList *pos;
@@ -246,11 +247,14 @@ poll_thread (void *rcls)
           room->member_list_callback (room->member_list_callback_cls,
                                       NULL, &leave_msg->user,
 				      GNUNET_CHAT_MSG_OPTION_NONE);
+	  GNUNET_hash(&leave_msg->user,
+		      sizeof(GNUNET_RSA_PublicKey),
+		      &id);
           prev = NULL;
           pos = members;
           while ((pos != NULL) &&
                  (0 != memcmp (&pos->id,
-                               &leave_msg->user, sizeof (GNUNET_HashCode))))
+                               &id, sizeof (GNUNET_HashCode))))
             {
               prev = pos;
               pos = pos->next;

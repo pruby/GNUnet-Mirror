@@ -111,7 +111,7 @@ csHandleTransmitRequest (struct GNUNET_ClientHandle *client,
     rmsg->sender = pos->id;
   else
     memset (&rmsg->sender, 0, sizeof (GNUNET_HashCode));
-  priv_msg = (0 == memcmp (&all_zeros,
+  priv_msg = (0 != memcmp (&all_zeros,
                            &cmsg->target, sizeof (GNUNET_HashCode)));
   memcpy (&rmsg[1], &cmsg[1], msg_len);
   pos = client_list_head;
@@ -123,7 +123,7 @@ csHandleTransmitRequest (struct GNUNET_ClientHandle *client,
                (0 == memcmp (&cmsg->target,
                              &pos->id,
                              sizeof (GNUNET_HashCode)))) &&
-              ((0 == ntohl (cmsg->msg_options)) & (~pos->msg_options)))
+              ((0 == (ntohl (cmsg->msg_options) & (~pos->msg_options)))))
             {
               coreAPI->cs_send_message (pos->client, &rmsg->header,
                                         GNUNET_YES);
@@ -237,19 +237,22 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
       if (0 == strcmp (room_name, entry->room))
 	{
 	  coreAPI->cs_send_message (entry->client, &nmsg->header, GNUNET_YES);
-	  emsg = GNUNET_malloc(sizeof(CS_chat_MESSAGE_JoinNotification) +
-			       entry->meta_len);
-	  emsg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION);
-	  emsg->header.size =
-	    htons (sizeof (CS_chat_MESSAGE_JoinNotification) + entry->meta_len);
-	  emsg->msg_options = entry->msg_options;
-	  GNUNET_RSA_get_public_key (entry->private_key,
-				     &emsg->public_key);
-	  memcpy(&emsg[1],
-		 entry->member_info,
-		 entry->meta_len);
-	  coreAPI->cs_send_message (client, &emsg->header, GNUNET_YES);
-	  GNUNET_free(emsg);
+	  if (entry->client != client)
+	    {
+	      emsg = GNUNET_malloc(sizeof(CS_chat_MESSAGE_JoinNotification) +
+				   entry->meta_len);
+	      emsg->header.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_NOTIFICATION);
+	      emsg->header.size =
+		htons (sizeof (CS_chat_MESSAGE_JoinNotification) + entry->meta_len);
+	      emsg->msg_options = entry->msg_options;
+	      GNUNET_RSA_get_public_key (entry->private_key,
+					 &emsg->public_key);
+	      memcpy(&emsg[1],
+		     entry->member_info,
+		     entry->meta_len);
+	      coreAPI->cs_send_message (client, &emsg->header, GNUNET_YES);
+	      GNUNET_free(emsg);
+	    }
 	}
       entry = entry->next;
     }
