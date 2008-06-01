@@ -1,3 +1,7 @@
+Sun Jun  1 13:41:27 MDT 2008
+	Split of libgnunetpseudonym from libgnunetnamespace
+	(with major API extension and changes).
+
 Tue May  6 04:10:02 MDT 2008
 	Added simple sanity check for [MODULES] values.
 	Added "-s" and "-q" options to gnunet-peer-info.
