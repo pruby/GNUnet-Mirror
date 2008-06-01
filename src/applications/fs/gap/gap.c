@@ -438,6 +438,7 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
   PID_INDEX blocked[MAX_ENTRIES_PER_SLOT + 1];
   unsigned int block_count;
   int was_new;
+  unsigned int rl_value;
 
   value = 0;
   GNUNET_mutex_lock (GNUNET_FS_lock);
@@ -468,30 +469,17 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           GNUNET_GE_ASSERT (NULL, block_count <= MAX_ENTRIES_PER_SLOT);
           blocked[block_count++] = rl->response_target;
           GNUNET_FS_PT_change_rc (rl->response_target, 1);
-          /* queue response */
-          msg = GNUNET_malloc (sizeof (P2P_gap_reply_MESSAGE) + size);
-          msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
-          msg->header.size = htons (sizeof (P2P_gap_reply_MESSAGE) + size);
-          msg->reserved = 0;
-          msg->expiration = GNUNET_htonll (expiration);
-          memcpy (&msg[1], data, size);
-          coreAPI->ciphertext_send (&target,
-                                    &msg->header,
-                                    GNUNET_GAP_BASE_REPLY_PRIORITY * (1 +
-                                                                      rl->
-                                                                      value),
-                                    GNUNET_GAP_MAX_GAP_DELAY);
-          GNUNET_free (msg);
+	  
+	  rl->value_offered = 0;
           if (stats != NULL)
-            {
-              stats->change (stat_trust_earned, rl->value_offered);
-              rl->value_offered = 0;
-            }
+	    stats->change (stat_trust_earned, rl->value_offered);
           if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
             GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
           value += rl->value;
+	  rl_value = rl->value;
           rl->value = 0;
+	  
           if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
             {
               if (prev == NULL)
@@ -505,6 +493,27 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                 rl = prev->next;
               continue;
             }
+
+          /* queue response (do this last since ciphertext_send may
+	     cause the core to detect that the connection died which
+	     may result in changes to the request list!) */
+          msg = GNUNET_malloc (sizeof (P2P_gap_reply_MESSAGE) + size);
+          msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
+          msg->header.size = htons (sizeof (P2P_gap_reply_MESSAGE) + size);
+          msg->reserved = 0;
+          msg->expiration = GNUNET_htonll (expiration);
+          memcpy (&msg[1], data, size);
+          coreAPI->ciphertext_send (&target,
+                                    &msg->header,
+                                    GNUNET_GAP_BASE_REPLY_PRIORITY * (1 +
+                                                                      rl_value),
+                                    GNUNET_GAP_MAX_GAP_DELAY);
+          GNUNET_free (msg);
+
+	  /* since the linked list may have changed, start again
+	     from the beginning! */
+	  rl = table[index];
+	  continue;
         }
       prev = rl;
       rl = rl->next;
