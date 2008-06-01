@@ -54,8 +54,8 @@ waitForConnect (const char *name, unsigned long long value, void *cls)
 
 static int
 result_callback_peer1 (const GNUNET_HashCode * key,
-                 unsigned int type,
-                 unsigned int size, const char *data, void *cls)
+                       unsigned int type,
+                       unsigned int size, const char *data, void *cls)
 {
   int *i = cls;
   char expect[8];
@@ -76,8 +76,8 @@ result_callback_peer1 (const GNUNET_HashCode * key,
 
 static int
 result_callback_peer2 (const GNUNET_HashCode * key,
-                 unsigned int type,
-                 unsigned int size, const char *data, void *cls)
+                       unsigned int type,
+                       unsigned int size, const char *data, void *cls)
 {
   int *i = cls;
   char expect[8];
@@ -144,11 +144,13 @@ main (int argc, const char **argv)
     }
 
   /* wait for DHT's to find each other! */
-  ctx_peer1 = GNUNET_DHT_context_create(cfg,ectx,&result_callback_peer1,NULL);
+  ctx_peer1 =
+    GNUNET_DHT_context_create (cfg, ectx, &result_callback_peer1, NULL);
   left = 50;                    /* how many iterations should we wait? */
   printf ("Waiting for peers to DHT-connect (1->2)");
   while (GNUNET_OK ==
-         GNUNET_STATS_get_statistics (NULL, ctx_peer1->sock, &waitForConnect, NULL))
+         GNUNET_STATS_get_statistics (NULL, ctx_peer1->sock, &waitForConnect,
+                                      NULL))
     {
       printf (".");
       fflush (stdout);
@@ -163,7 +165,7 @@ main (int argc, const char **argv)
       GNUNET_TESTING_stop_daemons (peers);
       fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
       GNUNET_GC_free (cfg);
-      GNUNET_DHT_context_destroy(ctx_peer1);
+      GNUNET_DHT_context_destroy (ctx_peer1);
       return -1;
     }
 
@@ -174,11 +176,13 @@ main (int argc, const char **argv)
                                             "localhost:12087");
   /* verify that peer2 also sees the other DHT! */
   ok = 0;
-  ctx_peer2 = GNUNET_DHT_context_create(cfg,ectx,&result_callback_peer2,NULL);
+  ctx_peer2 =
+    GNUNET_DHT_context_create (cfg, ectx, &result_callback_peer2, NULL);
   left = 50;                    /* how many iterations should we wait? */
   printf ("Waiting for peers to DHT-connect (2->1)");
   while (GNUNET_OK ==
-         GNUNET_STATS_get_statistics (NULL, ctx_peer2->sock, &waitForConnect, NULL))
+         GNUNET_STATS_get_statistics (NULL, ctx_peer2->sock, &waitForConnect,
+                                      NULL))
     {
       printf (".");
       fflush (stdout);
@@ -193,8 +197,8 @@ main (int argc, const char **argv)
       GNUNET_TESTING_stop_daemons (peers);
       fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
       GNUNET_GC_free (cfg);
-      GNUNET_DHT_context_destroy(ctx_peer1);
-      GNUNET_DHT_context_destroy(ctx_peer2);
+      GNUNET_DHT_context_destroy (ctx_peer1);
+      GNUNET_DHT_context_destroy (ctx_peer2);
       return -1;
     }
 
@@ -229,8 +233,8 @@ main (int argc, const char **argv)
       printf (".");
       fflush (stdout);
       if (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer2,
-                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key))
+                                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                             &key))
         break;
     }
   while (peer2count > 0);
@@ -245,8 +249,8 @@ main (int argc, const char **argv)
       printf (".");
       fflush (stdout);
       if (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer1,
-                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key))
+                                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                             &key))
         break;
     }
   while (peer1count > 0);
@@ -259,8 +263,8 @@ FAILURE:
   GNUNET_TESTING_stop_daemons (peers);
 #endif
   GNUNET_GC_free (cfg);
-  GNUNET_DHT_context_destroy(ctx_peer1);
-  GNUNET_DHT_context_destroy(ctx_peer2);
+  GNUNET_DHT_context_destroy (ctx_peer1);
+  GNUNET_DHT_context_destroy (ctx_peer2);
   return ret;
 }
 

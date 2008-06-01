@@ -469,17 +469,17 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           GNUNET_GE_ASSERT (NULL, block_count <= MAX_ENTRIES_PER_SLOT);
           blocked[block_count++] = rl->response_target;
           GNUNET_FS_PT_change_rc (rl->response_target, 1);
-	  
-	  rl->value_offered = 0;
+
+          rl->value_offered = 0;
           if (stats != NULL)
-	    stats->change (stat_trust_earned, rl->value_offered);
+            stats->change (stat_trust_earned, rl->value_offered);
           if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
             GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
           value += rl->value;
-	  rl_value = rl->value;
+          rl_value = rl->value;
           rl->value = 0;
-	  
+
           if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
             {
               if (prev == NULL)
@@ -495,8 +495,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
             }
 
           /* queue response (do this last since ciphertext_send may
-	     cause the core to detect that the connection died which
-	     may result in changes to the request list!) */
+             cause the core to detect that the connection died which
+             may result in changes to the request list!) */
           msg = GNUNET_malloc (sizeof (P2P_gap_reply_MESSAGE) + size);
           msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
           msg->header.size = htons (sizeof (P2P_gap_reply_MESSAGE) + size);
@@ -510,10 +510,10 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                                     GNUNET_GAP_MAX_GAP_DELAY);
           GNUNET_free (msg);
 
-	  /* since the linked list may have changed, start again
-	     from the beginning! */
-	  rl = table[index];
-	  continue;
+          /* since the linked list may have changed, start again
+             from the beginning! */
+          rl = table[index];
+          continue;
         }
       prev = rl;
       rl = rl->next;

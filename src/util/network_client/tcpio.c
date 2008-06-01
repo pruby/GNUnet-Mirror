@@ -274,7 +274,7 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_get_ip_from_hostname (sock->ectx, host,
                                        addr_families[af_index], &soaddr,
                                        &socklen))
-	continue;
+        continue;
       GNUNET_mutex_lock (sock->destroylock);
       if (sock->sock != NULL)
         {
@@ -373,22 +373,21 @@ GNUNET_client_connection_ensure_connected (struct
       else
         {
           int soerr = 0;
-          socklen_t soerrlen = sizeof(soerr);
+          socklen_t soerrlen = sizeof (soerr);
 
-          ret = GETSOCKOPT(osock, SOL_SOCKET, SO_ERROR, &soerr, &soerrlen);
+          ret = GETSOCKOPT (osock, SOL_SOCKET, SO_ERROR, &soerr, &soerrlen);
           if (ret != 0)
-              GNUNET_GE_LOG_STRERROR (sock->ectx,
-                                      GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                      GNUNET_GE_BULK, "getsockopt");
- 
-          if ((soerr != 0) || 
+            GNUNET_GE_LOG_STRERROR (sock->ectx,
+                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                    GNUNET_GE_BULK, "getsockopt");
+
+          if ((soerr != 0) ||
               (ret != 0 && (errno == ENOTSOCK || errno == EBADF)))
             {
               GNUNET_GE_LOG (sock->ectx,
                              GNUNET_GE_DEBUG | GNUNET_GE_USER |
                              GNUNET_GE_BULK,
-                             _("Failed to connect to %s:%u\n"),
-                             host, port);
+                             _("Failed to connect to %s:%u\n"), host, port);
               GNUNET_socket_destroy (sock->sock);
               sock->sock = NULL;
               GNUNET_mutex_unlock (sock->destroylock);

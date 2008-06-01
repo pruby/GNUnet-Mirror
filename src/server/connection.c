@@ -721,8 +721,8 @@ check_invariants ()
           if (root->session.tsession != NULL)
             GNUNET_GE_ASSERT (NULL,
                               GNUNET_OK ==
-                              transport->assert_associated (root->session.
-                                                            tsession,
+                              transport->assert_associated (root->
+                                                            session.tsession,
                                                             __FILE__));
           root = root->overflowChain;
         }
@@ -1903,8 +1903,8 @@ sendBuffer (BufferEntry * be)
         stats->change (stat_transmitted, p);
       be->available_send_window -= p;
       be->lastSequenceNumberSend++;
-      GNUNET_CORE_connection_reserve_downstream_bandwidth (&be->session.
-                                                           sender, 0);
+      GNUNET_CORE_connection_reserve_downstream_bandwidth (&be->
+                                                           session.sender, 0);
       if (be->idealized_limit > be->max_transmitted_limit)
         be->max_transmitted_limit = be->idealized_limit;
       else                      /* age */
@@ -2484,8 +2484,8 @@ scheduleInboundTraffic ()
         {
           IF_GELOG (ectx,
                     GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
-                    GNUNET_hash_to_enc (&entries[u]->session.sender.
-                                        hashPubKey, &enc));
+                    GNUNET_hash_to_enc (&entries[u]->session.
+                                        sender.hashPubKey, &enc));
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
                          "peer `%s' transmitted above limit: %llu bpm > %u bpm\n",
@@ -2508,8 +2508,8 @@ scheduleInboundTraffic ()
 #if DEBUG_CONNECTION
               IF_GELOG (ectx,
                         GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
-                        GNUNET_hash_to_enc (&entries[u]->session.sender.
-                                            hashPubKey, &enc));
+                        GNUNET_hash_to_enc (&entries[u]->session.
+                                            sender.hashPubKey, &enc));
               GNUNET_GE_LOG (ectx,
                              GNUNET_GE_INFO | GNUNET_GE_BULK |
                              GNUNET_GE_DEVELOPER,
@@ -2570,8 +2570,8 @@ scheduleInboundTraffic ()
   for (u = 0; u < activePeerCount; u++)
     {
       GNUNET_CORE_connection_reserve_downstream_bandwidth (&entries
-                                                           [u]->
-                                                           session.sender, 0);
+                                                           [u]->session.
+                                                           sender, 0);
       entries[u]->idealized_limit = 0;
     }
   while ((schedulableBandwidth > activePeerCount * 100) &&
@@ -2905,8 +2905,8 @@ cronDecreaseLiveness (void *unused)
                   IF_GELOG (ectx,
                             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                             GNUNET_GE_DEVELOPER,
-                            GNUNET_hash_to_enc (&root->session.sender.
-                                                hashPubKey, &enc));
+                            GNUNET_hash_to_enc (&root->session.
+                                                sender.hashPubKey, &enc));
                   GNUNET_GE_LOG (ectx,
                                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                                  GNUNET_GE_DEVELOPER,
@@ -3009,8 +3009,8 @@ cronDecreaseLiveness (void *unused)
                   IF_GELOG (ectx,
                             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                             GNUNET_GE_DEVELOPER,
-                            GNUNET_hash_to_enc (&root->session.sender.
-                                                hashPubKey, &enc));
+                            GNUNET_hash_to_enc (&root->session.
+                                                sender.hashPubKey, &enc));
                   GNUNET_GE_LOG (ectx,
                                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                                  GNUNET_GE_DEVELOPER,

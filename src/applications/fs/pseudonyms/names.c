@@ -135,7 +135,7 @@ GNUNET_PSEUDO_name_to_id (struct GNUNET_GE_Context *ectx,
   if (slen == 0)
     return GNUNET_SYSERR;
   name = GNUNET_strdup (ns_uname);
-  name[slen-1] = '\0';
+  name[slen - 1] = '\0';
   GNUNET_hash (name, strlen (name), &nh);
   GNUNET_free (name);
   fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,

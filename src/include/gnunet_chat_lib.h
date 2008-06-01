@@ -125,7 +125,8 @@ typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
                                                member_info,
                                                const GNUNET_RSA_PublicKey *
                                                member_id,
-					       GNUNET_CHAT_MSG_OPTIONS options);
+                                               GNUNET_CHAT_MSG_OPTIONS
+                                               options);
 
 
 /**
@@ -187,7 +188,7 @@ struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
                                                 GNUNET_CHAT_MessageConfirmation
                                                 confirmationCallback,
                                                 void *confirmation_cls,
-						GNUNET_HashCode * pid);
+                                                GNUNET_HashCode * pid);
 
 /**
  * Leave a chat room.

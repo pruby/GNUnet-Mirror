@@ -184,7 +184,8 @@ main (int argc, const char **argv)
       GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
       GNUNET_GC_set_configuration_value_string (cfg,
                                                 ectx, "NETWORK", "HOST", buf);
-      ctx_array[i] = GNUNET_DHT_context_create(cfg,ectx,&result_callback,NULL);                                                
+      ctx_array[i] =
+        GNUNET_DHT_context_create (cfg, ectx, &result_callback, NULL);
       for (j = 0; j < NUM_PEERS; j++)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
@@ -195,8 +196,8 @@ main (int argc, const char **argv)
               printf (".");
               fflush (stdout);
               if (0 < GNUNET_DHT_get_start (ctx_array[i],
-                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      &key))
+                                            GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                            &key))
                 break;
             }
           if (k < NUM_ROUNDS)
@@ -209,10 +210,10 @@ main (int argc, const char **argv)
             }
         }
     }
-    
+
   for (i = 0; i < NUM_PEERS; i++)
     {
-      GNUNET_DHT_context_destroy(ctx_array[i]); 
+      GNUNET_DHT_context_destroy (ctx_array[i]);
     }
   /* end of actual test code */
   printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);

@@ -45,8 +45,8 @@ main (int argc, char *argv[])
   int newVal;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
-  char * name1;
-  char * name2;
+  char *name1;
+  char *name2;
 
   ok = GNUNET_YES;
   GNUNET_disable_entropy_gathering ();
@@ -62,24 +62,24 @@ main (int argc, char *argv[])
   GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, "test");
   GNUNET_create_random_hash (&id1);
   GNUNET_PSEUDO_add (ectx, cfg, &id1, meta);
-  newVal = GNUNET_PSEUDO_list_all (ectx, cfg, NULL, NULL);  
+  newVal = GNUNET_PSEUDO_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
   old = newVal;
-  name1 = GNUNET_PSEUDO_id_to_name(ectx, cfg, &id1);
+  name1 = GNUNET_PSEUDO_id_to_name (ectx, cfg, &id1);
   GNUNET_create_random_hash (&id2);
   GNUNET_PSEUDO_add (ectx, cfg, &id2, meta);
   newVal = GNUNET_PSEUDO_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
-  name2 = GNUNET_PSEUDO_id_to_name(ectx, cfg, &id2);
+  name2 = GNUNET_PSEUDO_id_to_name (ectx, cfg, &id2);
   CHECK (name2 != NULL);
-  name1 = GNUNET_PSEUDO_id_to_name(ectx, cfg, &id1);
+  name1 = GNUNET_PSEUDO_id_to_name (ectx, cfg, &id1);
   CHECK (name1 != NULL);
-  CHECK (GNUNET_OK == GNUNET_PSEUDO_name_to_id(ectx, cfg, name2, &rid2));
-  CHECK (GNUNET_OK == GNUNET_PSEUDO_name_to_id(ectx, cfg, name1, &rid1));
-  CHECK (0 == memcmp(&id1, &rid1, sizeof(GNUNET_HashCode)));
-  CHECK (0 == memcmp(&id2, &rid2, sizeof(GNUNET_HashCode)));
-  GNUNET_free(name1);
-  GNUNET_free(name2);
+  CHECK (GNUNET_OK == GNUNET_PSEUDO_name_to_id (ectx, cfg, name2, &rid2));
+  CHECK (GNUNET_OK == GNUNET_PSEUDO_name_to_id (ectx, cfg, name1, &rid1));
+  CHECK (0 == memcmp (&id1, &rid1, sizeof (GNUNET_HashCode)));
+  CHECK (0 == memcmp (&id2, &rid2, sizeof (GNUNET_HashCode)));
+  GNUNET_free (name1);
+  GNUNET_free (name2);
   /* END OF TEST CODE */
 FAILURE:
   GNUNET_ECRS_meta_data_destroy (meta);

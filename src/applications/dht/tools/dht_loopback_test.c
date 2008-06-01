@@ -81,7 +81,7 @@ main (int argc, const char **argv)
   int left;
   int i;
 
-  
+
   ectx = NULL;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
@@ -104,8 +104,8 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  ctx = GNUNET_DHT_context_create(cfg,ectx,&result_callback,unused_cls);
-                                            
+  ctx = GNUNET_DHT_context_create (cfg, ectx, &result_callback, unused_cls);
+  CHECK (ctx != NULL);
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
   value = GNUNET_malloc (8);
@@ -117,8 +117,8 @@ main (int argc, const char **argv)
                                       8, value));
   i = 'A';
   CHECK (1 == GNUNET_DHT_get_start (ctx,
-                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key));
+                                    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                    &key));
   CHECK (err == 0);
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
@@ -131,8 +131,8 @@ main (int argc, const char **argv)
   CHECK (err == 0);
   i = 'B';
   CHECK (1 == GNUNET_DHT_get_start (ctx,
-                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key));
+                                    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                    &key));
   GNUNET_hash ("key2", 4, &key);
   CHECK (err == 0);
   left = 10;
@@ -141,8 +141,8 @@ main (int argc, const char **argv)
       fprintf (stderr, ".");
       i = 'A';
       if (1 == GNUNET_DHT_get_start (ctx,
-                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key))
+                                     GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                     &key))
         break;
       CHECK (err == 0);
       left--;
@@ -151,7 +151,7 @@ main (int argc, const char **argv)
   CHECK (left > 0);
   /* end of actual test code */
 
-GNUNET_DHT_context_destroy(ctx);
+  GNUNET_DHT_context_destroy (ctx);
 
 FAILURE:
 #if START_PEERS

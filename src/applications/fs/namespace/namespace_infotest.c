@@ -22,6 +22,9 @@
  * @file applications/fs/fsui/namespace_infotest.c
  * @brief testcase for namespace_info.c
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - more comprehensive testcase!
  */
 
 #include "platform.h"

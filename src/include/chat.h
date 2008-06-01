@@ -143,7 +143,7 @@ typedef struct
 
   /**
    * Reserved (should be zero).
-   */ 
+   */
   unsigned short reserved;
 
   /**
