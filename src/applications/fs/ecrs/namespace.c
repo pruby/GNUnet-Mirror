@@ -398,15 +398,16 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
     }
   dst = GNUNET_malloc (len);
   len = GNUNET_disk_file_read (ectx, fileName, len, dst);
-  GNUNET_free (fileName);
   hke = (GNUNET_RSA_PrivateKeyEncoded *) dst;
   if (ntohs (hke->len) != len)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Format of pseudonym `%s' is invalid.\n"), fileName);
+      GNUNET_free (fileName);
       GNUNET_free (hke);
       return NULL;
     }
+  GNUNET_free (fileName);
   hk = GNUNET_RSA_decode_key (hke);
   GNUNET_free (hke);
   if (hk == NULL)

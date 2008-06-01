@@ -87,17 +87,15 @@ GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
 
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
-    {
-      return NULL;
-    }
+    return NULL;   
 
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DHT_Context));
   ctx->sock = sock;
   ctx->closure = resCallbackClosure;
   ctx->processor = resultCallback;
-  ctx->poll_thread = GNUNET_thread_create (&poll_thread, ctx, 1024 * 8);        /* Should this be here, or will we create on the first request? */
+  ctx->poll_thread = GNUNET_thread_create (&poll_thread, ctx, 1024 * 8);
   ctx->aborted = GNUNET_NO;
-  return NULL;
+  return ctx;
 }
 
 
