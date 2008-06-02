@@ -52,4 +52,4 @@ pkgdata_DATA = \
  gnunet-testing.conf
 
 EXTRA_DIST = \
- $(pkgdata_DATA)
+ $(pkgdata_DATA) remotetopologies.c
