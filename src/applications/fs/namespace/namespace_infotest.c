@@ -67,8 +67,6 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  old = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
-
   meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_insert (meta, 0, "test");
   GNUNET_create_random_hash (&root);
@@ -77,12 +75,10 @@ main (int argc, char *argv[])
                                     1,
                                     1,
                                     GNUNET_get_time () +
-                                    10 * GNUNET_CRON_MINUTES, "test", meta,
+                                    10 * GNUNET_CRON_MINUTES, meta,
                                     NULL, &root);
   CHECK (uri != NULL);
   GNUNET_ECRS_uri_get_namespace_from_sks (uri, &nsid);
-  newVal = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
-  CHECK (old < newVal);
   old = GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, NULL, NULL);
   euri = GNUNET_NS_add_to_namespace (ectx,
                                      cfg,
@@ -103,7 +99,7 @@ FAILURE:
     GNUNET_ECRS_uri_destroy (euri);
   if (meta != NULL)
     GNUNET_ECRS_meta_data_destroy (meta);
-  GNUNET_ECRS_namespace_delete (ectx, cfg, "test");
+  GNUNET_ECRS_namespace_delete (ectx, cfg, &nsid);
 
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
   GNUNET_GC_free (cfg);

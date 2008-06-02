@@ -252,6 +252,7 @@ GNUNET_client_connection_ensure_connected (struct
   int af_index;
   int soerr;
   socklen_t soerrlen;
+  int tries;
 
   GNUNET_GE_ASSERT (NULL, sock != NULL);
   if (sock->sock != NULL)
@@ -268,7 +269,23 @@ GNUNET_client_connection_ensure_connected (struct
   /* loop over all possible address families */
   while (1)
     {
-      if (addr_families[++af_index] == -1)
+      if (af_index == -1)
+	{
+	  tries = 10;
+	  af_index = 0;
+	}
+      else
+	{
+	  /* wait for 500ms before trying again */
+	  GNUNET_thread_sleep(GNUNET_CRON_MILLISECONDS * 500);
+	  tries--;
+	}
+      if (tries == 0)
+	{
+	  af_index++;
+	  tries = 10;
+	}
+      if (addr_families[af_index] == -1)
         return GNUNET_SYSERR;
       soaddr = NULL;
       socklen = 0;
