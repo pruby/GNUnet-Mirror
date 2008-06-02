@@ -7,7 +7,7 @@ noinst_PROGRAMS = \
   gnunet-dht-query 
 
 libgnunetdht_api_la_SOURCES = \
-  dht_api.c 
+  dht_api.c dht_api.h
 libgnunetdht_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
