@@ -65,6 +65,7 @@ tt (void *unused)
 static int
 testNamespace ()
 {
+  GNUNET_HashCode pid;
   GNUNET_HashCode root;
   GNUNET_HashCode thisId;
   GNUNET_HashCode nextId;
@@ -74,23 +75,23 @@ testNamespace ()
   struct GNUNET_ECRS_URI *rootURI;
   struct GNUNET_ECRS_MetaData *meta;
 
-  GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME);  /* make sure old one is deleted */
   meta = GNUNET_ECRS_meta_data_create ();
   adv = GNUNET_ECRS_keyword_string_to_uri (NULL, "testNamespace");
   GNUNET_hash ("root", 4, &root);
   rootURI =
     GNUNET_ECRS_namespace_create (NULL,
                                   cfg,
-                                  CHECKNAME,
-                                  meta,
+				  meta,
                                   0, 0,
                                   GNUNET_get_time () +
-                                  15 * GNUNET_CRON_MINUTES, adv, &root);
+                                  15 * GNUNET_CRON_MINUTES, 
+				  adv, &root);
+  GNUNET_ECRS_uri_get_namespace_from_sks(rootURI, &pid);
   CHECK (NULL != rootURI);
   GNUNET_hash ("this", 4, &thisId);
   GNUNET_hash ("next", 4, &nextId);
   uri = rootURI;                /* just for fun: NS::this advertises NS::root */
-  advURI = GNUNET_ECRS_namespace_add_content (NULL, cfg, CHECKNAME, 1,  /* anonymity */
+  advURI = GNUNET_ECRS_namespace_add_content (NULL, cfg, &pid, 1,  /* anonymity */
                                               1000,     /* priority */
                                               5 * GNUNET_CRON_MINUTES +
                                               GNUNET_get_time (),
@@ -103,9 +104,9 @@ testNamespace ()
                                           cfg,
                                           advURI, 1, &spcb, uri, &tt, NULL));
   fprintf (stderr, "Completed namespace search...\n");
-  CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME));
+  CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, &pid));
   CHECK (GNUNET_SYSERR ==
-         GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME));
+         GNUNET_ECRS_namespace_delete (NULL, cfg, &pid));
   GNUNET_ECRS_meta_data_destroy (meta);
   GNUNET_ECRS_uri_destroy (rootURI);
   GNUNET_ECRS_uri_destroy (advURI);
