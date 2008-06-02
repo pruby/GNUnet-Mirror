@@ -275,17 +275,15 @@ GNUNET_client_connection_ensure_connected (struct
           af_index = 0;
         }
       else
+          af_index++;
+      if (addr_families[af_index] == -1)
         {
           /* wait for 500ms before trying again */
           GNUNET_thread_sleep (GNUNET_CRON_MILLISECONDS * 500);
+          af_index = 0;
           tries--;
         }
       if (tries == 0)
-        {
-          af_index++;
-          tries = 10;
-        }
-      if (addr_families[af_index] == -1)
         return GNUNET_SYSERR;
       soaddr = NULL;
       socklen = 0;
