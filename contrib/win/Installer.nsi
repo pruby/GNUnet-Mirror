@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.3"
+!define PRODUCT_VERSION "0.8.0-pre1"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -80,6 +80,7 @@ ShowUnInstDetails show
 Var LANGCODE
 Var USR_PROF
 Var DIRLEN
+Var DATADIR
 
 InstType "User"
 InstType "GNUnet Server"
@@ -104,18 +105,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 	  File "gnu.ico"	
 	  File "config.ico"	
-		Delete "$INSTDIR\bin\libgnunetmodule_rpc.dll"
-		Delete "$INSTDIR\bin\libgnunetutil-1.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_boot-0.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_config-0.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_cron-0.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_crypto-0.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_containers-0.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_logging-0.dll" 
-		Delete "$INSTDIR\bin\libgnunetutil_network_client-0.dll" 
 
 		File "C:\GNUnet\bin\libgnunetmodule_state.dll" 
-		File "C:\GNUnet\bin\libgnunetutil-2.dll" 
+		File "C:\GNUnet\bin\libgnunetutil-3.dll" 
     File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
     ; Fixme: client only
     File "C:\GNUnet\bin\libgnunettraffic_api-0.dll"
@@ -172,7 +164,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 		File "C:\GNUnet\bin\gnunet-setup.exe" 		
 		File "C:\GNUnet\bin\libgnunetsetup-0.dll"
-    File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
     File "C:\GNUnet\bin\libgnunetsetup_qt.dll"
 
 	  SetOutPath "$INSTDIR\share\GNUnet"
@@ -195,14 +186,13 @@ SectionGroup "GNUnet" SEC_GNUNET
       File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
       File "C:\GNUnet\bin\libgnunettransport_http.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
-      Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
-      Delete "$INSTDIR\bin\libgnunetmodule_topology_f2f.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_nat.dll"
-			File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
+      File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_bootstrap.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_fragmentation.dll"
-			File "C:\GNUnet\bin\libgnunetmodule_getoption.dll"
+      File "C:\GNUnet\bin\libgnunetmodule_getoption.dll"
+      File "C:\GNUnet\bin\libgnunetmodule_hostlist.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_identity.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_pingpong.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_session.dll"
@@ -211,11 +201,12 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_traffic.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_transport.dll"
 
-      FindFirst $0 $1 "$INSTDIR\etc\gnunetd.conf"
+      ReadRegStr $DATADIR "HKLM" "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Common AppData"
+      FindFirst $0 $1 "$DATADIR\GNU\GNUnet\etc\gnunetd.conf"
       StrCmp $1 "" inst_conf
       goto noinst_conf
       inst_conf:
-        SetOutPath "$INSTDIR\etc"
+        SetOutPath "$DATADIR\GNU\GNUnet\etc"
         File "C:\GNUnet\etc\gnunetd.conf"
       noinst_conf:
         FileClose $0
@@ -227,11 +218,17 @@ SectionGroup "GNUnet" SEC_GNUNET
 
 			File "C:\GNUnet\bin\libgnunetmodule_fs.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_datastore.dll"
-			File "C:\GNUnet\bin\libgnunetmodule_gap.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_sqstore_sqlite.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_sqstore_mysql.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_kvstore_sqlite.dll"
 		SectionEnd
+
+    Section "Chat" SEC_SERVER_CHAT
+      SectionIn 1 2 4
+      SetOutPath "$INSTDIR\bin"
+
+      File "C:\GNUnet\bin\libgnunetmodule_chat.dll"
+    SectionEnd
 	SectionGroupEnd
 	
 	SectionGroup "Client"
@@ -261,9 +258,11 @@ SectionGroup "GNUnet" SEC_GNUNET
 
 			File "C:\GNUnet\bin\libgnunetcollection-0.dll"
 			File "C:\GNUnet\bin\libgnunetecrs-0.dll"
+      File "C:\GNUnet\bin\libgnunetecrs_core-0.dll"
 			File "C:\GNUnet\bin\libgnunetfs-0.dll"
 			File "C:\GNUnet\bin\libgnunetfsui-0.dll"
       File "C:\GNUnet\bin\libgnunetidentity_api-0.dll"
+      File "C:\GNUnet\bin\libgnunetpseudonym-0.dll"
 			File "C:\GNUnet\bin\libgnunetnamespace-0.dll"
 			File "C:\GNUnet\bin\libgnuneturitrack-0.dll"			
 			SectionEnd
@@ -302,22 +301,36 @@ SectionGroup "GNUnet" SEC_GNUNET
         File "C:\GNUnet\bin\libgnunetqtmodule_fs.dll"
         File "C:\GNUnet\bin\libgnunetqtmodule_general.dll"
         File "C:\GNUnet\bin\libgnunetqtmodule_stats.dll"
-        File "C:\GNUnet\bin\mingwm10.dll"
-        File "C:\GNUnet\bin\QtCore4.dll"
-        File "C:\GNUnet\bin\QtGui4.dll"
-        File "C:\GNUnet\bin\QtSvg4.dll"
-        File "C:\GNUnet\bin\QtXml4.dll"
-        
-        SetOutPath "$INSTDIR\bin\imageformats"
-        File "C:\GNUnet\bin\imageformats\qgif1.dll"
-        File "C:\GNUnet\bin\imageformats\qjpeg1.dll"
-        File "C:\GNUnet\bin\imageformats\qmng1.dll"
-        File "C:\GNUnet\bin\imageformats\qsvg1.dll"
         
         SetOutPath "$INSTDIR\share\gnunet-qt\locale"
         File "C:\GNUnet\share\gnunet-qt\locale\gnunet-qt_de.qm"
       SectionEnd
+      
+      Section "Automatic sharing"
+        SectionIn 1 3 4
+        SetOutPath "$INSTDIR\bin"
+        
+        File "C:\GNUnet\bin\gnunet-auto-share.exe"
+;        CreateShortCut "$SMSTARTUP\GNUnet Auto-Share.lnk" "$INSTDIR\bin\gnunet-auto-share.exe"
+      SectionEnd
 		SectionGroupEnd
+    
+    SectionGroup "Chat" SEC_CLIENT_CHAT
+      Section "Base"
+        SectionIn 1 3 4
+        SetOutPath "$INSTDIR\bin"
+        
+        File "C:\GNUnet\bin\libgnunetchat_api-0.dll"
+      SectionEnd      
+
+      Section "Text Interface" SEC_CLIENT_CHAT_TUI
+        SectionIn 1 3 4
+        SetOutPath "$INSTDIR\bin"
+
+        File "C:\GNUnet\bin\gnunet-chat.exe"
+      SectionEnd
+    SectionGroupEnd    
+    
 
 		Section "Statistics" SEC_STATS
 			SectionIn 1 2 3 4
@@ -341,7 +354,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		  SetOutPath "$INSTDIR\bin"
 
 			File "C:\GNUnet\bin\gnunet-tracekit.exe"			
-      		File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"     
+      		File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"  
       		File "C:\GNUnet\bin\libgnunettracekit_api-0.dll"     
 		SectionEnd
 
@@ -357,19 +370,18 @@ SectionGroup "GNUnet" SEC_GNUNET
 			SectionIn 1 2 4
 		  SetOutPath "$INSTDIR\bin"
 
-			Delete "$INSTDIR\bin\libgnunetmodule_dstore.dll"
-     	 	File "C:\GNUnet\bin\libgnunetmodule_dstore_sqlite.dll"
+     	File "C:\GNUnet\bin\libgnunetmodule_dstore_sqlite.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_dht.dll"
 			File "C:\GNUnet\bin\libgnunetdht_api-0.dll"
 		SectionEnd
+    
+    Section "RPC" SEC_RPC
+      SectionIn 1 2 4
+      SetOutPath "$INSTDIR\bin"
 
-		Section "RPC" SEC_RPC
-			SectionIn 1 2 4
-		  SetOutPath "$INSTDIR\bin"
-
-			File "C:\GNUnet\bin\libgnunetrpc_util-0.dll"
-			File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
-		SectionEnd
+      File "C:\GNUnet\bin\libgnunetrpc_util-0.dll"
+      File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
+    SectionEnd
 	SectionGroupEnd
 SectionGroupEnd
 
@@ -377,6 +389,12 @@ SectionGroup "GNU libextractor"
 	Section "All keyword extractors" SEC_LE_ALL
 		SectionIn 1 3 4
 	  SetOutPath "$INSTDIR\bin"
+
+    File "C:\GNUnet\bin\libgdk_pixbuf-2.0-0.dll"
+    File "C:\GNUnet\bin\libglib-2.0-0.dll"
+    File "C:\GNUnet\bin\libgmodule-2.0-0.dll"
+    File "C:\GNUnet\bin\libgobject-2.0-0.dll"
+    File "C:\GNUnet\bin\libgthread-2.0-0.dll"
 
 		File "C:\GNUnet\bin\jpeg62.dll"
 		File "C:\GNUnet\bin\bzip2.dll"
@@ -427,8 +445,8 @@ SectionGroup "Dependencies"
 		SectionIn RO
 
 		SetOutPath "$INSTDIR\bin"
-    Delete "$INSTDIR\bin\libmicrohttpd-2.dll"
     
+    File "C:\GNUnet\bin\libxml2.dll"
 		File "C:\GNUnet\bin\iconv.dll"
 		File "C:\GNUnet\bin\intl.dll"
 		File "C:\GNUnet\bin\libcurl-3.dll"		
@@ -451,256 +469,22 @@ SectionGroup "Dependencies"
     File /r "C:\GNUnet\share\guile"
 	SectionEnd
 	
-	Section "!GUI libs (GTK, Glade)" SEC_DEPS_GTK
+	Section "!GUI libs (Qt)" SEC_DEPS_GTK
 		SectionIn 1 3 4
 
 		SetOutPath "$INSTDIR\bin"
-		File "C:\GNUnet\bin\libatk-1.0-0.dll"
-		File "C:\GNUnet\bin\libgdk-win32-2.0-0.dll"
-		File "C:\GNUnet\bin\libgdk_pixbuf-2.0-0.dll"
-		File "C:\GNUnet\bin\libglade-2.0-0.dll"
-		File "C:\GNUnet\bin\libglib-2.0-0.dll"
-		File "C:\GNUnet\bin\libgmodule-2.0-0.dll"
-		File "C:\GNUnet\bin\libgobject-2.0-0.dll"
-		File "C:\GNUnet\bin\libgthread-2.0-0.dll"
-		File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
-		File "C:\GNUnet\bin\libpango-1.0-0.dll"
-		File "C:\GNUnet\bin\libpangowin32-1.0-0.dll"
-		File "C:\GNUnet\bin\libpng12.dll"
-		File "C:\GNUnet\bin\libxml2.dll"
+    File "C:\GNUnet\bin\mingwm10.dll"
+    File "C:\GNUnet\bin\QtCore4.dll"
+    File "C:\GNUnet\bin\QtGui4.dll"
+    File "C:\GNUnet\bin\QtSvg4.dll"
+    File "C:\GNUnet\bin\QtXml4.dll"
+    
+    SetOutPath "$INSTDIR\bin\imageformats"
+    File "C:\GNUnet\bin\imageformats\qgif1.dll"
+    File "C:\GNUnet\bin\imageformats\qjpeg1.dll"
+    File "C:\GNUnet\bin\imageformats\qmng1.dll"
+    File "C:\GNUnet\bin\imageformats\qsvg1.dll"
 
-		SetOutPath "$INSTDIR\etc\gtk-2.0"
-		File "C:\GNUnet\etc\gtk-2.0\gdk-pixbuf.loaders"
-		SetOutPath "$INSTDIR\etc\pango"
-		File "C:\GNUnet\etc\pango\pango.aliases"
-		File "C:\GNUnet\etc\pango\pango.modules"
-		
-		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
-		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"		
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-gif.dll"
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-jpeg.dll"
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
-		SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
-		File "C:\GNUnet\lib\pango\1.4.0\modules\pango-basic-win32.dll"
-		
-		SetOutPath "$INSTDIR\share\themes\Default\gtk-2.0"
-		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc"
-		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
-		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.plain"
-		
-		SetOutPath "$INSTDIR\share\icons\hicolor"
-		File "C:\GNUnet\share\icons\hicolor\index.theme"
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\actions
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\apps
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\devices
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\filesystems
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\mimetypes
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\chart
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\code
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\data
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\form
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\image
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\io
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\media
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\navigation
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\net
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\object
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\table
-		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\text
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\actions
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\apps
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\devices
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\filesystems
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\mimetypes
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\chart
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\code
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\data
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\form
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\image
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\io
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\media
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\navigation
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\net
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\object
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\table
-		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\text
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\actions
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\apps
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\devices
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\filesystems
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\mimetypes
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\chart
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\code
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\data
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\form
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\image
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\io
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\media
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\navigation
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\net
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\object
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\table
-		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\text
-		CreateDirectory $INSTDIR\share\icons\hicolor\22x22
-		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\actions
-		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\apps
-		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\devices
-		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\text
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\actions
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\apps
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\devices
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\filesystems
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\mimetypes
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\chart
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\code
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\data
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\form
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\image
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\io
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\media
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\navigation
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\net
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\object
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\table
-			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\text
 	SectionEnd
 SectionGroupEnd
 
@@ -802,7 +586,6 @@ Section Uninstall
 	Delete "$INSTDIR\bin\gnunet-dht-query.exe"
 	Delete "$INSTDIR\bin\gnunet-directory.exe"
 	Delete "$INSTDIR\bin\gnunet-download.exe"
-  Delete "$INSTDIR\bin\gnunet-gtk.exe"
 	Delete "$INSTDIR\bin\gnunet-insert.exe"
 	Delete "$INSTDIR\bin\gnunet-peer-info.exe"			
 	Delete "$INSTDIR\bin\gnunet-pseudonym.exe"
@@ -811,7 +594,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetsetup.dll" 
 	Delete "$INSTDIR\bin\libgnunetsetup-0.dll" 
 	Delete "$INSTDIR\bin\libgnunetsetup_curses.dll"
-	Delete "$INSTDIR\bin\libgnunetsetup_gtk.dll"
+  Delete "$INSTDIR\bin\libgnunetsetup_qt.dll"
 		
 	Delete "$INSTDIR\bin\gnunet-stats.exe"
 	Delete "$INSTDIR\bin\gnunet-tbench.exe"			
@@ -884,18 +667,15 @@ Section Uninstall
   Delete "$INSTDIR\bin\ibgnunetmodule_dstore.dll"
   Delete "$INSTDIR\bin\libgnunetmodule_dstore_sqlite.dll"
 	Delete "$INSTDIR\bin\libgnunetecrs-0.dll"
+  Delete "$INSTDIR\bin\libgnunetecrs_core-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
   Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
   Delete "$INSTDIR\bin\libgnunetidentity_api-0.dll"
 	Delete "$INSTDIR\bin\libgnuneturitrack-0.dll"
+  Delete "$INSTDIR\bin\libgnunetpseudonym-0.dll"
 	Delete "$INSTDIR\bin\libgnunetnamespace-0.dll"
 	Delete "$INSTDIR\bin\libgnunetcollection-0.dll"
 	Delete "$INSTDIR\bin\libgnunetgetoption_api-0.dll"
-	Delete "$INSTDIR\bin\libgnunetgtk_common-0.dll"
-	Delete "$INSTDIR\bin\libgnunetgtkmodule_stats.dll"
-	Delete "$INSTDIR\bin\libgnunetgtkmodule_fs.dll"
-	Delete "$INSTDIR\bin\libgnunetgtkmodule_daemon.dll"
-	Delete "$INSTDIR\bin\libgnunetgtkmodule_about.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_advertising.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_bootstrap.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_chat.dll"			
@@ -931,6 +711,7 @@ Section Uninstall
   Delete "$INSTDIR\bin\libgnunetmodule_upnp.dll"
   Delete "$INSTDIR\bin\libgnunetutil-1.dll"
   Delete "$INSTDIR\bin\libgnunetutil-2.dll"
+  Delete "$INSTDIR\bin\libgnunetutil-3.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_state.dll"
   Delete "$INSTDIR\bin\libgnunetip-0.dll"
   Delete "$INSTDIR\bin\libgnunettraffic_api-0.dll"
@@ -943,13 +724,10 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetutil_boot-0.dll"
 	Delete "$INSTDIR\bin\libgobject-2.0-0.dll"
 	Delete "$INSTDIR\bin\libgthread-2.0-0.dll"
-	Delete "$INSTDIR\bin\libgtk-0.dll"
-	Delete "$INSTDIR\bin\libgtk-win32-2.0-0.dll"
 	Delete "$INSTDIR\bin\libiconv-2.dll"
 	Delete "$INSTDIR\bin\libintl-2.dll"
 	Delete "$INSTDIR\bin\libintl-3.dll"
 	Delete "$INSTDIR\bin\libltdl-3.dll"
-  Delete "$INSTDIR\bin\libmicrohttpd-2.dll"
   Delete "$INSTDIR\bin\libmicrohttpd-3.dll"
   Delete "$INSTDIR\bin\libmysql.dll"
 	Delete "$INSTDIR\bin\libogg-0.dll"
@@ -981,45 +759,9 @@ Section Uninstall
   
 	RmDir /REBOOTOK "$INSTDIR\bin"
 	
-	Delete "$INSTDIR\etc\gnunetd.conf.old"
-	Delete "$INSTDIR\etc\gnunet.conf.old"
-	Delete "$INSTDIR\etc\gtk-2.0\gdk-pixbuf.loaders"
-	Delete "$INSTDIR\etc\pango\pango.aliases"
-	Delete "$INSTDIR\etc\pango\pango.modules"
-	RmDir /REBOOTOK "$INSTDIR\etc\gtk-2.0"
-	RmDir /REBOOTOK "$INSTDIR\etc\pango"
 	RmDir /REBOOTOK "$INSTDIR\etc"
 
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
-  RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-bmp.dll"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-gif.dll"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-jpeg.dll"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-tiff.dll"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-pcx.dll"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
-	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
-  RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"
-  RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0"
-  RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0"
-	Delete "$INSTDIR\lib\pango\1.4.0\modules\pango-basic-win32.dll"
-  RmDir /REBOOTOK "$INSTDIR\lib\pango\1.4.0\modules"
-  RmDir /REBOOTOK "$INSTDIR\lib\pango\1.4.0"
-  RmDir /REBOOTOK "$INSTDIR\lib\pango"
   RmDir /REBOOTOK "$INSTDIR\lib"
-  
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet_logo.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk.glade"
-  Delete "$INSTDIR\share\gnunet-gtk\info.png"
-  Delete "$INSTDIR\share\gnunet-gtk\up.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-chat.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-fs.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-general.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-notify.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-stats.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-tray.png"
-  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-welcome.png"
-  RmDir /REBOOTOK "$INSTDIR\share\gnunet-gtk"
   
 	Delete "$INSTDIR\share\GNUnet\config-client.in" 
 	Delete "$INSTDIR\share\GNUnet\config-daemon.in"
@@ -1030,41 +772,29 @@ Section Uninstall
 	Delete "$INSTDIR\share\GNUnet\gnunet-logo-color.png"
   RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\GNUnet.mo" 
-	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\gnunet-gtk.mo" 
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\de\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\de"
 	Delete "$INSTDIR\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
-	Delete "$INSTDIR\share\locale\rw\LC_MESSAGES\gnunet-gtk.mo" 
 	Delete "$INSTDIR\share\locale\rw\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\rw\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\rw"
 	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
-	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
 	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\vi\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\vi"
 	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
-	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\gnunet-gtk.mo" 
 	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\sv\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\sv"
-	Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\gnunet-gtk.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\fr\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\fr"
-  Delete "$INSTDIR\share\locale\tr\LC_MESSAGES\gnunet-gtk.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\tr\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\tr"
   Delete "$INSTDIR\share\locale\es\LC_MESSAGES\GNUnet.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\es\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\es"
   RmDir /REBOOTOK "$INSTDIR\share\locale"
-	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
-	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
-	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.plain"
-  RmDir /REBOOTOK "$INSTDIR\share\themes\Default\gtk-2.0"
-  RmDir /REBOOTOK "$INSTDIR\share\themes\Default"
-  RmDir /REBOOTOK "$INSTDIR\share\themes"
   RmDir /REBOOTOK "$INSTDIR\share"
 
 	RmDir /r /REBOOTOK $INSTDIR\share\icons
@@ -1100,6 +830,8 @@ Section Uninstall
   RMDir /REBOOTOK $USR_PROF
   RMDir /REBOOTOK "$SMPROGRAMS\$ICONS_GROUP"
   RmDir /r /REBOOTOK "$INSTDIR"
+  ReadRegStr $DATADIR "HKLM" "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Common AppData"
+  RmDir /r /REBOOTOK "$DATADIR\GNU\GNUnet"
  end:
   SetAutoClose true
 SectionEnd
