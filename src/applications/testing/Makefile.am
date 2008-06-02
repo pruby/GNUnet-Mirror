@@ -14,7 +14,7 @@ libgnunettesting_api_la_LIBADD = \
   $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 
 
 libgnunetremote_api_la_SOURCES = \
-  remote.c 
+  remote.c remote.h
 libgnunetremote_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 
