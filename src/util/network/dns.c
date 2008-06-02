@@ -442,10 +442,12 @@ getaddrinfo_resolve (struct GNUNET_GE_Context *ectx,
   if (0 != (s = getaddrinfo (hostname, NULL, &hints, &result)))
     {
       GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING| GNUNET_GE_USER |
+                     GNUNET_GE_WARNING | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      _("Could not resolve `%s' (%s): %s\n"), hostname,
-		     (domain == AF_INET) ? "IPv4" : ((domain == AF_INET6) ? "IPv6" : "any"),
+                     (domain ==
+                      AF_INET) ? "IPv4" : ((domain ==
+                                            AF_INET6) ? "IPv6" : "any"),
                      gai_strerror (s));
       return GNUNET_SYSERR;
     }

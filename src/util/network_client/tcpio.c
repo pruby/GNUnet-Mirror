@@ -270,21 +270,21 @@ GNUNET_client_connection_ensure_connected (struct
   while (1)
     {
       if (af_index == -1)
-	{
-	  tries = 10;
-	  af_index = 0;
-	}
+        {
+          tries = 10;
+          af_index = 0;
+        }
       else
-	{
-	  /* wait for 500ms before trying again */
-	  GNUNET_thread_sleep(GNUNET_CRON_MILLISECONDS * 500);
-	  tries--;
-	}
+        {
+          /* wait for 500ms before trying again */
+          GNUNET_thread_sleep (GNUNET_CRON_MILLISECONDS * 500);
+          tries--;
+        }
       if (tries == 0)
-	{
-	  af_index++;
-	  tries = 10;
-	}
+        {
+          af_index++;
+          tries = 10;
+        }
       if (addr_families[af_index] == -1)
         return GNUNET_SYSERR;
       soaddr = NULL;
@@ -394,22 +394,21 @@ GNUNET_client_connection_ensure_connected (struct
 
       ret = GETSOCKOPT (osock, SOL_SOCKET, SO_ERROR, &soerr, &soerrlen);
       if (ret != 0)
-	GNUNET_GE_LOG_STRERROR (sock->ectx,
-				GNUNET_GE_WARNING | GNUNET_GE_USER |
-				GNUNET_GE_BULK, "getsockopt");
-      
-      if ((soerr != 0) ||
-	  (ret != 0 && (errno == ENOTSOCK || errno == EBADF)))
-	{
-	  GNUNET_GE_LOG (sock->ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_USER |
-			 GNUNET_GE_BULK,
-			 _("Failed to connect to %s:%u\n"), host, port);
-	  GNUNET_socket_destroy (sock->sock);
-	  sock->sock = NULL;
-	  GNUNET_mutex_unlock (sock->destroylock);
-	  continue;
-	}    
+        GNUNET_GE_LOG_STRERROR (sock->ectx,
+                                GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                GNUNET_GE_BULK, "getsockopt");
+
+      if ((soerr != 0) || (ret != 0 && (errno == ENOTSOCK || errno == EBADF)))
+        {
+          GNUNET_GE_LOG (sock->ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_USER |
+                         GNUNET_GE_BULK,
+                         _("Failed to connect to %s:%u\n"), host, port);
+          GNUNET_socket_destroy (sock->sock);
+          sock->sock = NULL;
+          GNUNET_mutex_unlock (sock->destroylock);
+          continue;
+        }
       break;
     }
   GNUNET_free (host);

@@ -87,7 +87,7 @@ GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
 
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
-    return NULL;   
+    return NULL;
 
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DHT_Context));
   ctx->sock = sock;
