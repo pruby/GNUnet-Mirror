@@ -8,7 +8,7 @@ plugin_LTLIBRARIES = \
 libgnunetmodule_dht_la_SOURCES = \
   cs.c \
   routing.c routing.h \
-  service.c \
+  service.c service.h \
   table.c table.h 
 
 libgnunetmodule_dht_la_LIBADD = -lm \
