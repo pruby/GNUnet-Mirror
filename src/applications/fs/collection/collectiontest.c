@@ -42,8 +42,8 @@ main (int argc, char *argv[])
   int ok;
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_ECRS_MetaData *have;
   GNUNET_ECRS_FileInfo fi;
-  char *have;
 
   GNUNET_disable_entropy_gathering ();
   cfg = GNUNET_GC_create ();
@@ -71,14 +71,13 @@ main (int argc, char *argv[])
 
   /* ACTUAL TEST CODE */
   GNUNET_CO_collection_stop ();
-  GNUNET_ECRS_namespace_delete (NULL, cfg, "test-collection");
   CHECK (NULL == GNUNET_CO_collection_get_name ());
   CHECK (GNUNET_OK == GNUNET_CO_collection_start (1, 100, 60,   /* 60s */
-                                                  "test-collection", meta));
+                                                  meta));
   have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
-  CHECK (0 == strcmp (have, "test-collection"));
-  GNUNET_free (have);
+  CHECK (GNUNET_ECRS_meta_data_test_equal (have, meta));
+  GNUNET_ECRS_meta_data_destroy (have);
   fi.meta = meta;
   fi.uri =
     GNUNET_ECRS_string_to_uri (NULL,
@@ -89,11 +88,10 @@ main (int argc, char *argv[])
   GNUNET_CO_init (NULL, cfg);
   have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
-  CHECK (0 == strcmp (have, "test-collection"));
-  GNUNET_free (have);
+  CHECK (GNUNET_ECRS_meta_data_test_equal (have, meta));
+  GNUNET_ECRS_meta_data_destroy (have);
   GNUNET_CO_collection_publish_now ();
   GNUNET_CO_collection_stop ();
-  GNUNET_ECRS_namespace_delete (NULL, cfg, "test-collection");
   CHECK (NULL == GNUNET_CO_collection_get_name ());
 
   /* END OF TEST CODE */

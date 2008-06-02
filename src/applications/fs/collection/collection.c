@@ -183,7 +183,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
       return;
     }
   if ((size > 0x7FFFFFFF) ||
-      (size < sizeof (CollectionData) + 4 * sizeof (int)))
+      (size < sizeof (CollectionData) + 3 * sizeof (int)))
     {
       GNUNET_GE_BREAK (ectx, 0);
       UNLINK (fn);
@@ -224,9 +224,9 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
   pos += sizeof (int);
   collectionData->changed = ntohl (*(int *) pos);
   pos += sizeof (int);
-  mlen = ntohl (*(int *) pos);
-  pos += sizeof (int);
-  rsize -= 4 * sizeof (int);
+  mlen = ntohl (*(unsigned int *) pos);
+  pos += sizeof (unsigned int);
+  rsize -= 3 * sizeof (int);
   if (mlen > rsize)
     {
       GNUNET_GE_BREAK (ectx, 0);
