@@ -453,6 +453,11 @@ typedef struct GNUNET_FSUI_UploadList
    */
   GNUNET_FSUI_State state;
 
+  /**
+   * Is this a directory (or a file)?
+   */
+  int is_directory;
+
 } GNUNET_FSUI_UploadList;
 
 /**

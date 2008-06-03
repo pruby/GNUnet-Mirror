@@ -652,6 +652,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
   utc->state = GNUNET_FSUI_ACTIVE;
   if (GNUNET_YES == GNUNET_disk_file_test (shared->ctx->ectx, filename))
     {
+      utc->is_directory = GNUNET_NO;
       /* add this file */
       if (GNUNET_OK != GNUNET_disk_file_size (shared->ctx->ectx,
                                               filename, &utc->total,
@@ -667,6 +668,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
     }
   else
     {
+      utc->is_directory = GNUNET_YES;
       if (GNUNET_SYSERR == shared->dsc (shared->dscClosure,
                                         filename, &addChildUpload, utc))
         {
@@ -822,7 +824,9 @@ int
 GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul)
 {
   GNUNET_FSUI_UploadList *c;
+  GNUNET_FSUI_UploadList *p;
   struct GNUNET_FSUI_Context *ctx;
+  GNUNET_FSUI_Event event;
 
   if (ul == NULL)
     return GNUNET_SYSERR;
@@ -839,6 +843,12 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul)
           c = c->next;
         }
       GNUNET_thread_stop_sleep (ul->shared->handle);
+      event.type = GNUNET_FSUI_upload_aborted;
+      event.data.UploadAborted.uc.pos = ul;
+      event.data.UploadAborted.uc.cctx = ul->cctx;
+      event.data.UploadAborted.uc.ppos = ul->parent;
+      event.data.UploadAborted.uc.pcctx = ul->parent->cctx;
+      ctx->ecb (ctx->ecbClosure, &event);   
     }
   else
     {
@@ -848,7 +858,35 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul)
         {
           GNUNET_FSUI_upload_abort (c);
           c = c->next;
-        }
+	}
+      event.type = GNUNET_FSUI_upload_aborted;
+      event.data.UploadAborted.uc.pos = ul;
+      event.data.UploadAborted.uc.cctx = ul->cctx;
+      event.data.UploadAborted.uc.ppos = ul->parent;
+      event.data.UploadAborted.uc.pcctx = ul->parent->cctx;
+      ctx->ecb (ctx->ecbClosure, &event);         
+    }
+  if (! ul->is_directory)
+    {
+      /* reduce total size of all parents accordingly
+	 and generate progress events */
+      p = ul->parent;
+      while (p != &ctx->activeUploads)
+	{
+	  p->total -= ul->total;
+	  event.type = GNUNET_FSUI_upload_progress;
+	  event.data.UploadProgress.uc.pos = p;
+	  event.data.UploadProgress.uc.cctx = p->cctx;
+	  event.data.UploadProgress.uc.ppos = p->parent;
+	  event.data.UploadProgress.uc.pcctx = p->parent->cctx;
+	  event.data.UploadProgress.completed = p->completed;
+          event.data.UploadProgress.total = p->total;
+	  /* use "now" for ETA, given that the user is aborting stuff */
+	  event.data.UploadProgress.eta = GNUNET_get_time(); 
+	  event.data.UploadProgress.filename = p->filename;
+	  ctx->ecb (ctx->ecbClosure, &event);
+	  p = p->parent;
+	}
     }
   return GNUNET_OK;
 }
