@@ -48,6 +48,9 @@ struct GNUNET_CS_chat_client
 
   struct GNUNET_ClientHandle *client;
 
+  /**
+   * Consider moving this to the client!
+   */
   struct GNUNET_RSA_PrivateKey *private_key;
 
   char *room;

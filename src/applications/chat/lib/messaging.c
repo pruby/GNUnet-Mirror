@@ -456,9 +456,10 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   key = GNUNET_CHAT_initPrivateKey (ectx, cfg, nick_name);
   if (key == NULL)
     return NULL;
-  priv_key = GNUNET_RSA_decode_key (key);
+  priv_key = GNUNET_RSA_decode_key (key);  
   GNUNET_RSA_get_public_key (priv_key, &pub_key);
   GNUNET_hash (&pub_key, sizeof (GNUNET_RSA_PublicKey), me);
+  GNUNET_PSEUDO_add (ectx, cfg, me, member_info);
   GNUNET_RSA_free_key (priv_key);
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
