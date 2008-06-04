@@ -3,17 +3,11 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.8.0pre1 [5'08]:
-
 0.8.0 [6'08] (aka "new protocol"):
-- chat:  [RC]
-  + add support for new options (private msg, anon msg, confirmation)
-    to gnunet-chat
 - namespaces
   + need more comprehensive testcase!
 - pseudonyms:
   + need more comprehensive testcase (notifications, etc)!
-- move ECRS metadata and libpseudonym out of fs/
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
 
