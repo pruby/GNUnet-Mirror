@@ -94,7 +94,7 @@ GNUNET_meta_data_add_publication_date (MetaData * md)
  */
 int
 GNUNET_meta_data_insert (MetaData * md,
-                              EXTRACTOR_KeywordType type, const char *data)
+                         EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
   char *p;
@@ -127,7 +127,7 @@ GNUNET_meta_data_insert (MetaData * md,
  */
 int
 GNUNET_meta_data_delete (MetaData * md,
-                              EXTRACTOR_KeywordType type, const char *data)
+                         EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
   int ret = GNUNET_SYSERR;
@@ -157,8 +157,8 @@ GNUNET_meta_data_delete (MetaData * md,
  */
 int
 GNUNET_meta_data_get_contents (const MetaData * md,
-			       GNUNET_MetaDataProcessor iterator,
-			       void *closure)
+                               GNUNET_MetaDataProcessor iterator,
+                               void *closure)
 {
   int i;
   int sub;
@@ -166,7 +166,7 @@ GNUNET_meta_data_get_contents (const MetaData * md,
   sub = 0;
   for (i = md->itemCount - 1; i >= 0; i--)
     {
-      if (! EXTRACTOR_isBinaryType(md->items[i].type))
+      if (!EXTRACTOR_isBinaryType (md->items[i].type))
         {
           if ((iterator != NULL) &&
               (GNUNET_OK != iterator (md->items[i].type,
@@ -185,8 +185,7 @@ GNUNET_meta_data_get_contents (const MetaData * md,
  * @return number of entries
  */
 char *
-GNUNET_meta_data_get_by_type (const MetaData * md,
-			      EXTRACTOR_KeywordType type)
+GNUNET_meta_data_get_by_type (const MetaData * md, EXTRACTOR_KeywordType type)
 {
   int i;
 
@@ -278,7 +277,7 @@ decodeThumbnail (const char *in, unsigned char **out, size_t * outSize)
  */
 size_t
 GNUNET_meta_data_get_thumbnail (const struct GNUNET_MetaData * md,
-                                     unsigned char **thumb)
+                                unsigned char **thumb)
 {
   char *encoded;
   int ret;
@@ -326,9 +325,9 @@ GNUNET_meta_data_duplicate (const MetaData * md)
  */
 int
 GNUNET_meta_data_extract_from_file (struct GNUNET_GE_Context *ectx,
-                                         MetaData * md,
-                                         const char *filename,
-                                         EXTRACTOR_ExtractorList * extractors)
+                                    MetaData * md,
+                                    const char *filename,
+                                    EXTRACTOR_ExtractorList * extractors)
 {
   EXTRACTOR_KeywordList *head;
   EXTRACTOR_KeywordList *pos;
@@ -461,8 +460,8 @@ typedef struct
  */
 int
 GNUNET_meta_data_serialize (struct GNUNET_GE_Context *ectx,
-                                 const MetaData * md,
-                                 char *target, unsigned int max, int part)
+                            const MetaData * md,
+                            char *target, unsigned int max, int part)
 {
   MetaDataHeader *hdr;
   size_t size;
@@ -602,7 +601,7 @@ GNUNET_meta_data_get_serialized_size (const MetaData * md, int part)
  */
 struct GNUNET_MetaData *
 GNUNET_meta_data_deserialize (struct GNUNET_GE_Context *ectx,
-                                   const char *input, unsigned int size)
+                              const char *input, unsigned int size)
 {
   MetaData *md;
   const MetaDataHeader *hdr;
@@ -694,7 +693,7 @@ FAILURE:
  */
 int
 GNUNET_meta_data_test_equal (const struct GNUNET_MetaData *md1,
-			     const struct GNUNET_MetaData *md2)
+                             const struct GNUNET_MetaData *md2)
 {
   int i;
   int j;

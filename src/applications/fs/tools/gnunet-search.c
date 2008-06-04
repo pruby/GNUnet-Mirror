@@ -89,7 +89,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       printf ("%s:\n", uri);
       filename =
         GNUNET_meta_data_get_by_type (event->data.SearchResult.fi.meta,
-                                           EXTRACTOR_FILENAME);
+                                      EXTRACTOR_FILENAME);
       if (filename != NULL)
         {
           char *dotdot;

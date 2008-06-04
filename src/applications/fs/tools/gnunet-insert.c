@@ -451,7 +451,7 @@ main (int argc, char *const *argv)
     {
       if ((GNUNET_OK !=
            GNUNET_pseudonym_name_to_id (ectx, cfg,
-                                     pseudonym, &pid)) ||
+                                        pseudonym, &pid)) ||
           (GNUNET_OK != GNUNET_ECRS_namespace_test_exists (ectx, cfg, &pid)))
         {
           printf (_("Could not access namespace `%s' (does not exist?).\n"),

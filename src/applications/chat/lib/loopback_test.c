@@ -86,8 +86,7 @@ receive_callback (void *cls,
           (want->sender != NULL) &&
           (0 == memcmp (sender, want->sender, sizeof (GNUNET_HashCode))))) &&
         (GNUNET_meta_data_test_equal (member_info,
-                                           want->meta)) &&
-        (options == want->opt)))
+                                      want->meta)) && (options == want->opt)))
     {
       abort ();
       error++;
@@ -109,8 +108,7 @@ member_list_callback (void *cls,
   fprintf (stderr, "%s - told that %s joins\n",
            want->me,
            member_info == NULL ? NULL
-           : GNUNET_meta_data_get_by_type (member_info,
-                                                EXTRACTOR_TITLE));
+           : GNUNET_meta_data_get_by_type (member_info, EXTRACTOR_TITLE));
 #endif
   GNUNET_semaphore_down (want->pre, GNUNET_YES);
   GNUNET_hash (member_id, sizeof (GNUNET_RSA_PublicKey), &sender);
@@ -120,7 +118,7 @@ member_list_callback (void *cls,
          ((member_info != NULL) &&
           (want->meta != NULL) &&
           (GNUNET_meta_data_test_equal (member_info,
-                                             want->meta)))) &&
+                                        want->meta)))) &&
         (options == want->opt)))
     {
       abort ();

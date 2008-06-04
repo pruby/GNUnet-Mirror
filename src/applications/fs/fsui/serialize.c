@@ -121,18 +121,18 @@ writeMetaData (struct GNUNET_GE_Context *ectx,
   char *buf;
 
   size = GNUNET_meta_data_get_serialized_size (meta,
-					       GNUNET_SERIALIZE_FULL
-					       |
-					       GNUNET_SERIALIZE_NO_COMPRESS);
+                                               GNUNET_SERIALIZE_FULL
+                                               |
+                                               GNUNET_SERIALIZE_NO_COMPRESS);
   if (size > 1024 * 1024)
     size = 1024 * 1024;
   buf = GNUNET_malloc (size);
   GNUNET_meta_data_serialize (ectx,
-			      meta,
-			      buf,
-			      size,
-			      GNUNET_SERIALIZE_PART |
-			      GNUNET_SERIALIZE_NO_COMPRESS);
+                              meta,
+                              buf,
+                              size,
+                              GNUNET_SERIALIZE_PART |
+                              GNUNET_SERIALIZE_NO_COMPRESS);
   WRITEINT (wb, size);
   write_buffered (wb, buf, size);
   GNUNET_free (buf);

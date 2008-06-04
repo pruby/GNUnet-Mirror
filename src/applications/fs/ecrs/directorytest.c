@@ -49,7 +49,7 @@ processor (const GNUNET_ECRS_FileInfo * fi,
   for (i = 0; i < p->max; i++)
     {
       if (GNUNET_meta_data_test_equal (p->fi[i].meta,
-                                            fi->meta) &&
+                                       fi->meta) &&
           GNUNET_ECRS_uri_test_equal (p->fi[i].uri, fi->uri))
         {
           p->pos++;
@@ -84,9 +84,9 @@ testDirectory (unsigned int i)
         {
           GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
           GNUNET_meta_data_insert (fis[p].meta,
-                                        q %
-                                        EXTRACTOR_getHighestKeywordTypeNumber
-                                        (), txt);
+                                   q %
+                                   EXTRACTOR_getHighestKeywordTypeNumber
+                                   (), txt);
         }
       GNUNET_snprintf (uri,
                        512,

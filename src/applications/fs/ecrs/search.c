@@ -274,9 +274,8 @@ process_nblock_result (const GNUNET_EC_NBlock * nb,
   int ret;
 
   fi.meta = GNUNET_meta_data_deserialize (ectx,
-					  (const char *) &nb[1],
-					  size -
-					  sizeof (GNUNET_EC_NBlock));
+                                          (const char *) &nb[1],
+                                          size - sizeof (GNUNET_EC_NBlock));
   if (fi.meta == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);        /* nblock malformed */
@@ -390,8 +389,8 @@ receive_response_callback (const GNUNET_HashCode * key,
         dstURI = (const char *) &kb[1];
         j++;
         fi.meta = GNUNET_meta_data_deserialize (ectx,
-                                                     &((const char *)
-                                                       kb)[j], size - j);
+                                                &((const char *)
+                                                  kb)[j], size - j);
         if (fi.meta == NULL)
           {
             GNUNET_GE_BREAK (ectx, 0);  /* kblock malformed */
@@ -482,10 +481,9 @@ receive_response_callback (const GNUNET_HashCode * key,
         j++;
         /* j == strlen(dstURI) + 1 */
         fi.meta = GNUNET_meta_data_deserialize (ectx,
-						&dstURI[j],
-						size - j -
-						sizeof
-						(GNUNET_EC_SBlock));
+                                                &dstURI[j],
+                                                size - j -
+                                                sizeof (GNUNET_EC_SBlock));
         if (fi.meta == NULL)
           {
             GNUNET_GE_BREAK (ectx, 0);  /* sblock malformed */

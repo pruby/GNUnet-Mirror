@@ -371,8 +371,7 @@ main (int argc, char *argv[])
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
                                              (const char **) keywords);
-  GNUNET_meta_data_insert (meta, EXTRACTOR_MIMETYPE,
-                                GNUNET_DIRECTORY_MIME);
+  GNUNET_meta_data_insert (meta, EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
   upload =
     GNUNET_FSUI_upload_start (ctx, UPLOAD_PREFIX,
                               (GNUNET_FSUI_DirectoryScanCallback) &

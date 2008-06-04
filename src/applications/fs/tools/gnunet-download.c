@@ -179,14 +179,14 @@ directoryIterator (const GNUNET_ECRS_FileInfo * fi,
   char *f;
 
   f = GNUNET_meta_data_get_first_by_types (fi->meta,
-                                                EXTRACTOR_FILENAME,
-                                                EXTRACTOR_TITLE,
-                                                EXTRACTOR_ARTIST,
-                                                EXTRACTOR_AUTHOR,
-                                                EXTRACTOR_PUBLISHER,
-                                                EXTRACTOR_CREATOR,
-                                                EXTRACTOR_PRODUCER,
-                                                EXTRACTOR_UNKNOWN, -1);
+                                           EXTRACTOR_FILENAME,
+                                           EXTRACTOR_TITLE,
+                                           EXTRACTOR_ARTIST,
+                                           EXTRACTOR_AUTHOR,
+                                           EXTRACTOR_PUBLISHER,
+                                           EXTRACTOR_CREATOR,
+                                           EXTRACTOR_PRODUCER,
+                                           EXTRACTOR_UNKNOWN, -1);
   if (f == NULL)
     f = GNUNET_strdup (_("no name given"));
   fn = GNUNET_malloc (strlen (filename) + strlen (f) + 4);

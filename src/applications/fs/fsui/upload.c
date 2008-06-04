@@ -391,11 +391,10 @@ GNUNET_FSUI_uploadThread (void *cls)
     {
       if (utc->child == NULL)
         GNUNET_meta_data_extract_from_file (utc->shared->ctx->ectx,
-                                                 utc->meta, utc->filename,
-                                                 utc->shared->extractors);
+                                            utc->meta, utc->filename,
+                                            utc->shared->extractors);
       while (GNUNET_OK ==
-             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_FILENAME,
-				      NULL));
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_FILENAME, NULL));
       /* only publish the last part of the path
          -- we do not want to publish $HOME or similar
          trivially deanonymizing information */
@@ -426,8 +425,7 @@ GNUNET_FSUI_uploadThread (void *cls)
               pfn = GNUNET_malloc (tend - tpos + 1);
               pfn[tend - tpos] = '\0';
               memcpy (pfn, &utc->filename[tpos + 1], tend - tpos);
-              GNUNET_meta_data_insert (utc->meta, EXTRACTOR_RELATION,
-                                            pfn);
+              GNUNET_meta_data_insert (utc->meta, EXTRACTOR_RELATION, pfn);
               GNUNET_free (pfn);
             }
         }
@@ -469,8 +467,7 @@ GNUNET_FSUI_uploadThread (void *cls)
       while (GNUNET_OK ==
              GNUNET_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
       while (GNUNET_OK ==
-             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE,
-                                           NULL));
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE, NULL));
       if (utc->shared->global_keywords != NULL)
         GNUNET_ECRS_publish_under_keyword (ectx,
                                            utc->shared->ctx->cfg,
@@ -663,8 +660,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
         }
       utc->meta =
         (md ==
-         NULL) ? GNUNET_meta_data_create () :
-        GNUNET_meta_data_duplicate (md);
+         NULL) ? GNUNET_meta_data_create () : GNUNET_meta_data_duplicate (md);
     }
   else
     {
@@ -680,8 +676,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
         }
       utc->meta = GNUNET_meta_data_duplicate (md);
       GNUNET_meta_data_insert (utc->meta,
-			       EXTRACTOR_MIMETYPE,
-			       GNUNET_DIRECTORY_MIME);
+                               EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
     }
   if (keywords != NULL)
     utc->keywords = GNUNET_ECRS_uri_duplicate (keywords);
@@ -848,7 +843,7 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul)
       event.data.UploadAborted.uc.cctx = ul->cctx;
       event.data.UploadAborted.uc.ppos = ul->parent;
       event.data.UploadAborted.uc.pcctx = ul->parent->cctx;
-      ctx->ecb (ctx->ecbClosure, &event);   
+      ctx->ecb (ctx->ecbClosure, &event);
     }
   else
     {
@@ -858,35 +853,35 @@ GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_UploadList *ul)
         {
           GNUNET_FSUI_upload_abort (c);
           c = c->next;
-	}
+        }
       event.type = GNUNET_FSUI_upload_aborted;
       event.data.UploadAborted.uc.pos = ul;
       event.data.UploadAborted.uc.cctx = ul->cctx;
       event.data.UploadAborted.uc.ppos = ul->parent;
       event.data.UploadAborted.uc.pcctx = ul->parent->cctx;
-      ctx->ecb (ctx->ecbClosure, &event);         
+      ctx->ecb (ctx->ecbClosure, &event);
     }
-  if (! ul->is_directory)
+  if (!ul->is_directory)
     {
       /* reduce total size of all parents accordingly
-	 and generate progress events */
+         and generate progress events */
       p = ul->parent;
       while (p != &ctx->activeUploads)
-	{
-	  p->total -= ul->total;
-	  event.type = GNUNET_FSUI_upload_progress;
-	  event.data.UploadProgress.uc.pos = p;
-	  event.data.UploadProgress.uc.cctx = p->cctx;
-	  event.data.UploadProgress.uc.ppos = p->parent;
-	  event.data.UploadProgress.uc.pcctx = p->parent->cctx;
-	  event.data.UploadProgress.completed = p->completed;
+        {
+          p->total -= ul->total;
+          event.type = GNUNET_FSUI_upload_progress;
+          event.data.UploadProgress.uc.pos = p;
+          event.data.UploadProgress.uc.cctx = p->cctx;
+          event.data.UploadProgress.uc.ppos = p->parent;
+          event.data.UploadProgress.uc.pcctx = p->parent->cctx;
+          event.data.UploadProgress.completed = p->completed;
           event.data.UploadProgress.total = p->total;
-	  /* use "now" for ETA, given that the user is aborting stuff */
-	  event.data.UploadProgress.eta = GNUNET_get_time(); 
-	  event.data.UploadProgress.filename = p->filename;
-	  ctx->ecb (ctx->ecbClosure, &event);
-	  p = p->parent;
-	}
+          /* use "now" for ETA, given that the user is aborting stuff */
+          event.data.UploadProgress.eta = GNUNET_get_time ();
+          event.data.UploadProgress.filename = p->filename;
+          ctx->ecb (ctx->ecbClosure, &event);
+          p = p->parent;
+        }
     }
   return GNUNET_OK;
 }

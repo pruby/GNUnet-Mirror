@@ -291,17 +291,17 @@ GNUNET_client_connection_ensure_connected (struct
   while (1)
     {
       if (addr_families[af_index] == -1)
-	return GNUNET_SYSERR;
+        return GNUNET_SYSERR;
       soaddr = NULL;
       socklen = 0;
       if (GNUNET_SYSERR ==
           GNUNET_get_ip_from_hostname (sock->ectx, host,
                                        addr_families[af_index], &soaddr,
                                        &socklen))
-	{
-	  ADVANCE();
-	  continue;
-	}
+        {
+          ADVANCE ();
+          continue;
+        }
       GNUNET_mutex_lock (sock->destroylock);
       if (sock->sock != NULL)
         {
@@ -334,8 +334,8 @@ GNUNET_client_connection_ensure_connected (struct
                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
           GNUNET_mutex_unlock (sock->destroylock);
           GNUNET_free (soaddr);
-	  ADVANCE();
-	  continue;
+          ADVANCE ();
+          continue;
         }
       sock->sock = GNUNET_socket_create (sock->ectx, NULL, osock);
       GNUNET_socket_set_blocking (sock->sock, GNUNET_NO);
@@ -350,10 +350,10 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
-	  if (errno == ECONNREFUSED)
-	    RETRY(); /* gnunetd may just be restarting */
-	  else	  
-	    ADVANCE();
+          if (errno == ECONNREFUSED)
+            RETRY ();           /* gnunetd may just be restarting */
+          else
+            ADVANCE ();
           continue;
         }
       /* we call select() first with a timeout of WAIT_SECONDS to
@@ -368,8 +368,8 @@ GNUNET_client_connection_ensure_connected (struct
       timeout.tv_sec = 0;
       timeout.tv_usec = DELAY_PER_RETRY * TRIES_PER_AF * 1000;
       errno = 0;
-      select_start = GNUNET_get_time();
-      ret = SELECT (osock + 1, &rset, &wset, &eset, &timeout);      
+      select_start = GNUNET_get_time ();
+      ret = SELECT (osock + 1, &rset, &wset, &eset, &timeout);
       if (ret == -1)
         {
           if (errno != EINTR)
@@ -379,15 +379,14 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
-	  if ( (GNUNET_get_time() - select_start > TRIES_PER_AF * DELAY_PER_RETRY) ||
-	       (errno != EINTR) )
-	    ADVANCE(); /* spend enough time trying here */
-	  else
-	    RETRY();
+          if ((GNUNET_get_time () - select_start >
+               TRIES_PER_AF * DELAY_PER_RETRY) || (errno != EINTR))
+            ADVANCE ();         /* spend enough time trying here */
+          else
+            RETRY ();
           continue;
         }
-      if ( (FD_ISSET (osock, &eset)) ||
-	   (! FD_ISSET (osock, &wset) ) )
+      if ((FD_ISSET (osock, &eset)) || (!FD_ISSET (osock, &wset)))
         {
           GNUNET_GE_LOG (sock->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
@@ -395,11 +394,12 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
-   	  if (GNUNET_get_time() - select_start > TRIES_PER_AF * DELAY_PER_RETRY)
-	    ADVANCE(); /* spend enough time trying here */
-	  else
-	    RETRY();
-	  continue;
+          if (GNUNET_get_time () - select_start >
+              TRIES_PER_AF * DELAY_PER_RETRY)
+            ADVANCE ();         /* spend enough time trying here */
+          else
+            RETRY ();
+          continue;
         }
       soerr = 0;
       soerrlen = sizeof (soerr);
@@ -418,10 +418,11 @@ GNUNET_client_connection_ensure_connected (struct
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
-      	  if (GNUNET_get_time() - select_start > TRIES_PER_AF * DELAY_PER_RETRY)
-	    ADVANCE(); /* spend enough time trying here */
-	  else
-	    RETRY();
+          if (GNUNET_get_time () - select_start >
+              TRIES_PER_AF * DELAY_PER_RETRY)
+            ADVANCE ();         /* spend enough time trying here */
+          else
+            RETRY ();
           continue;
         }
       /* yayh! connected! */

@@ -903,7 +903,7 @@ GNUNET_ECRS_uri_duplicate (const URI * uri)
               GNUNET_strdup (uri->data.ksk.keywords[i]);
         }
       else
-	ret->data.ksk.keywords = NULL; /* just to be sure */
+        ret->data.ksk.keywords = NULL;  /* just to be sure */
       break;
     case loc:
       break;
@@ -964,20 +964,17 @@ GNUNET_ECRS_uri_expand_keywords_with_date (const URI * uri)
 }
 
 static int
-gather_uri_data(EXTRACTOR_KeywordType type,
-		const char * data,
-		void * cls) 
+gather_uri_data (EXTRACTOR_KeywordType type, const char *data, void *cls)
 {
-  URI * uri = cls;
-  char * nkword;
+  URI *uri = cls;
+  char *nkword;
   int j;
 
   for (j = uri->data.ksk.keywordCount - 1; j >= 0; j--)
-    if (0 == strcmp (&uri->data.ksk.keywords[j][1],
-		     data))
+    if (0 == strcmp (&uri->data.ksk.keywords[j][1], data))
       return GNUNET_OK;
   nkword = GNUNET_malloc (strlen (data) + 2);
-  strcpy (nkword, " ");     /* not mandatory */
+  strcpy (nkword, " ");         /* not mandatory */
   strcat (nkword, data);
   uri->data.ksk.keywords[uri->data.ksk.keywordCount++] = nkword;
   return GNUNET_OK;
@@ -999,14 +996,10 @@ GNUNET_meta_data_to_uri (const struct GNUNET_MetaData * md)
   ret->type = ksk;
   ret->data.ksk.keywordCount = 0;
   ret->data.ksk.keywords = NULL;
-  ret->data.ksk.keywords 
-    = GNUNET_malloc(sizeof(char*) *
-		    GNUNET_meta_data_get_contents(md,
-						  NULL,
-						  NULL));
-  GNUNET_meta_data_get_contents(md,
-				&gather_uri_data,
-				ret);
+  ret->data.ksk.keywords
+    = GNUNET_malloc (sizeof (char *) *
+                     GNUNET_meta_data_get_contents (md, NULL, NULL));
+  GNUNET_meta_data_get_contents (md, &gather_uri_data, ret);
   return ret;
 }
 

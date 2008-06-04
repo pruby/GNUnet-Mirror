@@ -102,8 +102,7 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
   char *room;
 
   meta_len =
-    GNUNET_meta_data_get_serialized_size (chat_room->member_info,
-                                               GNUNET_YES);
+    GNUNET_meta_data_get_serialized_size (chat_room->member_info, GNUNET_YES);
   room_len = strlen (chat_room->room_name);
   size_of_join = sizeof (CS_chat_MESSAGE_JoinRequest) + meta_len
     + room_len + ntohs (chat_room->my_private_key->len) -
@@ -125,8 +124,8 @@ GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
   memcpy (room, chat_room->room_name, room_len);
   if (GNUNET_SYSERR ==
       GNUNET_meta_data_serialize (chat_room->ectx,
-                                       chat_room->member_info,
-                                       &room[room_len], meta_len, GNUNET_YES))
+                                  chat_room->member_info,
+                                  &room[room_len], meta_len, GNUNET_YES))
     {
       GNUNET_free (join_msg);
       return GNUNET_SYSERR;
@@ -220,8 +219,8 @@ poll_thread (void *rcls)
           join_msg = (CS_chat_MESSAGE_JoinNotification *) reply;
           meta_len = size - sizeof (CS_chat_MESSAGE_JoinNotification);
           meta = GNUNET_meta_data_deserialize (room->ectx,
-                                                    (const char *)
-                                                    &join_msg[1], meta_len);
+                                               (const char *)
+                                               &join_msg[1], meta_len);
           if (meta == NULL)
             {
               malformed = GNUNET_YES;
@@ -455,7 +454,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   key = GNUNET_CHAT_initPrivateKey (ectx, cfg, nick_name);
   if (key == NULL)
     return NULL;
-  priv_key = GNUNET_RSA_decode_key (key);  
+  priv_key = GNUNET_RSA_decode_key (key);
   GNUNET_RSA_get_public_key (priv_key, &pub_key);
   GNUNET_hash (&pub_key, sizeof (GNUNET_RSA_PublicKey), me);
   GNUNET_pseudonym_add (ectx, cfg, me, member_info);

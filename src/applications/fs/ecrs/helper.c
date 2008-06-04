@@ -406,19 +406,19 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
  * Checks if the mime-type is that of a GNUnet directory.
  */
 int
-GNUNET_meta_data_test_for_directory (const struct GNUNET_MetaData * md)
+GNUNET_meta_data_test_for_directory (const struct GNUNET_MetaData *md)
 {
-  char  * mime;
+  char *mime;
   int ret;
 
-  mime = GNUNET_meta_data_get_by_type(md, EXTRACTOR_MIMETYPE);
+  mime = GNUNET_meta_data_get_by_type (md, EXTRACTOR_MIMETYPE);
   if (mime == NULL)
     return GNUNET_SYSERR;
   if (0 == strcmp (mime, GNUNET_DIRECTORY_MIME))
     ret = GNUNET_YES;
   else
     ret = GNUNET_NO;
-  GNUNET_free(mime);
+  GNUNET_free (mime);
   return ret;
 }
 

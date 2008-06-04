@@ -41,11 +41,11 @@
  * @param psid maybe NULL
  */
 char *GNUNET_pseudonym_internal_get_data_filename_ (struct GNUNET_GE_Context
-						    *ectx,
-						    struct
-						    GNUNET_GC_Configuration *cfg,
-						    const char *prefix,
-						    const GNUNET_HashCode *
-						    psid);
+                                                    *ectx,
+                                                    struct
+                                                    GNUNET_GC_Configuration
+                                                    *cfg, const char *prefix,
+                                                    const GNUNET_HashCode *
+                                                    psid);
 
 #endif

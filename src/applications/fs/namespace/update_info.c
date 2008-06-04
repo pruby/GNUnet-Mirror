@@ -152,8 +152,7 @@ write_update_data (struct GNUNET_GE_Context *ectx,
 
   uri = GNUNET_ECRS_uri_to_string (fi->uri);
   metaSize =
-    GNUNET_meta_data_get_serialized_size (fi->meta,
-					  GNUNET_SERIALIZE_FULL);
+    GNUNET_meta_data_get_serialized_size (fi->meta, GNUNET_SERIALIZE_FULL);
   size = sizeof (struct UpdateData) + metaSize + strlen (uri) + 1;
   buf = GNUNET_malloc (size);
   buf->nextId = *nextId;
@@ -164,11 +163,11 @@ write_update_data (struct GNUNET_GE_Context *ectx,
   GNUNET_GE_ASSERT (ectx,
                     metaSize ==
                     GNUNET_meta_data_serialize (ectx,
-						fi->meta,
-						&((char *)
-						  &buf[1])[strlen (uri) +
-							   1], metaSize,
-						GNUNET_SERIALIZE_FULL));
+                                                fi->meta,
+                                                &((char *)
+                                                  &buf[1])[strlen (uri) +
+                                                           1], metaSize,
+                                                GNUNET_SERIALIZE_FULL));
   GNUNET_free (uri);
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
                                               cfg,

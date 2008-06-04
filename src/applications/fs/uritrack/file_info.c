@@ -185,18 +185,18 @@ GNUNET_URITRACK_track (struct GNUNET_GE_Context *ectx,
   if (cpc.present == 1)
     return;
   size = GNUNET_meta_data_get_serialized_size (fi->meta,
-					       GNUNET_SERIALIZE_FULL
-					       |
-					       GNUNET_SERIALIZE_NO_COMPRESS);
+                                               GNUNET_SERIALIZE_FULL
+                                               |
+                                               GNUNET_SERIALIZE_NO_COMPRESS);
   data = GNUNET_malloc (size);
   GNUNET_GE_ASSERT (ectx,
                     size == GNUNET_meta_data_serialize (ectx,
-							fi->meta,
-							data,
-							size,
-							GNUNET_SERIALIZE_FULL
-							|
-							GNUNET_SERIALIZE_NO_COMPRESS));
+                                                        fi->meta,
+                                                        data,
+                                                        size,
+                                                        GNUNET_SERIALIZE_FULL
+                                                        |
+                                                        GNUNET_SERIALIZE_NO_COMPRESS));
   size = htonl (size);
   suri = GNUNET_ECRS_uri_to_string (fi->uri);
   sem = createIPC (ectx, cfg);
@@ -362,8 +362,7 @@ GNUNET_URITRACK_list (struct GNUNET_GE_Context *ectx,
         }
       if (need_metadata == GNUNET_YES)
         {
-          fi.meta =
-            GNUNET_meta_data_deserialize (ectx, &result[spos], msize);
+          fi.meta = GNUNET_meta_data_deserialize (ectx, &result[spos], msize);
           if (fi.meta == NULL)
             {
               GNUNET_GE_BREAK (ectx, 0);

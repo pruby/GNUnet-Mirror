@@ -39,8 +39,8 @@
  */
 char *
 GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
-			     struct GNUNET_GC_Configuration *cfg,
-			     const GNUNET_HashCode * nsid)
+                             struct GNUNET_GC_Configuration *cfg,
+                             const GNUNET_HashCode * nsid)
 {
   struct GNUNET_MetaData *meta;
   char *name;
@@ -55,19 +55,20 @@ GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
   meta = NULL;
   name = NULL;
   if (GNUNET_OK ==
-      GNUNET_pseudonym_internal_read_info_ (ectx, cfg, nsid, &meta, NULL, &name))
+      GNUNET_pseudonym_internal_read_info_ (ectx, cfg, nsid, &meta, NULL,
+                                            &name))
     {
       if ((meta != NULL) && (name == NULL))
         name = GNUNET_meta_data_get_first_by_types (meta,
-						    EXTRACTOR_TITLE,
-						    EXTRACTOR_FILENAME,
-						    EXTRACTOR_DESCRIPTION,
-						    EXTRACTOR_SUBJECT,
-						    EXTRACTOR_PUBLISHER,
-						    EXTRACTOR_AUTHOR,
-						    EXTRACTOR_COMMENT,
-						    EXTRACTOR_SUMMARY,
-						    EXTRACTOR_OWNER, -1);
+                                                    EXTRACTOR_TITLE,
+                                                    EXTRACTOR_FILENAME,
+                                                    EXTRACTOR_DESCRIPTION,
+                                                    EXTRACTOR_SUBJECT,
+                                                    EXTRACTOR_PUBLISHER,
+                                                    EXTRACTOR_AUTHOR,
+                                                    EXTRACTOR_COMMENT,
+                                                    EXTRACTOR_SUMMARY,
+                                                    EXTRACTOR_OWNER, -1);
       if (meta != NULL)
         {
           GNUNET_meta_data_destroy (meta);
@@ -78,7 +79,7 @@ GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
     name = GNUNET_strdup (_("no-name"));
   GNUNET_hash (name, strlen (name), &nh);
   fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
-                                                  cfg, PS_NAMES_DIR, &nh);
+                                                     cfg, PS_NAMES_DIR, &nh);
   len = 0;
   GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES);
   fd = GNUNET_disk_file_open (ectx, fn, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
@@ -116,8 +117,8 @@ GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_pseudonym_name_to_id (struct GNUNET_GE_Context *ectx,
-			     struct GNUNET_GC_Configuration *cfg,
-			     const char *ns_uname, GNUNET_HashCode * nsid)
+                             struct GNUNET_GC_Configuration *cfg,
+                             const char *ns_uname, GNUNET_HashCode * nsid)
 {
   size_t slen;
   unsigned long long len;
@@ -138,7 +139,7 @@ GNUNET_pseudonym_name_to_id (struct GNUNET_GE_Context *ectx,
   GNUNET_hash (name, strlen (name), &nh);
   GNUNET_free (name);
   fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
-						     cfg, PS_NAMES_DIR, &nh);
+                                                     cfg, PS_NAMES_DIR, &nh);
   if ((GNUNET_OK != GNUNET_disk_file_test (ectx,
                                            fn) ||
        (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES))) ||

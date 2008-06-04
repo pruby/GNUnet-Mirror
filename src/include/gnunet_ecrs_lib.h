@@ -95,8 +95,7 @@ typedef int (*GNUNET_ECRS_KeywordIterator) (const char *keyword,
  * @return GNUNET_YES if it is, GNUNET_NO if it is not, GNUNET_SYSERR if
  *  we have no mime-type information (treat as 'GNUNET_NO')
  */
-int GNUNET_meta_data_test_for_directory (const struct
-                                              GNUNET_MetaData *md);
+int GNUNET_meta_data_test_for_directory (const struct GNUNET_MetaData *md);
 
 /**
  * Suggest a better filename for a file (and do the
@@ -317,8 +316,7 @@ int GNUNET_ECRS_uri_test_loc (const struct GNUNET_ECRS_URI *uri);
  * that lists all keywords that can be found in the meta-data).
  */
 struct GNUNET_ECRS_URI *GNUNET_meta_data_to_uri (const struct
-                                                      GNUNET_MetaData
-                                                      *md);
+                                                 GNUNET_MetaData *md);
 
 
 typedef struct

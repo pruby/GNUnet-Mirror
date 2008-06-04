@@ -35,7 +35,7 @@
  */
 void
 GNUNET_pseudonym_internal_notify_ (const GNUNET_HashCode * id,
-				   const struct GNUNET_MetaData *md,
-				   int rating);
+                                   const struct GNUNET_MetaData *md,
+                                   int rating);
 
 #endif

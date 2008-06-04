@@ -39,29 +39,25 @@ testMeta (int i)
   unsigned int size;
 
   m = GNUNET_meta_data_create ();
-  if (GNUNET_OK !=
-      GNUNET_meta_data_insert (m, EXTRACTOR_TITLE, "TestTitle"))
+  if (GNUNET_OK != GNUNET_meta_data_insert (m, EXTRACTOR_TITLE, "TestTitle"))
     ABORT (m);
-  if (GNUNET_OK !=
-      GNUNET_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))
+  if (GNUNET_OK != GNUNET_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))
     ABORT (m);
-  if (GNUNET_OK == GNUNET_meta_data_insert (m, EXTRACTOR_TITLE, "TestTitle"))      /* dup! */
+  if (GNUNET_OK == GNUNET_meta_data_insert (m, EXTRACTOR_TITLE, "TestTitle"))   /* dup! */
     ABORT (m);
-  if (GNUNET_OK == GNUNET_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))     /* dup! */
+  if (GNUNET_OK == GNUNET_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))  /* dup! */
     ABORT (m);
   if (2 != GNUNET_meta_data_get_contents (m, NULL, NULL))
     ABORT (m);
-  if (GNUNET_OK !=
-      GNUNET_meta_data_delete (m, EXTRACTOR_AUTHOR, "TestTitle"))
+  if (GNUNET_OK != GNUNET_meta_data_delete (m, EXTRACTOR_AUTHOR, "TestTitle"))
     ABORT (m);
-  if (GNUNET_OK == GNUNET_meta_data_delete (m, EXTRACTOR_AUTHOR, "TestTitle"))     /* already gone */
+  if (GNUNET_OK == GNUNET_meta_data_delete (m, EXTRACTOR_AUTHOR, "TestTitle"))  /* already gone */
     ABORT (m);
   if (1 != GNUNET_meta_data_get_contents (m, NULL, NULL))
     ABORT (m);
-  if (GNUNET_OK !=
-      GNUNET_meta_data_delete (m, EXTRACTOR_TITLE, "TestTitle"))
+  if (GNUNET_OK != GNUNET_meta_data_delete (m, EXTRACTOR_TITLE, "TestTitle"))
     ABORT (m);
-  if (GNUNET_OK == GNUNET_meta_data_delete (m, EXTRACTOR_TITLE, "TestTitle"))      /* already gone */
+  if (GNUNET_OK == GNUNET_meta_data_delete (m, EXTRACTOR_TITLE, "TestTitle"))   /* already gone */
     ABORT (m);
   if (0 != GNUNET_meta_data_get_contents (m, NULL, NULL))
     ABORT (m);
@@ -70,8 +66,7 @@ testMeta (int i)
     {
       GNUNET_snprintf (val, 256, "%s.%d",
                        "A teststring that should compress well.", j);
-      if (GNUNET_OK !=
-          GNUNET_meta_data_insert (m, EXTRACTOR_UNKNOWN, val))
+      if (GNUNET_OK != GNUNET_meta_data_insert (m, EXTRACTOR_UNKNOWN, val))
         {
           GNUNET_free (val);
           ABORT (m);
@@ -81,12 +76,11 @@ testMeta (int i)
   if (i != GNUNET_meta_data_get_contents (m, NULL, NULL))
     ABORT (m);
 
-  size =
-    GNUNET_meta_data_get_serialized_size (m, GNUNET_SERIALIZE_FULL);
+  size = GNUNET_meta_data_get_serialized_size (m, GNUNET_SERIALIZE_FULL);
   val = GNUNET_malloc (size);
   if (size != GNUNET_meta_data_serialize (NULL,
-                                               m, val, size,
-                                               GNUNET_SERIALIZE_FULL))
+                                          m, val, size,
+                                          GNUNET_SERIALIZE_FULL))
     {
       GNUNET_free (val);
       ABORT (m);
@@ -101,8 +95,7 @@ testMeta (int i)
     {
       GNUNET_snprintf (val, 256, "%s.%d",
                        "A teststring that should compress well.", j);
-      if (GNUNET_OK !=
-          GNUNET_meta_data_delete (m, EXTRACTOR_UNKNOWN, val))
+      if (GNUNET_OK != GNUNET_meta_data_delete (m, EXTRACTOR_UNKNOWN, val))
         {
           GNUNET_free (val);
           ABORT (m);
@@ -131,18 +124,15 @@ testMetaMore (int i)
     {
       GNUNET_snprintf (txt, 128, "%u -- %u\n", i, q);
       GNUNET_meta_data_insert (meta,
-                                    q %
-                                    EXTRACTOR_getHighestKeywordTypeNumber (),
-                                    txt);
+                               q %
+                               EXTRACTOR_getHighestKeywordTypeNumber (), txt);
     }
-  size =
-    GNUNET_meta_data_get_serialized_size (meta,
-                                               GNUNET_SERIALIZE_FULL);
+  size = GNUNET_meta_data_get_serialized_size (meta, GNUNET_SERIALIZE_FULL);
   data = GNUNET_malloc (size * 4);
   if (size != GNUNET_meta_data_serialize (NULL,
-                                               meta,
-                                               data, size * 4,
-                                               GNUNET_SERIALIZE_FULL))
+                                          meta,
+                                          data, size * 4,
+                                          GNUNET_SERIALIZE_FULL))
     {
       GNUNET_free (data);
       ABORT (meta);
@@ -160,18 +150,16 @@ testMetaLink ()
   unsigned int size;
 
   m = GNUNET_meta_data_create ();
-  if (GNUNET_OK !=
-      GNUNET_meta_data_insert (m, EXTRACTOR_UNKNOWN, "link"))
+  if (GNUNET_OK != GNUNET_meta_data_insert (m, EXTRACTOR_UNKNOWN, "link"))
     ABORT (m);
   if (GNUNET_OK !=
       GNUNET_meta_data_insert (m, EXTRACTOR_FILENAME, "lib-link.m4"))
     ABORT (m);
-  size =
-    GNUNET_meta_data_get_serialized_size (m, GNUNET_SERIALIZE_FULL);
+  size = GNUNET_meta_data_get_serialized_size (m, GNUNET_SERIALIZE_FULL);
   val = GNUNET_malloc (size);
   if (size != GNUNET_meta_data_serialize (NULL,
-                                               m, val, size,
-                                               GNUNET_SERIALIZE_FULL))
+                                          m, val, size,
+                                          GNUNET_SERIALIZE_FULL))
     {
       GNUNET_free (val);
       ABORT (m);

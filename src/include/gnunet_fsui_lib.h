@@ -974,7 +974,7 @@ int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl);        /* searc
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload);    /* download.c */
+struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload); /* download.c */
 
 /**
  * Abort a download.  If the dl is for a recursive download, all

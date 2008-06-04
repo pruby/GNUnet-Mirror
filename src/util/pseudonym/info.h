@@ -31,9 +31,9 @@
 
 int
 GNUNET_pseudonym_internal_read_info_ (struct GNUNET_GE_Context *ectx,
-				      struct GNUNET_GC_Configuration *cfg,
-				      const GNUNET_HashCode * nsid,
-				      struct GNUNET_MetaData **meta,
-				      int *ranking, char **ns_name);
+                                      struct GNUNET_GC_Configuration *cfg,
+                                      const GNUNET_HashCode * nsid,
+                                      struct GNUNET_MetaData **meta,
+                                      int *ranking, char **ns_name);
 
 #endif
