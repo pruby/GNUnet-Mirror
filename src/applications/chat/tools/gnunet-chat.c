@@ -62,7 +62,7 @@ struct ChatCommand {
   const char * command;  
   int (*Action)(const char * arguments,
 		const void * xtra);
-  const void * xtra;
+  const char * helptext;
 };
 
 static void free_user_list() 
@@ -398,18 +398,31 @@ static int do_quit(const char * args,
   return GNUNET_SYSERR;
 }
 
+static int do_help(const char * args,
+		   const void * xtra);
+
 /**
  * List of supported IRC commands. The order matters!
  */
 static struct ChatCommand commands[] = {
-  { "/join ",   &do_join,     NULL },
-  { "/nick ",   &do_nick,     NULL },
-  { "/notice ", &do_pm,       NULL },
-  { "/msg ",    &do_pm,       NULL },
-  { "/query ",  &do_pm,       NULL },
-  { "/quit",    &do_quit,     NULL },
-  { "/leave",   &do_quit,     NULL },
-  { "/names",   &do_names,    NULL },
+  { "/join ",   &do_join,     
+    gettext_noop("Use `/join #roomname' to join a chat room. Joining a room will cause you to leave the current room") },
+  { "/nick ",   &do_nick,     
+    gettext_noop("Use `/nick nickname' to change your nickname.  This will cause you to leave the current room and immediately rejoin it with the new name.") },
+  { "/msg ",    &do_pm,       
+    gettext_noop("Use `/msg nickname message' to send a private message to the specified user") },
+  { "/notice ", &do_pm,       
+    gettext_noop("The `/notice' command is an alias for `/msg'") },
+  { "/query ",  &do_pm,       
+    gettext_noop("The `/query' command is an alias for `/msg'") },
+  { "/quit",    &do_quit,     
+    gettext_noop("Use `/quit' to terminate gnunet-chat") },
+  { "/leave",   &do_quit,     
+    gettext_noop("The `/leave' command is an alias for `/quit'") },
+  { "/names",   &do_names,    
+    gettext_noop("Use `/names' to list all of the current members in the chat room") },
+  { "/help",    &do_help,     
+    gettext_noop("Use `/help command' to get help for a specific command") },
   /* Add standard commands: 
      /help (print help texts),
      /whois (print metadata), 
@@ -423,6 +436,39 @@ static struct ChatCommand commands[] = {
   { "",         &do_transmit, NULL },
   { NULL,       NULL,         NULL },
 };
+
+static int do_help(const char * args,
+		   const void * xtra) {
+  int i;
+  i = 0;
+  while (commands[i].Action != &do_help)
+    {
+      if (0 == strcasecmp(xtra,
+			  commands[i].command))
+	{
+	  fprintf(stdout,
+		  "%s\n",
+		  gettext(commands[i].helptext));
+	  return GNUNET_OK;
+	}
+      i++;
+    }
+  i = 0;
+  fprintf(stdout, "Available commands:");
+  while (commands[i].Action != &do_help)
+    {
+      fprintf(stdout,
+	      " %s",
+	      gettext(commands[i].command));
+      i++;
+    }
+  fprintf(stdout, "\n");
+	  fprintf(stdout,
+		  "%s\n",
+		  gettext(commands[i].helptext));
+  return GNUNET_OK;
+}
+
 
 /**
  * All gnunet-chat command line options
@@ -520,7 +566,7 @@ main (int argc, char **argv)
 	i++;
       if (GNUNET_OK != 
 	  commands[i].Action(&message[strlen(commands[i].command)],
-			     commands[i].xtra))
+			     NULL))
 	break;
     }
   GNUNET_CHAT_leave_room (room); 
