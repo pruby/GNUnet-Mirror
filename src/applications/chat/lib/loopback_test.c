@@ -34,7 +34,6 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_chat_lib.h"
-#include "gnunet_ecrs_lib.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
@@ -48,7 +47,7 @@ static unsigned int error;
 
 struct Wanted
 {
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
   GNUNET_HashCode *sender;
 
@@ -68,7 +67,7 @@ static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
                   const GNUNET_HashCode * sender,
-                  const struct GNUNET_ECRS_MetaData *member_info,
+                  const struct GNUNET_MetaData *member_info,
                   const char *message, GNUNET_CHAT_MSG_OPTIONS options)
 {
   struct Wanted *want = cls;
@@ -77,7 +76,7 @@ receive_callback (void *cls,
   fprintf (stderr, "%s - told that %s says %s\n",
            want->me,
            member_info == NULL ? NULL
-           : GNUNET_ECRS_meta_data_get_by_type (member_info, EXTRACTOR_TITLE),
+           : GNUNET_meta_data_get_by_type (member_info, EXTRACTOR_TITLE),
            message);
 #endif
   GNUNET_semaphore_down (want->pre, GNUNET_YES);
@@ -86,7 +85,7 @@ receive_callback (void *cls,
          ((sender != NULL) &&
           (want->sender != NULL) &&
           (0 == memcmp (sender, want->sender, sizeof (GNUNET_HashCode))))) &&
-        (GNUNET_ECRS_meta_data_test_equal (member_info,
+        (GNUNET_meta_data_test_equal (member_info,
                                            want->meta)) &&
         (options == want->opt)))
     {
@@ -99,7 +98,7 @@ receive_callback (void *cls,
 
 static int
 member_list_callback (void *cls,
-                      const struct GNUNET_ECRS_MetaData *member_info,
+                      const struct GNUNET_MetaData *member_info,
                       const GNUNET_RSA_PublicKey * member_id,
                       GNUNET_CHAT_MSG_OPTIONS options)
 {
@@ -110,7 +109,7 @@ member_list_callback (void *cls,
   fprintf (stderr, "%s - told that %s joins\n",
            want->me,
            member_info == NULL ? NULL
-           : GNUNET_ECRS_meta_data_get_by_type (member_info,
+           : GNUNET_meta_data_get_by_type (member_info,
                                                 EXTRACTOR_TITLE));
 #endif
   GNUNET_semaphore_down (want->pre, GNUNET_YES);
@@ -120,7 +119,7 @@ member_list_callback (void *cls,
           (want->meta == NULL)) ||
          ((member_info != NULL) &&
           (want->meta != NULL) &&
-          (GNUNET_ECRS_meta_data_test_equal (member_info,
+          (GNUNET_meta_data_test_equal (member_info,
                                              want->meta)))) &&
         (options == want->opt)))
     {
@@ -160,8 +159,8 @@ main (int argc, char **argv)
   struct GNUNET_CHAT_Room *r1;
   struct GNUNET_CHAT_Room *r2;
   unsigned int seq;
-  struct GNUNET_ECRS_MetaData *meta1;
-  struct GNUNET_ECRS_MetaData *meta2;
+  struct GNUNET_MetaData *meta1;
+  struct GNUNET_MetaData *meta2;
   GNUNET_HashCode alice;
   GNUNET_HashCode bob;
   struct Wanted alice_wanted;
@@ -191,10 +190,10 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-  meta1 = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta1, EXTRACTOR_TITLE, "Alice");
-  meta2 = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta2, EXTRACTOR_TITLE, "Bob");
+  meta1 = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta1, EXTRACTOR_TITLE, "Alice");
+  meta2 = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta2, EXTRACTOR_TITLE, "Bob");
 
   /* alice joining */
 #if DEBUG

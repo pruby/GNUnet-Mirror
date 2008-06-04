@@ -163,7 +163,7 @@ main (int argc, char *argv[])
   };
   int prog;
   char *buf;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
 
@@ -193,7 +193,7 @@ main (int argc, char *argv[])
     buf[i] = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 256);
   GNUNET_disk_file_write (ectx, fn, buf, FILESIZE, "600");
   GNUNET_free (buf);
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
                                              (const char **) keywords);
@@ -208,7 +208,7 @@ main (int argc, char *argv[])
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
   kuri = NULL;
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   prog = 0;
   suspendRestart = 4;
   while (lastEvent != GNUNET_FSUI_upload_completed)

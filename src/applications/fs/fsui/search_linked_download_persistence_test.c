@@ -329,7 +329,7 @@ main (int argc, char *argv[])
   char keyword[40];
   int prog;
   char *buf;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UnindexList *unindex = NULL;
@@ -367,11 +367,11 @@ main (int argc, char *argv[])
       GNUNET_free (buf);
       GNUNET_free (fn);
     }
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
                                              (const char **) keywords);
-  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_MIMETYPE,
+  GNUNET_meta_data_insert (meta, EXTRACTOR_MIMETYPE,
                                 GNUNET_DIRECTORY_MIME);
   upload =
     GNUNET_FSUI_upload_start (ctx, UPLOAD_PREFIX,
@@ -396,7 +396,7 @@ main (int argc, char *argv[])
                                          meta,
                                          UPLOAD_PREFIX "-download", search,
                                          NULL);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   prog = 0;
   suspendRestart = 10;
   while (prog < 1000)

@@ -236,7 +236,7 @@ test_run (const char *filename, const char *dirName, void *cls)
 struct AddMetadataClosure
 {
   const char *filename;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 };
 
 
@@ -273,7 +273,7 @@ add_meta_data (void *cls,
                                             section, option, NULL, &value);
   if (value != NULL)
     {
-      GNUNET_ECRS_meta_data_insert (amc->meta, type, value);
+      GNUNET_meta_data_insert (amc->meta, type, value);
       GNUNET_free (value);
     }
   return 0;
@@ -314,18 +314,18 @@ probe_directory (const char *filename, const char *dirName, void *unused)
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  amc.meta = GNUNET_ECRS_meta_data_create ();
+  amc.meta = GNUNET_meta_data_create ();
   amc.filename = filename;
   /* attaching a listener will prompt iteration
      over all config values! */
   GNUNET_GC_attach_change_listener (meta_cfg, &add_meta_data, &amc);
   GNUNET_GC_detach_change_listener (meta_cfg, &add_meta_data, &amc);
-  keys = GNUNET_ECRS_meta_data_get_by_type (amc.meta, EXTRACTOR_KEYWORDS);
+  keys = GNUNET_meta_data_get_by_type (amc.meta, EXTRACTOR_KEYWORDS);
   if (keys != NULL)
     kuri = GNUNET_ECRS_keyword_string_to_uri (NULL, keys);
   else
     kuri = NULL;
-  GNUNET_ECRS_meta_data_delete (amc.meta, EXTRACTOR_KEYWORDS, keys);
+  GNUNET_meta_data_delete (amc.meta, EXTRACTOR_KEYWORDS, keys);
   GNUNET_free_non_null (keys);
   ul = GNUNET_FSUI_upload_start (ctx,
                                  fn,
@@ -337,7 +337,7 @@ probe_directory (const char *filename, const char *dirName, void *unused)
                                  amc.meta, gloKeywords, kuri);
   if (kuri != NULL)
     GNUNET_ECRS_uri_destroy (kuri);
-  GNUNET_ECRS_meta_data_destroy (amc.meta);
+  GNUNET_meta_data_destroy (amc.meta);
   GNUNET_free (fn);
   return GNUNET_SYSERR;
 }

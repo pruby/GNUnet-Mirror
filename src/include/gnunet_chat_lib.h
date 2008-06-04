@@ -109,7 +109,7 @@ struct GNUNET_CHAT_Room;
 typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
                                             struct GNUNET_CHAT_Room * room,
                                             const GNUNET_HashCode * sender,
-                                            const struct GNUNET_ECRS_MetaData
+                                            const struct GNUNET_MetaData
                                             * member_info,
                                             const char *message,
                                             GNUNET_CHAT_MSG_OPTIONS options);
@@ -121,7 +121,7 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  */
 typedef int (*GNUNET_CHAT_MemberListCallback) (void *cls,
                                                const struct
-                                               GNUNET_ECRS_MetaData *
+                                               GNUNET_MetaData *
                                                member_info,
                                                const GNUNET_RSA_PublicKey *
                                                member_id,
@@ -174,7 +174,7 @@ struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
                                                 *ectx,
                                                 struct GNUNET_GC_Configuration
                                                 *cfg, const char *nick_name,
-                                                struct GNUNET_ECRS_MetaData
+                                                struct GNUNET_MetaData
                                                 *member_info,
                                                 const char *room_name,
                                                 GNUNET_CHAT_MSG_OPTIONS

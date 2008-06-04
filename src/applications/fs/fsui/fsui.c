@@ -613,7 +613,7 @@ freeDownloadList (GNUNET_FSUI_DownloadList * list)
     {
       freeDownloadList (list->child);
       GNUNET_ECRS_uri_destroy (list->fi.uri);
-      GNUNET_ECRS_meta_data_destroy (list->fi.meta);
+      GNUNET_meta_data_destroy (list->fi.meta);
       GNUNET_free (list->filename);
       for (i = 0; i < list->completedDownloadsCount; i++)
         GNUNET_ECRS_uri_destroy (list->completedDownloads[i]);
@@ -641,7 +641,7 @@ freeUploadList (struct GNUNET_FSUI_Context *ctx,
       next = list->next;
       GNUNET_free (list->filename);
       if (list->meta != NULL)
-        GNUNET_ECRS_meta_data_destroy (list->meta);
+        GNUNET_meta_data_destroy (list->meta);
       if (list->keywords != NULL)
         GNUNET_ECRS_uri_destroy (list->keywords);
       if (list->uri != NULL)
@@ -818,7 +818,7 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
         {
           res = spos->resultsReceived;
           spos->resultsReceived = res->next;
-          GNUNET_ECRS_meta_data_destroy (res->fi.meta);
+          GNUNET_meta_data_destroy (res->fi.meta);
           GNUNET_ECRS_uri_destroy (res->fi.uri);
           GNUNET_free (res->matchingSearches);
           GNUNET_free (res);

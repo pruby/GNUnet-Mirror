@@ -41,8 +41,8 @@ main (int argc, char *argv[])
 #endif
   int ok;
   struct GNUNET_ClientServerConnection *sock;
-  struct GNUNET_ECRS_MetaData *meta;
-  struct GNUNET_ECRS_MetaData *have;
+  struct GNUNET_MetaData *meta;
+  struct GNUNET_MetaData *have;
   GNUNET_ECRS_FileInfo fi;
 
   GNUNET_disable_entropy_gathering ();
@@ -63,8 +63,8 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 #endif
   ok = GNUNET_YES;
-  meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_MIMETYPE, "test/foo");
+  meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta, EXTRACTOR_MIMETYPE, "test/foo");
   sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
   GNUNET_CO_init (NULL, cfg);
@@ -76,8 +76,8 @@ main (int argc, char *argv[])
                                                   meta));
   have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
-  CHECK (GNUNET_ECRS_meta_data_test_equal (have, meta));
-  GNUNET_ECRS_meta_data_destroy (have);
+  CHECK (GNUNET_meta_data_test_equal (have, meta));
+  GNUNET_meta_data_destroy (have);
   fi.meta = meta;
   fi.uri =
     GNUNET_ECRS_string_to_uri (NULL,
@@ -88,8 +88,8 @@ main (int argc, char *argv[])
   GNUNET_CO_init (NULL, cfg);
   have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
-  CHECK (GNUNET_ECRS_meta_data_test_equal (have, meta));
-  GNUNET_ECRS_meta_data_destroy (have);
+  CHECK (GNUNET_meta_data_test_equal (have, meta));
+  GNUNET_meta_data_destroy (have);
   GNUNET_CO_collection_publish_now ();
   GNUNET_CO_collection_stop ();
   CHECK (NULL == GNUNET_CO_collection_get_name ());
@@ -102,7 +102,7 @@ FAILURE:
       GNUNET_client_connection_destroy (sock);
     }
   if (meta != NULL)
-    GNUNET_ECRS_meta_data_destroy (meta);
+    GNUNET_meta_data_destroy (meta);
 #if START_DAEMON
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif

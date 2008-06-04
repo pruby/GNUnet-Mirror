@@ -34,7 +34,6 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_pseudonym_lib.h"
 #include "fsui.h"
 
 #define DEBUG_SEARCH GNUNET_NO
@@ -98,7 +97,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
     {
       GNUNET_NS_namespace_set_root (ectx, pos->ctx->cfg, fi->uri);
       GNUNET_ECRS_uri_get_namespace_from_sks (fi->uri, &nsid);
-      GNUNET_PSEUDO_add (ectx, pos->ctx->cfg, &nsid, fi->meta);
+      GNUNET_pseudonym_add (ectx, pos->ctx->cfg, &nsid, fi->meta);
       return GNUNET_OK;
     }
   GNUNET_mutex_lock (pos->lock);
@@ -180,7 +179,7 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   srl = GNUNET_malloc (sizeof (struct SearchResultList));
   memset (srl, 0, sizeof (struct SearchResultList));
   GNUNET_array_append (srl->matchingSearches, srl->matchingSearchCount, rec);
-  srl->fi.meta = GNUNET_ECRS_meta_data_duplicate (fi->meta);
+  srl->fi.meta = GNUNET_meta_data_duplicate (fi->meta);
   srl->fi.uri = GNUNET_ECRS_uri_duplicate (fi->uri);
   srl->mandatoryMatchesRemaining = pos->mandatory_keyword_count;
   if (rec->is_required)
@@ -560,7 +559,7 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
       sl->resultsReceived = srl->next;
       GNUNET_array_grow (srl->matchingSearches, srl->matchingSearchCount, 0);
       GNUNET_ECRS_uri_destroy (srl->fi.uri);
-      GNUNET_ECRS_meta_data_destroy (srl->fi.meta);
+      GNUNET_meta_data_destroy (srl->fi.meta);
       if (srl->test_download != NULL)
         {
           GNUNET_ECRS_file_download_partial_stop (srl->test_download);

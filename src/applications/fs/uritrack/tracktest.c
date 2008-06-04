@@ -45,7 +45,7 @@ notified (const GNUNET_ECRS_FileInfo * fi,
 {
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
-      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+      (GNUNET_meta_data_test_equal (fi->meta,
                                          fi1.meta))
       && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
     {
@@ -54,7 +54,7 @@ notified (const GNUNET_ECRS_FileInfo * fi,
     }
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
-      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+      (GNUNET_meta_data_test_equal (fi->meta,
                                          fi2.meta))
       && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
     {
@@ -70,25 +70,25 @@ processor (const GNUNET_ECRS_FileInfo * fi,
 {
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
-      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+      (GNUNET_meta_data_test_equal (fi->meta,
                                          fi1.meta))
       && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
     {
       GNUNET_ECRS_uri_destroy (fi1.uri);
       fi1.uri = NULL;
-      GNUNET_ECRS_meta_data_destroy (fi1.meta);
+      GNUNET_meta_data_destroy (fi1.meta);
       fi1.meta = NULL;
       return GNUNET_OK;
     }
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
-      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+      (GNUNET_meta_data_test_equal (fi->meta,
                                          fi2.meta))
       && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
     {
       GNUNET_ECRS_uri_destroy (fi2.uri);
       fi2.uri = NULL;
-      GNUNET_ECRS_meta_data_destroy (fi2.meta);
+      GNUNET_meta_data_destroy (fi2.meta);
       fi2.meta = NULL;
       return GNUNET_OK;
     }
@@ -99,11 +99,11 @@ static int
 testTracking ()
 {
   fi1.uri = GNUNET_ECRS_keyword_string_to_uri (NULL, "foo");
-  fi1.meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
+  fi1.meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
   fi2.uri = GNUNET_ECRS_keyword_string_to_uri (NULL, "foot");
-  fi2.meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
+  fi2.meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
 
   GNUNET_URITRACK_clear (NULL, cfg);
   GNUNET_URITRACK_register_track_callback (NULL, cfg, &notified, NULL);

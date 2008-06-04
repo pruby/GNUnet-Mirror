@@ -73,9 +73,9 @@ testNamespace ()
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ECRS_URI *advURI;
   struct GNUNET_ECRS_URI *rootURI;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   adv = GNUNET_ECRS_keyword_string_to_uri (NULL, "testNamespace");
   GNUNET_hash ("root", 4, &root);
   rootURI =
@@ -105,7 +105,7 @@ testNamespace ()
   fprintf (stderr, "Completed namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, &pid));
   CHECK (GNUNET_SYSERR == GNUNET_ECRS_namespace_delete (NULL, cfg, &pid));
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   GNUNET_ECRS_uri_destroy (rootURI);
   GNUNET_ECRS_uri_destroy (advURI);
   CHECK (match == 1);

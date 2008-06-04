@@ -104,22 +104,6 @@ typedef struct GNUNET_ECRS_URI
   } data;
 } URI;
 
-typedef struct
-{
-  EXTRACTOR_KeywordType type;
-  char *data;
-} Item;
-
-/**
- * Meta data to associate with a file, directory or namespace.
- */
-typedef struct GNUNET_ECRS_MetaData
-{
-  unsigned int itemCount;
-  Item *items;
-} MetaData;
-
-
 void GNUNET_ECRS_encryptInPlace (const GNUNET_HashCode * hc,
                                  void *data, unsigned int len);
 

@@ -57,9 +57,9 @@ itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
 }
 
 static void
-printMeta (const struct GNUNET_ECRS_MetaData *meta)
+printMeta (const struct GNUNET_MetaData *meta)
 {
-  GNUNET_ECRS_meta_data_get_contents (meta, &itemPrinter, NULL);
+  GNUNET_meta_data_get_contents (meta, &itemPrinter, NULL);
 }
 
 /**
@@ -83,12 +83,12 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       fis[fiCount - 1].uri =
         GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
       fis[fiCount - 1].meta =
-        GNUNET_ECRS_meta_data_duplicate (event->data.SearchResult.fi.meta);
+        GNUNET_meta_data_duplicate (event->data.SearchResult.fi.meta);
 
       uri = GNUNET_ECRS_uri_to_string (event->data.SearchResult.fi.uri);
       printf ("%s:\n", uri);
       filename =
-        GNUNET_ECRS_meta_data_get_by_type (event->data.SearchResult.fi.meta,
+        GNUNET_meta_data_get_by_type (event->data.SearchResult.fi.meta,
                                            EXTRACTOR_FILENAME);
       if (filename != NULL)
         {
@@ -199,9 +199,9 @@ main (int argc, char *const *argv)
       char *outfile;
       unsigned long long n;
       char *data;
-      struct GNUNET_ECRS_MetaData *meta;
+      struct GNUNET_MetaData *meta;
 
-      meta = GNUNET_ECRS_meta_data_create ();
+      meta = GNUNET_meta_data_create ();
       /* ?: anything here to put into meta? */
       if (GNUNET_OK ==
           GNUNET_ECRS_directory_create (ectx, &data, &n, fiCount, fis, meta))
@@ -216,7 +216,7 @@ main (int argc, char *const *argv)
   for (i = 0; i < fiCount; i++)
     {
       GNUNET_ECRS_uri_destroy (fis[i].uri);
-      GNUNET_ECRS_meta_data_destroy (fis[i].meta);
+      GNUNET_meta_data_destroy (fis[i].meta);
     }
   GNUNET_array_grow (fis, fiCount, 0);
 quit:

@@ -266,7 +266,7 @@ main (int argc, char *argv[])
     "down_bar",
   };
   int prog;
-  struct GNUNET_ECRS_MetaData *meta = NULL;
+  struct GNUNET_MetaData *meta = NULL;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UploadList *upload = NULL;
@@ -294,7 +294,7 @@ main (int argc, char *argv[])
                            &eventCallback, NULL);
   CHECK (ctx != NULL);
   fn = makeHierarchy (42, DIRECTORY_TREE_SPEC);
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
                                              (const char **) keywords);
@@ -342,7 +342,7 @@ main (int argc, char *argv[])
     }
 FAILURE:
   if (meta != NULL)
-    GNUNET_ECRS_meta_data_destroy (meta);
+    GNUNET_meta_data_destroy (meta);
   if (ctx != NULL)
     {
       if (download != NULL)

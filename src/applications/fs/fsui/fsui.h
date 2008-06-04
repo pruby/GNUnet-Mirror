@@ -429,7 +429,7 @@ typedef struct GNUNET_FSUI_UploadList
   /**
    * Metadata for this file.
    */
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
   /**
    * Keywords to be used for this upload.

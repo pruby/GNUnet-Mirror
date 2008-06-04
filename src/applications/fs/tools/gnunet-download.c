@@ -174,11 +174,11 @@ directoryIterator (const GNUNET_ECRS_FileInfo * fi,
                    const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   struct GNUNET_FSUI_Context *ctx = cls;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   char *fn;
   char *f;
 
-  f = GNUNET_ECRS_meta_data_get_first_by_types (fi->meta,
+  f = GNUNET_meta_data_get_first_by_types (fi->meta,
                                                 EXTRACTOR_FILENAME,
                                                 EXTRACTOR_TITLE,
                                                 EXTRACTOR_ARTIST,
@@ -196,11 +196,11 @@ directoryIterator (const GNUNET_ECRS_FileInfo * fi,
   if (verbose > 1)
     printf (_("Starting download `%s'\n"), f);
   GNUNET_free (f);
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   GNUNET_FSUI_download_start (ctx,
                               anonymity, do_recursive, fi->uri, meta, fn,
                               NULL, NULL);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   GNUNET_free (fn);
   return GNUNET_OK;
 }
@@ -220,7 +220,7 @@ main (int argc, char *const *argv)
   int try_rename;
   struct GNUNET_FSUI_Context *ctx;
   struct GNUNET_ECRS_URI *uri;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   int i;
 
   i = GNUNET_init (argc,
@@ -346,13 +346,13 @@ main (int argc, char *const *argv)
           GNUNET_free (efn);
           goto quit;
         }
-      meta = GNUNET_ECRS_meta_data_create ();
+      meta = GNUNET_meta_data_create ();
       count = GNUNET_ECRS_directory_list_contents (ectx,
                                                    data,
                                                    sbuf.st_size,
                                                    &meta, &directoryIterator,
                                                    ctx);
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       MUNMAP (data, sbuf.st_size);
       CLOSE (fd);
       GNUNET_free (efn);
@@ -367,12 +367,12 @@ main (int argc, char *const *argv)
     }
   else
     {
-      meta = GNUNET_ECRS_meta_data_create ();
+      meta = GNUNET_meta_data_create ();
       dl = GNUNET_FSUI_download_start (ctx,
                                        anonymity,
                                        do_recursive, uri, meta, filename,
                                        NULL, NULL);
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       if (dl == NULL)
         {
           GNUNET_FSUI_stop (ctx);

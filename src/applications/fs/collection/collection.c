@@ -102,7 +102,7 @@ typedef struct
   /**
    * Metadata describing the collection
    */
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
   /**
    * Files in the collection.
@@ -232,7 +232,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
       GNUNET_GE_BREAK (ectx, 0);
       mlen = rsize;
     }
-  collectionData->meta = GNUNET_ECRS_meta_data_deserialize (ectx, pos, mlen);
+  collectionData->meta = GNUNET_meta_data_deserialize (ectx, pos, mlen);
   rsize -= mlen;
   pos += mlen;
   GNUNET_GE_BREAK (ectx, collectionData->meta != NULL);
@@ -267,7 +267,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
       GNUNET_GE_ASSERT (ectx, collectionData->files[i].uri != NULL);
       GNUNET_free (tmp);
       collectionData->files[i].meta
-        = GNUNET_ECRS_meta_data_deserialize (ectx, pos, mlen);
+        = GNUNET_meta_data_deserialize (ectx, pos, mlen);
       GNUNET_GE_ASSERT (ectx, collectionData->files[i].meta != NULL);
       pos += mlen;
       rsize -= mlen;
@@ -285,7 +285,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
       if (collectionData->files[i].uri != NULL)
         GNUNET_ECRS_uri_destroy (collectionData->files[i].uri);
       if (collectionData->files[i].meta != NULL)
-        GNUNET_ECRS_meta_data_destroy (collectionData->files[i].meta);
+        GNUNET_meta_data_destroy (collectionData->files[i].meta);
       collectionData->files[i]
         = collectionData->files[collectionData->file_count - 1];
       GNUNET_array_grow (collectionData->files,
@@ -318,10 +318,10 @@ writeCO ()
 
   /* write collection data */
   mlen =
-    GNUNET_ECRS_meta_data_get_serialized_size (collectionData->meta,
+    GNUNET_meta_data_get_serialized_size (collectionData->meta,
                                                GNUNET_NO);
   buf = GNUNET_malloc (mlen);
-  if (mlen != GNUNET_ECRS_meta_data_serialize (ectx,
+  if (mlen != GNUNET_meta_data_serialize (ectx,
                                                collectionData->meta, buf,
                                                mlen, GNUNET_NO))
     {
@@ -353,10 +353,10 @@ writeCO ()
   for (i = 0; i < collectionData->file_count; i++)
     {
       mlen =
-        GNUNET_ECRS_meta_data_get_serialized_size (collectionData->files[i].
+        GNUNET_meta_data_get_serialized_size (collectionData->files[i].
                                                    meta, GNUNET_NO);
       buf = GNUNET_malloc (mlen);
-      if (mlen != GNUNET_ECRS_meta_data_serialize (ectx,
+      if (mlen != GNUNET_meta_data_serialize (ectx,
                                                    collectionData->files[i].
                                                    meta, buf, mlen,
                                                    GNUNET_NO))
@@ -406,7 +406,7 @@ int
 GNUNET_CO_collection_start (unsigned int anonymityLevel,
                             unsigned int prio,
                             GNUNET_Int32Time updateInterval,
-                            const struct GNUNET_ECRS_MetaData *meta)
+                            const struct GNUNET_MetaData *meta)
 {
   struct GNUNET_ECRS_URI *advertisement;
   struct GNUNET_ECRS_URI *rootURI;
@@ -441,7 +441,7 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
   collectionData->data.updateInterval = htonl (updateInterval);
   collectionData->data.anonymityLevel = htonl (anonymityLevel);
   collectionData->data.priority = htonl (prio);
-  collectionData->meta = GNUNET_ECRS_meta_data_duplicate (meta);
+  collectionData->meta = GNUNET_meta_data_duplicate (meta);
   GNUNET_ECRS_uri_destroy (advertisement);
   GNUNET_ECRS_uri_destroy (rootURI);
   GNUNET_mutex_unlock (lock);
@@ -465,10 +465,10 @@ GNUNET_CO_collection_stop ()
       return GNUNET_SYSERR;
     }
   GNUNET_ECRS_namespace_delete (ectx, cfg, &collectionData->data.pid);
-  GNUNET_ECRS_meta_data_destroy (collectionData->meta);
+  GNUNET_meta_data_destroy (collectionData->meta);
   for (i = 0; i < collectionData->file_count; i++)
     {
-      GNUNET_ECRS_meta_data_destroy (collectionData->files[i].meta);
+      GNUNET_meta_data_destroy (collectionData->files[i].meta);
       GNUNET_ECRS_uri_destroy (collectionData->files[i].uri);
     }
   GNUNET_array_grow (collectionData->files, collectionData->file_count, 0);
@@ -483,10 +483,10 @@ GNUNET_CO_collection_stop ()
  *
  * @return NULL if there is no collection, otherwise its metadata
  */
-struct GNUNET_ECRS_MetaData *
+struct GNUNET_MetaData *
 GNUNET_CO_collection_get_name ()
 {
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
   GNUNET_mutex_lock (lock);
   if (collectionData == NULL)
@@ -494,7 +494,7 @@ GNUNET_CO_collection_get_name ()
       GNUNET_mutex_unlock (lock);
       return NULL;
     }
-  meta = GNUNET_ECRS_meta_data_duplicate (collectionData->meta);
+  meta = GNUNET_meta_data_duplicate (collectionData->meta);
   GNUNET_mutex_unlock (lock);
   return meta;
 }
@@ -679,7 +679,7 @@ GNUNET_CO_collection_add_item (const GNUNET_ECRS_FileInfo * fi)
         }
     }
   fc.uri = GNUNET_ECRS_uri_duplicate (fi->uri);
-  fc.meta = GNUNET_ECRS_meta_data_duplicate (fi->meta);
+  fc.meta = GNUNET_meta_data_duplicate (fi->meta);
   GNUNET_array_append (collectionData->files, collectionData->file_count, fc);
   collectionData->changed = GNUNET_YES;
   if (ntohl (collectionData->data.updateInterval) ==

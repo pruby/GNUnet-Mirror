@@ -892,7 +892,6 @@ src/applications/fs/fsui/Makefile
 src/applications/fs/lib/Makefile
 src/applications/fs/gap/Makefile
 src/applications/fs/namespace/Makefile
-src/applications/fs/pseudonyms/Makefile
 src/applications/fs/uritrack/Makefile
 src/applications/fs/tools/Makefile
 src/applications/getoption/Makefile
@@ -937,6 +936,7 @@ src/util/loggers/Makefile
 src/util/network/Makefile
 src/util/network_client/Makefile
 src/util/os/Makefile
+src/util/pseudonym/Makefile
 src/util/string/Makefile
 src/util/threads/Makefile
 src/util/win/Makefile

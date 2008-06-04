@@ -136,7 +136,7 @@ main (int argc, char *argv[])
   };
   char keyword[40];
   int prog;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   struct GNUNET_ECRS_URI *kuri;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UploadList *upload;
@@ -170,7 +170,7 @@ main (int argc, char *argv[])
   GNUNET_disk_file_write (NULL,
                           fn, "foo bar test!", strlen ("foo bar test!"),
                           "600");
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (NULL, 2,
                                              (const char **) keywords);
@@ -187,7 +187,7 @@ main (int argc, char *argv[])
   GNUNET_free (fn);
   fn = NULL;
   GNUNET_ECRS_uri_destroy (kuri);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   prog = 0;
   while (lastEvent != GNUNET_FSUI_upload_completed)
     {

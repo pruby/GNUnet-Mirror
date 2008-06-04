@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/namespace/common.c
+ * @file util/pseudonym/common.c
  * @brief helper functions
  * @author Christian Grothoff
  */
@@ -34,10 +34,10 @@
  * pseudonym identifier and directory prefix.
  */
 char *
-GNUNET_PSEUDO_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
-                                           struct GNUNET_GC_Configuration
-                                           *cfg, const char *prefix,
-                                           const GNUNET_HashCode * psid)
+GNUNET_pseudonym_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
+					      struct GNUNET_GC_Configuration
+					      *cfg, const char *prefix,
+					      const GNUNET_HashCode * psid)
 {
   char *tmp;
   char *ret;

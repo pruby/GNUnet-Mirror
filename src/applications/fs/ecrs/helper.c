@@ -26,6 +26,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
 
@@ -187,5 +188,240 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
     }
   return uri;
 }
+
+static char *mimeMap[][2] = {
+  {"application/bz2", ".bz2"},
+  {"application/gnunet-directory", ".gnd"},
+  {"application/java", ".class"},
+  {"application/msword", ".doc"},
+  {"application/ogg", ".ogg"},
+  {"application/pdf", ".pdf"},
+  {"application/pgp-keys", ".key"},
+  {"application/pgp-signature", ".pgp"},
+  {"application/postscript", ".ps"},
+  {"application/rar", ".rar"},
+  {"application/rtf", ".rtf"},
+  {"application/xml", ".xml"},
+  {"application/x-debian-package", ".deb"},
+  {"application/x-dvi", ".dvi"},
+  {"applixation/x-flac", ".flac"},
+  {"applixation/x-gzip", ".gz"},
+  {"application/x-java-archive", ".jar"},
+  {"application/x-java-vm", ".class"},
+  {"application/x-python-code", ".pyc"},
+  {"application/x-redhat-package-manager", ".rpm"},
+  {"application/x-rpm", ".rpm"},
+  {"application/x-tar", ".tar"},
+  {"application/x-tex-pk", ".pk"},
+  {"application/x-texinfo", ".texinfo"},
+  {"application/x-xcf", ".xcf"},
+  {"application/x-xfig", ".xfig"},
+  {"application/zip", ".zip"},
+
+  {"audio/midi", ".midi"},
+  {"audio/mpeg", ".mp3"},
+  {"audio/real", ".rm"},
+  {"audio/x-wav", ".wav"},
+
+  {"image/gif", ".gif"},
+  {"image/jpeg", ".jpg"},
+  {"image/pcx", ".pcx"},
+  {"image/png", ".png"},
+  {"image/tiff", ".tiff"},
+  {"image/x-ms-bmp", ".bmp"},
+  {"image/x-xpixmap", ".xpm"},
+
+  {"text/css", ".css"},
+  {"text/html", ".html"},
+  {"text/plain", ".txt"},
+  {"text/rtf", ".rtf"},
+  {"text/x-c++hdr", ".h++"},
+  {"text/x-c++src", ".c++"},
+  {"text/x-chdr", ".h"},
+  {"text/x-csrc", ".c"},
+  {"text/x-java", ".java"},
+  {"text/x-moc", ".moc"},
+  {"text/x-pascal", ".pas"},
+  {"text/x-perl", ".pl"},
+  {"text/x-python", ".py"},
+  {"text/x-tex", ".tex"},
+
+  {"video/avi", ".avi"},
+  {"video/mpeg", ".mpeg"},
+  {"video/quicktime", ".qt"},
+  {"video/real", ".rm"},
+  {"video/x-msvideo", ".avi"},
+  {NULL, NULL},
+};
+
+/**
+ * Suggest a better filename for a file (and do the
+ * renaming).
+ * @return the new filename
+ */
+char *
+GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
+                                     const char *filename)
+{
+  EXTRACTOR_ExtractorList *l;
+  EXTRACTOR_KeywordList *list;
+  const char *key;
+  const char *mime;
+  char *path;
+  int i;
+  unsigned int j;
+  char *renameTo;
+  char *ret;
+  struct stat filestat;
+
+  path = GNUNET_strdup (filename);
+  i = strlen (path);
+  while ((i > 0) && (path[i] != DIR_SEPARATOR))
+    i--;
+  path[i] = '\0';
+  ret = NULL;
+  l = EXTRACTOR_loadDefaultLibraries ();
+  list = EXTRACTOR_getKeywords (l, filename);
+  key = EXTRACTOR_extractLast (EXTRACTOR_TITLE, list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast (EXTRACTOR_DESCRIPTION, list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast (EXTRACTOR_COMMENT, list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast (EXTRACTOR_SUBJECT, list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast (EXTRACTOR_ALBUM, list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast (EXTRACTOR_UNKNOWN, list);
+  mime = EXTRACTOR_extractLast (EXTRACTOR_MIMETYPE, list);
+  if (mime != NULL)
+    {
+      i = 0;
+      while ((mimeMap[i][0] != NULL) && (0 != strcmp (mime, mimeMap[i][0])))
+        i++;
+      if (mimeMap[i][1] == NULL)
+        GNUNET_GE_LOG (ectx,
+                       GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                       "Did not find mime type `%s' in extension list.\n",
+                       mime);
+      mime = mimeMap[i][1];
+    }
+  if (key == NULL)
+    {
+      key = &filename[strlen (filename) - 1];
+      while ((key != filename) && (key[0] != DIR_SEPARATOR))
+        key--;
+      if (key[0] == DIR_SEPARATOR)
+        key++;
+    }
+  if (mime != NULL)
+    {
+      if (0 == strcmp (&key[strlen (key) - strlen (mime)], mime))
+        mime = NULL;
+    }
+  if (mime == NULL)
+    {
+      i = strlen (filename);
+      while ((i > 0) &&
+             (filename[i] != '.') && (filename[i] != DIR_SEPARATOR))
+        i--;
+      if (filename[i] == '.')
+        mime = &filename[i];
+    }
+  if (mime == NULL)
+    {
+      renameTo =
+        GNUNET_malloc (strlen (path) + strlen (key) +
+                       strlen (DIR_SEPARATOR_STR) + 20);
+      strcpy (renameTo, path);
+      if (path[strlen (path) - 1] != DIR_SEPARATOR)
+        strcat (renameTo, DIR_SEPARATOR_STR);
+      strcat (renameTo, key);
+    }
+  else
+    {
+      renameTo =
+        GNUNET_malloc (strlen (path) + strlen (key) + strlen (mime) +
+                       strlen (DIR_SEPARATOR_STR) + 20);
+      strcpy (renameTo, path);
+      if (path[strlen (path) - 1] != DIR_SEPARATOR)
+        strcat (renameTo, DIR_SEPARATOR_STR);
+      strcat (renameTo, key);
+      if (strcasecmp (renameTo + strlen (renameTo) - strlen (mime), mime) !=
+          0)
+        strcat (renameTo, mime);
+    }
+  for (i = strlen (renameTo) - 1; i >= 0; i--)
+    if (!isprint (renameTo[i]))
+      renameTo[i] = '_';
+    else if (renameTo[i] == '.' && i > 0 && renameTo[i - 1] == '.')
+      {
+        /* remove .. to avoid directory traversal */
+        renameTo[i - 1] = renameTo[i] = '_';
+        i--;
+      }
+  if (0 != strcmp (renameTo, filename))
+    {
+      if (0 == STAT (renameTo, &filestat))
+        {
+          i = strlen (renameTo);
+          j = 0;
+          do
+            {
+              GNUNET_snprintf (&renameTo[i], 19, ".%u", j++);
+              if (j > 100000)
+                break;
+            }
+          while (0 == STAT (renameTo, &filestat));
+        }
+
+      if (0 != STAT (renameTo, &filestat))
+        {
+          if (0 != RENAME (filename, renameTo))
+            GNUNET_GE_LOG (ectx,
+                           GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                           _("Renaming of file `%s' to `%s' failed: %s\n"),
+                           filename, renameTo, STRERROR (errno));
+          else
+            ret = GNUNET_strdup (renameTo);
+        }
+      else
+        {
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Could not rename file `%s' to `%s': file exists\n"),
+                         filename, renameTo);
+        }
+    }
+  GNUNET_free (path);
+  GNUNET_free (renameTo);
+  EXTRACTOR_freeKeywords (list);
+  EXTRACTOR_removeAll (l);
+  return ret;
+}
+
+/**
+ * Does the meta-data claim that this is a directory?
+ * Checks if the mime-type is that of a GNUnet directory.
+ */
+int
+GNUNET_meta_data_test_for_directory (const struct GNUNET_MetaData * md)
+{
+  char  * mime;
+  int ret;
+
+  mime = GNUNET_meta_data_get_by_type(md, EXTRACTOR_MIMETYPE);
+  if (mime == NULL)
+    return GNUNET_SYSERR;
+  if (0 == strcmp (mime, GNUNET_DIRECTORY_MIME))
+    ret = GNUNET_YES;
+  else
+    ret = GNUNET_NO;
+  GNUNET_free(mime);
+  return ret;
+}
+
+
 
 /* end of helper.c */

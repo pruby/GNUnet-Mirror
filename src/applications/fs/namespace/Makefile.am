@@ -10,7 +10,6 @@ libgnunetnamespace_la_SOURCES = \
   update_info.c \
   uri.c 
 libgnunetnamespace_la_LIBADD = \
- $(top_builddir)/src/applications/fs/pseudonyms/libgnunetpseudonym.la \
  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 

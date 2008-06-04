@@ -963,6 +963,25 @@ GNUNET_ECRS_uri_expand_keywords_with_date (const URI * uri)
   return ret;
 }
 
+static int
+gather_uri_data(EXTRACTOR_KeywordType type,
+		const char * data,
+		void * cls) 
+{
+  URI * uri = cls;
+  char * nkword;
+  int j;
+
+  for (j = uri->data.ksk.keywordCount - 1; j >= 0; j--)
+    if (0 == strcmp (&uri->data.ksk.keywords[j][1],
+		     data))
+      return GNUNET_OK;
+  nkword = GNUNET_malloc (strlen (data) + 2);
+  strcpy (nkword, " ");     /* not mandatory */
+  strcat (nkword, data);
+  uri->data.ksk.keywords[uri->data.ksk.keywordCount++] = nkword;
+  return GNUNET_OK;
+}
 
 /**
  * Construct a keyword-URI from meta-data (take all entries
@@ -970,15 +989,9 @@ GNUNET_ECRS_uri_expand_keywords_with_date (const URI * uri)
  * that lists all keywords that can be found in the meta-data).
  */
 URI *
-GNUNET_ECRS_meta_data_to_uri (const MetaData * md)
+GNUNET_meta_data_to_uri (const struct GNUNET_MetaData * md)
 {
   URI *ret;
-  int i;
-  int j;
-  int havePreview;
-  int add;
-  const char *kword;
-  char *nkword;
 
   if (md == NULL)
     return NULL;
@@ -986,56 +999,14 @@ GNUNET_ECRS_meta_data_to_uri (const MetaData * md)
   ret->type = ksk;
   ret->data.ksk.keywordCount = 0;
   ret->data.ksk.keywords = NULL;
-  havePreview = 0;
-  for (i = md->itemCount - 1; i >= 0; i--)
-    {
-      if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA)
-        {
-          havePreview++;
-        }
-      else
-        {
-          for (j = md->itemCount - 1; j > i; j--)
-            {
-              if (0 == strcmp (md->items[i].data, md->items[j].data))
-                {
-                  havePreview++;        /* duplicate! */
-                  break;
-                }
-            }
-        }
-    }
-  GNUNET_array_grow (ret->data.ksk.keywords,
-                     ret->data.ksk.keywordCount, md->itemCount - havePreview);
-  for (i = md->itemCount - 1; i >= 0; i--)
-    {
-      if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA)
-        {
-          havePreview--;
-        }
-      else
-        {
-          add = 1;
-          for (j = md->itemCount - 1; j > i; j--)
-            {
-              if (0 == strcmp (md->items[i].data, md->items[j].data))
-                {
-                  havePreview--;
-                  add = 0;
-                  break;
-                }
-            }
-          if (add == 1)
-            {
-              GNUNET_GE_ASSERT (NULL, md->items[i].data != NULL);
-              kword = md->items[i].data;
-              nkword = GNUNET_malloc (strlen (kword) + 2);
-              strcpy (nkword, " ");     /* not mandatory */
-              strcat (nkword, kword);
-              ret->data.ksk.keywords[i - havePreview] = nkword;
-            }
-        }
-    }
+  ret->data.ksk.keywords 
+    = GNUNET_malloc(sizeof(char*) *
+		    GNUNET_meta_data_get_contents(md,
+						  NULL,
+						  NULL));
+  GNUNET_meta_data_get_contents(md,
+				&gather_uri_data,
+				ret);
   return ret;
 }
 

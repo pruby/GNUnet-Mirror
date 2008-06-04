@@ -59,7 +59,7 @@ progressCallbackR (unsigned long long totalBytes,
   event.data.UploadProgress.uc.cctx = utc->cctx;
   event.data.UploadProgress.uc.ppos = utc->parent;
   event.data.UploadProgress.uc.pcctx = utc->parent->cctx;
-  if (GNUNET_YES == GNUNET_ECRS_meta_data_test_for_directory (utc->meta))
+  if (GNUNET_YES == GNUNET_meta_data_test_for_directory (utc->meta))
     {
       if (direct == GNUNET_YES)
         unaccounted = GNUNET_YES;
@@ -146,7 +146,7 @@ static char *
 createDirectoryHelper (struct GNUNET_GE_Context *ectx,
                        struct GNUNET_GC_Configuration *cfg,
                        struct GNUNET_FSUI_UploadList *children,
-                       struct GNUNET_ECRS_MetaData *meta, char **error)
+                       struct GNUNET_MetaData *meta, char **error)
 {
   GNUNET_ECRS_FileInfo *fis;
   unsigned int count;
@@ -390,12 +390,12 @@ GNUNET_FSUI_uploadThread (void *cls)
   if (utc->shared->doIndex != GNUNET_SYSERR)
     {
       if (utc->child == NULL)
-        GNUNET_ECRS_meta_data_extract_from_file (utc->shared->ctx->ectx,
+        GNUNET_meta_data_extract_from_file (utc->shared->ctx->ectx,
                                                  utc->meta, utc->filename,
                                                  utc->shared->extractors);
       while (GNUNET_OK ==
-             GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_FILENAME,
-                                           NULL));
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_FILENAME,
+				      NULL));
       /* only publish the last part of the path
          -- we do not want to publish $HOME or similar
          trivially deanonymizing information */
@@ -409,7 +409,7 @@ GNUNET_FSUI_uploadThread (void *cls)
       if ((is_directory || (utc->child != NULL)) &&
           ((strlen (pfn) == 0) || (pfn[strlen (pfn) - 1] != DIR_SEPARATOR)))
         strcat (pfn, DIR_SEPARATOR_STR);
-      GNUNET_ECRS_meta_data_insert (utc->meta, EXTRACTOR_FILENAME, pfn);
+      GNUNET_meta_data_insert (utc->meta, EXTRACTOR_FILENAME, pfn);
       GNUNET_free (pfn);
       if (0 != strcmp (utc->shared->top_filename, utc->filename))
         {
@@ -426,7 +426,7 @@ GNUNET_FSUI_uploadThread (void *cls)
               pfn = GNUNET_malloc (tend - tpos + 1);
               pfn[tend - tpos] = '\0';
               memcpy (pfn, &utc->filename[tpos + 1], tend - tpos);
-              GNUNET_ECRS_meta_data_insert (utc->meta, EXTRACTOR_RELATION,
+              GNUNET_meta_data_insert (utc->meta, EXTRACTOR_RELATION,
                                             pfn);
               GNUNET_free (pfn);
             }
@@ -467,9 +467,9 @@ GNUNET_FSUI_uploadThread (void *cls)
           loc = GNUNET_ECRS_uri_duplicate (utc->uri);
         }
       while (GNUNET_OK ==
-             GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
       while (GNUNET_OK ==
-             GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE,
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE,
                                            NULL));
       if (utc->shared->global_keywords != NULL)
         GNUNET_ECRS_publish_under_keyword (ectx,
@@ -489,7 +489,7 @@ GNUNET_FSUI_uploadThread (void *cls)
                                            utc->meta);
       if (utc->shared->individualKeywords == GNUNET_YES)
         {
-          uri = GNUNET_ECRS_meta_data_to_uri (utc->meta);
+          uri = GNUNET_meta_data_to_uri (utc->meta);
           GNUNET_ECRS_publish_under_keyword (ectx,
                                              utc->shared->ctx->cfg,
                                              uri,
@@ -564,7 +564,7 @@ freeUploadList (struct GNUNET_FSUI_UploadList *ul)
   if (ul->uri != NULL)
     GNUNET_ECRS_uri_destroy (ul->uri);
   if (ul->meta != NULL)
-    GNUNET_ECRS_meta_data_destroy (ul->meta);
+    GNUNET_meta_data_destroy (ul->meta);
   /* unlink from parent */
   next = ul->parent->child;
   if (next == NULL)
@@ -602,7 +602,7 @@ static struct GNUNET_FSUI_UploadList *addUploads (struct
                                                   const struct GNUNET_ECRS_URI
                                                   *keywords,
                                                   const struct
-                                                  GNUNET_ECRS_MetaData *md,
+                                                  GNUNET_MetaData *md,
                                                   struct
                                                   GNUNET_FSUI_UploadList
                                                   *parent);
@@ -613,17 +613,17 @@ addChildUpload (const char *name, const char *dirName, void *data)
   struct GNUNET_FSUI_UploadList *parent = data;
   char *filename;
   struct GNUNET_FSUI_UploadList *child;
-  struct GNUNET_ECRS_MetaData *md;
+  struct GNUNET_MetaData *md;
 
   filename = GNUNET_malloc (strlen (dirName) + strlen (name) + 2);
   strcpy (filename, dirName);
   if (dirName[strlen (dirName) - 1] != DIR_SEPARATOR)
     strcat (filename, DIR_SEPARATOR_STR);
   strcat (filename, name);
-  md = GNUNET_ECRS_meta_data_create ();
+  md = GNUNET_meta_data_create ();
   child = addUploads (parent->shared, filename, NULL, md, parent);
   GNUNET_free (filename);
-  GNUNET_ECRS_meta_data_destroy (md);
+  GNUNET_meta_data_destroy (md);
   if (child == NULL)
     return GNUNET_SYSERR;
   parent->total += child->total;
@@ -634,7 +634,7 @@ static struct GNUNET_FSUI_UploadList *
 addUploads (struct GNUNET_FSUI_UploadShared *shared,
             const char *filename,
             const struct GNUNET_ECRS_URI *keywords,
-            const struct GNUNET_ECRS_MetaData *md,
+            const struct GNUNET_MetaData *md,
             struct GNUNET_FSUI_UploadList *parent)
 {
   GNUNET_FSUI_UploadList *utc;
@@ -663,8 +663,8 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
         }
       utc->meta =
         (md ==
-         NULL) ? GNUNET_ECRS_meta_data_create () :
-        GNUNET_ECRS_meta_data_duplicate (md);
+         NULL) ? GNUNET_meta_data_create () :
+        GNUNET_meta_data_duplicate (md);
     }
   else
     {
@@ -678,10 +678,10 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
           GNUNET_free (utc);
           return NULL;
         }
-      utc->meta = GNUNET_ECRS_meta_data_duplicate (md);
-      GNUNET_ECRS_meta_data_insert (utc->meta,
-                                    EXTRACTOR_MIMETYPE,
-                                    GNUNET_DIRECTORY_MIME);
+      utc->meta = GNUNET_meta_data_duplicate (md);
+      GNUNET_meta_data_insert (utc->meta,
+			       EXTRACTOR_MIMETYPE,
+			       GNUNET_DIRECTORY_MIME);
     }
   if (keywords != NULL)
     utc->keywords = GNUNET_ECRS_uri_duplicate (keywords);
@@ -749,7 +749,7 @@ GNUNET_FSUI_upload_start (struct GNUNET_FSUI_Context *ctx,
                           int doExtract,
                           int individualKeywords,
                           GNUNET_CronTime expiration,
-                          const struct GNUNET_ECRS_MetaData *md,
+                          const struct GNUNET_MetaData *md,
                           const struct GNUNET_ECRS_URI *globalURI,
                           const struct GNUNET_ECRS_URI *keyUri)
 {

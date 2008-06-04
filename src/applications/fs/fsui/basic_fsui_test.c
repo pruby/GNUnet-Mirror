@@ -49,7 +49,7 @@ makeName (unsigned int i)
 
 static volatile enum GNUNET_FSUI_EventType lastEvent;
 
-static struct GNUNET_ECRS_MetaData *search_meta;
+static struct GNUNET_MetaData *search_meta;
 
 static struct GNUNET_ECRS_URI *search_uri;
 
@@ -74,7 +74,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
       search_uri =
         GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
       search_meta =
-        GNUNET_ECRS_meta_data_duplicate (event->data.SearchResult.fi.meta);
+        GNUNET_meta_data_duplicate (event->data.SearchResult.fi.meta);
       break;
     case GNUNET_FSUI_upload_completed:
 #if DEBUG_VERBOSE
@@ -116,7 +116,7 @@ main (int argc, char *argv[])
   char keyword[40];
   char *fn;
   int prog;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   struct GNUNET_ECRS_URI *kuri;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UploadList *upload = NULL;
@@ -149,7 +149,7 @@ main (int argc, char *argv[])
   GNUNET_disk_file_write (NULL,
                           filename,
                           "foo bar test!", strlen ("foo bar test!"), "600");
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (NULL, 2,
                                              (const char **) keywords);
@@ -163,7 +163,7 @@ main (int argc, char *argv[])
                                      5 * GNUNET_CRON_HOURS, meta, kuri, kuri);
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   prog = 0;
   while (lastEvent != GNUNET_FSUI_upload_completed)
     {
@@ -212,7 +212,7 @@ main (int argc, char *argv[])
   GNUNET_FSUI_download_stop (download);
   download = NULL;
   GNUNET_ECRS_uri_destroy (search_uri);
-  GNUNET_ECRS_meta_data_destroy (search_meta);
+  GNUNET_meta_data_destroy (search_meta);
   /* unindex */
   unindex = GNUNET_FSUI_unindex_start (ctx, filename);
   prog = 0;

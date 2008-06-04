@@ -31,7 +31,6 @@
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_pseudonym_lib.h"
 #include "gnunet_util.h"
 
 /* hmm. Man says time.h, but that doesn't yield the
@@ -54,13 +53,13 @@ static GNUNET_CronTime start_time;
 
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
-static struct GNUNET_ECRS_MetaData *meta;
+static struct GNUNET_MetaData *meta;
 
 static struct GNUNET_ECRS_URI *topKeywords;
 
 static struct GNUNET_ECRS_URI *gloKeywords;
 
-static struct GNUNET_ECRS_MetaData *meta;
+static struct GNUNET_MetaData *meta;
 
 static unsigned int anonymity = 1;
 
@@ -120,7 +119,7 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
   convertId (next_id, &nextId);
   convertId (this_id, &thisId);
   convertId (prev_id, &prevId);
-  if (GNUNET_OK != GNUNET_PSEUDO_name_to_id (ectx, cfg, pseudonym, &nsid))
+  if (GNUNET_OK != GNUNET_pseudonym_name_to_id (ectx, cfg, pseudonym, &nsid))
     {
       printf (_("\tUnknown namespace `%s'\n"), pseudonym);
       return;
@@ -375,7 +374,7 @@ main (int argc, char *const *argv)
   unsigned long long verbose;
   GNUNET_HashCode pid;
 
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-insert [OPTIONS] FILENAME",
@@ -436,7 +435,7 @@ main (int argc, char *const *argv)
       listKeywords (fname, dirname, l);
       GNUNET_free (dirname);
       EXTRACTOR_removeAll (l);
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       meta = NULL;
 
       errorCode = 0;
@@ -451,7 +450,7 @@ main (int argc, char *const *argv)
   if (pseudonym != NULL)
     {
       if ((GNUNET_OK !=
-           GNUNET_PSEUDO_name_to_id (ectx, cfg,
+           GNUNET_pseudonym_name_to_id (ectx, cfg,
                                      pseudonym, &pid)) ||
           (GNUNET_OK != GNUNET_ECRS_namespace_test_exists (ectx, cfg, &pid)))
         {
@@ -562,7 +561,7 @@ main (int argc, char *const *argv)
   /* first insert all of the top-level files or directories */
   tmp = GNUNET_expand_file_name (ectx, filename);
   if (!do_disable_creation_time)
-    GNUNET_ECRS_meta_data_add_publication_date (meta);
+    GNUNET_meta_data_add_publication_date (meta);
   start_time = GNUNET_get_time ();
   errorCode = 1;
   ul = GNUNET_FSUI_upload_start (ctx,
@@ -585,7 +584,7 @@ main (int argc, char *const *argv)
   GNUNET_FSUI_stop (ctx);
 quit:
   if (meta != NULL)
-    GNUNET_ECRS_meta_data_destroy (meta);
+    GNUNET_meta_data_destroy (meta);
   if (gloKeywords != NULL)
     GNUNET_ECRS_uri_destroy (gloKeywords);
   if (topKeywords != NULL)

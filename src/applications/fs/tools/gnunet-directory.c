@@ -52,9 +52,9 @@ itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
 }
 
 static void
-printMeta (const struct GNUNET_ECRS_MetaData *meta)
+printMeta (const struct GNUNET_MetaData *meta)
 {
-  GNUNET_ECRS_meta_data_get_contents (meta, &itemPrinter, NULL);
+  GNUNET_meta_data_get_contents (meta, &itemPrinter, NULL);
 }
 
 static int
@@ -74,7 +74,7 @@ static void
 printDirectory (const char *filename)
 {
   unsigned long long len;
-  struct GNUNET_ECRS_MetaData *md;
+  struct GNUNET_MetaData *md;
   char *data;
   int ret;
   char *name;
@@ -121,7 +121,7 @@ printDirectory (const char *filename)
   if (md != NULL)
     {
       printMeta (md);
-      GNUNET_ECRS_meta_data_destroy (md);
+      GNUNET_meta_data_destroy (md);
     }
   printf ("\n");
   GNUNET_free (name);

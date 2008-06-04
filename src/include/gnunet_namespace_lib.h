@@ -77,7 +77,7 @@ struct GNUNET_ECRS_URI *GNUNET_NS_namespace_create (struct GNUNET_GE_Context
                                                     GNUNET_CronTime
                                                     insertExpiration,
                                                     const struct
-                                                    GNUNET_ECRS_MetaData
+                                                    GNUNET_MetaData
                                                     *meta,
                                                     const struct
                                                     GNUNET_ECRS_URI
@@ -171,7 +171,7 @@ struct GNUNET_ECRS_URI *GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context
                                                     const struct
                                                     GNUNET_ECRS_URI *dst,
                                                     const struct
-                                                    GNUNET_ECRS_MetaData *md);
+                                                    GNUNET_MetaData *md);
 
 /**
  * Compute the next ID for peridodically updated content.

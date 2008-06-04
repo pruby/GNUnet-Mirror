@@ -29,8 +29,6 @@
 #include "gnunet_protocols.h"
 #include "gnunet_directories.h"
 #include "gnunet_chat_lib.h"
-#include "gnunet_ecrs_lib.h"
-#include "gnunet_pseudonym_lib.h"
 
 #define MAX_MESSAGE_LENGTH (32 * 1024)
 
@@ -48,7 +46,7 @@ static struct GNUNET_Mutex * lock;
 
 static struct GNUNET_CHAT_Room *room;
 
-static struct GNUNET_ECRS_MetaData *meta;
+static struct GNUNET_MetaData *meta;
 
 struct UserList {
   struct UserList * next;
@@ -95,14 +93,14 @@ static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
                   const GNUNET_HashCode * sender,
-                  const struct GNUNET_ECRS_MetaData *meta,
+                  const struct GNUNET_MetaData *meta,
                   const char *message, GNUNET_CHAT_MSG_OPTIONS options)
 {
   char *nick;
   const char * fmt;
 
   if (sender != NULL)
-    nick = GNUNET_PSEUDO_id_to_name (ectx, cfg, sender);
+    nick = GNUNET_pseudonym_id_to_name (ectx, cfg, sender);
   else
     nick = GNUNET_strdup(_("anonymous"));
   fmt = NULL; 
@@ -153,7 +151,7 @@ receive_callback (void *cls,
 
 static int
 member_list_callback (void *cls,
-                      const struct GNUNET_ECRS_MetaData *member_info,
+                      const struct GNUNET_MetaData *member_info,
                       const GNUNET_RSA_PublicKey * member_id,
                       GNUNET_CHAT_MSG_OPTIONS options)
 {
@@ -163,7 +161,7 @@ member_list_callback (void *cls,
   struct UserList * prev;
 
   GNUNET_hash (member_id, sizeof (GNUNET_RSA_PublicKey), &id);
-  nick = GNUNET_PSEUDO_id_to_name (ectx, cfg, &id);
+  nick = GNUNET_pseudonym_id_to_name (ectx, cfg, &id);
   fprintf (stdout, member_info != NULL
            ? _("`%s' entered the room\n") : _("`%s' left the room\n"), nick);
   GNUNET_free (nick);
@@ -262,7 +260,7 @@ static int do_join(const char * arg,
                                 &receive_callback, NULL,
                                 &member_list_callback, NULL,
                                 &confirmation_callback, NULL, &me);
-  my_name = GNUNET_PSEUDO_id_to_name (ectx, cfg, &me);
+  my_name = GNUNET_pseudonym_id_to_name (ectx, cfg, &me);
   fprintf (stdout,
 	   _("Joined room `%s' as user `%s'.\n"),
 	   room_name, my_name);
@@ -278,10 +276,10 @@ static int do_nick(const char * msg,
   GNUNET_CHAT_leave_room(room);
   free_user_list();
   GNUNET_free(nickname);
-  GNUNET_ECRS_meta_data_destroy(meta);
+  GNUNET_meta_data_destroy(meta);
   nickname = GNUNET_strdup(msg);
-  meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, nickname);
+  meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta, EXTRACTOR_TITLE, nickname);
   room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
                                 nickname,
@@ -291,7 +289,7 @@ static int do_nick(const char * msg,
                                 &receive_callback, NULL,
                                 &member_list_callback, NULL,
                                 &confirmation_callback, NULL, &me);
-  my_name = GNUNET_PSEUDO_id_to_name (ectx, cfg, &me);
+  my_name = GNUNET_pseudonym_id_to_name (ectx, cfg, &me);
   fprintf (stdout,
 	   _("Changed username to `%s'.\n"),
 	   my_name);
@@ -324,7 +322,7 @@ static int do_pm(const char * msg,
   strstr(user, " ")[0] = '\0';
   msg += strlen(user) + 1;
   if (GNUNET_OK != 
-      GNUNET_PSEUDO_name_to_id(ectx,
+      GNUNET_pseudonym_name_to_id(ectx,
 			       cfg,
 			       user,
 			       &uid))
@@ -383,7 +381,7 @@ static int do_names(const char * msg,
       GNUNET_hash(&pos->pkey,
 		  sizeof(GNUNET_RSA_PublicKey),
 		  &pid);
-      name = GNUNET_PSEUDO_id_to_name(ectx, cfg, &pid);
+      name = GNUNET_pseudonym_id_to_name(ectx, cfg, &pid);
       fprintf(stdout, "`%s' ", name);
       GNUNET_free(name);
       pos = pos->next;
@@ -519,8 +517,8 @@ main (int argc, char **argv)
   lock = GNUNET_mutex_create(GNUNET_NO);
   if (room_name == NULL)
     room_name = GNUNET_strdup("gnunet");
-  meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, nickname);  
+  meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta, EXTRACTOR_TITLE, nickname);  
   room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
                                 nickname,
@@ -535,12 +533,12 @@ main (int argc, char **argv)
       fprintf (stderr, _("Failed to join room `%s'\n"), room_name);
       GNUNET_free (room_name);
       GNUNET_free (nickname);
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       GNUNET_mutex_destroy(lock);
       GNUNET_fini (ectx, cfg);
       return -1;
     }
-  my_name = GNUNET_PSEUDO_id_to_name (ectx, cfg, &me);
+  my_name = GNUNET_pseudonym_id_to_name (ectx, cfg, &me);
   fprintf (stdout,
            _
            ("Joined room `%s' as user `%s'.\n"),
@@ -571,7 +569,7 @@ main (int argc, char **argv)
     }
   GNUNET_CHAT_leave_room (room); 
   free_user_list();
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   GNUNET_free (room_name);
   GNUNET_free (nickname);
   GNUNET_fini (ectx, cfg);

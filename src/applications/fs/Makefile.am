@@ -1,5 +1,5 @@
 SUBDIRS = \
- . gap lib ecrs uritrack pseudonyms namespace fsui collection tools 
+ . gap lib ecrs uritrack namespace fsui collection tools 
 
 INCLUDES = -I$(top_srcdir)/src/include
 

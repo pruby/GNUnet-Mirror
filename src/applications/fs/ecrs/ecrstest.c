@@ -101,14 +101,14 @@ uploadFile (unsigned int size)
                                  NULL, &testTerminate, NULL, &uri);
   if (ret != GNUNET_SYSERR)
     {
-      struct GNUNET_ECRS_MetaData *meta;
+      struct GNUNET_MetaData *meta;
       struct GNUNET_ECRS_URI *key;
 
-      meta = GNUNET_ECRS_meta_data_create ();
+      meta = GNUNET_meta_data_create ();
       key = GNUNET_ECRS_keyword_string_to_uri (NULL, name);
       ret = GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,     /* expire */
                                                uri, meta);
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       want = uri;
       GNUNET_free (name);
       if (ret == GNUNET_OK)

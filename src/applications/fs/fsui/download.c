@@ -65,7 +65,7 @@ static GNUNET_FSUI_DownloadList *startDownload (struct GNUNET_FSUI_Context
                                                 const struct GNUNET_ECRS_URI
                                                 *uri,
                                                 const struct
-                                                GNUNET_ECRS_MetaData *meta,
+                                                GNUNET_MetaData *meta,
                                                 const char *filename,
                                                 struct GNUNET_FSUI_SearchList
                                                 *psearch,
@@ -103,7 +103,7 @@ triggerRecursiveDownload (const GNUNET_ECRS_FileInfo * fi,
         return GNUNET_OK;       /* already downloading */
       pos = pos->next;
     }
-  filename = GNUNET_ECRS_meta_data_get_by_type (fi->meta, EXTRACTOR_FILENAME);
+  filename = GNUNET_meta_data_get_by_type (fi->meta, EXTRACTOR_FILENAME);
   if (filename == NULL)
     {
       char *tmp = GNUNET_ECRS_uri_to_string (fi->uri);
@@ -147,7 +147,7 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
   int fd;
   char *fn;
   size_t totalBytes;
-  struct GNUNET_ECRS_MetaData *md;
+  struct GNUNET_MetaData *md;
 
   totalBytes = GNUNET_ECRS_uri_get_file_size (dl->fi.uri);
   fn =
@@ -179,7 +179,7 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
                                                &md,
                                                &listURIfoundDirectory, dl);
           if (md != NULL)
-            GNUNET_ECRS_meta_data_destroy (md);
+            GNUNET_meta_data_destroy (md);
           if (dl->is_recursive)
             {
               int n;
@@ -195,7 +195,7 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
               GNUNET_mutex_unlock (dl->ctx->lock);
               if (n == 0)
                 GNUNET_disk_directory_create (dl->ctx->ectx, dl->filename);
-              GNUNET_ECRS_meta_data_destroy (md);
+              GNUNET_meta_data_destroy (md);
               MUNMAP (dirBlock, totalBytes);
             }
         }
@@ -306,7 +306,7 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
                unsigned int anonymityLevel,
                int is_recursive,
                const struct GNUNET_ECRS_URI *uri,
-               const struct GNUNET_ECRS_MetaData *meta,
+               const struct GNUNET_MetaData *meta,
                const char *filename,
                struct GNUNET_FSUI_SearchList *psearch,
                GNUNET_FSUI_DownloadList * parent)
@@ -334,7 +334,7 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
   dl->ctx = ctx;
   dl->filename = GNUNET_strdup (filename);
   dl->fi.uri = GNUNET_ECRS_uri_duplicate (uri);
-  dl->fi.meta = GNUNET_ECRS_meta_data_duplicate (meta);
+  dl->fi.meta = GNUNET_meta_data_duplicate (meta);
   dl->total = GNUNET_ECRS_uri_get_file_size (uri);
   dl->child = NULL;
   dl->cctx = NULL;
@@ -381,7 +381,7 @@ GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx,
                             unsigned int anonymityLevel,
                             int doRecursive,
                             const struct GNUNET_ECRS_URI *uri,
-                            const struct GNUNET_ECRS_MetaData *meta,
+                            const struct GNUNET_MetaData *meta,
                             const char *filename,
                             struct GNUNET_FSUI_SearchList *psearch,
                             struct GNUNET_FSUI_DownloadList *pdownload)
@@ -691,7 +691,7 @@ GNUNET_FSUI_download_stop (struct GNUNET_FSUI_DownloadList *dl)
     GNUNET_ECRS_uri_destroy (dl->completedDownloads[i]);
   GNUNET_array_grow (dl->completedDownloads, dl->completedDownloadsCount, 0);
   GNUNET_ECRS_uri_destroy (dl->fi.uri);
-  GNUNET_ECRS_meta_data_destroy (dl->fi.meta);
+  GNUNET_meta_data_destroy (dl->fi.meta);
   GNUNET_free (dl->filename);
   GNUNET_free (dl);
   return GNUNET_OK;

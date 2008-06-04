@@ -83,7 +83,7 @@ main (int argc, char *argv[])
   int ok;
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_ECRS_URI *uri;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   struct GNUNET_ECRS_URI *key;
 
   cfg = GNUNET_GC_create ();
@@ -110,7 +110,7 @@ main (int argc, char *argv[])
   uri = GNUNET_ECRS_string_to_uri (NULL,
                                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   CHECK (uri != NULL);
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
 
   key = GNUNET_ECRS_keyword_string_to_uri (NULL, "XXtest");
   CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
@@ -129,7 +129,7 @@ main (int argc, char *argv[])
   CHECK (GNUNET_OK == searchFile (key, 1));
   GNUNET_ECRS_uri_destroy (key);
   GNUNET_ECRS_uri_destroy (uri);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
 
   /* now searching just for 'XXtest' should again give 2 results! */
 #if 0

@@ -27,13 +27,12 @@
 
 #include "platform.h"
 #include "gnunet_directories.h"
-#include "gnunet_pseudonym_lib.h"
 #include "gnunet_util.h"
 
 struct DiscoveryCallback
 {
   struct DiscoveryCallback *next;
-  GNUNET_PSEUDO_PseudonymIterator callback;
+  GNUNET_PseudonymIterator callback;
   void *closure;
 };
 
@@ -45,9 +44,9 @@ static struct GNUNET_Mutex *lock;
  * Internal notification about new tracked URI.
  */
 void
-GNUNET_PSEUDO_internal_notify_ (const GNUNET_HashCode * id,
-                                const struct GNUNET_ECRS_MetaData *md,
-                                int rating)
+GNUNET_pseudonym_internal_notify_ (const GNUNET_HashCode * id,
+				   const struct GNUNET_MetaData *md,
+				   int rating)
 {
   struct DiscoveryCallback *pos;
 
@@ -68,11 +67,11 @@ GNUNET_PSEUDO_internal_notify_ (const GNUNET_HashCode * id,
  * a new pseudonym.
  */
 int
-GNUNET_PSEUDO_register_discovery_callback (struct GNUNET_GE_Context *ectx,
-                                           struct GNUNET_GC_Configuration
-                                           *cfg,
-                                           GNUNET_PSEUDO_PseudonymIterator
-                                           iterator, void *closure)
+GNUNET_pseudonym_register_discovery_callback (struct GNUNET_GE_Context *ectx,
+					      struct GNUNET_GC_Configuration
+					      *cfg,
+					      GNUNET_PseudonymIterator
+					      iterator, void *closure)
 {
   struct DiscoveryCallback *list;
 
@@ -82,7 +81,7 @@ GNUNET_PSEUDO_register_discovery_callback (struct GNUNET_GE_Context *ectx,
   GNUNET_mutex_lock (lock);
   list->next = head;
   head = list;
-  GNUNET_PSEUDO_list_all (ectx, cfg, iterator, closure);
+  GNUNET_pseudonym_list_all (ectx, cfg, iterator, closure);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
@@ -91,8 +90,8 @@ GNUNET_PSEUDO_register_discovery_callback (struct GNUNET_GE_Context *ectx,
  * Unregister pseudonym discovery callback.
  */
 int
-GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator
-                                             iterator, void *closure)
+GNUNET_pseudonym_unregister_discovery_callback (GNUNET_PseudonymIterator
+						iterator, void *closure)
 {
   struct DiscoveryCallback *prev;
   struct DiscoveryCallback *pos;
@@ -122,12 +121,12 @@ GNUNET_PSEUDO_unregister_discovery_callback (GNUNET_PSEUDO_PseudonymIterator
 
 
 
-void __attribute__ ((constructor)) GNUNET_PSEUDO_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_pseudonym_ltdl_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
-void __attribute__ ((destructor)) GNUNET_PSEUDO_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_pseudonym_ltdl_fini ()
 {
   GNUNET_mutex_destroy (lock);
   lock = NULL;

@@ -44,7 +44,7 @@ main (int argc, char *argv[])
   int ok;
   struct GNUNET_ECRS_URI *uri = NULL;
   struct GNUNET_ECRS_URI *euri = NULL;
-  struct GNUNET_ECRS_MetaData *meta = NULL;
+  struct GNUNET_MetaData *meta = NULL;
   GNUNET_HashCode root;
   GNUNET_HashCode nsid;
   int old;
@@ -67,8 +67,8 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta, 0, "test");
+  meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta, 0, "test");
   GNUNET_create_random_hash (&root);
   uri = GNUNET_NS_namespace_create (ectx,
                                     cfg,
@@ -98,7 +98,7 @@ FAILURE:
   if (euri != NULL)
     GNUNET_ECRS_uri_destroy (euri);
   if (meta != NULL)
-    GNUNET_ECRS_meta_data_destroy (meta);
+    GNUNET_meta_data_destroy (meta);
   GNUNET_ECRS_namespace_delete (ectx, cfg, &nsid);
 
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));

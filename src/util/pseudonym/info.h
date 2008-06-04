@@ -19,22 +19,21 @@
 */
 
 /**
- * @file applications/fs/pseudonym/info.h
+ * @file util/pseudonym/info.h
  * @brief keeping track of pseudonyms and metadata about them
  * @author Christian Grothoff
  */
 
-#ifndef NAMESPACE_INFO_H
-#define NAMESPACE_INFO_H
+#ifndef PSEUDONYM_INFO_H
+#define PSEUDONYM_INFO_H
 
-#include "gnunet_namespace_lib.h"
 #include "gnunet_util.h"
 
 int
-GNUNET_PSEUDO_internal_read_info_ (struct GNUNET_GE_Context *ectx,
-                                   struct GNUNET_GC_Configuration *cfg,
-                                   const GNUNET_HashCode * nsid,
-                                   struct GNUNET_ECRS_MetaData **meta,
-                                   int *ranking, char **ns_name);
+GNUNET_pseudonym_internal_read_info_ (struct GNUNET_GE_Context *ectx,
+				      struct GNUNET_GC_Configuration *cfg,
+				      const GNUNET_HashCode * nsid,
+				      struct GNUNET_MetaData **meta,
+				      int *ranking, char **ns_name);
 
 #endif

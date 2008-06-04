@@ -19,14 +19,13 @@
 */
 
 /**
- * @file applications/fs/pseudonym/info.c
+ * @file util/pseudonym/info.c
  * @brief keeping track of pseudonyms and metadata about them
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_directories.h"
-#include "gnunet_pseudonym_lib.h"
 #include "gnunet_util.h"
 #include "info.h"
 #include "notification.h"
@@ -37,7 +36,7 @@ static void
 write_pseudonym_info (struct GNUNET_GE_Context *ectx,
                       struct GNUNET_GC_Configuration *cfg,
                       const GNUNET_HashCode * nsid,
-                      const struct GNUNET_ECRS_MetaData *meta,
+                      const struct GNUNET_MetaData *meta,
                       int ranking, const char *ns_name)
 {
   unsigned int size;
@@ -46,11 +45,11 @@ write_pseudonym_info (struct GNUNET_GE_Context *ectx,
   char *buf;
   char *fn;
 
-  fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,
-                                                  cfg, PS_METADATA_DIR, nsid);
+  fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
+						     cfg, PS_METADATA_DIR, nsid);
   size =
-    GNUNET_ECRS_meta_data_get_serialized_size (meta,
-                                               GNUNET_ECRS_SERIALIZE_FULL);
+    GNUNET_meta_data_get_serialized_size (meta,
+					  GNUNET_SERIALIZE_FULL);
   tag = size + sizeof (int) + 1;
   off = 0;
   if (ns_name != NULL)
@@ -69,26 +68,26 @@ write_pseudonym_info (struct GNUNET_GE_Context *ectx,
       buf[sizeof (int)] = '\0';
     }
   GNUNET_GE_ASSERT (ectx,
-                    size == GNUNET_ECRS_meta_data_serialize (ectx,
-                                                             meta,
-                                                             &buf[sizeof
-                                                                  (int) +
-                                                                  off + 1],
-                                                             size,
-                                                             GNUNET_ECRS_SERIALIZE_FULL));
+                    size == GNUNET_meta_data_serialize (ectx,
+							meta,
+							&buf[sizeof
+							     (int) +
+							     off + 1],
+							size,
+							GNUNET_SERIALIZE_FULL));
   GNUNET_disk_file_write (ectx, fn, buf, tag, "660");
   GNUNET_free (fn);
   GNUNET_free (buf);
   /* create entry for pseudonym name in names */
-  GNUNET_free_non_null (GNUNET_PSEUDO_id_to_name (ectx, cfg, nsid));
+  GNUNET_free_non_null (GNUNET_pseudonym_id_to_name (ectx, cfg, nsid));
 }
 
 int
-GNUNET_PSEUDO_internal_read_info_ (struct GNUNET_GE_Context *ectx,
-                                   struct GNUNET_GC_Configuration *cfg,
-                                   const GNUNET_HashCode * nsid,
-                                   struct GNUNET_ECRS_MetaData **meta,
-                                   int *ranking, char **ns_name)
+GNUNET_pseudonym_internal_read_info_ (struct GNUNET_GE_Context *ectx,
+				      struct GNUNET_GC_Configuration *cfg,
+				      const GNUNET_HashCode * nsid,
+				      struct GNUNET_MetaData **meta,
+				      int *ranking, char **ns_name)
 {
   unsigned long long len;
   unsigned int size;
@@ -100,8 +99,8 @@ GNUNET_PSEUDO_internal_read_info_ (struct GNUNET_GE_Context *ectx,
     *meta = NULL;
   if (ns_name != NULL)
     *ns_name = NULL;
-  fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,
-                                                  cfg, PS_METADATA_DIR, nsid);
+  fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
+						     cfg, PS_METADATA_DIR, nsid);
   if ((GNUNET_OK != GNUNET_disk_file_test (ectx,
                                            fn) ||
        (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES))))
@@ -151,7 +150,7 @@ GNUNET_PSEUDO_internal_read_info_ (struct GNUNET_GE_Context *ectx,
   size = len - zend;
   if (meta != NULL)
     {
-      *meta = GNUNET_ECRS_meta_data_deserialize (ectx, &buf[zend], size);
+      *meta = GNUNET_meta_data_deserialize (ectx, &buf[zend], size);
       if ((*meta) == NULL)
         {
           /* invalid data! remove! */
@@ -169,7 +168,7 @@ GNUNET_PSEUDO_internal_read_info_ (struct GNUNET_GE_Context *ectx,
 
 struct ListPseudonymClosure
 {
-  GNUNET_PSEUDO_PseudonymIterator iterator;
+  GNUNET_PseudonymIterator iterator;
   void *closure;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
@@ -182,18 +181,18 @@ list_pseudonym_helper (const char *fn, const char *dirName, void *cls)
   int ret;
   GNUNET_HashCode id;
   int rating;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
   ret = GNUNET_OK;
   if (GNUNET_OK != GNUNET_enc_to_hash (fn, &id))
     return GNUNET_OK;           /* invalid name */
   if (GNUNET_OK !=
-      GNUNET_PSEUDO_internal_read_info_ (c->ectx, c->cfg, &id, &meta,
-                                         &rating, NULL))
+      GNUNET_pseudonym_internal_read_info_ (c->ectx, c->cfg, &id, &meta,
+					    &rating, NULL))
     return GNUNET_OK;           /* ignore entry */
   if (c->iterator != NULL)
     ret = c->iterator (c->closure, &id, meta, rating);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   return ret;
 }
 
@@ -201,10 +200,10 @@ list_pseudonym_helper (const char *fn, const char *dirName, void *cls)
  * List all available pseudonyms.
  */
 int
-GNUNET_PSEUDO_list_all (struct GNUNET_GE_Context *ectx,
-                        struct GNUNET_GC_Configuration *cfg,
-                        GNUNET_PSEUDO_PseudonymIterator iterator,
-                        void *closure)
+GNUNET_pseudonym_list_all (struct GNUNET_GE_Context *ectx,
+			   struct GNUNET_GC_Configuration *cfg,
+			   GNUNET_PseudonymIterator iterator,
+			   void *closure)
 {
   struct ListPseudonymClosure cls;
   char *fn;
@@ -215,8 +214,8 @@ GNUNET_PSEUDO_list_all (struct GNUNET_GE_Context *ectx,
   cls.ectx = ectx;
   cls.cfg = cfg;
   fn =
-    GNUNET_PSEUDO_internal_get_data_filename_ (ectx, cfg, PS_METADATA_DIR,
-                                               NULL);
+    GNUNET_pseudonym_internal_get_data_filename_ (ectx, cfg, PS_METADATA_DIR,
+						  NULL);
   GNUNET_disk_directory_create (ectx, fn);
   ret = GNUNET_disk_directory_scan (ectx, fn, &list_pseudonym_helper, &cls);
   GNUNET_free (fn);
@@ -232,27 +231,27 @@ GNUNET_PSEUDO_list_all (struct GNUNET_GE_Context *ectx,
  * @return new rating of the pseudonym
  */
 int
-GNUNET_PSEUDO_rank (struct GNUNET_GE_Context *ectx,
-                    struct GNUNET_GC_Configuration *cfg,
-                    const GNUNET_HashCode * nsid, int delta)
+GNUNET_pseudonym_rank (struct GNUNET_GE_Context *ectx,
+		       struct GNUNET_GC_Configuration *cfg,
+		       const GNUNET_HashCode * nsid, int delta)
 {
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   int ret;
   int ranking;
   char *name;
 
   name = NULL;
   ret =
-    GNUNET_PSEUDO_internal_read_info_ (ectx, cfg, nsid, &meta, &ranking,
-                                       &name);
+    GNUNET_pseudonym_internal_read_info_ (ectx, cfg, nsid, &meta, &ranking,
+					  &name);
   if (ret == GNUNET_SYSERR)
     {
       ranking = 0;
-      meta = GNUNET_ECRS_meta_data_create ();
+      meta = GNUNET_meta_data_create ();
     }
   ranking += delta;
   write_pseudonym_info (ectx, cfg, nsid, meta, ranking, name);
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   GNUNET_free_non_null (name);
   return ranking;
 }
@@ -263,8 +262,8 @@ GNUNET_PSEUDO_rank (struct GNUNET_GE_Context *ectx,
 static int
 merge_meta_helper (EXTRACTOR_KeywordType type, const char *data, void *cls)
 {
-  struct GNUNET_ECRS_MetaData *meta = cls;
-  GNUNET_ECRS_meta_data_insert (meta, type, data);
+  struct GNUNET_MetaData *meta = cls;
+  GNUNET_meta_data_insert (meta, type, data);
   return GNUNET_OK;
 }
 
@@ -276,29 +275,29 @@ merge_meta_helper (EXTRACTOR_KeywordType type, const char *data, void *cls)
  * @param id the pseudonym identifier
  */
 void
-GNUNET_PSEUDO_add (struct GNUNET_GE_Context *ectx,
-                   struct GNUNET_GC_Configuration *cfg,
-                   const GNUNET_HashCode * id,
-                   const struct GNUNET_ECRS_MetaData *meta)
+GNUNET_pseudonym_add (struct GNUNET_GE_Context *ectx,
+		      struct GNUNET_GC_Configuration *cfg,
+		      const GNUNET_HashCode * id,
+		      const struct GNUNET_MetaData *meta)
 {
   char *name;
   int ranking;
-  struct GNUNET_ECRS_MetaData *old;
+  struct GNUNET_MetaData *old;
 
   ranking = 0;
   if (GNUNET_OK ==
-      GNUNET_PSEUDO_internal_read_info_ (ectx, cfg, id, &old, &ranking,
-                                         &name))
+      GNUNET_pseudonym_internal_read_info_ (ectx, cfg, id, &old, &ranking,
+					    &name))
     {
-      GNUNET_ECRS_meta_data_get_contents (meta, &merge_meta_helper, old);
+      GNUNET_meta_data_get_contents (meta, &merge_meta_helper, old);
       write_pseudonym_info (ectx, cfg, id, old, ranking, name);
-      GNUNET_ECRS_meta_data_destroy (old);
+      GNUNET_meta_data_destroy (old);
     }
   else
     {
       write_pseudonym_info (ectx, cfg, id, meta, ranking, NULL);
     }
-  GNUNET_PSEUDO_internal_notify_ (id, meta, ranking);
+  GNUNET_pseudonym_internal_notify_ (id, meta, ranking);
   GNUNET_free_non_null (name);
 }
 

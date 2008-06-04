@@ -28,7 +28,6 @@
 #include "gnunet_directories.h"
 #include "gnunet_collection_lib.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_pseudonym_lib.h"
 #include "gnunet_util.h"
 
 static struct GNUNET_GE_Context *ectx;
@@ -59,7 +58,7 @@ static GNUNET_CronTime expiration = 2 * GNUNET_CRON_YEARS;
 
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
-static struct GNUNET_ECRS_MetaData *meta;
+static struct GNUNET_MetaData *meta;
 
 static struct GNUNET_ECRS_URI *advertisement;
 
@@ -121,22 +120,22 @@ itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
 }
 
 static void
-printMeta (const struct GNUNET_ECRS_MetaData *m)
+printMeta (const struct GNUNET_MetaData *m)
 {
-  GNUNET_ECRS_meta_data_get_contents (m, &itemPrinter, NULL);
+  GNUNET_meta_data_get_contents (m, &itemPrinter, NULL);
 }
 
 static int
 namespacePrinter (void *unused,
                   const GNUNET_HashCode * id,
-                  const struct GNUNET_ECRS_MetaData *md, int rating)
+                  const struct GNUNET_MetaData *md, int rating)
 {
   GNUNET_EncName enc;
   GNUNET_HashCode nsid;
   int cpos;
   char *namespaceName;
 
-  namespaceName = GNUNET_PSEUDO_id_to_name (ectx, cfg, id);
+  namespaceName = GNUNET_pseudonym_id_to_name (ectx, cfg, id);
   GNUNET_hash_to_enc (id, &enc);
   if (0 == strcmp (namespaceName, (char *) &enc))
     printf (_("Namespace `%s' has rating %d.\n"), namespaceName, rating);
@@ -170,9 +169,9 @@ namespacePrinter (void *unused,
       if (delta != 0)
         {
           if (GNUNET_OK ==
-              GNUNET_PSEUDO_name_to_id (ectx, cfg, namespaceName, &nsid))
+              GNUNET_pseudonym_name_to_id (ectx, cfg, namespaceName, &nsid))
             {
-              rating = GNUNET_PSEUDO_rank (ectx, cfg, &nsid, delta);
+              rating = GNUNET_pseudonym_rank (ectx, cfg, &nsid, delta);
               printf (_("\tRating (after update): %d\n"), rating);
             }
           else
@@ -198,14 +197,14 @@ main (int argc, char *const *argv)
   char *root;
   char *ns_name;
 
-  meta = GNUNET_ECRS_meta_data_create ();
+  meta = GNUNET_meta_data_create ();
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-pseudonym [OPTIONS]",
                    &cfgFilename, gnunetpseudonymOptions, &ectx, &cfg);
   if (i == -1)
     {
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       GNUNET_fini (ectx, cfg);
       return -1;
     }
@@ -225,7 +224,7 @@ main (int argc, char *const *argv)
   if (delete_name != NULL)
     {
       if (GNUNET_OK ==
-          GNUNET_PSEUDO_name_to_id (ectx, cfg, delete_name, &nsid))
+          GNUNET_pseudonym_name_to_id (ectx, cfg, delete_name, &nsid))
         {
           if (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid))
             {
@@ -248,7 +247,7 @@ main (int argc, char *const *argv)
   /* create collections / namespace */
   if (create_name != NULL)
     {
-      GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, create_name);
+      GNUNET_meta_data_insert (meta, EXTRACTOR_TITLE, create_name);
       if (start_collection)
         {
           /* FIXME: allow other update policies */
@@ -304,7 +303,7 @@ main (int argc, char *const *argv)
           else
             {
               GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &nsid);
-              ns_name = GNUNET_PSEUDO_id_to_name (ectx, cfg, &nsid);
+              ns_name = GNUNET_pseudonym_id_to_name (ectx, cfg, &nsid);
               root = GNUNET_ECRS_uri_to_string (rootURI);
               printf (_("Namespace `%s' created (root: %s).\n"),
                       ns_name, root);
@@ -315,7 +314,7 @@ main (int argc, char *const *argv)
           if (NULL != advertisement)
             GNUNET_ECRS_uri_destroy (advertisement);
         }
-      GNUNET_ECRS_meta_data_delete (meta, EXTRACTOR_TITLE, create_name);
+      GNUNET_meta_data_delete (meta, EXTRACTOR_TITLE, create_name);
       GNUNET_free (create_name);
       create_name = NULL;
     }
@@ -329,11 +328,11 @@ main (int argc, char *const *argv)
   if (0 == be_quiet)
     {
       /* print information about pseudonyms */
-      cnt = GNUNET_PSEUDO_list_all (ectx, cfg, &namespacePrinter, NULL);
+      cnt = GNUNET_pseudonym_list_all (ectx, cfg, &namespacePrinter, NULL);
       if (cnt == -1)
         printf (_("Could not access namespace information.\n"));
     }
-  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta);
   GNUNET_CO_done ();
   GNUNET_fini (ectx, cfg);
   return success;

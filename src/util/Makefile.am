@@ -13,6 +13,7 @@ SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) \
   os \
   string \
   threads \
+  pseudonym \
   .
 
 INCLUDES = -I$(top_srcdir)/src/include
@@ -68,6 +69,7 @@ libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
  network/libnetwork.la \
  network_client/libnetwork_client.la \
  os/libos.la \
+ pseudonym/libpseudonym.la \
  threads/libthreads.la
 
 libgnunetutil_la_SOURCES = libgnunetutil.c

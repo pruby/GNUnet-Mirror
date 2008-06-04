@@ -115,24 +115,24 @@ WRITESTRING (WriteBuffer * wb, const char *name)
 
 static void
 writeMetaData (struct GNUNET_GE_Context *ectx,
-               WriteBuffer * wb, const struct GNUNET_ECRS_MetaData *meta)
+               WriteBuffer * wb, const struct GNUNET_MetaData *meta)
 {
   unsigned int size;
   char *buf;
 
-  size = GNUNET_ECRS_meta_data_get_serialized_size (meta,
-                                                    GNUNET_ECRS_SERIALIZE_FULL
-                                                    |
-                                                    GNUNET_ECRS_SERIALIZE_NO_COMPRESS);
+  size = GNUNET_meta_data_get_serialized_size (meta,
+					       GNUNET_SERIALIZE_FULL
+					       |
+					       GNUNET_SERIALIZE_NO_COMPRESS);
   if (size > 1024 * 1024)
     size = 1024 * 1024;
   buf = GNUNET_malloc (size);
-  GNUNET_ECRS_meta_data_serialize (ectx,
-                                   meta,
-                                   buf,
-                                   size,
-                                   GNUNET_ECRS_SERIALIZE_PART |
-                                   GNUNET_ECRS_SERIALIZE_NO_COMPRESS);
+  GNUNET_meta_data_serialize (ectx,
+			      meta,
+			      buf,
+			      size,
+			      GNUNET_SERIALIZE_PART |
+			      GNUNET_SERIALIZE_NO_COMPRESS);
   WRITEINT (wb, size);
   write_buffered (wb, buf, size);
   GNUNET_free (buf);

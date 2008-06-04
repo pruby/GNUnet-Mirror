@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/namespace/names.c
+ * @file util/pseudonym/names.c
  * @brief create unique, human-readable names for namespaces
  * @author Christian Grothoff
  */
@@ -27,7 +27,6 @@
 #include "platform.h"
 #include <extractor.h>
 #include "gnunet_directories.h"
-#include "gnunet_namespace_lib.h"
 #include "gnunet_util.h"
 #include "info.h"
 #include "common.h"
@@ -39,11 +38,11 @@
  * @return NULL on failure (should never happen)
  */
 char *
-GNUNET_PSEUDO_id_to_name (struct GNUNET_GE_Context *ectx,
-                          struct GNUNET_GC_Configuration *cfg,
-                          const GNUNET_HashCode * nsid)
+GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
+			     struct GNUNET_GC_Configuration *cfg,
+			     const GNUNET_HashCode * nsid)
 {
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   char *name;
   GNUNET_HashCode nh;
   char *fn;
@@ -56,29 +55,29 @@ GNUNET_PSEUDO_id_to_name (struct GNUNET_GE_Context *ectx,
   meta = NULL;
   name = NULL;
   if (GNUNET_OK ==
-      GNUNET_PSEUDO_internal_read_info_ (ectx, cfg, nsid, &meta, NULL, &name))
+      GNUNET_pseudonym_internal_read_info_ (ectx, cfg, nsid, &meta, NULL, &name))
     {
       if ((meta != NULL) && (name == NULL))
-        name = GNUNET_ECRS_meta_data_get_first_by_types (meta,
-                                                         EXTRACTOR_TITLE,
-                                                         EXTRACTOR_FILENAME,
-                                                         EXTRACTOR_DESCRIPTION,
-                                                         EXTRACTOR_SUBJECT,
-                                                         EXTRACTOR_PUBLISHER,
-                                                         EXTRACTOR_AUTHOR,
-                                                         EXTRACTOR_COMMENT,
-                                                         EXTRACTOR_SUMMARY,
-                                                         EXTRACTOR_OWNER, -1);
+        name = GNUNET_meta_data_get_first_by_types (meta,
+						    EXTRACTOR_TITLE,
+						    EXTRACTOR_FILENAME,
+						    EXTRACTOR_DESCRIPTION,
+						    EXTRACTOR_SUBJECT,
+						    EXTRACTOR_PUBLISHER,
+						    EXTRACTOR_AUTHOR,
+						    EXTRACTOR_COMMENT,
+						    EXTRACTOR_SUMMARY,
+						    EXTRACTOR_OWNER, -1);
       if (meta != NULL)
         {
-          GNUNET_ECRS_meta_data_destroy (meta);
+          GNUNET_meta_data_destroy (meta);
           meta = NULL;
         }
     }
   if (name == NULL)
     name = GNUNET_strdup (_("no-name"));
   GNUNET_hash (name, strlen (name), &nh);
-  fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,
+  fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
                                                   cfg, PS_NAMES_DIR, &nh);
   len = 0;
   GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES);
@@ -116,9 +115,9 @@ GNUNET_PSEUDO_id_to_name (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_OK on success
  */
 int
-GNUNET_PSEUDO_name_to_id (struct GNUNET_GE_Context *ectx,
-                          struct GNUNET_GC_Configuration *cfg,
-                          const char *ns_uname, GNUNET_HashCode * nsid)
+GNUNET_pseudonym_name_to_id (struct GNUNET_GE_Context *ectx,
+			     struct GNUNET_GC_Configuration *cfg,
+			     const char *ns_uname, GNUNET_HashCode * nsid)
 {
   size_t slen;
   unsigned long long len;
@@ -138,8 +137,8 @@ GNUNET_PSEUDO_name_to_id (struct GNUNET_GE_Context *ectx,
   name[slen - 1] = '\0';
   GNUNET_hash (name, strlen (name), &nh);
   GNUNET_free (name);
-  fn = GNUNET_PSEUDO_internal_get_data_filename_ (ectx,
-                                                  cfg, PS_NAMES_DIR, &nh);
+  fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
+						     cfg, PS_NAMES_DIR, &nh);
   if ((GNUNET_OK != GNUNET_disk_file_test (ectx,
                                            fn) ||
        (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES))) ||

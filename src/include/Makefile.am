@@ -34,7 +34,6 @@ gnunetinclude_HEADERS = \
   gnunet_namespace_lib.h \
   gnunet_pingpong_service.h \
   gnunet_protocols.h \
-  gnunet_pseudonym_lib.h \
   gnunet_remote_lib.h \
   gnunet_rpc_lib.h \
   gnunet_rpc_service.h \
@@ -68,5 +67,6 @@ gnunetinclude_HEADERS = \
   gnunet_util_network.h \
   gnunet_util_network_client.h \
   gnunet_util_os.h \
+  gnunet_util_pseudonym.h \
   gnunet_util_string.h \
   gnunet_util_threads.h 

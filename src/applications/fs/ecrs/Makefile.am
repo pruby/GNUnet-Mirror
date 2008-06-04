@@ -10,7 +10,6 @@ libgnunetecrs_la_SOURCES = \
   helper.c \
   indexinfo.c \
   keyspace.c \
-  meta.c \
   namespace.c \
   parser.c \
   search.c \
@@ -33,7 +32,6 @@ check_PROGRAMS = \
   downloadtest \
   namespacetest \
   uritest \
-  metatest \
   searchtest \
   directorytest \
   ecrstest \
@@ -54,11 +52,6 @@ uritest_LDADD = \
 namespacetest_SOURCES = \
   namespacetest.c 
 namespacetest_LDADD = \
-  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
-
-metatest_SOURCES = \
-  metatest.c 
-metatest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 ecrstest_SOURCES = \

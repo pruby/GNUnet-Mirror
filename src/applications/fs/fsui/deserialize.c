@@ -202,12 +202,12 @@ fixState (GNUNET_FSUI_State * state)
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-static struct GNUNET_ECRS_MetaData *
+static struct GNUNET_MetaData *
 read_meta (struct GNUNET_GE_Context *ectx, ReadBuffer * rb)
 {
   unsigned int size;
   char *buf;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
 
   if (read_uint (rb, &size) != GNUNET_OK)
     {
@@ -226,7 +226,7 @@ read_meta (struct GNUNET_GE_Context *ectx, ReadBuffer * rb)
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
     }
-  meta = GNUNET_ECRS_meta_data_deserialize (ectx, buf, size);
+  meta = GNUNET_meta_data_deserialize (ectx, buf, size);
   if (meta == NULL)
     {
       GNUNET_free (buf);
@@ -257,7 +257,7 @@ readFileInfo (struct GNUNET_GE_Context *ectx, ReadBuffer * rb,
   fi->uri = read_uri (ectx, rb);
   if (fi->uri == NULL)
     {
-      GNUNET_ECRS_meta_data_destroy (fi->meta);
+      GNUNET_meta_data_destroy (fi->meta);
       fi->meta = NULL;
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
@@ -343,7 +343,7 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
     {
       GNUNET_free (ret->filename);
       GNUNET_ECRS_uri_destroy (ret->fi.uri);
-      GNUNET_ECRS_meta_data_destroy (ret->fi.meta);
+      GNUNET_meta_data_destroy (ret->fi.meta);
       for (i = 0; i < ret->completedDownloadsCount; i++)
         {
           if (ret->completedDownloads[i] != NULL)
@@ -779,7 +779,7 @@ readUploadList (struct GNUNET_FSUI_Context *ctx,
           if (l.uri != NULL)
             GNUNET_ECRS_uri_destroy (l.uri);
           if (l.meta != NULL)
-            GNUNET_ECRS_meta_data_destroy (l.meta);
+            GNUNET_meta_data_destroy (l.meta);
           if (l.keywords != NULL)
             GNUNET_ECRS_uri_destroy (l.keywords);
           GNUNET_GE_BREAK (NULL, 0);

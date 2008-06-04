@@ -60,6 +60,7 @@
 #include "gnunet_util_error_loggers.h"
 #include "gnunet_util_containers.h"
 #include "gnunet_util_cron.h"
+#include "gnunet_util_pseudonym.h"
 #include "gnunet_util_boot.h"
 
 #ifdef __cplusplus

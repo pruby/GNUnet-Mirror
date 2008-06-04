@@ -142,7 +142,7 @@ GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
                               struct GNUNET_GC_Configuration *cfg,
-                              const struct GNUNET_ECRS_MetaData *meta,
+                              const struct GNUNET_MetaData *meta,
                               unsigned int anonymityLevel,
                               unsigned int priority,
                               GNUNET_CronTime expiration,
@@ -197,8 +197,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
 
   /* create advertisements */
   mdsize =
-    GNUNET_ECRS_meta_data_get_serialized_size (meta,
-                                               GNUNET_ECRS_SERIALIZE_PART);
+    GNUNET_meta_data_get_serialized_size (meta,
+					  GNUNET_SERIALIZE_PART);
   size = mdsize + sizeof (GNUNET_EC_NBlock);
   if (size > MAX_NBLOCK_SIZE)
     {
@@ -207,11 +207,11 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       nb = (GNUNET_EC_NBlock *) & value[1];
       nb->type = htonl (GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
       mdsize = size - sizeof (GNUNET_EC_NBlock);
-      mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
-                                                meta,
-                                                (char *) &nb[1],
-                                                mdsize,
-                                                GNUNET_ECRS_SERIALIZE_PART);
+      mdsize = GNUNET_meta_data_serialize (ectx,
+					   meta,
+					   (char *) &nb[1],
+					   mdsize,
+					   GNUNET_SERIALIZE_PART);
       if (mdsize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -226,10 +226,10 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
       nb = (GNUNET_EC_NBlock *) & value[1];
       nb->type = htonl (GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
-      GNUNET_ECRS_meta_data_serialize (ectx,
-                                       meta,
-                                       (char *) &nb[1], mdsize,
-                                       GNUNET_ECRS_SERIALIZE_FULL);
+      GNUNET_meta_data_serialize (ectx,
+				  meta,
+				  (char *) &nb[1], mdsize,
+				  GNUNET_SERIALIZE_FULL);
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
@@ -362,7 +362,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
                                    const GNUNET_HashCode * thisId,
                                    const GNUNET_HashCode * nextId,
                                    const struct GNUNET_ECRS_URI *dstU,
-                                   const struct GNUNET_ECRS_MetaData *md)
+                                   const struct GNUNET_MetaData *md)
 {
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ClientServerConnection *sock;
@@ -416,8 +416,8 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   /* THEN: construct GNUNET_EC_SBlock */
   dstURI = GNUNET_ECRS_uri_to_string (dstU);
   mdsize =
-    GNUNET_ECRS_meta_data_get_serialized_size (md,
-                                               GNUNET_ECRS_SERIALIZE_PART);
+    GNUNET_meta_data_get_serialized_size (md,
+					  GNUNET_SERIALIZE_PART);
   size = mdsize + sizeof (GNUNET_EC_SBlock) + strlen (dstURI) + 1;
   if (size > MAX_SBLOCK_SIZE)
     {
@@ -428,11 +428,11 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
       destPos = (char *) &sb[1];
       memcpy (destPos, dstURI, strlen (dstURI) + 1);
       mdsize = size - sizeof (GNUNET_EC_SBlock) - strlen (dstURI) - 1;
-      mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
-                                                md,
-                                                &destPos[strlen (dstURI) + 1],
-                                                mdsize,
-                                                GNUNET_ECRS_SERIALIZE_PART);
+      mdsize = GNUNET_meta_data_serialize (ectx,
+					   md,
+					   &destPos[strlen (dstURI) + 1],
+					   mdsize,
+					   GNUNET_SERIALIZE_PART);
       if (mdsize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -450,10 +450,10 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
       sb->type = htonl (GNUNET_ECRS_BLOCKTYPE_SIGNED);
       destPos = (char *) &sb[1];
       memcpy (destPos, dstURI, strlen (dstURI) + 1);
-      GNUNET_ECRS_meta_data_serialize (ectx,
-                                       md,
-                                       &destPos[strlen (dstURI) + 1],
-                                       mdsize, GNUNET_ECRS_SERIALIZE_FULL);
+      GNUNET_meta_data_serialize (ectx,
+				  md,
+				  &destPos[strlen (dstURI) + 1],
+				  mdsize, GNUNET_SERIALIZE_FULL);
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_ECRS_BLOCKTYPE_SIGNED);

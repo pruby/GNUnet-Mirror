@@ -104,7 +104,7 @@ read_update_data (struct GNUNET_GE_Context *ectx,
     }
   if (fi != NULL)
     {
-      fi->meta = GNUNET_ECRS_meta_data_deserialize (ectx, &uri[pos], size);
+      fi->meta = GNUNET_meta_data_deserialize (ectx, &uri[pos], size);
       if (fi->meta == NULL)
         {
           GNUNET_free (buf);
@@ -114,7 +114,7 @@ read_update_data (struct GNUNET_GE_Context *ectx,
       fi->uri = GNUNET_ECRS_string_to_uri (ectx, uri);
       if (fi->uri == NULL)
         {
-          GNUNET_ECRS_meta_data_destroy (fi->meta);
+          GNUNET_meta_data_destroy (fi->meta);
           fi->meta = NULL;
           GNUNET_free (buf);
           GNUNET_GE_BREAK (ectx, 0);
@@ -152,8 +152,8 @@ write_update_data (struct GNUNET_GE_Context *ectx,
 
   uri = GNUNET_ECRS_uri_to_string (fi->uri);
   metaSize =
-    GNUNET_ECRS_meta_data_get_serialized_size (fi->meta,
-                                               GNUNET_ECRS_SERIALIZE_FULL);
+    GNUNET_meta_data_get_serialized_size (fi->meta,
+					  GNUNET_SERIALIZE_FULL);
   size = sizeof (struct UpdateData) + metaSize + strlen (uri) + 1;
   buf = GNUNET_malloc (size);
   buf->nextId = *nextId;
@@ -163,12 +163,12 @@ write_update_data (struct GNUNET_GE_Context *ectx,
   memcpy (&buf[1], uri, strlen (uri) + 1);
   GNUNET_GE_ASSERT (ectx,
                     metaSize ==
-                    GNUNET_ECRS_meta_data_serialize (ectx,
-                                                     fi->meta,
-                                                     &((char *)
-                                                       &buf[1])[strlen (uri) +
-                                                                1], metaSize,
-                                                     GNUNET_ECRS_SERIALIZE_FULL));
+                    GNUNET_meta_data_serialize (ectx,
+						fi->meta,
+						&((char *)
+						  &buf[1])[strlen (uri) +
+							   1], metaSize,
+						GNUNET_SERIALIZE_FULL));
   GNUNET_free (uri);
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
                                               cfg,
@@ -248,7 +248,7 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
                             const GNUNET_HashCode * thisId,
                             const GNUNET_HashCode * nextId,
                             const struct GNUNET_ECRS_URI *dst,
-                            const struct GNUNET_ECRS_MetaData *md)
+                            const struct GNUNET_MetaData *md)
 {
   GNUNET_Int32Time creationTime;
   GNUNET_HashCode nid;
@@ -374,7 +374,7 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
   if ((uri != NULL) && (dst != NULL))
     {
       fi.uri = (struct GNUNET_ECRS_URI *) dst;
-      fi.meta = (struct GNUNET_ECRS_MetaData *) md;
+      fi.meta = (struct GNUNET_MetaData *) md;
       write_update_data (ectx,
                          cfg,
                          nsid, &tid, &nid, &fi, updateInterval, creationTime);
@@ -447,12 +447,12 @@ list_namespace_contents_helper (const char *fil, const char *dir, void *ptr)
                                 &fi, &lastId, &nextId, pubFreq, nextTime))
         {
           GNUNET_ECRS_uri_destroy (fi.uri);
-          GNUNET_ECRS_meta_data_destroy (fi.meta);
+          GNUNET_meta_data_destroy (fi.meta);
           return GNUNET_SYSERR;
         }
     }
   GNUNET_ECRS_uri_destroy (fi.uri);
-  GNUNET_ECRS_meta_data_destroy (fi.meta);
+  GNUNET_meta_data_destroy (fi.meta);
   return GNUNET_OK;
 }
 

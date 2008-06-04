@@ -56,7 +56,7 @@ void GNUNET_CO_done (void);
 int GNUNET_CO_collection_start (unsigned int anonymityLevel,
                                 unsigned int priority,
                                 GNUNET_Int32Time updateInterval,
-                                const struct GNUNET_ECRS_MetaData *meta);
+                                const struct GNUNET_MetaData *meta);
 
 /**
  * Stop collection.
@@ -71,7 +71,7 @@ int GNUNET_CO_collection_stop (void);
  *
  * @return NULL if there is no collection, otherwise its metadata
  */
-struct GNUNET_ECRS_MetaData *GNUNET_CO_collection_get_name (void);
+struct GNUNET_MetaData *GNUNET_CO_collection_get_name (void);
 
 /**
  * GNUNET_ND_UPLOAD an update of the current collection information to the

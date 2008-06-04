@@ -273,10 +273,10 @@ process_nblock_result (const GNUNET_EC_NBlock * nb,
   struct GNUNET_ECRS_URI uri;
   int ret;
 
-  fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
-                                               (const char *) &nb[1],
-                                               size -
-                                               sizeof (GNUNET_EC_NBlock));
+  fi.meta = GNUNET_meta_data_deserialize (ectx,
+					  (const char *) &nb[1],
+					  size -
+					  sizeof (GNUNET_EC_NBlock));
   if (fi.meta == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);        /* nblock malformed */
@@ -294,7 +294,7 @@ process_nblock_result (const GNUNET_EC_NBlock * nb,
     }
   else
     ret = GNUNET_OK;
-  GNUNET_ECRS_meta_data_destroy (fi.meta);
+  GNUNET_meta_data_destroy (fi.meta);
   return ret;
 }
 
@@ -389,7 +389,7 @@ receive_response_callback (const GNUNET_HashCode * key,
           }
         dstURI = (const char *) &kb[1];
         j++;
-        fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
+        fi.meta = GNUNET_meta_data_deserialize (ectx,
                                                      &((const char *)
                                                        kb)[j], size - j);
         if (fi.meta == NULL)
@@ -402,7 +402,7 @@ receive_response_callback (const GNUNET_HashCode * key,
         if (fi.uri == NULL)
           {
             GNUNET_GE_BREAK (ectx, 0);  /* kblock malformed */
-            GNUNET_ECRS_meta_data_destroy (fi.meta);
+            GNUNET_meta_data_destroy (fi.meta);
             GNUNET_free (kb);
             return GNUNET_SYSERR;
           }
@@ -416,7 +416,7 @@ receive_response_callback (const GNUNET_HashCode * key,
         else
           ret = GNUNET_OK;
         GNUNET_ECRS_uri_destroy (fi.uri);
-        GNUNET_ECRS_meta_data_destroy (fi.meta);
+        GNUNET_meta_data_destroy (fi.meta);
         GNUNET_free (kb);
         return ret;
       }
@@ -481,11 +481,11 @@ receive_response_callback (const GNUNET_HashCode * key,
           }
         j++;
         /* j == strlen(dstURI) + 1 */
-        fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
-                                                     &dstURI[j],
-                                                     size - j -
-                                                     sizeof
-                                                     (GNUNET_EC_SBlock));
+        fi.meta = GNUNET_meta_data_deserialize (ectx,
+						&dstURI[j],
+						size - j -
+						sizeof
+						(GNUNET_EC_SBlock));
         if (fi.meta == NULL)
           {
             GNUNET_GE_BREAK (ectx, 0);  /* sblock malformed */
@@ -496,7 +496,7 @@ receive_response_callback (const GNUNET_HashCode * key,
         if (fi.uri == NULL)
           {
             GNUNET_GE_BREAK (ectx, 0);  /* sblock malformed */
-            GNUNET_ECRS_meta_data_destroy (fi.meta);
+            GNUNET_meta_data_destroy (fi.meta);
             GNUNET_free (sb);
             return GNUNET_SYSERR;
           }
@@ -509,7 +509,7 @@ receive_response_callback (const GNUNET_HashCode * key,
         else
           ret = GNUNET_OK;
         GNUNET_ECRS_uri_destroy (fi.uri);
-        GNUNET_ECRS_meta_data_destroy (fi.meta);
+        GNUNET_meta_data_destroy (fi.meta);
 
         /* compute current/NEXT URI (if updateable GNUNET_EC_SBlock) and issue
            respective query automatically! */

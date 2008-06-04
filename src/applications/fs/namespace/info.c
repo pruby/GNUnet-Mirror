@@ -26,7 +26,6 @@
 
 #include "platform.h"
 #include "gnunet_directories.h"
-#include "gnunet_pseudonym_lib.h"
 #include "gnunet_namespace_lib.h"
 #include "gnunet_util.h"
 #include "common.h"
@@ -45,7 +44,7 @@ GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
                             unsigned int anonymityLevel,
                             unsigned int insertPriority,
                             GNUNET_CronTime insertExpiration,
-                            const struct GNUNET_ECRS_MetaData *meta,
+                            const struct GNUNET_MetaData *meta,
                             const struct GNUNET_ECRS_URI *advertisementURI,
                             const GNUNET_HashCode * rootEntry)
 {
@@ -63,7 +62,7 @@ GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
     {
       GNUNET_NS_namespace_set_root (ectx, cfg, ret);
       GNUNET_ECRS_uri_get_namespace_from_sks (ret, &id);
-      GNUNET_PSEUDO_add (ectx, cfg, &id, meta);
+      GNUNET_pseudonym_add (ectx, cfg, &id, meta);
     }
   return ret;
 }

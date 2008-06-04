@@ -25,7 +25,7 @@
  */
 
 
-#include "gnunet_pseudonym_lib.h"
+#include "gnunet_util.h"
 
 #ifndef PSEUDONYM_NOTIFICATON_H
 #define PSEUDONYM_NOTIFICATON_H
@@ -34,8 +34,8 @@
  * Internal notification about new tracked pseudonym.
  */
 void
-GNUNET_PSEUDO_internal_notify_ (const GNUNET_HashCode * id,
-                                const struct GNUNET_ECRS_MetaData *md,
-                                int rating);
+GNUNET_pseudonym_internal_notify_ (const GNUNET_HashCode * id,
+				   const struct GNUNET_MetaData *md,
+				   int rating);
 
 #endif

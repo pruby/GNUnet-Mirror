@@ -102,7 +102,7 @@ GNUNET_ECRS_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext
 
 
 /**
- * @param scls must be of type "struct GNUNET_ECRS_MetaData **"
+ * @param scls must be of type "struct GNUNET_MetaData **"
  */
 int
 GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
@@ -110,17 +110,17 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
                                            const char *option,
                                            const char *value)
 {
-  struct GNUNET_ECRS_MetaData **mm = scls;
+  struct GNUNET_MetaData **mm = scls;
   EXTRACTOR_KeywordType type;
   const char *typename;
   const char *typename_i18n;
-  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_MetaData *meta;
   char *tmp;
 
   meta = *mm;
   if (meta == NULL)
     {
-      meta = GNUNET_ECRS_meta_data_create ();
+      meta = GNUNET_meta_data_create ();
       *mm = meta;
     }
 
@@ -141,7 +141,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
           (tmp[strlen (typename)] == ':') &&
           (0 == strncmp (typename, tmp, strlen (typename))))
         {
-          GNUNET_ECRS_meta_data_insert (meta, type,
+          GNUNET_meta_data_insert (meta, type,
                                         &tmp[strlen (typename) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
@@ -151,8 +151,8 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
           (tmp[strlen (typename_i18n)] == ':') &&
           (0 == strncmp (typename_i18n, tmp, strlen (typename_i18n))))
         {
-          GNUNET_ECRS_meta_data_insert (meta, type,
-                                        &tmp[strlen (typename_i18n) + 1]);
+          GNUNET_meta_data_insert (meta, type,
+				   &tmp[strlen (typename_i18n) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
           break;
@@ -160,7 +160,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
     }
   if (tmp != NULL)
     {
-      GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_UNKNOWN, tmp);
+      GNUNET_meta_data_insert (meta, EXTRACTOR_UNKNOWN, tmp);
       GNUNET_free (tmp);
       printf (_
               ("Unknown metadata type in metadata option `%s'.  Using metadata type `unknown' instead.\n"),

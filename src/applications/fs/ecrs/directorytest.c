@@ -48,7 +48,7 @@ processor (const GNUNET_ECRS_FileInfo * fi,
 
   for (i = 0; i < p->max; i++)
     {
-      if (GNUNET_ECRS_meta_data_test_equal (p->fi[i].meta,
+      if (GNUNET_meta_data_test_equal (p->fi[i].meta,
                                             fi->meta) &&
           GNUNET_ECRS_uri_test_equal (p->fi[i].uri, fi->uri))
         {
@@ -66,8 +66,8 @@ testDirectory (unsigned int i)
   char *data;
   unsigned long long dlen;
   GNUNET_ECRS_FileInfo *fis;
-  struct GNUNET_ECRS_MetaData *meta;
-  struct GNUNET_ECRS_MetaData *meta2;
+  struct GNUNET_MetaData *meta;
+  struct GNUNET_MetaData *meta2;
   struct PCLS cls;
   int p;
   int q;
@@ -79,11 +79,11 @@ testDirectory (unsigned int i)
   fis = GNUNET_malloc (sizeof (GNUNET_ECRS_FileInfo) * i);
   for (p = 0; p < i; p++)
     {
-      fis[p].meta = GNUNET_ECRS_meta_data_create ();
+      fis[p].meta = GNUNET_meta_data_create ();
       for (q = 0; q <= p; q++)
         {
           GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
-          GNUNET_ECRS_meta_data_insert (fis[p].meta,
+          GNUNET_meta_data_insert (fis[p].meta,
                                         q %
                                         EXTRACTOR_getHighestKeywordTypeNumber
                                         (), txt);
@@ -95,26 +95,26 @@ testDirectory (unsigned int i)
       fis[p].uri = GNUNET_ECRS_string_to_uri (NULL, uri);
       if (fis[p].uri == NULL)
         {
-          GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+          GNUNET_meta_data_destroy (fis[p].meta);
           while (--p > 0)
             {
-              GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+              GNUNET_meta_data_destroy (fis[p].meta);
               GNUNET_ECRS_uri_destroy (fis[p].uri);
             }
           GNUNET_free (fis);
           ABORT ();             /* error in testcase */
         }
     }
-  meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, "A title");
-  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_AUTHOR, "An author");
+  meta = GNUNET_meta_data_create ();
+  GNUNET_meta_data_insert (meta, EXTRACTOR_TITLE, "A title");
+  GNUNET_meta_data_insert (meta, EXTRACTOR_AUTHOR, "An author");
   if (GNUNET_OK !=
       GNUNET_ECRS_directory_create (NULL, &data, &dlen, i, fis, meta))
     {
-      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_meta_data_destroy (meta);
       for (p = 0; p < i; p++)
         {
-          GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+          GNUNET_meta_data_destroy (fis[p].meta);
           GNUNET_ECRS_uri_destroy (fis[p].uri);
         }
       GNUNET_free (fis);
@@ -130,18 +130,18 @@ testDirectory (unsigned int i)
       ret = 1;
       goto END;
     }
-  if (!GNUNET_ECRS_meta_data_test_equal (meta, meta2))
+  if (!GNUNET_meta_data_test_equal (meta, meta2))
     {
       ret = 1;
       goto END;
     }
 END:
   GNUNET_free (data);
-  GNUNET_ECRS_meta_data_destroy (meta);
-  GNUNET_ECRS_meta_data_destroy (meta2);
+  GNUNET_meta_data_destroy (meta);
+  GNUNET_meta_data_destroy (meta2);
   for (p = 0; p < i; p++)
     {
-      GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+      GNUNET_meta_data_destroy (fis[p].meta);
       GNUNET_ECRS_uri_destroy (fis[p].uri);
     }
   GNUNET_free (fis);
