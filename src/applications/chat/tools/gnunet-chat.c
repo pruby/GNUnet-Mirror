@@ -407,13 +407,13 @@ static struct ChatCommand commands[] = {
    ("Use `/names' to list all of the current members in the chat room")},
   {"/help", &do_help,
    gettext_noop ("Use `/help command' to get help for a specific command")},
-  /* Add standard commands: 
+  /* Add standard commands:
      /help (print help texts),
-     /whois (print metadata), 
+     /whois (print metadata),
      /ignore (set flag, check on receive!) */
   /* Add special commands (currently supported):
      + anonymous msgs
-     + authenticated msgs 
+     + authenticated msgs
    */
   /* the following three commands must be last! */
   {"/", &do_unknown, NULL},

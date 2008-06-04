@@ -276,7 +276,7 @@ GNUNET_client_connection_ensure_connected (struct
   if (host == NULL)
     return GNUNET_SYSERR;
   af_index = 0;
-  /* we immediately advance if there is a DNS lookup error 
+  /* we immediately advance if there is a DNS lookup error
    * (which would likely persist) or a socket API error
    * (which would equally likely persist).  We retry a
    * few times with a small delay if we may just be having

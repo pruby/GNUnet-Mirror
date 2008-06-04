@@ -1273,8 +1273,8 @@ get (const GNUNET_HashCode * query,
   if (type != 0)
     stmt =
       (vhash !=
-       NULL) ? dbh->
-      count_entry_by_hash_vhash_and_type : dbh->count_entry_by_hash_and_type;
+       NULL) ? dbh->count_entry_by_hash_vhash_and_type : dbh->
+      count_entry_by_hash_and_type;
   else
     stmt =
       (vhash !=
@@ -1416,8 +1416,8 @@ get (const GNUNET_HashCode * query,
       else
         stmt =
           (vhash !=
-           NULL) ? dbh->
-          select_entry_by_hash_and_vhash : dbh->select_entry_by_hash;
+           NULL) ? dbh->select_entry_by_hash_and_vhash : dbh->
+          select_entry_by_hash;
       if (count == 0)
         limit_off = off;
       else
