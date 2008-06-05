@@ -298,125 +298,6 @@ GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
   return ret;
 }
 
-#if HAVE_GETHOSTBYNAME
-static int
-gethostbyname_resolve (struct GNUNET_GE_Context *ectx,
-                       const char *hostname,
-                       struct sockaddr **sa, socklen_t * socklen)
-{
-  struct hostent *hp;
-  struct sockaddr_in *addr;
-
-  hp = GETHOSTBYNAME (hostname);
-  if (hp == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     _("Could not find IP of host `%s': %s\n"),
-                     hostname, hstrerror (h_errno));
-      return GNUNET_SYSERR;
-    }
-  if (hp->h_addrtype != AF_INET)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      return GNUNET_SYSERR;
-    }
-  GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in_addr));
-  if (NULL == *sa)
-    {
-      *sa = GNUNET_malloc (sizeof (struct sockaddr_in));
-      memset (*sa, 0, sizeof (struct sockaddr_in));
-      *socklen = sizeof (struct sockaddr_in);
-    }
-  else
-    {
-      if (sizeof (struct sockaddr_in) > *socklen)
-        return GNUNET_SYSERR;
-      *socklen = sizeof (struct sockaddr_in);
-    }
-  addr = (struct sockaddr_in *) *sa;
-  memset (addr, 0, sizeof (struct sockaddr_in));
-  addr->sin_family = AF_INET;
-  memcpy (&addr->sin_addr, hp->h_addr_list[0], hp->h_length);
-  return GNUNET_OK;
-}
-#endif
-
-#if HAVE_GETHOSTBYNAME2
-static int
-gethostbyname2_resolve (struct GNUNET_GE_Context *ectx,
-                        const char *hostname,
-                        int domain, struct sockaddr **sa, socklen_t * socklen)
-{
-  struct hostent *hp;
-
-  if (domain == AF_UNSPEC)
-    {
-      hp = gethostbyname2 (hostname, AF_INET);
-      if (hp == NULL)
-        hp = gethostbyname2 (hostname, AF_INET6);
-    }
-  else
-    {
-      hp = gethostbyname2 (hostname, domain);
-    }
-  if (hp == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     _("Could not find IP of host `%s': %s\n"),
-                     hostname, hstrerror (h_errno));
-      return GNUNET_SYSERR;
-    }
-  if ((hp->h_addrtype != domain) && (domain != 0))
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      return GNUNET_SYSERR;
-    }
-  domain = hp->h_addrtype;
-  if (domain == AF_INET)
-    {
-      GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in_addr));
-      if (NULL == *sa)
-        {
-          *sa = GNUNET_malloc (sizeof (struct sockaddr_in));
-          memset (*sa, 0, sizeof (struct sockaddr_in));
-          *socklen = sizeof (struct sockaddr_in);
-        }
-      else
-        {
-          if (sizeof (struct sockaddr_in) > *socklen)
-            return GNUNET_SYSERR;
-          *socklen = sizeof (struct sockaddr_in);
-        }
-      memset (*sa, 0, sizeof (struct sockaddr_in));
-      (*sa)->sa_family = AF_INET;
-      memcpy (&((struct sockaddr_in *) (*sa))->sin_addr,
-              hp->h_addr_list[0], hp->h_length);
-    }
-  else
-    {
-      GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in6_addr));
-      if (NULL == *sa)
-        {
-          *sa = GNUNET_malloc (sizeof (struct sockaddr_in6));
-          memset (*sa, 0, sizeof (struct sockaddr_in6));
-          *socklen = sizeof (struct sockaddr_in6);
-        }
-      else
-        {
-          if (sizeof (struct sockaddr_in6) > *socklen)
-            return GNUNET_SYSERR;
-          *socklen = sizeof (struct sockaddr_in6);
-        }
-      memset (*sa, 0, sizeof (struct sockaddr_in6));
-      (*sa)->sa_family = AF_INET6;
-      memcpy (&((struct sockaddr_in6 *) (*sa))->sin6_addr,
-              hp->h_addr_list[0], hp->h_length);
-    }
-  return GNUNET_OK;
-}
-#endif
 
 #if HAVE_GETADDRINFO
 int
@@ -516,6 +397,128 @@ getaddrinfo_resolve (struct GNUNET_GE_Context *ectx,
   freeaddrinfo (result);
   return GNUNET_OK;
 }
+#else
+
+#if HAVE_GETHOSTBYNAME2
+static int
+gethostbyname2_resolve (struct GNUNET_GE_Context *ectx,
+                        const char *hostname,
+                        int domain, struct sockaddr **sa, socklen_t * socklen)
+{
+  struct hostent *hp;
+
+  if (domain == AF_UNSPEC)
+    {
+      hp = gethostbyname2 (hostname, AF_INET);
+      if (hp == NULL)
+        hp = gethostbyname2 (hostname, AF_INET6);
+    }
+  else
+    {
+      hp = gethostbyname2 (hostname, domain);
+    }
+  if (hp == NULL)
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("Could not find IP of host `%s': %s\n"),
+                     hostname, hstrerror (h_errno));
+      return GNUNET_SYSERR;
+    }
+  if ((hp->h_addrtype != domain) && (domain != 0))
+    {
+      GNUNET_GE_BREAK (ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  domain = hp->h_addrtype;
+  if (domain == AF_INET)
+    {
+      GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in_addr));
+      if (NULL == *sa)
+        {
+          *sa = GNUNET_malloc (sizeof (struct sockaddr_in));
+          memset (*sa, 0, sizeof (struct sockaddr_in));
+          *socklen = sizeof (struct sockaddr_in);
+        }
+      else
+        {
+          if (sizeof (struct sockaddr_in) > *socklen)
+            return GNUNET_SYSERR;
+          *socklen = sizeof (struct sockaddr_in);
+        }
+      memset (*sa, 0, sizeof (struct sockaddr_in));
+      (*sa)->sa_family = AF_INET;
+      memcpy (&((struct sockaddr_in *) (*sa))->sin_addr,
+              hp->h_addr_list[0], hp->h_length);
+    }
+  else
+    {
+      GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in6_addr));
+      if (NULL == *sa)
+        {
+          *sa = GNUNET_malloc (sizeof (struct sockaddr_in6));
+          memset (*sa, 0, sizeof (struct sockaddr_in6));
+          *socklen = sizeof (struct sockaddr_in6);
+        }
+      else
+        {
+          if (sizeof (struct sockaddr_in6) > *socklen)
+            return GNUNET_SYSERR;
+          *socklen = sizeof (struct sockaddr_in6);
+        }
+      memset (*sa, 0, sizeof (struct sockaddr_in6));
+      (*sa)->sa_family = AF_INET6;
+      memcpy (&((struct sockaddr_in6 *) (*sa))->sin6_addr,
+              hp->h_addr_list[0], hp->h_length);
+    }
+  return GNUNET_OK;
+}
+#else
+
+#if HAVE_GETHOSTBYNAME
+static int
+gethostbyname_resolve (struct GNUNET_GE_Context *ectx,
+                       const char *hostname,
+                       struct sockaddr **sa, socklen_t * socklen)
+{
+  struct hostent *hp;
+  struct sockaddr_in *addr;
+
+  hp = GETHOSTBYNAME (hostname);
+  if (hp == NULL)
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("Could not find IP of host `%s': %s\n"),
+                     hostname, hstrerror (h_errno));
+      return GNUNET_SYSERR;
+    }
+  if (hp->h_addrtype != AF_INET)
+    {
+      GNUNET_GE_BREAK (ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in_addr));
+  if (NULL == *sa)
+    {
+      *sa = GNUNET_malloc (sizeof (struct sockaddr_in));
+      memset (*sa, 0, sizeof (struct sockaddr_in));
+      *socklen = sizeof (struct sockaddr_in);
+    }
+  else
+    {
+      if (sizeof (struct sockaddr_in) > *socklen)
+        return GNUNET_SYSERR;
+      *socklen = sizeof (struct sockaddr_in);
+    }
+  addr = (struct sockaddr_in *) *sa;
+  memset (addr, 0, sizeof (struct sockaddr_in));
+  addr->sin_family = AF_INET;
+  memcpy (&addr->sin_addr, hp->h_addr_list[0], hp->h_length);
+  return GNUNET_OK;
+}
+#endif
+#endif
 #endif
 
 
