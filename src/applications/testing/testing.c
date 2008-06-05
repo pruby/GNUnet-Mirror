@@ -171,7 +171,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
      maybe creating public keys and waiting for
      entropy! */
   if (GNUNET_OK !=
-      GNUNET_wait_for_daemon_running (NULL, cfg, 15 * GNUNET_CRON_MINUTES))
+      GNUNET_wait_for_daemon_running (NULL, cfg, 10 * GNUNET_CRON_SECONDS))
     {
       fprintf (stderr, "Failed to confirm daemon running!\n");
       GNUNET_GC_free (cfg);
@@ -195,7 +195,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
         }
       else
         {
-          GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
+          GNUNET_thread_sleep (150 * GNUNET_CRON_MILLISECONDS);
         }
       GNUNET_client_connection_destroy (sock);
     }
