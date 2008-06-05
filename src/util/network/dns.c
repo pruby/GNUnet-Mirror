@@ -373,7 +373,7 @@ gethostbyname2_resolve (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  domain = hp->haddrtype;
+  domain = hp->h_addrtype;
   if (domain == AF_INET)
     {
       GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in_addr));
