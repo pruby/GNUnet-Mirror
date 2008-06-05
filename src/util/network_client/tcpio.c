@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -247,7 +247,16 @@ GNUNET_client_connection_ensure_connected (struct
 {
   /* list of address families to try for connecting,
      in order of preference */
-  static int addr_families[] = { AF_UNSPEC, AF_INET6, AF_INET, -1 };
+  static int addr_families[] = { 
+#ifdef AF_UNSPEC
+    AF_UNSPEC, 
+#endif
+#ifdef AF_INET6
+    AF_INET6, 
+#endif
+    AF_INET,
+    -1 
+  };
   GNUNET_CronTime select_start;
   struct sockaddr *soaddr;
   socklen_t socklen;
@@ -324,8 +333,13 @@ GNUNET_client_connection_ensure_connected (struct
         }
       else
         {
+#ifdef PF_INET6
           ((struct sockaddr_in6 *) soaddr)->sin6_port = htons (port);
           osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
+#else
+	  osock = -1;
+	  errno = EAFNOSUPPORT;
+#endif
         }
       if (osock == -1)
         {
