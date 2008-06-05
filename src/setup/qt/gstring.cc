@@ -24,6 +24,7 @@
  */
 
 #include <QtCore/QByteArray>
+#include <malloc.h>
 
 #include "gstring.h"
 
