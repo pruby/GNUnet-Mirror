@@ -396,7 +396,7 @@ gethostbyname2_resolve (struct GNUNET_GE_Context *ectx,
     }
   else
     {
-      GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in_addr6));
+      GNUNET_GE_ASSERT (NULL, hp->h_length == sizeof (struct in6_addr));
       if (NULL == *sa)
         {
           *sa = GNUNET_malloc (sizeof (struct sockaddr_in6));
