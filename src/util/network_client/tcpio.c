@@ -291,8 +291,8 @@ GNUNET_client_connection_ensure_connected (struct
    * few times with a small delay if we may just be having
    * a connection issue.
    */
-#define TRIES_PER_AF 4
-#define DELAY_PER_RETRY (250 * GNUNET_CRON_MILLISECONDS)
+#define TRIES_PER_AF 2
+#define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
 #define ADVANCE() do { af_index++; tries = TRIES_PER_AF; } while(0)
 #define RETRY() do { tries--; if (tries == 0) { ADVANCE(); } else { GNUNET_thread_sleep(DELAY_PER_RETRY); } } while (0)
   tries = TRIES_PER_AF;
@@ -300,7 +300,12 @@ GNUNET_client_connection_ensure_connected (struct
   while (1)
     {
       if (addr_families[af_index] == -1)
-        return GNUNET_SYSERR;
+	{
+          GNUNET_GE_LOG (sock->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Error connecting to %s:%u\n"), host, port);
+	  return GNUNET_SYSERR;
+	}
       soaddr = NULL;
       socklen = 0;
       if (GNUNET_SYSERR ==
@@ -402,9 +407,6 @@ GNUNET_client_connection_ensure_connected (struct
         }
       if ((FD_ISSET (osock, &eset)) || (!FD_ISSET (osock, &wset)))
         {
-          GNUNET_GE_LOG (sock->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                         _("Error connecting to %s:%u\n"), host, port);
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
@@ -425,10 +427,6 @@ GNUNET_client_connection_ensure_connected (struct
                                 GNUNET_GE_BULK, "getsockopt");
       if ((soerr != 0) || (ret != 0 && (errno == ENOTSOCK || errno == EBADF)))
         {
-          GNUNET_GE_LOG (sock->ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_USER |
-                         GNUNET_GE_BULK,
-                         _("Failed to connect to %s:%u\n"), host, port);
           GNUNET_socket_destroy (sock->sock);
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);

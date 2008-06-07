@@ -256,8 +256,8 @@ reply_process_thread (void *cls)
             {
               GNUNET_thread_sleep (delay);
               delay *= 2;
-              if (delay > 5 * GNUNET_CRON_SECONDS)
-                delay = 5 * GNUNET_CRON_SECONDS;
+              if (delay > 60 * GNUNET_CRON_SECONDS)
+                delay = 60 * GNUNET_CRON_SECONDS;
               if ((GNUNET_OK ==
                    GNUNET_client_connection_ensure_connected (ctx->sock))
                   && (GNUNET_OK == reissue_requests (ctx)))
@@ -339,7 +339,6 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
 {
   struct GNUNET_FS_SearchHandle *ret;
   CS_fs_request_search_MESSAGE *req;
-  int ok;
 #if DEBUG_FSLIB
   GNUNET_EncName enc;
 #endif
@@ -373,9 +372,10 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
            "FSLIB passes request %u to daemon (%d)\n",
            ctx->total_requested++, type);
 #endif
-  ok = GNUNET_client_connection_write (ctx->sock, &req->header);
+  if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req->header))
+    GNUNET_client_connection_close_temporarily(ctx->sock);    
   GNUNET_mutex_unlock (ctx->lock);
-  return ok;
+  return GNUNET_OK;
 }
 
 /**
