@@ -22,12 +22,6 @@
  * @file applications/fs/namespace/uri.c
  * @brief uri support
  * @author Christian Grothoff
- *
- * TODO:
- * - consider remembering the char*-form of the
- *   namespace identifier (optionally?)
- *   => generate better names when possible!
- *   (this would require changes in ECRS!)
  */
 
 #include "platform.h"
@@ -44,11 +38,10 @@ GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
                                             *cfg,
                                             const struct GNUNET_ECRS_URI *uri)
 {
-  GNUNET_EncName enc;
   char *ret;
   char *name;
   GNUNET_HashCode nsid;
-  GNUNET_HashCode chk;
+  char *id;
 
   if (!GNUNET_ECRS_uri_test_sks (uri))
     return NULL;
@@ -56,12 +49,12 @@ GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
   name = GNUNET_pseudonym_id_to_name (ectx, cfg, &nsid);
   if (name == NULL)
     return GNUNET_ECRS_uri_to_string (uri);
-  GNUNET_ECRS_uri_get_content_hash_from_sks (uri, &chk);
-  GNUNET_hash_to_enc (&chk, &enc);
-  ret = GNUNET_malloc (strlen (name) + 4 + sizeof (GNUNET_EncName));
+  id = GNUNET_ECRS_uri_get_content_id_from_sks (uri);
+  ret = GNUNET_malloc (strlen (name) + 4 + strlen (id));
   strcpy (ret, name);
   strcat (ret, ": ");
-  strcat (ret, (const char *) &enc);
+  strcat (ret, id);
+  GNUNET_free (id);
   return ret;
 }
 

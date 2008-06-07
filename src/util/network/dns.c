@@ -308,8 +308,8 @@ getaddrinfo_resolve (struct GNUNET_GE_Context *ectx,
   int s;
   struct addrinfo hints;
   struct addrinfo *result;
-  struct in6_addr * out;
- 
+  struct in6_addr *out;
+
   memset (&hints, 0, sizeof (struct addrinfo));
 // FIXME in PlibC
 #ifndef MINGW
@@ -326,47 +326,47 @@ getaddrinfo_resolve (struct GNUNET_GE_Context *ectx,
   if (0 != (s = getaddrinfo (hostname, NULL, &hints, &result)))
     {
       if (domain == AF_INET6)
-	{
-	  /* try v4 resolving + mapping */
-	  hints.ai_family = AF_INET;
-	  if (0 == getaddrinfo (hostname, NULL, &hints, &result))
-	    {	      
-	      GNUNET_GE_ASSERT(NULL, result->ai_addrlen == sizeof(struct sockaddr_in));
-	      if (NULL == *sa)
-		{		  
-		  *sa = GNUNET_malloc (sizeof(struct sockaddr_in6));
-		  *socklen = sizeof(struct sockaddr_in6);
-		  memset(*sa, 0, sizeof(struct sockaddr_in6));
-		  (*sa)->sa_family = AF_INET6;
-		  out = &((struct sockaddr_in6*)*sa)->sin6_addr;
-		  memcpy (*sa, result->ai_addr, result->ai_addrlen);		  
-		  ((unsigned int *) out)[2] = htonl (0xffff);
-		  memcpy (&((char *) out)[sizeof (struct in6_addr) -
-					  sizeof (struct in_addr)],
-			  &result->ai_addr,
-			  sizeof (struct in_addr)); 
-		  freeaddrinfo (result);
-		  return GNUNET_OK;
-		}
-	      if (result->ai_addrlen > *socklen)
-		{
-		  freeaddrinfo (result);
-		  return GNUNET_SYSERR;
-		}
-	      *socklen = sizeof(struct sockaddr_in6);
-	      memset(*sa, 0, sizeof(struct sockaddr_in6));
-	      (*sa)->sa_family = AF_INET6;
-	      out = &((struct sockaddr_in6*)*sa)->sin6_addr;
-	      memcpy (*sa, result->ai_addr, result->ai_addrlen);		  
-	      ((unsigned int *) out)[2] = htonl (0xffff);
-	      memcpy (&((char *) out)[sizeof (struct in6_addr) -
-				      sizeof (struct in_addr)],
-		      &result->ai_addr,
-		      sizeof (struct in_addr)); 
-	      freeaddrinfo (result);
-	      return GNUNET_OK;
-	    }
-	}
+        {
+          /* try v4 resolving + mapping */
+          hints.ai_family = AF_INET;
+          if (0 == getaddrinfo (hostname, NULL, &hints, &result))
+            {
+              GNUNET_GE_ASSERT (NULL,
+                                result->ai_addrlen ==
+                                sizeof (struct sockaddr_in));
+              if (NULL == *sa)
+                {
+                  *sa = GNUNET_malloc (sizeof (struct sockaddr_in6));
+                  *socklen = sizeof (struct sockaddr_in6);
+                  memset (*sa, 0, sizeof (struct sockaddr_in6));
+                  (*sa)->sa_family = AF_INET6;
+                  out = &((struct sockaddr_in6 *) *sa)->sin6_addr;
+                  memcpy (*sa, result->ai_addr, result->ai_addrlen);
+                  ((unsigned int *) out)[2] = htonl (0xffff);
+                  memcpy (&((char *) out)[sizeof (struct in6_addr) -
+                                          sizeof (struct in_addr)],
+                          &result->ai_addr, sizeof (struct in_addr));
+                  freeaddrinfo (result);
+                  return GNUNET_OK;
+                }
+              if (result->ai_addrlen > *socklen)
+                {
+                  freeaddrinfo (result);
+                  return GNUNET_SYSERR;
+                }
+              *socklen = sizeof (struct sockaddr_in6);
+              memset (*sa, 0, sizeof (struct sockaddr_in6));
+              (*sa)->sa_family = AF_INET6;
+              out = &((struct sockaddr_in6 *) *sa)->sin6_addr;
+              memcpy (*sa, result->ai_addr, result->ai_addrlen);
+              ((unsigned int *) out)[2] = htonl (0xffff);
+              memcpy (&((char *) out)[sizeof (struct in6_addr) -
+                                      sizeof (struct in_addr)],
+                      &result->ai_addr, sizeof (struct in_addr));
+              freeaddrinfo (result);
+              return GNUNET_OK;
+            }
+        }
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_USER |
                      GNUNET_GE_BULK,

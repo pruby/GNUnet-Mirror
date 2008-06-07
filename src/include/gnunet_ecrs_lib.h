@@ -54,6 +54,7 @@ extern "C"
  * 4.1.x: with new error and configuration handling
  * 5.0.x: with location URIs
  * 6.0.0: with support for OR in KSKs
+ * 6.1.x: with simplified namespace support
  * 7.0.0: who knows? :-)
  */
 #define GNUNET_ECRS_VERSION "6.0.0"
@@ -68,15 +69,6 @@ extern "C"
 #define GNUNET_ECRS_SUBSPACE_INFIX  "sks/"
 #define GNUNET_ECRS_FILE_INFIX      "chk/"
 #define GNUNET_ECRS_LOCATION_INFIX  "loc/"
-
-
-/**
- * Fixed GNUNET_EC_SBlock updateInterval codes. Positive values
- * are interpreted as durations (in seconds) for periodical
- * updates.
- */
-#define GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC  -1
-#define GNUNET_ECRS_SBLOCK_UPDATE_NONE       0
 
 /**
  * Iterator over keywords
@@ -281,10 +273,13 @@ int GNUNET_ECRS_uri_get_namespace_from_sks (const struct GNUNET_ECRS_URI *uri,
                                             GNUNET_HashCode * nsid);
 
 /**
- * Get the content ID of an SKS URI.
+ * Get the content identifier of an SKS URI.
+ *
+ * @return NULL on error
  */
-int GNUNET_ECRS_uri_get_content_hash_from_sks (const struct GNUNET_ECRS_URI
-                                               *uri, GNUNET_HashCode * nsid);
+char *GNUNET_ECRS_uri_get_content_id_from_sks (const struct GNUNET_ECRS_URI
+                                               *uri);
+
 
 /**
  * Is this a keyword URI?
@@ -462,8 +457,6 @@ int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
  * @param meta meta-data for the namespace advertisement
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
- * @param rootURI set to the URI of the namespace, NULL if
- *        no advertisement was created
  *
  * @return URI on success, NULL on error (namespace already exists)
  */
@@ -483,8 +476,7 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context
                                                       const struct
                                                       GNUNET_ECRS_URI
                                                       *advertisementURI,
-                                                      const GNUNET_HashCode *
-                                                      rootEntry);
+                                                      const char *rootEntry);
 
 /**
  * Check if the given namespace exists (locally).
@@ -552,16 +544,10 @@ struct GNUNET_ECRS_URI *GNUNET_ECRS_namespace_add_content (struct
                                                            priority,
                                                            GNUNET_CronTime
                                                            expirationTime,
-                                                           GNUNET_Int32Time
-                                                           creationTime,
-                                                           GNUNET_Int32Time
-                                                           updateInterval,
                                                            const
-                                                           GNUNET_HashCode *
-                                                           thisId,
+                                                           char *thisId,
                                                            const
-                                                           GNUNET_HashCode *
-                                                           nextId,
+                                                           char *nextId,
                                                            const struct
                                                            GNUNET_ECRS_URI
                                                            *dst,

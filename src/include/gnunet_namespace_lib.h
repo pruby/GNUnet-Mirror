@@ -43,19 +43,12 @@ extern "C"
  * @param uri URI of the last content published
  * @param lastId the ID of the last publication
  * @param nextId the ID of the next update
- * @param publicationFrequency how often are updates scheduled?
- * @param nextPublicationTime the scheduled time for the
- *  next update (0 for sporadic updates)
  * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
  */
 typedef int (*GNUNET_NS_UpdateIterator) (void *cls,
                                          const GNUNET_ECRS_FileInfo * uri,
-                                         const GNUNET_HashCode * lastId,
-                                         const GNUNET_HashCode * nextId,
-                                         GNUNET_Int32Time
-                                         publicationFrequency,
-                                         GNUNET_Int32Time
-                                         nextPublicationTime);
+                                         const char *lastId,
+                                         const char *nextId);
 
 /**
  * Create a new namespace (and publish an advertismement).
@@ -82,8 +75,7 @@ struct GNUNET_ECRS_URI *GNUNET_NS_namespace_create (struct GNUNET_GE_Context
                                                     const struct
                                                     GNUNET_ECRS_URI
                                                     *advertisementURI,
-                                                    const GNUNET_HashCode *
-                                                    rootEntry);
+                                                    const char *rootEntry);
 
 /**
  * Delete a local namespace.  Only prevents future insertions into the
@@ -97,12 +89,11 @@ int GNUNET_NS_namespace_delete (struct GNUNET_GE_Context *ectx,
 
 /**
  * Get the root of the namespace (if we have one).
- * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ * @return NULL on error, root on success
  */
-int GNUNET_NS_namespace_get_root (struct GNUNET_GE_Context *ectx,
-                                  struct GNUNET_GC_Configuration *cfg,
-                                  const GNUNET_HashCode * nsid,
-                                  GNUNET_HashCode * root);
+char *GNUNET_NS_namespace_get_root (struct GNUNET_GE_Context *ectx,
+                                    struct GNUNET_GC_Configuration *cfg,
+                                    const GNUNET_HashCode * nsid);
 
 void GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
                                    struct GNUNET_GC_Configuration *cfg,
@@ -110,42 +101,16 @@ void GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
 
 /**
  * Add an entry into a namespace (also for publishing
- * updates).  Typical uses are (all others would be odd):
- * <ul>
- *  <li>updateInterval NONE, thisId some user-specified value
- *      or NULL if user wants system to pick random value;
- *      nextId and lastId NULL (irrelevant)</li>
- *  <li>updateInterval SPORADIC, thisId given (initial
- *      submission), nextId maybe given or NULL,
- *      lastId NULL</li>
- *  <li>updateInterval SPORADIC, lastId given (either
- *      user-provided or from listNamespaceContent
- *      iterator); thisId NULL or given (from lNC);
- *      nextId maybe given or NULL, depending on user preference</li>
- *  <li>updateInterval non-NULL, non-SPORADIC; lastId
- *      is NULL (inital submission), thisId non-NULL or
- *      rarely NULL (if user does not care about name of
- *      starting entry), nextId maybe NULL or not</li>
- *  <li>updateInterval non-NULL, non-SPORADIC; lastId
- *      is non-NULL (periodic update), thisId NULL (computed!)
- *      nextID NULL (computed)</li>
- * </ul>
- * And yes, reading the ECRS paper maybe a good idea.
+ * updates).
  *
  * @param nsid in which namespace to publish
- * @param updateInterval the desired frequency for updates
- * @param lastId the ID of the last value (maybe NULL)
- *        set if this is an update to an existing entry
- * @param thisId the ID of the update (maybe NULL if
- *        lastId determines the value or if no specific value
- *        is desired)
- * @param nextId the ID of the next update (maybe NULL);
- *        set for sporadic updates if a specific next ID is
- *        desired
+ * @param thisId the ID of the current value
+ * @param nextId the ID of a possible future update, NULL for
+ *        content that can not be updated
  * @param dst to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
  *        entry?
- * @return the resulting URI, NULL on error
+ * @return the resulting SKS URI, NULL on error
  */
 struct GNUNET_ECRS_URI *GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context
                                                     *ectx,
@@ -160,32 +125,12 @@ struct GNUNET_ECRS_URI *GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context
                                                     insertExpiration,
                                                     const GNUNET_HashCode *
                                                     nsid,
-                                                    GNUNET_Int32Time
-                                                    updateInterval,
-                                                    const GNUNET_HashCode *
-                                                    lastId,
-                                                    const GNUNET_HashCode *
-                                                    thisId,
-                                                    const GNUNET_HashCode *
-                                                    nextId,
+                                                    const char *thisId,
+                                                    const char *nextId,
                                                     const struct
                                                     GNUNET_ECRS_URI *dst,
                                                     const struct
                                                     GNUNET_MetaData *md);
-
-/**
- * Compute the next ID for peridodically updated content.
- * @param updateInterval MUST be a peridic interval (not NONE or SPORADIC)
- * @param thisId MUST be known to NS
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int GNUNET_NS_compute_next_identifier (struct GNUNET_GE_Context *ectx,
-                                       struct GNUNET_GC_Configuration *cfg,
-                                       const GNUNET_HashCode * nsid,
-                                       const GNUNET_HashCode * lastId,
-                                       const GNUNET_HashCode * thisId,
-                                       GNUNET_Int32Time updateInterval,
-                                       GNUNET_HashCode * nextId);
 
 /**
  * List all updateable content in a given namespace.

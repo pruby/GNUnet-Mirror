@@ -14,7 +14,8 @@ libgnunetnamespace_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 check_PROGRAMS = \
-  namespace_infotest
+  namespace_infotest \
+  namespace_update_test
 
 TESTS = $(check_PROGRAMS)
 
@@ -23,6 +24,13 @@ EXTRA_DIST = check.conf peer.conf
 namespace_infotest_SOURCES = \
   namespace_infotest.c 
 namespace_infotest_LDADD = \
+  $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+namespace_update_test_SOURCES = \
+  namespace_update_test.c 
+namespace_update_test_LDADD = \
   $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/libgnunetutil.la 

@@ -16,7 +16,7 @@ libgnunetecrs_la_SOURCES = \
   tree.c tree.h \
   unindex.c \
   upload.c \
-  uri.c uri.h
+  uri.c
 libgnunetecrs_la_LIBADD = \
  -lz \
  -lextractor \

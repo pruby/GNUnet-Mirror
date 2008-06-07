@@ -924,7 +924,13 @@ typedef void *(*GNUNET_FSUI_EventProcessor) (void *cls,
  * @param closure extra argument to cb
  * @return NULL on error
  */
-struct GNUNET_FSUI_Context *GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *name, unsigned int threadPoolSize, int doResume, GNUNET_FSUI_EventProcessor cb, void *closure); /* fsui.c */
+struct GNUNET_FSUI_Context *GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
+                                               struct GNUNET_GC_Configuration
+                                               *cfg, const char *name,
+                                               unsigned int threadPoolSize,
+                                               int doResume,
+                                               GNUNET_FSUI_EventProcessor cb,
+                                               void *closure);
 
 /**
  * Stop all processes under FSUI control (may serialize
@@ -939,7 +945,14 @@ void GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx);        /* fsui.c */
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_SearchList *GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, const struct GNUNET_ECRS_URI *uri);      /* search.c */
+struct GNUNET_FSUI_SearchList *GNUNET_FSUI_search_start (struct
+                                                         GNUNET_FSUI_Context
+                                                         *ctx,
+                                                         unsigned int
+                                                         anonymityLevel,
+                                                         const struct
+                                                         GNUNET_ECRS_URI
+                                                         *uri);
 
 /**
  * Abort a search.
@@ -974,7 +987,26 @@ int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl);        /* searc
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload); /* download.c */
+struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct
+                                                             GNUNET_FSUI_Context
+                                                             *ctx,
+                                                             unsigned int
+                                                             anonymityLevel,
+                                                             int doRecursive,
+                                                             const struct
+                                                             GNUNET_ECRS_URI
+                                                             *uri,
+                                                             const struct
+                                                             GNUNET_MetaData
+                                                             *meta,
+                                                             const char
+                                                             *filename,
+                                                             struct
+                                                             GNUNET_FSUI_SearchList
+                                                             *parentSearch,
+                                                             struct
+                                                             GNUNET_FSUI_DownloadList
+                                                             *parentDownload);
 
 /**
  * Abort a download.  If the dl is for a recursive download, all

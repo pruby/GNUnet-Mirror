@@ -97,7 +97,7 @@ typedef struct GNUNET_ECRS_URI
     struct
     {
       GNUNET_HashCode namespace;
-      GNUNET_HashCode identifier;
+      char *identifier;
     } sks;
     GNUNET_EC_FileIdentifier fi;
     Location loc;

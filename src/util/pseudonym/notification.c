@@ -128,6 +128,7 @@ void __attribute__ ((constructor)) GNUNET_pseudonym_ltdl_init ()
 
 void __attribute__ ((destructor)) GNUNET_pseudonym_ltdl_fini ()
 {
+  GNUNET_GE_BREAK (NULL, head == NULL);
   GNUNET_mutex_destroy (lock);
   lock = NULL;
 }

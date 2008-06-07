@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -66,42 +66,33 @@ static int
 testNamespace ()
 {
   GNUNET_HashCode pid;
-  GNUNET_HashCode root;
-  GNUNET_HashCode thisId;
-  GNUNET_HashCode nextId;
   struct GNUNET_ECRS_URI *adv;
-  struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ECRS_URI *advURI;
   struct GNUNET_ECRS_URI *rootURI;
   struct GNUNET_MetaData *meta;
 
   meta = GNUNET_meta_data_create ();
   adv = GNUNET_ECRS_keyword_string_to_uri (NULL, "testNamespace");
-  GNUNET_hash ("root", 4, &root);
   rootURI =
     GNUNET_ECRS_namespace_create (NULL,
                                   cfg,
                                   meta,
                                   0, 0,
                                   GNUNET_get_time () +
-                                  15 * GNUNET_CRON_MINUTES, adv, &root);
-  GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &pid);
+                                  15 * GNUNET_CRON_MINUTES, adv, "root");
   CHECK (NULL != rootURI);
-  GNUNET_hash ("this", 4, &thisId);
-  GNUNET_hash ("next", 4, &nextId);
-  uri = rootURI;                /* just for fun: NS::this advertises NS::root */
+  GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &pid);
   advURI = GNUNET_ECRS_namespace_add_content (NULL, cfg, &pid, 1,       /* anonymity */
                                               1000,     /* priority */
                                               5 * GNUNET_CRON_MINUTES +
                                               GNUNET_get_time (),
-                                              GNUNET_get_time_int32 (NULL) +
-                                              300, 0, &thisId, &nextId, uri,
-                                              meta);
+                                              "this", "next", rootURI, meta);
   CHECK (NULL != advURI);
   fprintf (stderr, "Starting namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_search (NULL,
                                           cfg,
-                                          advURI, 1, &spcb, uri, &tt, NULL));
+                                          advURI, 1, &spcb, rootURI, &tt,
+                                          NULL));
   fprintf (stderr, "Completed namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, &pid));
   CHECK (GNUNET_SYSERR == GNUNET_ECRS_namespace_delete (NULL, cfg, &pid));

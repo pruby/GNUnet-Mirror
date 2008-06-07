@@ -72,8 +72,7 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
   GNUNET_CO_collection_stop ();
   CHECK (NULL == GNUNET_CO_collection_get_name ());
-  CHECK (GNUNET_OK == GNUNET_CO_collection_start (1, 100, 60,   /* 60s */
-                                                  meta));
+  CHECK (GNUNET_OK == GNUNET_CO_collection_start (1, 100, meta));
   have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
   CHECK (GNUNET_meta_data_test_equal (have, meta));

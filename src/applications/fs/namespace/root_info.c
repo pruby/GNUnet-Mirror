@@ -26,30 +26,42 @@
 
 #include "platform.h"
 #include "gnunet_directories.h"
+#include "gnunet_ecrs_lib.h"
 #include "gnunet_namespace_lib.h"
 #include "gnunet_util.h"
 #include "common.h"
 
 /**
  * Get the root of the namespace (if we have one).
- * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ *
+ * @return NULL on error
  */
-int
+char *
 GNUNET_NS_namespace_get_root (struct GNUNET_GE_Context *ectx,
                               struct GNUNET_GC_Configuration *cfg,
-                              const GNUNET_HashCode * ns_id,
-                              GNUNET_HashCode * root)
+                              const GNUNET_HashCode * ns_id)
 {
   char *fn;
-  int ret;
+  char *ret;
+  unsigned long long size;
 
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
                                               cfg, NS_ROOTS_DIR, ns_id, NULL);
-  if (sizeof (GNUNET_HashCode)
-      == GNUNET_disk_file_read (ectx, fn, sizeof (GNUNET_HashCode), root))
-    ret = GNUNET_OK;
-  else
-    ret = GNUNET_SYSERR;
+  if ((GNUNET_OK !=
+       GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)) ||
+      (size == 0) || (size > GNUNET_MAX_BUFFER_SIZE))
+    {
+      GNUNET_free (fn);
+      return NULL;
+    }
+  ret = GNUNET_malloc (size + 1);
+  ret[size] = '\0';
+  if (size != GNUNET_disk_file_read (ectx, fn, size, ret))
+    {
+      GNUNET_free (fn);
+      GNUNET_free (ret);
+      return NULL;
+    }
   GNUNET_free (fn);
   return ret;
 }
@@ -59,9 +71,9 @@ GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
                               struct GNUNET_GC_Configuration *cfg,
                               const struct GNUNET_ECRS_URI *uri)
 {
-  char *fn;
   GNUNET_HashCode ns;
-  GNUNET_HashCode rt;
+  char *fn;
+  char *root;
 
   if (GNUNET_OK != GNUNET_ECRS_uri_get_namespace_from_sks (uri, &ns))
     {
@@ -70,8 +82,12 @@ GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
     }
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
                                               cfg, NS_ROOTS_DIR, &ns, NULL);
-  if (GNUNET_OK == GNUNET_ECRS_uri_get_content_hash_from_sks (uri, &rt))
-    GNUNET_disk_file_write (ectx, fn, &rt, sizeof (GNUNET_HashCode), "644");
+  root = GNUNET_ECRS_uri_get_content_id_from_sks (uri);
+  if (root != NULL)
+    {
+      GNUNET_disk_file_write (ectx, fn, root, strlen (root), "644");
+      GNUNET_free (root);
+    }
   GNUNET_free (fn);
 }
 

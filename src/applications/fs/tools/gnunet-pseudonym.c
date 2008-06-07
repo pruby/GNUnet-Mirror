@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -190,9 +190,8 @@ main (int argc, char *const *argv)
   int cnt;
   int success;
   int i;
-  GNUNET_HashCode hc;
   GNUNET_HashCode nsid;
-  GNUNET_HashCode rootEntry;
+  char *rootEntry;
   struct GNUNET_ECRS_URI *rootURI;
   char *root;
   char *ns_name;
@@ -252,9 +251,7 @@ main (int argc, char *const *argv)
         {
           /* FIXME: allow other update policies */
           if (GNUNET_OK == GNUNET_CO_collection_start (anonymity,
-                                                       priority,
-                                                       GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC,
-                                                       meta))
+                                                       priority, meta))
             {
               printf ("%s", _("Started collection.\n"));
             }
@@ -268,12 +265,11 @@ main (int argc, char *const *argv)
         {                       /* no collection */
           if (root_name == NULL)
             {
-              memset (&rootEntry, 0, sizeof (GNUNET_HashCode));
+              rootEntry = "root";
             }
           else
             {
-              if (GNUNET_SYSERR == GNUNET_enc_to_hash (root_name, &hc))
-                GNUNET_hash (root_name, strlen (root_name), &hc);
+              rootEntry = root_name;
             }
           if (no_advertisement)
             {
@@ -294,7 +290,7 @@ main (int argc, char *const *argv)
                                                 expiration +
                                                 GNUNET_get_time (),
                                                 meta,
-                                                advertisement, &rootEntry);
+                                                advertisement, rootEntry);
           if (rootURI == NULL)
             {
               printf ("%s", _("Could not create namespace.\n"));

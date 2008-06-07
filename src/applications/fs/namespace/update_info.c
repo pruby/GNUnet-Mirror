@@ -30,15 +30,6 @@
 #include "gnunet_util.h"
 #include "common.h"
 
-
-struct UpdateData
-{
-  GNUNET_Int32Time updateInterval;
-  GNUNET_Int32Time lastPubTime;
-  GNUNET_HashCode nextId;
-  GNUNET_HashCode thisId;
-};
-
 /**
  * Read content update information about content
  * published in the given namespace under 'lastId'.
@@ -50,29 +41,27 @@ static int
 read_update_data (struct GNUNET_GE_Context *ectx,
                   struct GNUNET_GC_Configuration *cfg,
                   const GNUNET_HashCode * nsid,
-                  const GNUNET_HashCode * lastId,
-                  GNUNET_HashCode * nextId,
-                  GNUNET_ECRS_FileInfo * fi,
-                  GNUNET_Int32Time * updateInterval,
-                  GNUNET_Int32Time * lastPubTime)
+                  const GNUNET_HashCode * lid,
+                  char **thisId, char **nextId, GNUNET_ECRS_FileInfo * fi)
 {
   char *fn;
-  struct UpdateData *buf;
-  char *uri;
+  char *buf;
   unsigned long long size;
-  size_t pos;
+  unsigned int pos;
+  const char *pthis;
+  const char *pnext;
+  const char *puri;
 
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
-                                              cfg,
-                                              NS_UPDATE_DIR, nsid, lastId);
+                                              cfg, NS_UPDATE_DIR, nsid, lid);
   if (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES))
     {
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
-  if ((size == 0) ||
-      (size <= sizeof (struct UpdateData)) || (size > 1024 * 1024 * 16))
+  if ((size == 0) || (size > 1024 * 1024 * 16))
     {
+      UNLINK (fn);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
@@ -80,38 +69,28 @@ read_update_data (struct GNUNET_GE_Context *ectx,
   if (size != GNUNET_disk_file_read (ectx, fn, size, buf))
     {
       GNUNET_free (buf);
+      UNLINK (fn);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
   GNUNET_free (fn);
-  if (0 != memcmp (lastId, &buf->thisId, sizeof (GNUNET_HashCode)))
+  pos = GNUNET_string_buffer_tokenize (buf, size, 3, &pthis, &pnext, &puri);
+  if (pos == 0)
     {
+      GNUNET_GE_BREAK (NULL, 0);
       GNUNET_free (buf);
-      return GNUNET_SYSERR;
-    }
-  uri = (char *) &buf[1];
-  size -= sizeof (struct UpdateData);
-  pos = 0;
-  while ((pos < size) && (uri[pos] != '\0'))
-    pos++;
-  pos++;
-  size -= pos;
-  if (size == 0)
-    {
-      GNUNET_free (buf);
-      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   if (fi != NULL)
     {
-      fi->meta = GNUNET_meta_data_deserialize (ectx, &uri[pos], size);
+      fi->meta = GNUNET_meta_data_deserialize (ectx, &buf[pos], size - pos);
       if (fi->meta == NULL)
         {
           GNUNET_free (buf);
           GNUNET_GE_BREAK (ectx, 0);
           return GNUNET_SYSERR;
         }
-      fi->uri = GNUNET_ECRS_string_to_uri (ectx, uri);
+      fi->uri = GNUNET_ECRS_string_to_uri (ectx, puri);
       if (fi->uri == NULL)
         {
           GNUNET_meta_data_destroy (fi->meta);
@@ -121,12 +100,10 @@ read_update_data (struct GNUNET_GE_Context *ectx,
           return GNUNET_SYSERR;
         }
     }
-  if (updateInterval != NULL)
-    *updateInterval = ntohl (buf->updateInterval);
-  if (lastPubTime != NULL)
-    *lastPubTime = ntohl (buf->lastPubTime);
   if (nextId != NULL)
-    *nextId = buf->nextId;
+    *nextId = GNUNET_strdup (pnext);
+  if (thisId != NULL)
+    *thisId = GNUNET_strdup (pthis);
   GNUNET_free (buf);
   return GNUNET_OK;
 }
@@ -138,97 +115,49 @@ static int
 write_update_data (struct GNUNET_GE_Context *ectx,
                    struct GNUNET_GC_Configuration *cfg,
                    const GNUNET_HashCode * nsid,
-                   const GNUNET_HashCode * thisId,
-                   const GNUNET_HashCode * nextId,
-                   const GNUNET_ECRS_FileInfo * fi,
-                   const GNUNET_Int32Time updateInterval,
-                   const GNUNET_Int32Time lastPubTime)
+                   const char *thisId,
+                   const char *nextId, const GNUNET_ECRS_FileInfo * fi)
 {
   char *fn;
   char *uri;
   size_t metaSize;
   size_t size;
-  struct UpdateData *buf;
+  char *buf;
+  unsigned int pos;
+  GNUNET_HashCode tid;
 
+  if (nextId == NULL)
+    nextId = "";
+  GNUNET_hash (thisId, strlen (thisId), &tid);
   uri = GNUNET_ECRS_uri_to_string (fi->uri);
   metaSize =
     GNUNET_meta_data_get_serialized_size (fi->meta, GNUNET_SERIALIZE_FULL);
-  size = sizeof (struct UpdateData) + metaSize + strlen (uri) + 1;
+  size = metaSize +
+    GNUNET_string_buffer_fill (NULL, 0, 3, uri, thisId, nextId);
   buf = GNUNET_malloc (size);
-  buf->nextId = *nextId;
-  buf->thisId = *thisId;
-  buf->updateInterval = htonl (updateInterval);
-  buf->lastPubTime = htonl (lastPubTime);
-  memcpy (&buf[1], uri, strlen (uri) + 1);
+  pos = GNUNET_string_buffer_fill (buf, size, 3, thisId, nextId, uri);
+  GNUNET_GE_ASSERT (ectx, pos != 0);
   GNUNET_GE_ASSERT (ectx,
                     metaSize ==
                     GNUNET_meta_data_serialize (ectx,
                                                 fi->meta,
-                                                &((char *)
-                                                  &buf[1])[strlen (uri) +
-                                                           1], metaSize,
+                                                &buf[pos], metaSize,
                                                 GNUNET_SERIALIZE_FULL));
   GNUNET_free (uri);
   fn = GNUNET_NS_internal_get_data_filename_ (ectx,
-                                              cfg,
-                                              NS_UPDATE_DIR, nsid, thisId);
+                                              cfg, NS_UPDATE_DIR, nsid, &tid);
   GNUNET_disk_file_write (ectx, fn, buf, size, "400");  /* no editing, just deletion */
   GNUNET_free (fn);
   GNUNET_free (buf);
   return GNUNET_OK;
 }
 
-
-/**
- * Compute the next ID for peridodically updated content.
- * @param updateInterval MUST be a peridic interval (not NONE or SPORADIC)
- * @param thisId MUST be known to NAMESPACE
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int
-GNUNET_NS_compute_next_identifier (struct GNUNET_GE_Context *ectx,
-                                   struct GNUNET_GC_Configuration *cfg,
-                                   const GNUNET_HashCode * nsid,
-                                   const GNUNET_HashCode * lastId,
-                                   const GNUNET_HashCode * thisId,
-                                   GNUNET_Int32Time updateInterval,
-                                   GNUNET_HashCode * nextId)
-{
-  GNUNET_HashCode delta;
-  GNUNET_CronTime now;
-  GNUNET_Int32Time tnow;
-  GNUNET_Int32Time lastTime;
-  GNUNET_Int32Time ui;
-
-  if ((updateInterval == GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC) ||
-      (updateInterval == GNUNET_ECRS_SBLOCK_UPDATE_NONE))
-    return GNUNET_SYSERR;
-
-  if (GNUNET_OK != read_update_data (ectx,
-                                     cfg, nsid, lastId, NULL, NULL, &ui,
-                                     &lastTime))
-    return GNUNET_SYSERR;
-  GNUNET_hash_difference (lastId, thisId, &delta);
-  now = GNUNET_get_time ();
-  GNUNET_get_time_int32 (&tnow);
-  *nextId = *thisId;
-  while (lastTime < tnow + updateInterval / 2)
-    {
-      lastTime += updateInterval;
-      GNUNET_hash_sum (nextId, &delta, nextId);
-    }
-  return GNUNET_OK;
-}
-
-
 /**
  * Add an entry into a namespace (also for publishing
  * updates).
  *
  * @param name in which namespace to publish
- * @param updateInterval the desired frequency for updates
- * @param lastId the ID of the last value (maybe NULL)
- * @param thisId the ID of the update (maybe NULL)
+ * @param thisId the ID of the current value
  * @param nextId the ID of the next update (maybe NULL)
  * @param dst to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
@@ -242,162 +171,38 @@ GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
                             unsigned int insertPriority,
                             GNUNET_CronTime insertExpiration,
                             const GNUNET_HashCode * nsid,
-                            GNUNET_Int32Time updateInterval,
-                            const GNUNET_HashCode * lastId,
-                            const GNUNET_HashCode * thisId,
-                            const GNUNET_HashCode * nextId,
+                            const char *thisId,
+                            const char *nextId,
                             const struct GNUNET_ECRS_URI *dst,
                             const struct GNUNET_MetaData *md)
 {
-  GNUNET_Int32Time creationTime;
-  GNUNET_HashCode nid;
-  GNUNET_HashCode tid;
-  GNUNET_HashCode delta;
-  GNUNET_Int32Time now;
-  GNUNET_Int32Time lastTime;
-  GNUNET_Int32Time lastInterval;
   GNUNET_ECRS_FileInfo fi;
-  char *old;
   struct GNUNET_ECRS_URI *uri;
 
-  /* computation of IDs of update(s).  Not as terrible as
-     it looks, just enumerating all of the possible cases
-     of periodic/sporadic updates and how IDs are computed. */
-  creationTime = GNUNET_get_time_int32 (&now);
-  if (updateInterval != GNUNET_ECRS_SBLOCK_UPDATE_NONE)
-    {
-      if ((lastId != NULL) &&
-          (GNUNET_OK == read_update_data (ectx,
-                                          cfg,
-                                          nsid,
-                                          lastId,
-                                          &tid, NULL, &lastInterval,
-                                          &lastTime)))
-        {
-          if (lastInterval != updateInterval)
-            {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_BULK |
-                             GNUNET_GE_USER,
-                             _
-                             ("Publication interval for periodic publication changed."));
-            }
-          /* try to compute tid and/or
-             nid based on information read from lastId */
-
-          if (updateInterval != GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC)
-            {
-              GNUNET_hash_difference (lastId, &tid, &delta);
-
-              creationTime = lastTime + updateInterval;
-              while (creationTime < now - updateInterval)
-                {
-                  creationTime += updateInterval;
-                  GNUNET_hash_sum (&tid, &delta, &tid);
-                }
-              if (creationTime > GNUNET_get_time () + 7 * GNUNET_CRON_DAYS)
-                {
-                  GNUNET_GE_LOG (ectx,
-                                 GNUNET_GE_WARNING | GNUNET_GE_BULK |
-                                 GNUNET_GE_USER,
-                                 _
-                                 ("Publishing update for periodically updated "
-                                  "content more than a week ahead of schedule.\n"));
-                }
-              if (thisId != NULL)
-                tid = *thisId;  /* allow override! */
-              GNUNET_hash_sum (&tid, &delta, &nid);
-              if (nextId != NULL)
-                nid = *nextId;  /* again, allow override */
-            }
-          else
-            {
-              /* sporadic ones are unpredictable,
-                 tid has been obtained from IO, pick random nid if
-                 not specified */
-              if (thisId != NULL)
-                tid = *thisId;  /* allow user override */
-              if (nextId == NULL)
-                {
-                  GNUNET_create_random_hash (&nid);
-                }
-              else
-                {
-                  nid = *nextId;
-                }
-            }
-        }
-      else
-        {                       /* no previous ID found or given */
-          if (nextId == NULL)
-            {
-              /* no previous block found and nextId not specified;
-                 pick random nid */
-              GNUNET_create_random_hash (&nid);
-            }
-          else
-            {
-              nid = *nextId;
-            }
-          if (thisId != NULL)
-            {
-              tid = *thisId;
-            }
-          else
-            {
-              GNUNET_create_random_hash (&tid);
-            }
-        }
-    }
-  else
-    {
-      if (thisId != NULL)
-        {
-          nid = tid = *thisId;
-        }
-      else
-        {
-          GNUNET_create_random_hash (&tid);
-          nid = tid;
-        }
-    }
   uri = GNUNET_ECRS_namespace_add_content (ectx,
                                            cfg,
                                            nsid,
                                            anonymityLevel,
                                            insertPriority,
                                            insertExpiration,
-                                           creationTime,
-                                           updateInterval, &tid, &nid, dst,
-                                           md);
+                                           thisId, nextId, dst, md);
   if ((uri != NULL) && (dst != NULL))
     {
       fi.uri = (struct GNUNET_ECRS_URI *) dst;
       fi.meta = (struct GNUNET_MetaData *) md;
-      write_update_data (ectx,
-                         cfg,
-                         nsid, &tid, &nid, &fi, updateInterval, creationTime);
-      if (lastId != NULL)
-        {
-          old = GNUNET_NS_internal_get_data_filename_ (ectx,
-                                                       cfg,
-                                                       NS_UPDATE_DIR,
-                                                       nsid, lastId);
-          UNLINK (old);
-          GNUNET_free (old);
-        }
+      write_update_data (ectx, cfg, nsid, thisId, nextId, &fi);
     }
   return uri;
 }
 
 struct ListNamespaceContentsClosure
 {
-  GNUNET_HashCode nsid;
-  GNUNET_NS_UpdateIterator it;
-  void *closure;
-  int cnt;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
+  GNUNET_NS_UpdateIterator it;
+  void *closure;
+  GNUNET_HashCode nsid;
+  int cnt;
 };
 
 static int
@@ -405,14 +210,12 @@ list_namespace_contents_helper (const char *fil, const char *dir, void *ptr)
 {
   struct ListNamespaceContentsClosure *cls = ptr;
   GNUNET_ECRS_FileInfo fi;
-  GNUNET_HashCode lastId;
-  GNUNET_HashCode nextId;
-  GNUNET_Int32Time pubFreq;
-  GNUNET_Int32Time lastTime;
-  GNUNET_Int32Time nextTime;
-  GNUNET_Int32Time now;
+  GNUNET_HashCode lid;
+  char *lastId;
+  char *nextId;
+  int ret;
 
-  if (GNUNET_OK != GNUNET_enc_to_hash (fil, &lastId))
+  if (GNUNET_OK != GNUNET_enc_to_hash (fil, &lid))
     {
       GNUNET_GE_BREAK (cls->ectx, 0);
       return GNUNET_OK;
@@ -421,38 +224,20 @@ list_namespace_contents_helper (const char *fil, const char *dir, void *ptr)
   fi.meta = NULL;
   if (GNUNET_OK != read_update_data (cls->ectx,
                                      cls->cfg,
-                                     &cls->nsid,
-                                     &lastId,
-                                     &nextId, &fi, &pubFreq, &lastTime))
+                                     &cls->nsid, &lid, &lastId, &nextId, &fi))
     {
       GNUNET_GE_BREAK (cls->ectx, 0);
       return GNUNET_OK;
     }
   cls->cnt++;
-  if (pubFreq == GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC)
-    {
-      nextTime = 0;
-    }
-  else
-    {
-      GNUNET_get_time_int32 (&now);
-      nextTime = lastTime;
-      if ((nextTime + pubFreq < now) && (nextTime + pubFreq > nextTime))
-        nextTime += pubFreq * ((now - nextTime) / pubFreq);
-    }
+  ret = GNUNET_OK;
   if (cls->it != NULL)
-    {
-      if (GNUNET_OK != cls->it (cls->closure,
-                                &fi, &lastId, &nextId, pubFreq, nextTime))
-        {
-          GNUNET_ECRS_uri_destroy (fi.uri);
-          GNUNET_meta_data_destroy (fi.meta);
-          return GNUNET_SYSERR;
-        }
-    }
+    ret = cls->it (cls->closure, &fi, lastId, nextId);
+  GNUNET_free (lastId);
+  GNUNET_free (nextId);
   GNUNET_ECRS_uri_destroy (fi.uri);
   GNUNET_meta_data_destroy (fi.meta);
-  return GNUNET_OK;
+  return ret;
 }
 
 /**

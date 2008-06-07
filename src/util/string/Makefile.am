@@ -6,6 +6,7 @@ noinst_LTLIBRARIES = \
   libstring.la
 
 libstring_la_SOURCES = \
+  parser.c \
   string.c \
   xmalloc.c 
 

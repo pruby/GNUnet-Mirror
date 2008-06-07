@@ -254,6 +254,44 @@ void GNUNET_xgrow_ (void **old,
                     const char *filename, int linenumber,
                     const char *function);
 
+
+/**
+ * Fill a buffer of the given size with
+ * count 0-terminated strings (given as varargs).
+ * If "buffer" is NULL, only compute the amount of
+ * space required (sum of "strlen(arg)+1").
+ *
+ * Unlike using "snprintf" with "%s", this function
+ * will add 0-terminators after each string.  The
+ * "GNUNET_string_buffer_tokenize" function can be
+ * used to parse the buffer back into individual
+ * strings.
+ *
+ * @return number of bytes written to the buffer
+ *         (or number of bytes that would have been written)
+ */
+unsigned int GNUNET_string_buffer_fill (char *buffer,
+                                        unsigned int size,
+                                        unsigned int count, ...);
+
+/**
+ * Given a buffer of a given size, find "count"
+ * 0-terminated strings in the buffer and assign
+ * the count (varargs) of type "const char**" to the
+ * locations of the respective strings in the
+ * buffer.
+ *
+ * @param buffer the buffer to parse
+ * @param size size of the buffer
+ * @param count number of strings to locate
+ * @return offset of the character after the last 0-termination
+ *         in the buffer, or 0 on error.
+ */
+unsigned int GNUNET_string_buffer_tokenize (const char *buffer,
+                                            unsigned int size,
+                                            unsigned int count, ...);
+
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif

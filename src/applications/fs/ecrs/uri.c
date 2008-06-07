@@ -161,24 +161,21 @@ createKeywordURI (char **keywords, unsigned int keywordCount)
  * Generate a subspace URI.
  */
 static char *
-createSubspaceURI (const GNUNET_HashCode * namespace,
-                   const GNUNET_HashCode * identifier)
+createSubspaceURI (const GNUNET_HashCode * namespace, const char *identifier)
 {
   size_t n;
   char *ret;
   GNUNET_EncName ns;
-  GNUNET_EncName id;
 
   n =
-    sizeof (GNUNET_EncName) * 2 + strlen (GNUNET_ECRS_URI_PREFIX) +
-    strlen (GNUNET_ECRS_SUBSPACE_INFIX) + 1;
+    sizeof (GNUNET_EncName) + strlen (GNUNET_ECRS_URI_PREFIX) +
+    strlen (GNUNET_ECRS_SUBSPACE_INFIX) + 1 + strlen (identifier);
   ret = GNUNET_malloc (n);
   GNUNET_hash_to_enc (namespace, &ns);
-  GNUNET_hash_to_enc (identifier, &id);
   GNUNET_snprintf (ret, n,
                    "%s%s%s/%s",
                    GNUNET_ECRS_URI_PREFIX, GNUNET_ECRS_SUBSPACE_INFIX,
-                   (char *) &ns, (char *) &id);
+                   (const char *) &ns, identifier);
   return ret;
 }
 
@@ -263,7 +260,7 @@ GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri)
                                uri->data.ksk.keywordCount);
     case sks:
       return createSubspaceURI (&uri->data.sks.namespace,
-                                &uri->data.sks.identifier);
+                                uri->data.sks.identifier);
     case chk:
       return createFileURI (&uri->data.fi);
     case loc:
@@ -492,7 +489,7 @@ CLEANUP:
 static int
 parseSubspaceURI (struct GNUNET_GE_Context *ectx,
                   const char *uri,
-                  GNUNET_HashCode * namespace, GNUNET_HashCode * identifier)
+                  GNUNET_HashCode * namespace, char **identifier)
 {
   unsigned int pos;
   size_t slen;
@@ -522,15 +519,7 @@ parseSubspaceURI (struct GNUNET_GE_Context *ectx,
       GNUNET_free (up);
       return GNUNET_SYSERR;
     }
-  if ((slen != pos + 2 * sizeof (GNUNET_EncName) - 1) ||
-      (GNUNET_OK !=
-       GNUNET_enc_to_hash (&up[pos + sizeof (GNUNET_EncName)], identifier)))
-    {
-      if (up[slen - 1] == '\\')
-        up[--slen] = '\0';
-      GNUNET_hash (&up[pos + sizeof (GNUNET_EncName)],
-                   slen - (pos + sizeof (GNUNET_EncName)), identifier);
-    }
+  *identifier = GNUNET_strdup (&up[pos + sizeof (GNUNET_EncName)]);
   GNUNET_free (up);
   return GNUNET_OK;
 }
@@ -726,6 +715,9 @@ GNUNET_ECRS_uri_destroy (struct GNUNET_ECRS_URI *uri)
       GNUNET_array_grow (uri->data.ksk.keywords, uri->data.ksk.keywordCount,
                          0);
       break;
+    case sks:
+      GNUNET_free (uri->data.sks.identifier);
+      break;
     case loc:
       break;
     default:
@@ -764,21 +756,19 @@ GNUNET_ECRS_uri_get_namespace_from_sks (const struct GNUNET_ECRS_URI *uri,
 }
 
 /**
- * Get the content ID of an SKS URI.
+ * Get the content identifier of an SKS URI.
  *
- * @return GNUNET_OK on success
+ * @return NULL on error
  */
-int
-GNUNET_ECRS_uri_get_content_hash_from_sks (const struct GNUNET_ECRS_URI *uri,
-                                           GNUNET_HashCode * id)
+char *
+GNUNET_ECRS_uri_get_content_id_from_sks (const struct GNUNET_ECRS_URI *uri)
 {
   if (!GNUNET_ECRS_uri_test_sks (uri))
     {
       GNUNET_GE_BREAK (NULL, 0);
-      return GNUNET_SYSERR;
+      return NULL;
     }
-  *id = uri->data.sks.identifier;
-  return GNUNET_OK;
+  return GNUNET_strdup (uri->data.sks.identifier);
 }
 
 /**
@@ -1029,9 +1019,8 @@ GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *uri1,
       if ((0 == memcmp (&uri1->data.sks.namespace,
                         &uri2->data.sks.namespace,
                         sizeof (GNUNET_HashCode))) &&
-          (0 == memcmp (&uri1->data.sks.identifier,
-                        &uri2->data.sks.identifier,
-                        sizeof (GNUNET_HashCode))))
+          (0 == strcmp (uri1->data.sks.identifier,
+                        uri2->data.sks.identifier)))
 
         return GNUNET_YES;
       return GNUNET_NO;

@@ -46,7 +46,7 @@ GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
                             GNUNET_CronTime insertExpiration,
                             const struct GNUNET_MetaData *meta,
                             const struct GNUNET_ECRS_URI *advertisementURI,
-                            const GNUNET_HashCode * rootEntry)
+                            const char *rootEntry)
 {
   struct GNUNET_ECRS_URI *ret;
   GNUNET_HashCode id;

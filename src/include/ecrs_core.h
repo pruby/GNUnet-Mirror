@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -34,7 +34,7 @@
 #include "gnunet_datastore_service.h"
 
 /**
- * @brief content GNUNET_hash key
+ * @brief content hash key
  */
 typedef struct
 {
@@ -113,7 +113,8 @@ typedef struct
 
   /* 0-terminated URI here */
 
-  /* variable-size Meta-Data follows here! */
+  /* variable-size Meta-Data follows here
+     (or, in the case of a KSBlock, an SBlock follows) */
 
 } GNUNET_EC_KBlock;
 
@@ -138,91 +139,40 @@ typedef struct
   /* from here on signed */
 
   /**
-   * R = H(N-I)^S, used for routing!
+   * R = H(H(I))^S, used for routing, or all zeros for
+   * namespace advertisements (in which case the
+   * 0-terminated update identifier is the name of the
+   * root); the URI will be empty in this case and
+   * no encryption will be used (this type of SBlock
+   * will only be published as the encrypted part of
+   * a KSBlock).
    */
   GNUNET_HashCode identifier;
-  /* from here on encrypted */
+  /* from here on encrypted (with H(I)) */
 
-  /**
-   * Time at which this GNUNET_EC_SBlock was created;
-   * in network byte order
-   */
-  GNUNET_Int32Time creationTime;
+  /* 0-terminated identifier of update follows
+     here; if strlen() == 0, no updates are allowed */
 
-  /**
-   * Interval (in seconds) how often the publisher intends to produce
-   * an updated GNUNET_EC_SBlock; GNUNET_ECRS_SBLOCK_UPDATE_NONE(0) is used for
-   * non-updateable SBlocks, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC(-1) is used
-   * for entries without a fixed update frequency; in network byte
-   * order
-   */
-  GNUNET_Int32Time updateInterval;
-
-  /**
-   * N, the identifier that will be used for the
-   * next revision of this GNUNET_EC_SBlock.
-   */
-  GNUNET_HashCode nextIdentifier;
-
-  /**
-   * I, the increment between identifiers (used to enable
-   * skipping of blocks by appying multiple increments.
-   */
-  GNUNET_HashCode identifierIncrement;
-
-  /* 0-terminated URI follows here! */
+  /* 0-terminated URI (as string) follows here! */
 
   /* variable-size Meta-Data follows here! */
 } GNUNET_EC_SBlock;
 
-typedef struct
-{
-
-  /**
-   * Type of the block (NBLOCK), in network byte order.
-   */
-  unsigned int type;
-
-  GNUNET_RSA_Signature signature;       /* 256 b */
-
-  GNUNET_RSA_PublicKey subspace;        /* S = H(subspace); 264 b */
-
-  /**
-   * Must be all zeros
-   */
-  GNUNET_HashCode identifier;
-
-  /* The REST (from here on) is encrypted! */
-
-  /**
-   * Identifier of the namespace
-   */
-  GNUNET_HashCode namespace;
-
-  /**
-   * Key of an (optional) root entry into the namespace
-   * (use all-zeros for not given).
-   */
-  GNUNET_HashCode rootEntry;
-
-  /* variable-size Meta-Data follows here! */
-} GNUNET_EC_NBlock;
-
 /**
- * @brief keyword-GNUNET_EC_NBlock (advertising namespace under a keyword)
+ * @brief keyword-GNUNET_EC_SBlock (advertising namespace under a keyword)
  */
 typedef struct
 {
 
   /**
-   * Type of the block (KNBLOCK), in network byte order.
+   * Type of the block (KSBLOCK), in network byte order.
    */
   unsigned int type;
 
   GNUNET_EC_KBlock kblock;
 
-  GNUNET_EC_NBlock nblock;
-} GNUNET_EC_KNBlock;
+  GNUNET_EC_SBlock sblock;
+} GNUNET_EC_KSBlock;
 
 /**
  * Perform on-demand content encoding.

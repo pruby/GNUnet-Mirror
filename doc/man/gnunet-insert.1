@@ -136,21 +136,6 @@ specify a port using the syntax HOSTNAME:PORT.  The default port is
 2087.
 
 .TP
-\fB\-i \fISECONDS\fR, \fB\-\-interval=\fISECONDS\fR
-Specifies the update frequency of the content in seconds. This option
-is only valid together with the \-P option. If no current and next ID
-are specified, the system picks some random start values for the
-sequence.
-
-.PP
-Most recent update can be found by gnunet\-gtk
-automatically. gnunet\-search will print all edition ids between the
-insertion time and the current time. A new search can be then
-performed with one of the printed keys.  Also, using gnunet\-insert
-for updating content is cumbersome, in the future gnunet\-gtk will
-provide a more interactive way to manage content updates.
-
-.TP
 \fB\-k \fIKEYWORD\fR, \fB\-\-key=KEYWORD\fR
 additional key to index the content with (to add multiple keys,
 specify multiple times). Each additional key is case-sensitive. Can be
@@ -199,9 +184,6 @@ Without the \-i option, a one\-shot update SBlock is used
 current ID (this) and the next ID is used to compute all future IDs.
 Note that specifying \-i and \-N without \-t hardly ever makes sense.
 
-The ID can be given in HEX notation, otherwise the HEX code is derived
-by hashing the given ID string.
-
 .TP
 \fB\-p \fIPRIORITY\fR, \fB\-\-prio=\fIPRIORITY\fR
 Executive summary: You probably don't need it.
@@ -224,34 +206,10 @@ the file but just simulate what would be done.  This can be used to
 compute the GNUnet URI for a file without actually sharing it.
 
 .TP
-\fB\-S\fR, \fB\-\-sporadic\fR
-This option specifies that the file will be updated sporadically but
-not periodically.  It is only valid in conjunction with the \-P
-option.  It is implied if \-N is specified but not \-i.  It cannot be
-used together with the \-i option.  Use \-S if you intend to publish
-an update at an unknown point in the future and if you want
-gnunet\-insert to pick a random identifier for that future content.
-
-If you use \-P but not \-S, \-N or \-i, the content will not be updateable.
-
-.TP
 \fB\-t \fIID\fR, \fB\-\-this=\fIID\fR
 Specifies the ID of the SBlock.  This option is only valid together
 with the\ -s option and together with either the option \-b or only a
 single filename on the command-line.
-
-The ID can be given in HEX notation, otherwise the HEX code is derived
-by hashing the given ID string which may be a natural language
-keyword.
-
-.TP
-\fB\-T \fITIME\fR, \fB\-\-time=\fITIME\fR
-Specifies the SBlock creation time.  The required format depends on
-your locale.
-
-This option can be used to publish past and future periodical
-SBlocks. The option works best when used together with \-e. Default
-time is the current time.
 
 .TP
 \fB\-u \fIURI\fR, \fB\-\-uri=\fIURI\fR
@@ -263,11 +221,6 @@ use this URI and perform the selected namespace or keyword
 operations.  This can be used to add additional keywords to a
 file that has already been shared or to add files to a namespace
 for which the URI is known but the content is not locally available.
-
-.TP
-\fB\-U \fIID\fR, \fB\-\-update=\fIID\fR
-When updating an entry in the namespace, this option can be used
-to specify the ID of the previous entry.
 
 .TP
 \fB\-v\fR, \fB\-\-version\fR
@@ -320,17 +273,16 @@ individual files or subdirs (\-n).  Force description for all files:
 
 \fBSecure publishing with namespaces\fR
 
-Insert file COPYING with pseudonym RIAA (\-P) and with identifier \fBgpl\fR (\-t) and no updates:
+Insert file COPYING with pseudonym RIAA-2 (\-P) and with identifier \fBgpl\fR (\-t) and no updates:
 
- # gnunet\-insert \-P RIAA \-t gpl COPYING
+ # gnunet\-insert \-P RIAA-2 \-t gpl COPYING
 
-Recursively index /home/ogg and build a matching directory
-structure.  Insert the top\-level directory into the namespace under
-the pseudonym RIAA (\-P) under identifier MUSIC (\-t) and promise to
-provide an update with identifier VIDEOS (\-N) at an arbitrary point
-in the future (\-S is implied by lack of \-i and presence of \-N):
+Recursively index /home/ogg and build a matching directory structure.
+Insert the top\-level directory into the namespace under the pseudonym
+RIAA-2 (\-P) under identifier 'MUSIC' (\-t) and promise to provide an
+update with identifier 'VIDEOS' (\-N):
 
- # gnunet\-insert \-P RIAA \-t MUSIC \-N VIDEOS /home/ogg
+ # gnunet\-insert \-P RIAA-2 \-t MUSIC \-N VIDEOS /home/ogg
 
 Recursively insert (\-n) /var/lib/mysql and build a matching
 directory structure, but disable the use of libextractor to extract
@@ -342,14 +294,14 @@ the \-V option can retrieve the (secret?) files:
 
  # gnunet\-insert \-nV /var/lib/mysql
 
-Create a periodical SBlock with a sporadic update interval and announce
+Create a namespace entry 'root' in namespace MPAA-1 and announce
 that the next update will be called 'next':
 
- # gnunet\-insert \-P MPAA \-N next \-S noise.mp3
+ # gnunet\-insert \-P MPAA-1 -t root \-N next noise.mp3
 
-Update the periodical SBlock using settings from a previous time:
+Update the previous entry, do not allow any future updates:
 
- # gnunet\-insert \-P MPAA \-t next -N nextnext noise_updated.mp3
+ # gnunet\-insert \-P MPAA-1 \-t next noise_updated.mp3
 
 
 .SH FILES

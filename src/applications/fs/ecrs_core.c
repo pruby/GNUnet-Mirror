@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -211,50 +211,27 @@ GNUNET_EC_file_block_check_and_get_query (unsigned int size,
         GNUNET_hash (&kb->keyspace, sizeof (GNUNET_RSA_PublicKey), query);
         return GNUNET_OK;
       }
-    case GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
+    case GNUNET_ECRS_BLOCKTYPE_KEYWORD_SIGNED:
       {
-        const GNUNET_EC_NBlock *nb;
-        if (size < sizeof (GNUNET_EC_NBlock))
+        const GNUNET_EC_KSBlock *ks;
+        if (size < sizeof (GNUNET_EC_KSBlock))
           {
             GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
-        nb = (const GNUNET_EC_NBlock *) data;
+        ks = (const GNUNET_EC_KSBlock *) data;
         if ((verify == GNUNET_YES) &&
-            (GNUNET_OK != GNUNET_RSA_verify (&nb->identifier,
-                                             size
-                                             - sizeof (GNUNET_RSA_Signature)
-                                             - sizeof (GNUNET_RSA_PublicKey)
-                                             - sizeof (unsigned int),
-                                             &nb->signature, &nb->subspace)))
-          {
-            GNUNET_GE_BREAK (NULL, 0);
-            return GNUNET_SYSERR;
-          }
-        *query = nb->namespace; /* XOR with all zeros makes no difference... */
-        return GNUNET_OK;
-      }
-    case GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
-      {
-        const GNUNET_EC_KNBlock *kb;
-        if (size < sizeof (GNUNET_EC_KNBlock))
-          {
-            GNUNET_GE_BREAK (NULL, 0);
-            return GNUNET_SYSERR;
-          }
-        kb = (const GNUNET_EC_KNBlock *) data;
-        if ((verify == GNUNET_YES) &&
-            ((GNUNET_OK != GNUNET_RSA_verify (&kb->nblock,
+            ((GNUNET_OK != GNUNET_RSA_verify (&ks->sblock,
                                               size
                                               - sizeof (GNUNET_EC_KBlock)
                                               - sizeof (unsigned int),
-                                              &kb->kblock.signature,
-                                              &kb->kblock.keyspace))))
+                                              &ks->kblock.signature,
+                                              &ks->kblock.keyspace))))
           {
             GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
-        GNUNET_hash (&kb->kblock.keyspace, sizeof (GNUNET_RSA_PublicKey),
+        GNUNET_hash (&ks->kblock.keyspace, sizeof (GNUNET_RSA_PublicKey),
                      query);
         return GNUNET_OK;
       }
@@ -320,17 +297,9 @@ GNUNET_EC_is_block_applicable_for_query (unsigned int type,
       if (0 == memcmp (&keys[1], &h, sizeof (GNUNET_HashCode)))
         return GNUNET_OK;
       return GNUNET_SYSERR;
-    case GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
-      if (keyCount != 2)
-        return GNUNET_SYSERR;   /* no match */
-      GNUNET_hash (&((const GNUNET_EC_NBlock *) data)->subspace,
-                   sizeof (GNUNET_RSA_PublicKey), &h);
-      if (0 != memcmp (&keys[1], &h, sizeof (GNUNET_HashCode)))
-        return GNUNET_SYSERR;
-      return GNUNET_OK;
     case GNUNET_ECRS_BLOCKTYPE_DATA:
     case GNUNET_ECRS_BLOCKTYPE_KEYWORD:
-    case GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
+    case GNUNET_ECRS_BLOCKTYPE_KEYWORD_SIGNED:
       if (keyCount != 1)
         GNUNET_GE_BREAK (NULL, 0);      /* keyCount should be 1 */
       return GNUNET_OK;         /* if query matches, everything matches! */

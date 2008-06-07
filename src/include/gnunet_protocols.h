@@ -429,14 +429,9 @@ extern "C"
 #define GNUNET_ECRS_BLOCKTYPE_KEYWORD 3
 
 /**
- * Namespace advertisement.
- */
-#define GNUNET_ECRS_BLOCKTYPE_NAMESPACE 4
-
-/**
  * Namespace advertisement in keyword space.
  */
-#define GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE 5
+#define GNUNET_ECRS_BLOCKTYPE_KEYWORD_SIGNED 4
 
 /**
  * Type of OnDemand encoded blocks.

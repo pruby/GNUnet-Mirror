@@ -765,9 +765,8 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_DBlock) == 4);
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_IBlock) == 132);
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_KBlock) == 524);
-  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_SBlock) == 724);
-  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_NBlock) == 716);
-  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_KNBlock) == 1244);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_SBlock) == 588);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EC_KSBlock) == 1116);
 
   if ((-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "LOAD", "HARDCPULIMIT", 0, 100000, /* 1000 CPUs!? */
                                                        0,       /* 0 == no limit */

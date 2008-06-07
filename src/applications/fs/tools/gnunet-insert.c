@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -65,17 +65,11 @@ static unsigned int anonymity = 1;
 
 static unsigned int priority = 365;
 
-static unsigned int interval = 0;
-
 static char *uri_string;
 
 static char *next_id;
 
 static char *this_id;
-
-static char *prev_id;
-
-static char *creation_time;
 
 static char *pseudonym;
 
@@ -85,20 +79,11 @@ static int do_no_direct_references;
 
 static int do_copy;
 
-static int is_sporadic;
-
 static int do_simulate;
 
 static int extract_only;
 
 static int do_disable_creation_time;
-
-static void
-convertId (const char *s, GNUNET_HashCode * id)
-{
-  if ((s != NULL) && (GNUNET_enc_to_hash (s, id) == GNUNET_SYSERR))
-    GNUNET_hash (s, strlen (s), id);
-}
 
 /**
  * We're done with the upload of the file, do the
@@ -107,18 +92,12 @@ convertId (const char *s, GNUNET_HashCode * id)
 static void
 postProcess (const struct GNUNET_ECRS_URI *uri)
 {
-  GNUNET_HashCode prevId;
-  GNUNET_HashCode thisId;
-  GNUNET_HashCode nextId;
   GNUNET_HashCode nsid;
   struct GNUNET_ECRS_URI *nsuri;
   char *us;
 
   if (pseudonym == NULL)
     return;
-  convertId (next_id, &nextId);
-  convertId (this_id, &thisId);
-  convertId (prev_id, &prevId);
   if (GNUNET_OK != GNUNET_pseudonym_name_to_id (ectx, cfg, pseudonym, &nsid))
     {
       printf (_("\tUnknown namespace `%s'\n"), pseudonym);
@@ -130,11 +109,7 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
                                       priority,
                                       GNUNET_get_time () +
                                       2 * GNUNET_CRON_YEARS, &nsid,
-                                      (GNUNET_Int32Time) interval,
-                                      prev_id == NULL ? NULL : &prevId,
-                                      this_id == NULL ? NULL : &thisId,
-                                      next_id == NULL ? NULL : &nextId, uri,
-                                      meta);
+                                      this_id, next_id, uri, meta);
   if (nsuri != NULL)
     {
       us = GNUNET_ECRS_uri_to_string (nsuri);
@@ -296,10 +271,6 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    0, &GNUNET_getopt_configure_set_one, &extract_only},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Make files available to GNUnet for sharing.")),       /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
-  {'i', "interval", "SECONDS",
-   gettext_noop ("set interval for availability of updates to SECONDS"
-                 " (for namespace insertions only)"),
-   1, &GNUNET_getopt_configure_set_uint, &interval},
   {'k', "key", "KEYWORD",
    gettext_noop
    ("add an additional keyword for the top-level file or directory"
@@ -333,26 +304,14 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    gettext_noop ("only simulte the process but do not do any "
                  "actual publishing (useful to compute URIs)"),
    0, &GNUNET_getopt_configure_set_one, &do_simulate},
-  {'S', "sporadic", NULL,
-   gettext_noop ("specifies this as an aperiodic but updated publication"
-                 " (for namespace insertions only)"),
-   0, &GNUNET_getopt_configure_set_one, &is_sporadic},
   {'t', "this", "ID",
    gettext_noop ("set the ID of this version of the publication"
                  " (for namespace insertions only)"),
    1, &GNUNET_getopt_configure_set_string, &this_id},
-  {'T', "time", "TIME",
-   gettext_noop
-   ("specify creation time for SBlock (see man-page for format)"),
-   1, &GNUNET_getopt_configure_set_string, &creation_time},
   {'u', "uri", "URI",
    gettext_noop ("URI to be published (can be used instead of passing a "
                  "file to add keywords to the file with the respective URI)"),
    1, &GNUNET_getopt_configure_set_string, &uri_string},
-  {'U', "update", "ID",
-   gettext_noop ("ID of the previous version of the content"
-                 " (for namespace update only)"),
-   1, &GNUNET_getopt_configure_set_string, &prev_id},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
@@ -459,26 +418,6 @@ main (int argc, char *const *argv)
           errorCode = -1;
           goto quit;
         }
-      if (creation_time != NULL)
-        {
-          struct tm t;
-          const char *fmt;
-
-#if ENABLE_NLS
-          fmt = nl_langinfo (D_T_FMT);
-#else
-          fmt = "%Y-%m-%d";
-#endif
-          if ((NULL == strptime (creation_time, fmt, &t)))
-            {
-              GNUNET_GE_LOG_STRERROR (ectx,
-                                      GNUNET_GE_FATAL | GNUNET_GE_USER |
-                                      GNUNET_GE_IMMEDIATE, "strptime");
-              printf (_("Parsing time failed. Use `%s' format.\n"), fmt);
-              errorCode = -1;
-              goto quit;
-            }
-        }
     }
   else
     {                           /* ordinary insertion checks */
@@ -490,35 +429,11 @@ main (int argc, char *const *argv)
           errorCode = -1;
           goto quit;
         }
-      if (NULL != prev_id)
-        {
-          fprintf (stderr,
-                   _("Option `%s' makes no sense without option `%s'.\n"),
-                   "-u", "-P");
-          errorCode = -1;
-          goto quit;
-        }
       if (NULL != this_id)
         {
           fprintf (stderr,
                    _("Option `%s' makes no sense without option `%s'.\n"),
                    "-t", "-P");
-          errorCode = -1;
-          goto quit;
-        }
-      if (0 != interval)
-        {
-          fprintf (stderr,
-                   _("Option `%s' makes no sense without option `%s'.\n"),
-                   "-i", "-P");
-          errorCode = -1;
-          goto quit;
-        }
-      if (is_sporadic)
-        {
-          fprintf (stderr,
-                   _("Option `%s' makes no sense without option `%s'.\n"),
-                   "-S", "-P");
           errorCode = -1;
           goto quit;
         }

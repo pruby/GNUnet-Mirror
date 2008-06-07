@@ -36,7 +36,6 @@
 #include "ecrs.h"
 #include "ecrs_core.h"
 #include "fs.h"
-#include "uri.h"
 #include "tree.h"
 
 #define DEBUG_UPLOAD GNUNET_NO

@@ -22,18 +22,46 @@
  * @file applications/fs/fsui/namespace_infotest.c
  * @brief testcase for namespace_info.c
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - test insertion of content
+ * - computation of next identifier,
+ * - publication of updated content
+ * - search under original key (add search URI)
+ * - finding of updated content (add code to validate!)
  */
 
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
-#include "gnunet_namespace_lib.h"
+#include "gnunet_fsui_lib.h"
 #include "gnunet_namespace_lib.h"
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
 static struct GNUNET_GE_Context *ectx;
 
+static char *root;
+
+static int
+iter (void *cls,
+      const GNUNET_ECRS_FileInfo * uri,
+      const char *lastId, const char *nextId)
+{
+  char **res = cls;
+  if (0 == strcmp (lastId, root))
+    (*res) = GNUNET_strdup (nextId);
+  return GNUNET_OK;
+}
+
+static void *
+eventProc (void *unused, const GNUNET_FSUI_Event * event)
+{
+  if (event->type != GNUNET_FSUI_search_result)
+    return NULL;
+  /* check if we got the desired result! */
+  return NULL;
+}
 
 int
 main (int argc, char *argv[])
@@ -42,13 +70,17 @@ main (int argc, char *argv[])
   int ok;
   struct GNUNET_ECRS_URI *uri = NULL;
   struct GNUNET_ECRS_URI *euri = NULL;
+  struct GNUNET_ECRS_URI *furi = NULL;
+  struct GNUNET_ECRS_URI *suri = NULL;
   struct GNUNET_MetaData *meta = NULL;
   GNUNET_HashCode nsid;
-  char *test_root;
-  int old;
-  int newVal;
+  char *thisId;
+  struct GNUNET_FSUI_Context *ctx = NULL;
   struct GNUNET_GC_Configuration *cfg;
+  struct GNUNET_FSUI_SearchList *sl = NULL;
 
+  if (1)
+    return 0;                   /* test disabled for now */
   GNUNET_disable_entropy_gathering ();
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
@@ -76,7 +108,7 @@ main (int argc, char *argv[])
                                     NULL, "root");
   CHECK (uri != NULL);
   GNUNET_ECRS_uri_get_namespace_from_sks (uri, &nsid);
-  old = GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, NULL, NULL);
+  /* publish original file */
   euri = GNUNET_NS_add_to_namespace (ectx,
                                      cfg,
                                      1,
@@ -85,11 +117,31 @@ main (int argc, char *argv[])
                                      10 * GNUNET_CRON_MINUTES, &nsid,
                                      "this", "next", uri, meta);
   CHECK (euri != NULL);
-  newVal = GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, NULL, NULL);
-  CHECK (old < newVal);
-  test_root = GNUNET_NS_namespace_get_root (ectx, cfg, &nsid);
-  CHECK (0 == strcmp (test_root, "root"));
-  GNUNET_free (test_root);
+  /* get automatically selected "nextID" of original publication */
+  thisId = NULL;
+  GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, &iter, &thisId);
+  CHECK (0 != strcmp ("next", thisId));
+  /* publish update */
+  furi = GNUNET_NS_add_to_namespace (ectx,
+                                     cfg,
+                                     1,
+                                     1,
+                                     GNUNET_get_time () +
+                                     10 * GNUNET_CRON_MINUTES, &nsid,
+                                     thisId, "future", euri, meta);
+  CHECK (furi != NULL);
+  /* do namespace search for *original*
+     content; hope to find update! */
+  ctx =
+    GNUNET_FSUI_start (ectx, cfg, "namespace-update-test", 16, GNUNET_NO,
+                       &eventProc, NULL);
+  CHECK (ctx != NULL);
+  /* FIXME: generate suri! */
+  sl = GNUNET_FSUI_search_start (ctx, 0, suri);
+  CHECK (sl != NULL);
+  /* wait for results... */
+
+
   CHECK (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid));
   /* END OF TEST CODE */
 FAILURE:
@@ -97,8 +149,16 @@ FAILURE:
     GNUNET_ECRS_uri_destroy (uri);
   if (euri != NULL)
     GNUNET_ECRS_uri_destroy (euri);
+  if (furi != NULL)
+    GNUNET_ECRS_uri_destroy (furi);
+  if (suri != NULL)
+    GNUNET_ECRS_uri_destroy (suri);
   if (meta != NULL)
     GNUNET_meta_data_destroy (meta);
+  if (sl != NULL)
+    GNUNET_FSUI_search_stop (sl);
+  if (ctx != NULL)
+    GNUNET_FSUI_stop (ctx);
   GNUNET_ECRS_namespace_delete (ectx, cfg, &nsid);
 
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));

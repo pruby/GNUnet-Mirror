@@ -55,7 +55,6 @@ void GNUNET_CO_done (void);
  */
 int GNUNET_CO_collection_start (unsigned int anonymityLevel,
                                 unsigned int priority,
-                                GNUNET_Int32Time updateInterval,
                                 const struct GNUNET_MetaData *meta);
 
 /**
@@ -74,19 +73,10 @@ int GNUNET_CO_collection_stop (void);
 struct GNUNET_MetaData *GNUNET_CO_collection_get_name (void);
 
 /**
- * GNUNET_ND_UPLOAD an update of the current collection information to the
+ * Publish an update of the current collection information to the
  * network now.  The function has no effect if the collection has not
  * changed since the last publication.  If we are currently not
  * collecting, this function does nothing.
- *
- * Note that clients typically don't have to call this function
- * explicitly.  CO will call the function on exit (for sporadically
- * updated collections), on any change to the collection (for
- * immediately updated content) or when the publication time has
- * arrived (for periodically updated collections).
- *
- * However, clients may want to call this function if explicit
- * publication of an update at another time is desired.
  */
 void GNUNET_CO_collection_publish_now (void);
 
@@ -94,12 +84,6 @@ void GNUNET_CO_collection_publish_now (void);
  * If we are currently building a collection, publish the given file
  * information in that collection.  If we are currently not
  * collecting, this function does nothing.
- *
- * Note that clients typically don't have to call this function
- * explicitly -- by using the CO library it should be called
- * automatically by CO code whenever needed.  However, the function
- * maybe useful if you're inserting files using libECRS directly or
- * need other ways to explicitly extend a collection.
  */
 void GNUNET_CO_collection_add_item (const GNUNET_ECRS_FileInfo * fi);
 

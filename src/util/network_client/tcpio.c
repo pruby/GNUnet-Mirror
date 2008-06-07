@@ -247,15 +247,15 @@ GNUNET_client_connection_ensure_connected (struct
 {
   /* list of address families to try for connecting,
      in order of preference */
-  static int addr_families[] = { 
+  static int addr_families[] = {
 #ifdef AF_UNSPEC
-    AF_UNSPEC, 
+    AF_UNSPEC,
 #endif
 #ifdef AF_INET6
-    AF_INET6, 
+    AF_INET6,
 #endif
     AF_INET,
-    -1 
+    -1
   };
   GNUNET_CronTime select_start;
   struct sockaddr *soaddr;
@@ -337,8 +337,8 @@ GNUNET_client_connection_ensure_connected (struct
           ((struct sockaddr_in6 *) soaddr)->sin6_port = htons (port);
           osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
 #else
-	  osock = -1;
-	  errno = EAFNOSUPPORT;
+          osock = -1;
+          errno = EAFNOSUPPORT;
 #endif
         }
       if (osock == -1)

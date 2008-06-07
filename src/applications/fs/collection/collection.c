@@ -45,6 +45,8 @@
  */
 #define COLLECTION "collection"
 
+#define COLLECTION_ROOT "root"
+
 /**
  * How long does a collection advertisement live?
  */
@@ -57,29 +59,9 @@ typedef struct CollectionData
 {
 
   /**
-   * What is the last ID for the publication?
+   * What is the pseudonym ID for the publication?
    */
   GNUNET_HashCode pid;
-
-  /**
-   * What is the last ID for the publication?
-   */
-  GNUNET_HashCode lastId;
-
-  /**
-   * What is the next ID for the publication?
-   */
-  GNUNET_HashCode nextId;
-
-  /**
-   * What is the update interval? (NBO!)
-   */
-  GNUNET_Int32Time updateInterval;
-
-  /**
-   * What is the update interval? (NBO!)
-   */
-  GNUNET_Int32Time lastPublication;
 
   /**
    * Anonymity level for the collection. (NBO)
@@ -90,6 +72,16 @@ typedef struct CollectionData
    * Priority of the collection (NBO).
    */
   unsigned int priority;
+
+  /**
+   * Has this collection changed since the last publication?
+   */
+  int changed;
+
+  /**
+   * Revision counter
+   */
+  unsigned int revision;
 
 } CollectionData;
 
@@ -114,10 +106,6 @@ typedef struct
    */
   unsigned int file_count;
 
-  /**
-   * Has this collection changed since the last publication?
-   */
-  int changed;
 
 } CollectionInfo;
 
@@ -211,27 +199,22 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
       return;
     }
   collectionData = GNUNET_malloc (sizeof (CollectionInfo));
+  memset (collectionData, 0, sizeof (CollectionInfo));
   memcpy (&collectionData->data, buf, sizeof (CollectionData));
   pos = &buf[sizeof (CollectionData)];
   rsize -= sizeof (CollectionData);
+  if (rsize < 2 * sizeof (int))
+    goto ERR;
   len = ntohl (*(int *) pos);
   if (len > 1024 * 1024 * 4)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      len = 1024 * 1024 * 4;
-    }
-  GNUNET_array_grow (collectionData->files, collectionData->file_count, len);
-  pos += sizeof (int);
-  collectionData->changed = ntohl (*(int *) pos);
+    goto ERR;
   pos += sizeof (int);
   mlen = ntohl (*(unsigned int *) pos);
   pos += sizeof (unsigned int);
-  rsize -= 3 * sizeof (int);
+  rsize -= 2 * sizeof (int);
   if (mlen > rsize)
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      mlen = rsize;
-    }
+    goto ERR;
+  GNUNET_array_grow (collectionData->files, collectionData->file_count, len);
   collectionData->meta = GNUNET_meta_data_deserialize (ectx, pos, mlen);
   rsize -= mlen;
   pos += mlen;
@@ -292,6 +275,13 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
                          collectionData->file_count,
                          collectionData->file_count - 1);
     }
+  return;
+ERR:
+  MUNMAP (buf, (size_t) size);
+  CLOSE (fd);
+  GNUNET_free (fn);
+  GNUNET_free (collectionData);
+  collectionData = NULL;
 }
 
 static void
@@ -345,7 +335,6 @@ writeCO ()
   GNUNET_GE_BREAK (ectx, collectionData->file_count <= 1024 * 1024 * 4);
   WRITE (fd, collectionData, sizeof (CollectionData));
   WRITEINT (fd, collectionData->file_count);
-  WRITEINT (fd, collectionData->changed);
   WRITEINT (fd, mlen);
   WRITE (fd, buf, mlen);
   GNUNET_free (buf);
@@ -376,6 +365,24 @@ writeCO ()
   GNUNET_free (fn);
 }
 
+static void
+free_collection_data ()
+{
+  unsigned int i;
+
+  if (collectionData == NULL)
+    return;
+  GNUNET_meta_data_destroy (collectionData->meta);
+  for (i = 0; i < collectionData->file_count; i++)
+    {
+      GNUNET_meta_data_destroy (collectionData->files[i].meta);
+      GNUNET_ECRS_uri_destroy (collectionData->files[i].uri);
+    }
+  GNUNET_array_grow (collectionData->files, collectionData->file_count, 0);
+  GNUNET_free (collectionData);
+  collectionData = NULL;
+}
+
 /**
  * Shutdown collection module.
  */
@@ -383,7 +390,7 @@ void
 GNUNET_CO_done ()
 {
   writeCO ();
-  GNUNET_CO_collection_stop ();
+  free_collection_data ();
   GNUNET_mutex_destroy (lock);
   lock = NULL;
   ectx = NULL;
@@ -403,20 +410,16 @@ GNUNET_CO_done ()
 int
 GNUNET_CO_collection_start (unsigned int anonymityLevel,
                             unsigned int prio,
-                            GNUNET_Int32Time updateInterval,
                             const struct GNUNET_MetaData *meta)
 {
   struct GNUNET_ECRS_URI *advertisement;
   struct GNUNET_ECRS_URI *rootURI;
-  GNUNET_HashCode nextId;
-  GNUNET_Int32Time now;
+  const char *root = COLLECTION_ROOT;
 
   GNUNET_mutex_lock (lock);
   GNUNET_CO_collection_stop (); /* cancel old collection */
   advertisement = GNUNET_ECRS_keyword_string_to_uri (ectx, COLLECTION);
   GNUNET_GE_ASSERT (ectx, advertisement != NULL);
-  GNUNET_get_time_int32 (&now);
-  GNUNET_create_random_hash (&nextId);
   rootURI = GNUNET_ECRS_namespace_create (ectx,
                                           cfg,
                                           meta,
@@ -424,24 +427,20 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
                                           prio,
                                           GNUNET_get_time () +
                                           COLLECTION_ADV_LIFETIME,
-                                          advertisement, &nextId);
+                                          advertisement, root);
+  GNUNET_ECRS_uri_destroy (advertisement);
   if (rootURI == NULL)
     {
-      GNUNET_ECRS_uri_destroy (advertisement);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
+  GNUNET_ECRS_uri_destroy (rootURI);
   collectionData = GNUNET_malloc (sizeof (CollectionInfo));
   memset (collectionData, 0, sizeof (CollectionInfo));
-  GNUNET_create_random_hash (&collectionData->data.lastId);
   GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &collectionData->data.pid);
-  collectionData->data.nextId = nextId;
-  collectionData->data.updateInterval = htonl (updateInterval);
-  collectionData->data.anonymityLevel = htonl (anonymityLevel);
   collectionData->data.priority = htonl (prio);
+  collectionData->data.anonymityLevel = htonl (anonymityLevel);
   collectionData->meta = GNUNET_meta_data_duplicate (meta);
-  GNUNET_ECRS_uri_destroy (advertisement);
-  GNUNET_ECRS_uri_destroy (rootURI);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
@@ -454,8 +453,6 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
 int
 GNUNET_CO_collection_stop ()
 {
-  unsigned int i;
-
   GNUNET_mutex_lock (lock);
   if (collectionData == NULL)
     {
@@ -463,15 +460,7 @@ GNUNET_CO_collection_stop ()
       return GNUNET_SYSERR;
     }
   GNUNET_ECRS_namespace_delete (ectx, cfg, &collectionData->data.pid);
-  GNUNET_meta_data_destroy (collectionData->meta);
-  for (i = 0; i < collectionData->file_count; i++)
-    {
-      GNUNET_meta_data_destroy (collectionData->files[i].meta);
-      GNUNET_ECRS_uri_destroy (collectionData->files[i].uri);
-    }
-  GNUNET_array_grow (collectionData->files, collectionData->file_count, 0);
-  GNUNET_free (collectionData);
-  collectionData = NULL;
+  free_collection_data ();
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
@@ -498,66 +487,29 @@ GNUNET_CO_collection_get_name ()
 }
 
 /**
- * GNUNET_ND_UPLOAD an update of the current collection information to the
+ * Publish an update of the current collection information to the
  * network now.  The function has no effect if the collection has not
  * changed since the last publication.  If we are currently not
  * collecting, this function does nothing.
- *
- * Note that clients typically don't have to call this
- * function explicitly.  CO will call the function on
- * exit (for sporadically updated collections), on any
- * change to the collection (for immediately updated
- * content) or when the publication time has arrived
- * (for periodically updated collections).
- *
- * However, clients may want to call this function if
- * explicit publication of an update at another
- * time is desired.
  */
 void
 GNUNET_CO_collection_publish_now ()
 {
-  GNUNET_HashCode delta;
-  GNUNET_Int32Time now;
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ECRS_URI *directoryURI;
   unsigned long long dirLen;
   char *tmpName;
   int fd;
   char *dirData;
+  char this_revision_string[128];
+  char next_revision_string[128];
 
   GNUNET_mutex_lock (lock);
-  if ((collectionData == NULL) || (collectionData->changed == GNUNET_NO))
+  if ((collectionData == NULL) ||
+      (ntohl (collectionData->data.changed) == GNUNET_NO))
     {
       GNUNET_mutex_unlock (lock);
       return;
-    }
-  GNUNET_get_time_int32 (&now);
-  if ((ntohl (collectionData->data.updateInterval) !=
-       GNUNET_ECRS_SBLOCK_UPDATE_NONE)
-      && (ntohl (collectionData->data.updateInterval) !=
-          GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC)
-      && (ntohl (collectionData->data.lastPublication) +
-          ntohl (collectionData->data.updateInterval) < now))
-    {
-      GNUNET_mutex_unlock (lock);
-      return;
-    }
-  if ((ntohl (collectionData->data.updateInterval) !=
-       GNUNET_ECRS_SBLOCK_UPDATE_NONE)
-      && (ntohl (collectionData->data.updateInterval) !=
-          GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC))
-    {
-      GNUNET_hash_difference (&collectionData->data.nextId,
-                              &collectionData->data.lastId, &delta);
-      collectionData->data.lastId = collectionData->data.nextId;
-      GNUNET_hash_sum (&collectionData->data.nextId,
-                       &delta, &collectionData->data.nextId);
-    }
-  else
-    {
-      collectionData->data.lastId = collectionData->data.nextId;
-      GNUNET_create_random_hash (&collectionData->data.nextId);
     }
   tmpName = GNUNET_strdup ("/tmp/gnunet-collectionXXXXXX");
   fd = mkstemp (tmpName);
@@ -575,12 +527,9 @@ GNUNET_CO_collection_publish_now ()
                     GNUNET_OK == GNUNET_ECRS_directory_create (ectx,
                                                                &dirData,
                                                                &dirLen,
-                                                               collectionData->
-                                                               file_count,
-                                                               collectionData->
-                                                               files,
-                                                               collectionData->
-                                                               meta));
+                                                               collectionData->file_count,
+                                                               collectionData->files,
+                                                               collectionData->meta));
   if (-1 == WRITE (fd, dirData, dirLen))
     {
       GNUNET_GE_LOG_STRERROR (ectx,
@@ -594,10 +543,10 @@ GNUNET_CO_collection_publish_now ()
   GNUNET_free (dirData);
   CLOSE (fd);
   if (GNUNET_OK != GNUNET_ECRS_file_upload (ectx, cfg, tmpName, GNUNET_NO,      /* indexing */
-                                            ntohl (collectionData->data.
-                                                   anonymityLevel),
-                                            ntohl (collectionData->data.
-                                                   priority),
+                                            ntohl (collectionData->
+                                                   data.anonymityLevel),
+                                            ntohl (collectionData->
+                                                   data.priority),
                                             GNUNET_get_time () +
                                             COLLECTION_ADV_LIFETIME, NULL,
                                             NULL, NULL, NULL, &directoryURI))
@@ -609,25 +558,33 @@ GNUNET_CO_collection_publish_now ()
     }
   UNLINK (tmpName);
   GNUNET_free (tmpName);
+  if (ntohl (collectionData->data.revision) == 0)
+    strcpy (this_revision_string, COLLECTION_ROOT);
+  else
+    GNUNET_snprintf (this_revision_string,
+                     sizeof (this_revision_string),
+                     _("Revision %u"), ntohl (collectionData->data.revision));
+  GNUNET_snprintf (next_revision_string,
+                   sizeof (next_revision_string),
+                   _("Revision %u"),
+                   ntohl (collectionData->data.revision) + 1);
   uri = GNUNET_ECRS_namespace_add_content (ectx,
                                            cfg,
                                            &collectionData->data.pid,
-                                           ntohl (collectionData->data.
-                                                  anonymityLevel),
-                                           ntohl (collectionData->data.
-                                                  priority),
+                                           ntohl (collectionData->
+                                                  data.anonymityLevel),
+                                           ntohl (collectionData->
+                                                  data.priority),
                                            GNUNET_get_time () +
-                                           COLLECTION_ADV_LIFETIME, now,
-                                           ntohl (collectionData->data.
-                                                  updateInterval),
-                                           &collectionData->data.lastId,
-                                           &collectionData->data.nextId,
-                                           directoryURI,
+                                           COLLECTION_ADV_LIFETIME,
+                                           this_revision_string,
+                                           next_revision_string, directoryURI,
                                            collectionData->meta);
   if (uri != NULL)
     {
-      collectionData->data.lastPublication = htonl (now);
-      collectionData->changed = GNUNET_NO;
+      collectionData->data.revision =
+        htonl (ntohl (collectionData->data.revision) + 1);
+      collectionData->data.changed = htonl (GNUNET_NO);
       GNUNET_ECRS_uri_destroy (uri);
     }
   GNUNET_mutex_unlock (lock);
@@ -638,13 +595,6 @@ GNUNET_CO_collection_publish_now ()
  * the given file information in that collection.
  * If we are currently not collecting, this function
  * does nothing.
- *
- * Note that clients typically don't have to call this
- * function explicitly -- by using the CO library it
- * should be called automatically by CO code whenever
- * needed.  However, the function maybe useful if you're
- * inserting files using libECRS directly or need other
- * ways to explicitly extend a collection.
  */
 void
 GNUNET_CO_collection_add_item (const GNUNET_ECRS_FileInfo * fi)
@@ -679,10 +629,7 @@ GNUNET_CO_collection_add_item (const GNUNET_ECRS_FileInfo * fi)
   fc.uri = GNUNET_ECRS_uri_duplicate (fi->uri);
   fc.meta = GNUNET_meta_data_duplicate (fi->meta);
   GNUNET_array_append (collectionData->files, collectionData->file_count, fc);
-  collectionData->changed = GNUNET_YES;
-  if (ntohl (collectionData->data.updateInterval) ==
-      GNUNET_ECRS_SBLOCK_UPDATE_NONE)
-    GNUNET_CO_collection_publish_now ();
+  collectionData->data.changed = htonl (GNUNET_YES);
   GNUNET_mutex_unlock (lock);
 }
 
