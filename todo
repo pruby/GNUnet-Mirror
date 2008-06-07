@@ -5,7 +5,6 @@ Annotations:
 
 0.8.0 [6'08] (aka "new protocol"):
 - Windows: gnunet-auto-share
-- document gnunet-auto-share on webpage [RC]
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074
