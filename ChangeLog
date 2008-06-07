@@ -1,3 +1,9 @@
+Sat Jun  7 17:54:49 MDT 2008
+	Simplified namespaces a lot.  Shorter timeouts for
+	trying to connect to gnunetd to prevent interactive
+	apps from blocking too long when gnunetd is not
+	running.
+
 Sun Jun  1 21:11:54 MDT 2008
 	Releasing 0.8.0pre1.
 
