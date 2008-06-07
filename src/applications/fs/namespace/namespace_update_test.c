@@ -22,13 +22,6 @@
  * @file applications/fs/fsui/namespace_infotest.c
  * @brief testcase for namespace_info.c
  * @author Christian Grothoff
- *
- * TODO:
- * - test insertion of content
- * - computation of next identifier,
- * - publication of updated content
- * - search under original key (add search URI)
- * - finding of updated content (add code to validate!)
  */
 
 #include "platform.h"
@@ -54,12 +47,17 @@ iter (void *cls,
   return GNUNET_OK;
 }
 
+static struct GNUNET_ECRS_URI * want;
+
 static void *
 eventProc (void *unused, const GNUNET_FSUI_Event * event)
 {
   if (event->type != GNUNET_FSUI_search_result)
     return NULL;
-  /* check if we got the desired result! */
+  if ( (want != NULL) &&
+       (GNUNET_ECRS_uri_test_equal(event->data.SearchResult.fi.uri,
+				   want)) )
+    want = NULL;  /* got the desired result! */
   return NULL;
 }
 
@@ -68,10 +66,10 @@ main (int argc, char *argv[])
 {
   pid_t daemon;
   int ok;
+  int tries;
   struct GNUNET_ECRS_URI *uri = NULL;
   struct GNUNET_ECRS_URI *euri = NULL;
   struct GNUNET_ECRS_URI *furi = NULL;
-  struct GNUNET_ECRS_URI *suri = NULL;
   struct GNUNET_MetaData *meta = NULL;
   GNUNET_HashCode nsid;
   char *thisId;
@@ -121,6 +119,7 @@ main (int argc, char *argv[])
   thisId = NULL;
   GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, &iter, &thisId);
   CHECK (0 != strcmp ("next", thisId));
+  GNUNET_free(thisId);
   /* publish update */
   furi = GNUNET_NS_add_to_namespace (ectx,
                                      cfg,
@@ -128,7 +127,7 @@ main (int argc, char *argv[])
                                      1,
                                      GNUNET_get_time () +
                                      10 * GNUNET_CRON_MINUTES, &nsid,
-                                     thisId, "future", euri, meta);
+                                     "next", "future", euri, meta);
   CHECK (furi != NULL);
   /* do namespace search for *original*
      content; hope to find update! */
@@ -136,12 +135,20 @@ main (int argc, char *argv[])
     GNUNET_FSUI_start (ectx, cfg, "namespace-update-test", 16, GNUNET_NO,
                        &eventProc, NULL);
   CHECK (ctx != NULL);
-  /* FIXME: generate suri! */
-  sl = GNUNET_FSUI_search_start (ctx, 0, suri);
+  want = euri;
+  sl = GNUNET_FSUI_search_start (ctx, 0, euri);
+  /* will find "uri" under euri; then will look for
+     "update" which should be "euri" */
   CHECK (sl != NULL);
   /* wait for results... */
-
-
+  tries = 5;
+  while (--tries > 0)
+    {
+      if (want == NULL)
+	break;
+      GNUNET_thread_sleep(GNUNET_CRON_MILLISECONDS * 150);
+    }
+  CHECK(want == NULL);
   CHECK (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid));
   /* END OF TEST CODE */
 FAILURE:
@@ -151,8 +158,6 @@ FAILURE:
     GNUNET_ECRS_uri_destroy (euri);
   if (furi != NULL)
     GNUNET_ECRS_uri_destroy (furi);
-  if (suri != NULL)
-    GNUNET_ECRS_uri_destroy (suri);
   if (meta != NULL)
     GNUNET_meta_data_destroy (meta);
   if (sl != NULL)

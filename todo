@@ -4,9 +4,6 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [6'08] (aka "new protocol"):
-- namespaces
-  + need more comprehensive testcase!
-    (in particular updated-content search finding!)
 - Windows: gnunet-auto-share
 - document gnunet-auto-share on webpage [RC]
 
