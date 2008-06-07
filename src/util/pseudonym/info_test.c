@@ -31,6 +31,7 @@
 
 static struct GNUNET_MetaData *meta;
 
+static GNUNET_HashCode id1;
 
 static int
 iter (void *cls,
@@ -39,7 +40,10 @@ iter (void *cls,
 {
   int *ok = cls;
 
-  if (!GNUNET_meta_data_test_equal (md, meta))
+  if ( (0 == memcmp(pseudonym,
+		    &id1,
+		    sizeof(GNUNET_HashCode))) &&
+       (!GNUNET_meta_data_test_equal (md, meta)) )
     {
       *ok = GNUNET_NO;
       GNUNET_GE_BREAK (NULL, 0);
@@ -51,7 +55,6 @@ int
 main (int argc, char *argv[])
 {
   int ok;
-  GNUNET_HashCode id1;
   GNUNET_HashCode rid1;
   GNUNET_HashCode id2;
   GNUNET_HashCode rid2;
@@ -68,10 +71,11 @@ main (int argc, char *argv[])
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
       GNUNET_GC_free (cfg);
+      GNUNET_GE_BREAK(NULL, 0);
       return -1;
     }
   /* ACTUAL TEST CODE */
-  old = GNUNET_pseudonym_list_all (ectx, cfg, &iter, &ok);
+  old = GNUNET_pseudonym_list_all (ectx, cfg, NULL, NULL);
   meta = GNUNET_meta_data_create ();
   GNUNET_meta_data_insert (meta, EXTRACTOR_TITLE, "test");
   GNUNET_create_random_hash (&id1);
@@ -95,7 +99,7 @@ main (int argc, char *argv[])
   CHECK (0 == memcmp (&id2, &rid2, sizeof (GNUNET_HashCode)));
   CHECK (0 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 0));
   CHECK (5 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 5));
-  CHECK (-5 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 10));
+  CHECK (-5 == GNUNET_pseudonym_rank (ectx, cfg, &id1, -10));
   CHECK (0 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 5));
   GNUNET_free (name1);
   GNUNET_free (name2);
