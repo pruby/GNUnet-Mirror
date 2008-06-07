@@ -895,6 +895,9 @@ GNUNET_ECRS_uri_duplicate (const URI * uri)
       else
         ret->data.ksk.keywords = NULL;  /* just to be sure */
       break;
+    case sks:
+      ret->data.sks.identifier = GNUNET_strdup(uri->data.sks.identifier);
+      break;
     case loc:
       break;
     default:
