@@ -27,7 +27,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
-#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 static struct GNUNET_MetaData *meta;
 

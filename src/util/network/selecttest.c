@@ -23,8 +23,8 @@
  * @brief testcase for util/network/select.c
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
 
 #define PORT 10000
 
