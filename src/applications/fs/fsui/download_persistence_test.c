@@ -167,7 +167,7 @@ main (int argc, char *argv[])
   };
   int prog;
   char *buf;
-  struct GNUNET_MetaData *meta;
+  struct GNUNET_MetaData *meta = NULL;
   struct GNUNET_ECRS_URI *kuri = NULL;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UnindexList *unindex = NULL;

@@ -141,8 +141,7 @@ main (int argc, char *argv[])
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_FSUI_UploadList *upload;
   struct GNUNET_ECRS_URI *luri;
-  struct GNUNET_FSUI_Context *ctx;
-
+  struct GNUNET_FSUI_Context *ctx = NULL;
 
   ok = GNUNET_YES;
   cfg = GNUNET_GC_create ();
