@@ -61,7 +61,6 @@ main (int argc, char *argv[])
   int old;
   int newVal;
   struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_GE_Context *ectx;
   char *name1;
   char *name2;
 
@@ -75,32 +74,31 @@ main (int argc, char *argv[])
       return -1;
     }
   /* ACTUAL TEST CODE */
-  old = GNUNET_pseudonym_list_all (ectx, cfg, NULL, NULL);
+  old = GNUNET_pseudonym_list_all (NULL, cfg, NULL, NULL);
   meta = GNUNET_meta_data_create ();
   GNUNET_meta_data_insert (meta, EXTRACTOR_TITLE, "test");
   GNUNET_create_random_hash (&id1);
-  GNUNET_pseudonym_add (ectx, cfg, &id1, meta);
-  newVal = GNUNET_pseudonym_list_all (ectx, cfg, &iter, &ok);
+  GNUNET_pseudonym_add (NULL, cfg, &id1, meta);
+  newVal = GNUNET_pseudonym_list_all (NULL, cfg, &iter, &ok);
   CHECK (old < newVal);
   old = newVal;
-  name1 = GNUNET_pseudonym_id_to_name (ectx, cfg, &id1);
   GNUNET_create_random_hash (&id2);
-  GNUNET_pseudonym_add (ectx, cfg, &id2, meta);
-  newVal = GNUNET_pseudonym_list_all (ectx, cfg, &iter, &ok);
+  GNUNET_pseudonym_add (NULL, cfg, &id2, meta);
+  newVal = GNUNET_pseudonym_list_all (NULL, cfg, &iter, &ok);
   CHECK (old < newVal);
-  name2 = GNUNET_pseudonym_id_to_name (ectx, cfg, &id2);
+  name2 = GNUNET_pseudonym_id_to_name (NULL, cfg, &id2);
   CHECK (name2 != NULL);
-  name1 = GNUNET_pseudonym_id_to_name (ectx, cfg, &id1);
+  name1 = GNUNET_pseudonym_id_to_name (NULL, cfg, &id1);
   CHECK (name1 != NULL);
   CHECK (0 != strcmp (name1, name2));
-  CHECK (GNUNET_OK == GNUNET_pseudonym_name_to_id (ectx, cfg, name2, &rid2));
-  CHECK (GNUNET_OK == GNUNET_pseudonym_name_to_id (ectx, cfg, name1, &rid1));
+  CHECK (GNUNET_OK == GNUNET_pseudonym_name_to_id (NULL, cfg, name2, &rid2));
+  CHECK (GNUNET_OK == GNUNET_pseudonym_name_to_id (NULL, cfg, name1, &rid1));
   CHECK (0 == memcmp (&id1, &rid1, sizeof (GNUNET_HashCode)));
   CHECK (0 == memcmp (&id2, &rid2, sizeof (GNUNET_HashCode)));
-  CHECK (0 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 0));
-  CHECK (5 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 5));
-  CHECK (-5 == GNUNET_pseudonym_rank (ectx, cfg, &id1, -10));
-  CHECK (0 == GNUNET_pseudonym_rank (ectx, cfg, &id1, 5));
+  CHECK (0 == GNUNET_pseudonym_rank (NULL, cfg, &id1, 0));
+  CHECK (5 == GNUNET_pseudonym_rank (NULL, cfg, &id1, 5));
+  CHECK (-5 == GNUNET_pseudonym_rank (NULL, cfg, &id1, -10));
+  CHECK (0 == GNUNET_pseudonym_rank (NULL, cfg, &id1, 5));
   GNUNET_free (name1);
   GNUNET_free (name2);
   /* END OF TEST CODE */

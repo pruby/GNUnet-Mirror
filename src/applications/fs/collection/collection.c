@@ -171,7 +171,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
       return;
     }
   if ((size > 0x7FFFFFFF) ||
-      (size < sizeof (CollectionData) + 3 * sizeof (int)))
+      (size < sizeof (CollectionData) + 2 * sizeof (int)))
     {
       GNUNET_GE_BREAK (ectx, 0);
       UNLINK (fn);
@@ -203,8 +203,6 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
   memcpy (&collectionData->data, buf, sizeof (CollectionData));
   pos = &buf[sizeof (CollectionData)];
   rsize -= sizeof (CollectionData);
-  if (rsize < 2 * sizeof (int))
-    goto ERR;
   len = ntohl (*(int *) pos);
   if (len > 1024 * 1024 * 4)
     goto ERR;
