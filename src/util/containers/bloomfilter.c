@@ -39,9 +39,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
-#include "platform.h"
 
 typedef struct GNUNET_BloomFilter
 {

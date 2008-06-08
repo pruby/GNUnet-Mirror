@@ -241,11 +241,6 @@ GNUNET_CORE_cs_send_to_client (struct GNUNET_ClientHandle *handle,
                                const GNUNET_MessageHeader * message,
                                int force)
 {
-#if DEBUG_TCPHANDLER
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                 "%s: sending reply to client\n", __FUNCTION__);
-#endif
   return GNUNET_select_write (selector, handle->sock, message, GNUNET_NO,
                               force);
 }
@@ -279,50 +274,36 @@ select_message_handler (void *mh_cls,
 
   ptyp = htons (msg->type);
   GNUNET_mutex_lock (handlerlock);
-  if (ptyp >= max_registeredType)
+  if ((ptyp >= max_registeredType) || (NULL == (callback = handlers[ptyp])))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                     "%s: Message of type %d not understood: no handler registered\n",
-                     __FUNCTION__, ptyp, max_registeredType);
+                     "Message of type %d not understood: no handler registered\n",
+                     ptyp);
       GNUNET_mutex_unlock (handlerlock);
       return GNUNET_SYSERR;
     }
-  callback = handlers[ptyp];
-  if (callback == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                     "%s: Message of type %d not understood: no handler registered\n",
-                     __FUNCTION__, ptyp);
-      GNUNET_mutex_unlock (handlerlock);
-      return GNUNET_SYSERR;
-    }
-  else
-    {
 #if TIME_HANDLERS
-      start = GNUNET_get_time ();
+  start = GNUNET_get_time ();
 #endif
-      if (GNUNET_OK != callback (sender, msg))
-        {
+  if (GNUNET_OK != callback (sender, msg))
+    {
 #if 0
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                         "%s: Message of type %d caused error in handler\n",
-                         __FUNCTION__, ptyp);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Message of type %d caused error in handler\n", ptyp);
 #endif
-          GNUNET_mutex_unlock (handlerlock);
-          return GNUNET_SYSERR;
-        }
-#if TIME_HANDLERS
-      if (GNUNET_get_time () - start > GNUNET_CRON_SECONDS)
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_INFO | GNUNET_GE_DEVELOPER |
-                       GNUNET_GE_IMMEDIATE,
-                       "Handling message of type %u took %llu s\n", ptyp,
-                       (GNUNET_get_time () - start) / GNUNET_CRON_SECONDS);
-#endif
+      GNUNET_mutex_unlock (handlerlock);
+      return GNUNET_SYSERR;
     }
+#if TIME_HANDLERS
+  if (GNUNET_get_time () - start > GNUNET_CRON_SECONDS)
+    GNUNET_GE_LOG (ectx,
+                   GNUNET_GE_INFO | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_IMMEDIATE,
+                   "Handling message of type %u took %llu s\n", ptyp,
+                   (GNUNET_get_time () - start) / GNUNET_CRON_SECONDS);
+#endif
   GNUNET_mutex_unlock (handlerlock);
   return GNUNET_OK;
 }
@@ -563,8 +544,9 @@ GNUNET_CORE_register_handler (unsigned short type,
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
                          GNUNET_GE_BULK,
-                         _("%s failed, message type %d already in use.\n"),
-                         __FUNCTION__, type);
+                         _
+                         ("Registering failed, message type %d already in use.\n"),
+                         type);
           return GNUNET_SYSERR;
         }
     }

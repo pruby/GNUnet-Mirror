@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_config.h"
 #include "gnunet_util_getopt.h"
-#include "platform.h"
 
 
 int

@@ -218,17 +218,20 @@ const char *GNUNET_GE_strerror (int errnum);
 /**
  * Use this for fatal errors that cannot be handled
  */
-#define GNUNET_GE_ASSERT(ctx, cond) do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GNUNET_GE_CONFIRM(ctx); abort(); } } while(0)
+#define GNUNET_GE_ASSERT(ctx, cond) do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d.\n"), __FILE__, __LINE__); GNUNET_GE_CONFIRM(ctx); abort(); } } while(0)
 
-#define GNUNET_GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GNUNET_GE_CONFIRM(ctx); abort(); } } while(0)
+/**
+ * Use this for fatal errors that cannot be handled
+ */
+#define GNUNET_GE_ASSERT_FL(ctx, cond, f, l) do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d.\n"), f, l); GNUNET_GE_CONFIRM(ctx); abort(); } } while(0)
 
 /**
  * Use this for internal assertion violations that are
  * not fatal (can be handled) but should not occur.
  */
-#define GNUNET_GE_BREAK(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
+#define GNUNET_GE_BREAK(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d.\n"), __FILE__, __LINE__); } } while(0)
 
-#define GNUNET_GE_BREAK_RETURN(ctx, cond, retval)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); return retval; } } while(0)
+#define GNUNET_GE_BREAK_RETURN(ctx, cond, retval)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d.\n"), __FILE__, __LINE__); return retval; } } while(0)
 
 /**
  * Use this for assertion violations caused by other
@@ -238,55 +241,42 @@ const char *GNUNET_GE_strerror (int errnum);
  * we still want to see these problems during
  * development and testing.  "OP == other peer".
  */
-#define GNUNET_GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("External protocol violation: assertion failed at %s:%d in %s (no need to panic, we can handle this).\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
-
-/**
- * Just like GNUNET_GE_BREAK just with file/line/function
- * information given as part of the call.
- */
-#define GNUNET_GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)
+#define GNUNET_GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("External protocol violation: assertion failed at %s:%d (no need to panic, we can handle this).\n"), __FILE__, __LINE__); } } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GNUNET_GE_LOG_STRERROR(ctx, level, cmd) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
+#define GNUNET_GE_LOG_STRERROR(ctx, level, cmd) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, STRERROR(errno)); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GNUNET_GE_DIE_STRERROR(ctx, level, cmd) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
+#define GNUNET_GE_DIE_STRERROR(ctx, level, cmd) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GNUNET_GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
+#define GNUNET_GE_DIE_STRERROR_FL(ctx, level, cmd, f, l) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, f, l, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GNUNET_GE_LOG_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); } while(0)
-
-/**
- * Log an error message at log-level 'level' that indicates
- * a failure of the command 'cmd' with the message given
- * by strerror(errno).
- */
-#define GNUNET_GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
+#define GNUNET_GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename,__FILE__, __LINE__, STRERROR(errno)); } while(0)
 
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define GNUNET_GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
+#define GNUNET_GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename,__FILE__, __LINE__, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

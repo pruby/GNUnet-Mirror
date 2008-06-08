@@ -89,12 +89,6 @@ csPut (struct GNUNET_ClientHandle *client,
   req = (const CS_dht_request_put_MESSAGE *) message;
   size = ntohs (req->header.size) - sizeof (CS_dht_request_put_MESSAGE);
   GNUNET_GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
-#if DEBUG_CS
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "`%s' at %s:%d processes put '%.*s'\n",
-                 __FUNCTION__, __FILE__, __LINE__, size, &req[1]);
-#endif
   dhtAPI->put (&req->key, ntohl (req->type), size, (const char *) &req[1]);
   return GNUNET_OK;
 }
@@ -120,12 +114,6 @@ get_result (const GNUNET_HashCode * key,
   msg->type = htonl (type);
   msg->key = *key;
   memcpy (&msg[1], value, size);
-#if DEBUG_CS
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "`%s' at %s:%d processes reply '%.*s'\n",
-                 __FUNCTION__, __FILE__, __LINE__, size, value);
-#endif
   if (GNUNET_OK !=
       coreAPI->cs_send_message (record->client, &msg->header, GNUNET_YES))
     {
@@ -154,12 +142,6 @@ csGet (struct GNUNET_ClientHandle *client,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-#if DEBUG_CS
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "`%s' at %s:%d processes get\n", __FUNCTION__, __FILE__,
-                 __LINE__);
-#endif
   get = (const CS_dht_request_get_MESSAGE *) message;
   cpc = GNUNET_malloc (sizeof (struct DHT_CLIENT_GET_RECORD));
   cpc->client = client;
@@ -188,13 +170,6 @@ csGetEnd (struct GNUNET_ClientHandle *client,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-#if DEBUG_CS
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "`%s' at %s:%d processes get\n", __FUNCTION__, __FILE__,
-                 __LINE__);
-#endif
-
   get = (const CS_dht_request_get_MESSAGE *) message;
   GNUNET_mutex_lock (lock);
   pos = getRecords;

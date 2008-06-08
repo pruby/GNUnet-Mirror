@@ -80,8 +80,7 @@ processhellos (HelloListClosure * hcq)
 #if DEBUG_BOOTSTRAP
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "%s chose hello %d of %d\n",
-                     __FUNCTION__, rndidx, hcq->hellosCount);
+                     "Chose hello %d of %d\n", rndidx, hcq->hellosCount);
 #endif
       msg = (GNUNET_MessageHello *) hcq->hellos[rndidx];
       hcq->hellos[rndidx] = hcq->hellos[hcq->hellosCount - 1];

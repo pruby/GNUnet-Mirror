@@ -65,10 +65,9 @@ static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
 static int
 printCallback (const GNUNET_HashCode * hash,
                unsigned int type,
-               unsigned int size, const char *data, void *cls)
+               unsigned int size, const char *data, void *unused)
 {
-  char *key = cls;
-  printf ("%s(%s): '%.*s'\n", "get", key, size, data);
+  printf ("%s: '%.*s'\n", "get", size, data);
   return GNUNET_OK;
 }
 
@@ -123,7 +122,7 @@ main (int argc, char *const *argv)
 {
   int i;
   struct GNUNET_ClientServerConnection *handle;
-  void *unused;
+
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-dht-query",
@@ -136,7 +135,7 @@ main (int argc, char *const *argv)
 
   handle = GNUNET_client_connection_create (ectx, cfg);
 
-  ctx = GNUNET_DHT_context_create (cfg, ectx, &printCallback, unused);
+  ctx = GNUNET_DHT_context_create (cfg, ectx, &printCallback, NULL);
   if (handle == NULL)
     {
       fprintf (stderr, _("Failed to connect to gnunetd.\n"));

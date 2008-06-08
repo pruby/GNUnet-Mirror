@@ -28,10 +28,10 @@
  * to bound disk size of the DB and to get high performance).
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util.h"
 #include "gnunet_uritrack_lib.h"
-#include "platform.h"
 
 static char *
 getDBName (struct GNUNET_GC_Configuration *cfg)

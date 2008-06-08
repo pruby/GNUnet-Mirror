@@ -33,10 +33,6 @@
 #include "gnunet_namespace_lib.h"
 #include "gnunet_util.h"
 
-/* hmm. Man says time.h, but that doesn't yield the
-   prototype.  Strange... */
-extern char *strptime (const char *s, const char *format, struct tm *tm);
-
 static int errorCode;
 
 static struct GNUNET_GC_Configuration *cfg;

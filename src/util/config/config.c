@@ -25,8 +25,8 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
 
 /**
  * @brief configuration entry

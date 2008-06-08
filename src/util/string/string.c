@@ -25,11 +25,11 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util_string.h"
 #include "platform.h"
 #if HAVE_ICONV_H
 #include <iconv.h>
 #endif
+#include "gnunet_util_string.h"
 
 
 int

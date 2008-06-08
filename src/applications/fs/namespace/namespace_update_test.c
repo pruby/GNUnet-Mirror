@@ -47,17 +47,16 @@ iter (void *cls,
   return GNUNET_OK;
 }
 
-static struct GNUNET_ECRS_URI * want;
+static struct GNUNET_ECRS_URI *want;
 
 static void *
 eventProc (void *unused, const GNUNET_FSUI_Event * event)
 {
   if (event->type != GNUNET_FSUI_search_result)
     return NULL;
-  if ( (want != NULL) &&
-       (GNUNET_ECRS_uri_test_equal(event->data.SearchResult.fi.uri,
-				   want)) )
-    want = NULL;  /* got the desired result! */
+  if ((want != NULL) &&
+      (GNUNET_ECRS_uri_test_equal (event->data.SearchResult.fi.uri, want)))
+    want = NULL;                /* got the desired result! */
   return NULL;
 }
 
@@ -119,7 +118,7 @@ main (int argc, char *argv[])
   thisId = NULL;
   GNUNET_NS_namespace_list_contents (ectx, cfg, &nsid, &iter, &thisId);
   CHECK (0 != strcmp ("next", thisId));
-  GNUNET_free(thisId);
+  GNUNET_free (thisId);
   /* publish update */
   furi = GNUNET_NS_add_to_namespace (ectx,
                                      cfg,
@@ -145,10 +144,10 @@ main (int argc, char *argv[])
   while (--tries > 0)
     {
       if (want == NULL)
-	break;
-      GNUNET_thread_sleep(GNUNET_CRON_MILLISECONDS * 150);
+        break;
+      GNUNET_thread_sleep (GNUNET_CRON_MILLISECONDS * 150);
     }
-  CHECK(want == NULL);
+  CHECK (want == NULL);
   CHECK (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, &nsid));
   /* END OF TEST CODE */
 FAILURE:

@@ -30,11 +30,11 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "gnunet_directories.h"
 #include "gnunet_state_service.h"
-#include "platform.h"
 
 #define STATE_DEBUG GNUNET_NO
 

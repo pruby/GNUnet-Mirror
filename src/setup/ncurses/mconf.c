@@ -179,8 +179,10 @@ run_menu (struct GNUNET_GNS_Context *ctx,
                 case DLG_EXIT_CANCEL:
                   if (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                                      ectx,
-                                                                     pos->section,
-                                                                     pos->option,
+                                                                     pos->
+                                                                     section,
+                                                                     pos->
+                                                                     option,
                                                                      st ==
                                                                      DLG_EXIT_OK
                                                                      ? "YES" :
@@ -215,9 +217,12 @@ run_menu (struct GNUNET_GNS_Context *ctx,
                 case DLG_EXIT_OK:
                   if (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                                      ectx,
-                                                                     pos->section,
-                                                                     pos->option,
-                                                                     fitem.text))
+                                                                     pos->
+                                                                     section,
+                                                                     pos->
+                                                                     option,
+                                                                     fitem.
+                                                                     text))
                     {
                       show_help (pos->option,
                                  gettext_noop
@@ -279,9 +284,13 @@ run_menu (struct GNUNET_GNS_Context *ctx,
                 case DLG_EXIT_OK:
                   if (0 != GNUNET_GC_set_configuration_value_choice (cfg,
                                                                      ectx,
-                                                                     pos->section,
-                                                                     pos->option,
-                                                                     val->String.legalRange
+                                                                     pos->
+                                                                     section,
+                                                                     pos->
+                                                                     option,
+                                                                     val->
+                                                                     String.
+                                                                     legalRange
                                                                      [msel]))
                     {
                       show_help (pos->option,
@@ -360,8 +369,10 @@ run_menu (struct GNUNET_GNS_Context *ctx,
                     tmp[strlen (tmp) - 1] = '\0';
                   if (0 != GNUNET_GC_set_configuration_value_choice (cfg,
                                                                      ectx,
-                                                                     pos->section,
-                                                                     pos->option,
+                                                                     pos->
+                                                                     section,
+                                                                     pos->
+                                                                     option,
                                                                      tmp))
                     {
                       GNUNET_free (tmp);
@@ -405,9 +416,12 @@ run_menu (struct GNUNET_GNS_Context *ctx,
                     }
                   if (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                                      ectx,
-                                                                     pos->section,
-                                                                     pos->option,
-                                                                     fitem.text))
+                                                                     pos->
+                                                                     section,
+                                                                     pos->
+                                                                     option,
+                                                                     fitem.
+                                                                     text))
                     {
                       show_help (pos->option,
                                  gettext_noop
@@ -456,8 +470,10 @@ run_menu (struct GNUNET_GNS_Context *ctx,
                         }
                       if (0 != GNUNET_GC_set_configuration_value_number (cfg,
                                                                          ectx,
-                                                                         pos->section,
-                                                                         pos->option,
+                                                                         pos->
+                                                                         section,
+                                                                         pos->
+                                                                         option,
                                                                          lval))
                         {
                           show_help (pos->option,

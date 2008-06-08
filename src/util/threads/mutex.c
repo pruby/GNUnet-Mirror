@@ -23,10 +23,10 @@
  * @brief implementation of mutual exclusion
  */
 
+#include "platform.h"
 #include "gnunet_util_threads.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
-#include "platform.h"
 
 #if SOLARIS || GNUNET_freeBSD || OSX
 #include <semaphore.h>
@@ -134,7 +134,7 @@ GNUNET_mutex_lock_at_file_line_ (Mutex * mutex, const char *file,
   GNUNET_CronTime start;
   GNUNET_CronTime end;
 
-  GNUNET_GE_ASSERT_FLF (NULL, mutex != NULL, file, line, __FUNCTION__);
+  GNUNET_GE_ASSERT_FL (NULL, mutex != NULL, file, line);
   start = GNUNET_get_time ();
   ret = pthread_mutex_lock (&mutex->pt);
   end = GNUNET_get_time ();
@@ -159,7 +159,7 @@ GNUNET_mutex_lock_at_file_line_ (Mutex * mutex, const char *file,
                        GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
                        | GNUNET_GE_IMMEDIATE, _("Deadlock due to `%s'.\n"),
                        "pthread_mutex_lock");
-      GNUNET_GE_ASSERT_FLF (NULL, 0, file, line, __FUNCTION__);
+      GNUNET_GE_ASSERT_FL (NULL, 0, file, line);
     }
   if (mutex->locked_depth++ == 0)
     {

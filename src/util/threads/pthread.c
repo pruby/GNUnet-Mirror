@@ -23,10 +23,10 @@
  * @brief implementation of pthread start/join/sleep
  */
 
+#include "platform.h"
 #include "gnunet_util_threads.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
-#include "platform.h"
 
 #if SOLARIS || GNUNET_freeBSD || OSX
 #include <semaphore.h>

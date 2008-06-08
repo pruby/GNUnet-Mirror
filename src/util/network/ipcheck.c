@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util_network.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_error.h"
-#include "platform.h"
 
 /**
  * @brief IPV4 network in CIDR notation.

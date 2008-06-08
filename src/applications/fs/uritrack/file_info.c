@@ -27,10 +27,10 @@
  * An IPC semaphore is used to guard the access.
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util.h"
 #include "gnunet_uritrack_lib.h"
-#include "platform.h"
 #include "callbacks.h"
 
 #define DEBUG_FILE_INFO GNUNET_NO
@@ -340,7 +340,7 @@ GNUNET_URITRACK_list (struct GNUNET_GE_Context *ectx,
       while ((spos < ret) && (result[spos] != '\0'))
         spos++;
       spos++;                   /* skip '\0' */
-      if ((spos + sizeof (int) >= ret) || (spos + sizeof (int) < spos))
+      if (spos + sizeof (int) >= ret)
         {
           GNUNET_GE_BREAK (ectx, 0);
           goto FORMATERROR;

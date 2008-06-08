@@ -33,9 +33,9 @@
  * - support editing of string inputs...
  */
 
+#include "platform.h"
 #include "gnunet_setup_lib.h"
 #include "conf.h"
-#include "platform.h"
 #include <termios.h>
 
 static char

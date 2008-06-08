@@ -31,11 +31,11 @@
  * is not required.  The performance impact is minimal anyway.
  */
 
+#include "platform.h"
+#include <gcrypt.h>
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
 #include "locking_gcrypt.h"
-#include "platform.h"
-#include <gcrypt.h>
 
 /**
  * Use LOG_ERROR for anything that should never happen

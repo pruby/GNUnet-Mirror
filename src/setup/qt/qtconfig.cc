@@ -1,7 +1,6 @@
 #include <Qt/qapplication.h>
 
 extern "C" {
-  #include "gnunet_util.h"
   #include "platform.h"
   #include "gnunet_util.h"
   #include "gnunet_directories.h"

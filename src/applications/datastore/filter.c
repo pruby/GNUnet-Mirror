@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util.h"
 #include "filter.h"
-#include "platform.h"
 
 /**
  * Filter.

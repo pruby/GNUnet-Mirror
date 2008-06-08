@@ -1770,9 +1770,9 @@ lt_int_dyld_NSlookupSymbolInLinkedLibs (symbol, mh)
                                                                *) (((struct
                                                                      dylib_command
                                                                      *)
-                                                                    lc)->dylib.
-                                                                   name.offset
-                                                                   +
+                                                                    lc)->
+                                                                   dylib.name.
+                                                                   offset +
                                                                    (unsigned
                                                                     long)
                                                                    lc));

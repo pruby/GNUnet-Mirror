@@ -24,12 +24,12 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_util_config.h"
 #include "gnunet_util_error_loggers.h"
 #include <gcrypt.h>
-#include "platform.h"
 
 static GNUNET_GE_KIND
 convertLogLevel (const char *level)

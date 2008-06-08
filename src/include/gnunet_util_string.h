@@ -62,7 +62,7 @@ extern "C"
  *        smaller than 40 MB.
  * @return pointer to size bytes of memory
  */
-#define GNUNET_malloc(size) GNUNET_xmalloc_(size, __FILE__, __LINE__, __FUNCTION__)
+#define GNUNET_malloc(size) GNUNET_xmalloc_(size, __FILE__, __LINE__)
 
 /**
  * Wrapper around malloc. Allocates size bytes of memory.
@@ -70,7 +70,7 @@ extern "C"
  * @param size the number of bytes to allocate
  * @return pointer to size bytes of memory
  */
-#define GNUNET_malloc_large(size) GNUNET_xmalloc_unchecked_(size, __FILE__, __LINE__, __FUNCTION__)
+#define GNUNET_malloc_large(size) GNUNET_xmalloc_unchecked_(size, __FILE__, __LINE__)
 
 /**
  * Wrapper around realloc. Rellocates size bytes of memory.
@@ -79,7 +79,7 @@ extern "C"
  * @param size the number of bytes to reallocate
  * @return pointer to size bytes of memory
  */
-#define GNUNET_realloc(ptr, size) GNUNET_xrealloc_(ptr, size, __FILE__, __LINE__, __FUNCTION__)
+#define GNUNET_realloc(ptr, size) GNUNET_xrealloc_(ptr, size, __FILE__, __LINE__)
 
 /**
  * Wrapper around free. Frees the memory referred to by ptr.
@@ -89,7 +89,7 @@ extern "C"
  * @param ptr location where to free the memory. ptr must have
  *     been returned by GNUNET_strdup, GNUNET_malloc or GNUNET_array_grow earlier.
  */
-#define GNUNET_free(ptr) GNUNET_xfree_(ptr, __FILE__, __LINE__, __FUNCTION__)
+#define GNUNET_free(ptr) GNUNET_xfree_(ptr, __FILE__, __LINE__)
 
 /**
  * Free the memory pointed to by ptr if ptr is not NULL.
@@ -106,7 +106,7 @@ extern "C"
  * @param a pointer to a zero-terminated string
  * @return a copy of the string including zero-termination
  */
-#define GNUNET_strdup(a) GNUNET_xstrdup_(a,__FILE__,__LINE__, __FUNCTION__)
+#define GNUNET_strdup(a) GNUNET_xstrdup_(a,__FILE__,__LINE__)
 
 /**
  * Grow a well-typed (!) array.  This is a convenience
@@ -141,7 +141,7 @@ extern "C"
  * @param tsize the target size for the resulting vector, use 0 to
  *        free the vector (then, arr will be NULL afterwards).
  */
-#define GNUNET_array_grow(arr,size,tsize) GNUNET_xgrow_((void**)&arr, sizeof(arr[0]), &size, tsize, __FILE__, __LINE__, __FUNCTION__)
+#define GNUNET_array_grow(arr,size,tsize) GNUNET_xgrow_((void**)&arr, sizeof(arr[0]), &size, tsize, __FILE__, __LINE__)
 
 /**
  * Append an element to a list (growing the
@@ -194,9 +194,7 @@ char *GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx,
  * memory is available.  Don't use GNUNET_xmalloc_ directly. Use the
  * GNUNET_malloc macro.
  */
-void *GNUNET_xmalloc_ (size_t size,
-                       const char *filename, int linenumber,
-                       const char *function);
+void *GNUNET_xmalloc_ (size_t size, const char *filename, int linenumber);
 
 /**
  * Allocate memory.  This function does not check if the
@@ -205,34 +203,27 @@ void *GNUNET_xmalloc_ (size_t size,
  * possibility of very large allocations, use GNUNET_malloc instead.
  */
 void *GNUNET_xmalloc_unchecked_ (size_t size,
-                                 const char *filename,
-                                 int linenumber, const char *function);
+                                 const char *filename, int linenumber);
 
 /**
  * Reallocate memory. Checks the return value, aborts if no more
  * memory is available.
  */
 void *GNUNET_xrealloc_ (void *ptr,
-                        const size_t n,
-                        const char *filename, int linenumber,
-                        const char *function);
+                        const size_t n, const char *filename, int linenumber);
 
 /**
  * Free memory. Merely a wrapper for the case that we
  * want to keep track of allocations.  Don't use GNUNET_xfree_
  * directly. Use the GNUNET_free macro.
  */
-void GNUNET_xfree_ (void *ptr,
-                    const char *filename, int linenumber,
-                    const char *function);
+void GNUNET_xfree_ (void *ptr, const char *filename, int linenumber);
 
 
 /**
  * Dup a string. Don't call GNUNET_xstrdup_ directly. Use the GNUNET_strdup macro.
  */
-char *GNUNET_xstrdup_ (const char *str,
-                       const char *filename, int linenumber,
-                       const char *function);
+char *GNUNET_xstrdup_ (const char *str, const char *filename, int linenumber);
 
 /**
  * Grow an array, the new elements are zeroed out.
@@ -251,8 +242,7 @@ void GNUNET_xgrow_ (void **old,
                     size_t elementSize,
                     unsigned int *oldCount,
                     unsigned int newCount,
-                    const char *filename, int linenumber,
-                    const char *function);
+                    const char *filename, int linenumber);
 
 
 /**

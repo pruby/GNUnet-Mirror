@@ -24,9 +24,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
-#include "platform.h"
 
 int
 GNUNET_configure_user_account (int testCapability,

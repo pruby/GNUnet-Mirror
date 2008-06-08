@@ -24,10 +24,10 @@
  *
  * @author Christian Grothoff
  */
+#include "platform.h"
 #include "gnunet_util_error_loggers.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util.h"
-#include "platform.h"
 
 typedef struct GNUNET_GE_Message
 {

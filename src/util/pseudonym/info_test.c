@@ -40,10 +40,10 @@ iter (void *cls,
 {
   int *ok = cls;
 
-  if ( (0 == memcmp(pseudonym,
-		    &id1,
-		    sizeof(GNUNET_HashCode))) &&
-       (!GNUNET_meta_data_test_equal (md, meta)) )
+  if ((0 == memcmp (pseudonym,
+                    &id1,
+                    sizeof (GNUNET_HashCode))) &&
+      (!GNUNET_meta_data_test_equal (md, meta)))
     {
       *ok = GNUNET_NO;
       GNUNET_GE_BREAK (NULL, 0);
@@ -70,7 +70,7 @@ main (int argc, char *argv[])
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
       GNUNET_GC_free (cfg);
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return -1;
     }
   /* ACTUAL TEST CODE */

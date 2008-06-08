@@ -373,7 +373,7 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
            ctx->total_requested++, type);
 #endif
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req->header))
-    GNUNET_client_connection_close_temporarily(ctx->sock);    
+    GNUNET_client_connection_close_temporarily (ctx->sock);
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }

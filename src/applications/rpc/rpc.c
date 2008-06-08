@@ -336,9 +336,9 @@ RPC_register (const char *name,
           GNUNET_mutex_unlock (lock);
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                         _("%s::%s - RPC %s:%p could not be registered:"
+                         _("%s:%d - RPC %s:%p could not be registered:"
                            " another callback is already using this name (%p)\n"),
-                         __FILE__, __FUNCTION__, name, callback,
+                         __FILE__, __LINE__, name, callback,
                          rrpc->async_callback);
           return GNUNET_SYSERR;
         }
@@ -395,8 +395,8 @@ RPC_unregister (const char *name,
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                  _
-                 ("%s::%s - async RPC %s:%p could not be unregistered: not found\n"),
-                 __FILE__, __FUNCTION__, name, callback);
+                 ("%s:%d - async RPC %s:%p could not be unregistered: not found\n"),
+                 __FILE__, __LINE__, name, callback);
   return GNUNET_SYSERR;
 }
 

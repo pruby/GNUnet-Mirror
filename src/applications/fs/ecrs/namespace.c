@@ -309,8 +309,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
                                                           sizeof (unsigned
                                                                   int),
                                                           &ksb->sblock,
-                                                          &ksb->
-                                                          kblock.signature));
+                                                          &ksb->kblock.
+                                                          signature));
           /* extra check: verify sig */
           GNUNET_RSA_free_key (pk);
           if (GNUNET_OK != GNUNET_FS_insert (sock, knvalue))

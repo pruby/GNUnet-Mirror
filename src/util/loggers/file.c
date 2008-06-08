@@ -25,11 +25,11 @@
  * @author Christian Grothoff
  */
 #define _XOPEN_SOURCE           /* glibc2 needs this */
+#include "platform.h"
 #include "gnunet_util_error_loggers.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util.h"
-#include "platform.h"
 #include <time.h>
 
 /**
@@ -275,8 +275,8 @@ filelogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
     }
   if (ret < 0)
     fprintf (stderr,
-             _("`%s' failed at %s:%d in %s with error: %s\n"),
-             "fclose", __FILE__, __LINE__, __FUNCTION__, STRERROR (errno));
+             _("`%s' failed at %s:%d with error: %s\n"),
+             "fclose", __FILE__, __LINE__, STRERROR (errno));
   fflush (fctx->handle);
   GNUNET_mutex_unlock (fctx->lock);
 }
@@ -293,8 +293,8 @@ fileclose (void *cls)
   if ((fctx->handle != stderr) &&
       (fctx->handle != stdout) && (0 != fclose (fctx->handle)))
     fprintf (stderr,
-             _("`%s' failed at %s:%d in %s with error: %s\n"),
-             "fclose", __FILE__, __LINE__, __FUNCTION__, STRERROR (errno));
+             _("`%s' failed at %s:%d with error: %s\n"),
+             "fclose", __FILE__, __LINE__, STRERROR (errno));
   GNUNET_free (fctx);
 }
 

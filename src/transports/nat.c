@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
-#include "platform.h"
 #include "ip.h"
 
 #define DEBUG_NAT GNUNET_NO

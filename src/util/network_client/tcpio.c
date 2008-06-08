@@ -300,12 +300,12 @@ GNUNET_client_connection_ensure_connected (struct
   while (1)
     {
       if (addr_families[af_index] == -1)
-	{
+        {
           GNUNET_GE_LOG (sock->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                          _("Error connecting to %s:%u\n"), host, port);
-	  return GNUNET_SYSERR;
-	}
+          return GNUNET_SYSERR;
+        }
       soaddr = NULL;
       socklen = 0;
       if (GNUNET_SYSERR ==
@@ -601,7 +601,8 @@ GNUNET_client_connection_read_result (struct GNUNET_ClientServerConnection
     {
       GNUNET_GE_LOG (sock->ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                     _("`%s' failed, reply invalid!\n"), __FUNCTION__);
+                     _
+                     ("Reading result from gnunetd failed, reply invalid!\n"));
       GNUNET_free (rv);
       return GNUNET_SYSERR;
     }

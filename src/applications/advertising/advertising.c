@@ -31,6 +31,7 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
@@ -39,7 +40,6 @@
 #include "gnunet_stats_service.h"
 #include "gnunet_topology_service.h"
 #include "bootstrap.h"
-#include "platform.h"
 
 /**
  * Send our hello to a random connected host on a regular basis.
@@ -513,7 +513,7 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
             GNUNET_hash_to_enc (&hi->hashPubKey, &other));
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Entering `%s' with target `%s'.\n", __FUNCTION__, &other);
+                 "Entering with target `%s'.\n", &other);
 #endif
   if (0 == memcmp (hi, coreAPI->my_identity, sizeof (GNUNET_PeerIdentity)))
     return GNUNET_OK;           /* never advertise to myself... */
@@ -540,38 +540,17 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
   /* establish short-lived connection, send, tear down */
   hello = identity->identity2Hello (hi, proto, GNUNET_NO);
   if (NULL == hello)
-    {
-#if DEBUG_ADVERTISING
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Exit from `%s' (error: `%s' failed).\n", __FUNCTION__,
-                     "identity2Hello");
-#endif
-      return GNUNET_OK;
-    }
+    return GNUNET_OK;
   tsession = transport->connect (hello, __FILE__, GNUNET_YES);
   GNUNET_free (hello);
   if (tsession == NULL)
-    {
-#if DEBUG_ADVERTISING
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Exit from `%s' (%s error).\n",
-                     __FUNCTION__, "transportConnect");
-#endif
-      return GNUNET_OK;         /* could not connect */
-    }
+    return GNUNET_OK;           /* could not connect */
   if (stats != NULL)
     stats->change (stat_hello_out, 1);
   coreAPI->plaintext_send (tsession,
                            (char *) &sd->m->header,
                            GNUNET_sizeof_hello (sd->m));
   transport->disconnect (tsession, __FILE__);
-#if DEBUG_ADVERTISING
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Exit from %s.\n", __FUNCTION__);
-#endif
   return GNUNET_OK;
 }
 

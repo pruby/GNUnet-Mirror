@@ -38,10 +38,10 @@ Copyright (C) 2006 Christian Grothoff
  * actually fits our API.
  */
 
+#include "platform.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_getopt.h"
-#include "platform.h"
 
 #ifdef VMS
 # include <unixlib.h>

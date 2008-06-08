@@ -25,9 +25,9 @@
  * @author Antti Salonen, Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_rpc_lib.h"
-#include "platform.h"
 
 /**
  * A linked list of parameters to/from an RPC call.

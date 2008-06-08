@@ -419,8 +419,8 @@ transportDisconnect (GNUNET_TSession * tsession, const char *token)
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_USER |
                      GNUNET_GE_IMMEDIATE,
-                     "Illegal call to `%s', do not have token `%s'\n",
-                     __FUNCTION__, token);
+                     "Illegal attempt to disconnect transport; do not have token `%s'\n",
+                     token);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }

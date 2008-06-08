@@ -19,17 +19,17 @@
 */
 
 /**
- * @file util/pthreads/semaphore.c
+ * @file util/threads/semaphore.c
  * @brief functions related to threading and synchronization
  *
  * In particular, functions for mutexes, semaphores
  * and thread creation are provided.
  */
 
+#include "platform.h"
 #include "gnunet_util_threads.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
-#include "platform.h"
 
 #if SOLARIS || GNUNET_freeBSD || OSX
 #include <semaphore.h>
