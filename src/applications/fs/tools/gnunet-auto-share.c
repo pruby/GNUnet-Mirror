@@ -186,8 +186,9 @@ test_run (const char *filename, const char *dirName, void *cls)
     return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 1);
+  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
   strcpy (fn, dirName);
+  strcat (fn, DIR_SEPARATOR_STR);
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
@@ -252,7 +253,13 @@ add_meta_data (void *cls,
   EXTRACTOR_KeywordType max;
   char *value;
 
-  if (0 != strcmp (amc->filename, section))
+  if ( (0 != strcmp (amc->filename, section)) &&
+       ( (0 != strncmp (amc->filename,
+			section,
+			strlen(amc->filename))) ||
+	 (strlen(section) != strlen(amc->filename) + 1) ||
+	 ( (section[strlen(section)-1] != '/') &&
+	   (section[strlen(section)-1] != '\\') ) ) )
     return 0;
   max = EXTRACTOR_getHighestKeywordTypeNumber ();
   for (type = 0; type < max; type++)
