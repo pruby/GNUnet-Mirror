@@ -1,63 +1,64 @@
 This is just the current plan, plans change.
 
-Annotations:
-  RC == Release Critical
+Hostlist for network testing (0.8.x network):
+http://vserver1236.vserver-on.de/hostlist-074
+
 
 0.8.0 [6'08] (aka "new protocol"):
 - Windows: gnunet-auto-share
 
-Hostlist for network testing:
-* http://vserver1236.vserver-on.de/hostlist-074
+0.8.1 [8'08] (aka "growth"):
+- Publishing:
+  * clean up indexing with gnunet-insert (#1107)
+  * power insert (#854)
+  * insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
+    as keyword (to allow getting meta-data from URI only)
+- Correctness: 
+  * clean up and test VPN code
+  * test RPC code (write a small demo)
+
+0.8.2 [12'08] (aka "integration"):
+- Performance:
+  * tune DHT
+  * tune GAP query planning code
+- Build-in primitives:
+  * OR service
+  * testbed using remote testing topology setup
+  * SMTP logger 
+- Transports:
+  * direct WiFi transport
+  * HTTPS support (#1225)
+  * support NAT-PMP (in addition to UPnP)
+
+0.8.3 [5'09] (aka "chat"):
+- P2P chat
 
 
-0.8.x (aka "growth"):
-- OR service
-- direct WiFi transport
-- testbed using remote testing topology setup
-- HTTPS support (#1225)
-- clean up indexing with gnunet-insert (#1107)
-- power insert (#854)
-- clean up and test VPN code
-- test RPC code (write a small demo)
-- tune DHT
-- tune GAP query planning code
-- make GET function of DHT client LIB API asynchronous
-
-1.0.0 (aka "userfriendly"):
-
-
-
-Small extensions (that could be done any time):
-- insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
-  as keyword (to allow getting meta-data from URI only) [RC]
-- support NAT-PMP (in addition to UPnP)
-- SMTP logger 
+1.0.0 [6'09] (aka "userfriendly"):
+- transport selection (given multiple choices,
+  how should GNUnet pick a transport?)
 
 
 
 
-FreeServices
+FreeServices (random notes)
 - onion routing
-	- application service
-	- unreliable connection through GNUnet core
-	- initiator chooses path, other ORs suggest some (!) ORs for next hop
-	  (choose path often according to suggestions, but route randomly
-	   sometimes)
-	- accounting
-		- each predecessor ist reposible (accountable) for its predecessor
-		  and has to reject connections from untrusted nodes because
-		  misbehaving nodes harm own trust
-	  - tell predecessor about MIN(own limits, successor's limits)
-	- onion routing based transport
-		- use introduction point instead of IP in HELO
-		- => integrate NATed hosts
+  * application service
+  * unreliable connection through GNUnet core
+  * initiator chooses path, other ORs suggest some (!) ORs for next hop
+    (choose path often according to suggestions, but route randomly
+     sometimes)
+  * accounting 
+    + each predecessor ist reposible (accountable) for its predecessor
+      and has to reject connections from untrusted nodes because
+      misbehaving nodes harm own trust
+    + tell predecessor about MIN(own limits, successor's limits)
+  * onion routing based transport
+    + use introduction point instead of IP in HELLO
+      => integrate NATed hosts
 - subnet advertising (DHT, chat, GAP, ...)
-	- applications register subnets, core advertises subnets
+  + applications register subnets, core advertises subnets
 - anonymous DHT
-	- create OR tunnel to ADHT node that performs DHT operation
-	- check success of DHT operation through another tunnel
-	- => OR and FreeService advertisements
-	- Hostlist?
-
-
-
+  + create OR tunnel to ADHT node that performs DHT operation
+  + check success of DHT operation through another tunnel
+  + => OR and FreeService advertisements
