@@ -201,7 +201,7 @@ test_run (const char *filename, const char *dirName, void *cls)
     {
       rec = GNUNET_malloc (sizeof (struct FileRecord));
       rec->next = records;
-      rec->filename = fn;
+      rec->filename = GNUNET_strdup(fn);
       rec->mtime = buf.st_mtime;
       rec->size = buf.st_size;
       rec->last_seen = time (NULL);
@@ -211,6 +211,7 @@ test_run (const char *filename, const char *dirName, void *cls)
       if (GNUNET_NO == GNUNET_FS_test_indexed (sock, &rec->hc))
         {
           *run = 1;
+	  GNUNET_free (fn);
           return GNUNET_SYSERR;
         }
     }
