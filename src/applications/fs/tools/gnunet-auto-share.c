@@ -197,7 +197,7 @@ test_run (const char *filename, const char *dirName, void *cls)
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  rec = find_entry (filename);
+  rec = find_entry (fn);
   if (rec == NULL)
     {
       rec = GNUNET_malloc (sizeof (struct FileRecord));
@@ -298,6 +298,8 @@ probe_directory (const char *filename, const char *dirName, void *unused)
   char *keys;
   int run;
 
+  if (GNUNET_shutdown_test())
+    return GNUNET_SYSERR; /* aborted */
   if (filename[0] == '.')
     return GNUNET_OK;
   if (ul != NULL)
