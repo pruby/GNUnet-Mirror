@@ -213,7 +213,8 @@ test_run (const char *filename, const char *dirName, void *cls)
         {
           *run = 1;
 	  GNUNET_free (fn);
-          return GNUNET_SYSERR;
+	  /* keep iterating to mark all other files in this tree! */
+          return GNUNET_OK;
         }
     }
   else
