@@ -190,6 +190,26 @@ int GNUNET_disk_directory_create (struct GNUNET_GE_Context *ectx,
  */
 void GNUNET_disk_filename_canonicalize (char *fn);
 
+
+/**
+ * Construct full path to a file inside of the private
+ * directory used by GNUnet.  Also creates the corresponding
+ * directory.  If the resulting name is supposed to be
+ * a directory, end the last argument in '/' (or pass
+ * DIR_SEPARATOR_STR as the last argument before NULL).
+ *
+ * @param is_daemon are we gnunetd or a client?
+ * @param varargs is NULL-terminated list of
+ *                path components to append to the
+ *                private directory name.
+ * @return the constructed filename
+ */
+char *
+GNUNET_get_home_filename (struct GNUNET_GE_Context *ectx,
+			  struct GNUNET_GC_Configuration *cfg,
+			  int is_daemon,
+			  ...);
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
