@@ -431,7 +431,7 @@ GNUNET_FSUI_uploadThread (void *cls)
                 {
                   if (*p == DIR_SEPARATOR)
                     *p = '/';
-                  else if (*p == '/' || *p == '\\')
+                  else if (*p == '\\')
                     *p = '_';
                   p++;
                 }

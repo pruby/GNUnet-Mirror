@@ -118,7 +118,7 @@ GNUNET_meta_data_insert (MetaData * md,
         {
           if (*p == DIR_SEPARATOR)
             *p = '/';
-          else if (*p == '/' || *p == '\\')
+          else if (*p == '\\')
             *p = '_';
           p++;
         }
