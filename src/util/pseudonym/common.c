@@ -39,30 +39,16 @@ GNUNET_pseudonym_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
                                               *cfg, const char *prefix,
                                               const GNUNET_HashCode * psid)
 {
-  char *tmp;
-  char *ret;
   GNUNET_EncName enc;
 
-  GNUNET_GC_get_configuration_value_filename (cfg,
-                                              "GNUNET",
-                                              "GNUNET_HOME",
-                                              GNUNET_DEFAULT_HOME_DIRECTORY,
-                                              &tmp);
-  ret =
-    GNUNET_malloc (strlen (tmp) + strlen (prefix) +
-                   sizeof (GNUNET_EncName) + 20);
-  strcpy (ret, tmp);
-  GNUNET_free (tmp);
-  if (ret[strlen (ret) - 1] != DIR_SEPARATOR)
-    strcat (ret, DIR_SEPARATOR_STR);
-  strcat (ret, prefix);
-  GNUNET_disk_directory_create (ectx, ret);
   if (psid != NULL)
-    {
-      GNUNET_hash_to_enc (psid, &enc);
-      strcat (ret, (const char *) &enc);
-    }
-  return ret;
+    GNUNET_hash_to_enc (psid, &enc);   
+  return GNUNET_get_home_filename(ectx,
+				  cfg,
+				  GNUNET_NO,
+				  prefix,
+				  (psid == NULL) ? NULL : (const char*)&enc,
+				  NULL);
 }
 
 /* end of common.c */

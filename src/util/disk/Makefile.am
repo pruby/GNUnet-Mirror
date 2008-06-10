@@ -6,7 +6,8 @@ noinst_LTLIBRARIES = \
   libdisk.la
 
 libdisk_la_SOURCES = \
-  storage.c
+  storage.c \
+  filenames.c 
 
 check_PROGRAMS = \
  storagetest 
