@@ -185,9 +185,19 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                          _("Cannot hash `%s'.\n"), filename);
+
           GNUNET_client_connection_destroy (sock);
           return GNUNET_SYSERR;
         }
+      if (GNUNET_YES == GNUNET_FS_test_indexed(sock, 
+					       &fileId))
+	{
+	  /* file already indexed; simulate only to get the URI! */
+	  doIndex = GNUNET_SYSERR;
+	}
+    }
+  if (doIndex == GNUNET_YES)
+    {
       now = GNUNET_get_time ();
       eta = now + 2 * (now - start);
       /* very rough estimate: GNUNET_hash reads once through the file,
@@ -211,10 +221,10 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                          _
-                         ("Indexing file `%s' failed. Trying to insert file...\n"),
+                         ("Indexing file `%s' failed. Suggestion: try to insert the file.\n"),
                          filename);
-          doIndex = GNUNET_NO;
-          break;
+	  GNUNET_client_connection_destroy (sock);
+          return GNUNET_SYSERR;
         default:
           break;
         }
