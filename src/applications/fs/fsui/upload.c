@@ -422,9 +422,19 @@ GNUNET_FSUI_uploadThread (void *cls)
             tpos--;
           if (tpos + 1 < tend)
             {
-              pfn = GNUNET_malloc (tend - tpos + 1);
+              char *p;
+              pfn = p = GNUNET_malloc (tend - tpos + 1);
               pfn[tend - tpos] = '\0';
               memcpy (pfn, &utc->filename[tpos + 1], tend - tpos);
+              /* change OS native dir separators to unix '/' and others to '_'*/
+              while (*p != '\0')
+                {
+                  if (*p == DIR_SEPARATOR)
+                    *p = '/';
+                  else if (*p == '/' || *p == '\\')
+                    *p = '_';
+                  p++;
+                }
               GNUNET_meta_data_insert (utc->meta, EXTRACTOR_RELATION, pfn);
               GNUNET_free (pfn);
             }

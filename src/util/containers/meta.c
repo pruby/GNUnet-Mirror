@@ -111,11 +111,17 @@ GNUNET_meta_data_insert (MetaData * md,
   md->items[idx].type = type;
   md->items[idx].data = p = GNUNET_strdup (data);
 
-  /* remove hints to OS */
+  /* change OS native dir separators to unix '/' and others to '_' */
   if (type == EXTRACTOR_FILENAME)
     {
-      while ((p = strchr (p, '\\')))
-        *p = '/';
+      while (*p != '\0')
+        {
+          if (*p == DIR_SEPARATOR)
+            *p = '/';
+          else if (*p == '/' || *p == '\\')
+            *p = '_';
+          p++;
+        }
     }
 
   return GNUNET_OK;
