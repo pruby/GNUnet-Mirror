@@ -834,11 +834,11 @@ main (int argc, char *const *argv)
       errorCode = -1;
       goto end;
     }
-  if (i != argc - 1)
+  if (i > argc - 1)
     {
       fprintf (stderr,
                _
-               ("You must specify one and only one directory for sharing.\n"));
+               ("You must specify at least one directory for sharing.\n"));
       errorCode = -1;
       goto end;
     }
