@@ -440,19 +440,21 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
       list->state = GNUNET_FSUI_ACTIVE;
       list->startTime = GNUNET_get_time () - list->runTime;
       list->handle =
-        GNUNET_ECRS_file_download_partial_start (list->ctx->ectx,
-                                                 list->ctx->cfg, list->fi.uri,
-                                                 list->filename, 0,
-                                                 GNUNET_ECRS_uri_get_file_size
-                                                 (list->fi.uri),
-                                                 list->anonymityLevel,
-                                                 GNUNET_NO,
-                                                 &downloadProgressCallback,
-                                                 list);
+	GNUNET_ECRS_file_download_partial_start (list->ctx->ectx,
+						 list->ctx->cfg, 
+						 NULL,
+						 list->fi.uri,
+						 list->filename, 0,
+						 GNUNET_ECRS_uri_get_file_size
+						 (list->fi.uri),
+						 list->anonymityLevel,
+						 GNUNET_NO,
+						 &downloadProgressCallback,
+						 list);
       if (list->handle != NULL)
-        list->ctx->activeDownloadThreads++;
+	list->ctx->activeDownloadThreads++;
       else
-        list->state = GNUNET_FSUI_ERROR_JOINED;
+	list->state = GNUNET_FSUI_ERROR_JOINED;
     }
 
   /* should this one be stopped? */
@@ -470,7 +472,7 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
 #endif
       list->state = GNUNET_FSUI_SUSPENDING;
       GNUNET_GE_ASSERT (ectx, list->handle != NULL);
-      GNUNET_ECRS_file_download_partial_stop (list->handle);
+      GNUNET_ECRS_file_download_partial_stop (list->handle);      
       list->handle = NULL;
       list->ctx->activeDownloadThreads--;
       list->state = GNUNET_FSUI_PENDING;

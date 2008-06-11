@@ -29,6 +29,7 @@
 
 #include "gnunet_util_core.h"
 #include "gnunet_core.h"
+#include "gnunet_fs_lib.h"
 #include <extractor.h>
 
 #ifdef __cplusplus
@@ -685,6 +686,7 @@ struct GNUNET_ECRS_DownloadContext
   *GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
                                             struct GNUNET_GC_Configuration
                                             *cfg,
+					    struct GNUNET_FS_SearchContext * sc,
                                             const struct GNUNET_ECRS_URI *uri,
                                             const char *filename,
                                             unsigned long long offset,

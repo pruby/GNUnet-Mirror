@@ -103,9 +103,11 @@ struct GNUNET_FS_SearchContext
    */
   int abort;
 
+#if DEBUG_FSLIB
   unsigned int total_received;
 
   unsigned int total_requested;
+#endif
 };
 
 /**
@@ -377,6 +379,55 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }
+
+
+/**
+ * Stop searching for blocks matching the given key and type.
+ *
+ * @param callback method to call for each result
+ * @return GNUNET_OK (or GNUNET_SYSERR if this search
+ *   was never started for this context)
+ */
+int
+GNUNET_FS_stop_search (struct
+		       GNUNET_FS_SearchContext
+		       *ctx,
+		       GNUNET_DatastoreValueIterator
+		       callback, void *closure)
+{
+  struct GNUNET_FS_SearchHandle *pos;
+  struct GNUNET_FS_SearchHandle *prev;
+  CS_fs_request_search_MESSAGE *req;
+
+  prev = NULL;
+  GNUNET_mutex_lock (ctx->lock);
+  pos = ctx->handles;
+  while ( (pos != NULL) &&
+	  ( (pos->callback != callback) ||
+	    (pos->closure != closure) ) )
+    {
+      prev = pos;
+      pos = pos->next;
+    }
+  if (pos != NULL)
+    {
+      if (prev == NULL)
+	ctx->handles = pos->next;
+      else
+	prev->next = pos->next;      
+      /* TODO: consider sending "stop" message	 
+	 to gnunetd? */
+      req = (CS_fs_request_search_MESSAGE *) & pos[1];
+      req->header.type = htons (GNUNET_CS_PROTO_GAP_QUERY_STOP);
+      if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, 
+						       &req->header))
+	GNUNET_client_connection_close_temporarily (ctx->sock);
+      GNUNET_free(pos);
+    }
+  GNUNET_mutex_unlock (ctx->lock);
+  return GNUNET_SYSERR;
+}
+
 
 /**
  * Insert a block.

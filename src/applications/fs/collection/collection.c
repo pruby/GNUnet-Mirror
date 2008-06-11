@@ -120,21 +120,11 @@ static struct GNUNET_GC_Configuration *cfg;
 static char *
 getCollectionFileName ()
 {
-  char *fn;
-  char *fnBase;
-
-  GNUNET_GC_get_configuration_value_filename (cfg,
-                                              "GNUNET",
-                                              "GNUNET_HOME",
-                                              GNUNET_DEFAULT_HOME_DIRECTORY,
-                                              &fnBase);
-  fn = GNUNET_malloc (strlen (fnBase) + strlen (COLLECTION) + 4);
-  strcpy (fn, fnBase);
-  GNUNET_disk_directory_create (ectx, fn);
-  strcat (fn, DIR_SEPARATOR_STR);
-  strcat (fn, COLLECTION);
-  GNUNET_free (fnBase);
-  return fn;
+  return GNUNET_get_home_filename(ectx,
+				  cfg,
+				  GNUNET_NO,
+				  COLLECTION,
+				  NULL);
 }
 
 /**

@@ -98,25 +98,11 @@ static char *
 getVersionFileName (struct GNUNET_GE_Context *ectx,
                     struct GNUNET_GC_Configuration *cfg)
 {
-  char *en;
-  char *cn;
-
-  en = NULL;
-  if (-1 == GNUNET_GC_get_configuration_value_filename (cfg,
-                                                        "GNUNETD",
-                                                        "GNUNETD_HOME",
-                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
-                                                        &en))
-    return NULL;
-  GNUNET_GE_ASSERT (ectx, en != NULL);
-  cn = GNUNET_malloc (strlen (en) + strlen (VERSIONFILE) + 1);
-  strcpy (cn, en);
-  strcat (cn, VERSIONDIR);
-  GNUNET_disk_directory_create (ectx, cn);
-  strcpy (cn, en);
-  strcat (cn, VERSIONFILE);
-  GNUNET_free (en);
-  return cn;
+  return GNUNET_get_home_filename(ectx,
+				  cfg,
+				  GNUNET_YES,
+				  VERSIONFILE,
+				  NULL);
 }
 
 #define MAX_VS sizeof(GNUNET_EncName) + 64

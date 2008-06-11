@@ -265,15 +265,21 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   struct GNUNET_GE_Context *ectx;
   GNUNET_FSUI_Event event;
   struct SearchRecordList *srl;
+  struct GNUNET_FS_SearchContext * pc;
 
   if (!(GNUNET_ECRS_uri_test_ksk (uri) || GNUNET_ECRS_uri_test_sks (uri)))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return NULL;
     }
+  pc = GNUNET_FS_create_search_context(ctx->ectx,
+				       ctx->cfg);
+  if (pc == NULL)
+    return NULL;
   ectx = ctx->ectx;
   pos = GNUNET_malloc (sizeof (GNUNET_FSUI_SearchList));
   memset (pos, 0, sizeof (GNUNET_FSUI_SearchList));
+  pos->probe_context = pc;
   pos->state = GNUNET_FSUI_ACTIVE;
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
@@ -568,6 +574,8 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
       GNUNET_free (srl);
     }
   GNUNET_mutex_destroy (pos->lock);
+  if (pos->probe_context != NULL)
+    GNUNET_FS_destroy_search_context(pos->probe_context);
   GNUNET_free (pos);
   return GNUNET_OK;
 }

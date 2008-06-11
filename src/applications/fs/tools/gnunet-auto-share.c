@@ -41,31 +41,43 @@ struct FileRecord
   GNUNET_HashCode hc;
 };
 
+struct DirectoryRecord
+{
+  struct DirectoryRecord * next;
+
+  struct FileRecord *records;
+
+  char * dirname;
+
+  int records_changed;
+
+  int run;
+
+};
+
+static struct GNUNET_FSUI_UploadList *ul;
+
+static struct GNUNET_ClientServerConnection *sock;
+
+static struct GNUNET_GC_Configuration *meta_cfg;
+
 static int upload_done;
 
 static struct GNUNET_GC_Configuration *cfg;
-
-static struct GNUNET_GC_Configuration *meta_cfg;
 
 static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_FSUI_Context *ctx;
 
-static struct GNUNET_FSUI_UploadList *ul;
-
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static struct GNUNET_ECRS_URI *gloKeywords;
-
-static struct GNUNET_ClientServerConnection *sock;
 
 static unsigned int anonymity = 1;
 
 static unsigned int priority = 365;
 
 static int do_no_direct_references;
-
-static struct FileRecord *records;
 
 static int debug_flag;
 
@@ -164,20 +176,247 @@ static struct GNUNET_CommandLineOption gnunetauto_shareOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
-static struct FileRecord *
-find_entry (const char *filename)
+static char *
+get_record_file_name(const char * dirname)
 {
-  struct FileRecord *pos = records;
+  GNUNET_EncName enc;
+  GNUNET_HashCode hc;
+
+  GNUNET_hash(dirname, strlen(dirname), &hc);
+  GNUNET_hash_to_enc(&hc, &enc);
+  return GNUNET_get_home_filename(ectx,
+				  cfg,
+				  GNUNET_NO,
+				  "auto-share-info",
+				  (const char*)&enc,
+				  NULL);
+}
+
+/**
+ * Write the given record to the buffer.
+ * @param buf if NULL, only calculate size
+ * @return number of bytes written (or number
+ *         of bytes that would be written)
+ */
+static unsigned int
+write_file_record(char * buf,
+		  unsigned int max,
+		  const struct FileRecord * rec)
+{
+  unsigned int wi; 
+  unsigned long long wl;
+  
+  if ( (buf != NULL) &&
+       (max <  sizeof(unsigned long long) * 3 + sizeof(GNUNET_HashCode) + strlen(rec->filename) + sizeof(unsigned int)) )
+    {
+      GNUNET_GE_BREAK(NULL, 0);	  
+      return 0;
+    }
+  if (buf != NULL)
+    {
+      wi = htonl(strlen(rec->filename));
+      memcpy(buf, &wi, sizeof(unsigned int));
+      buf += sizeof(unsigned int);
+      memcpy(buf, &rec->hc, sizeof(GNUNET_HashCode));
+      buf += sizeof(GNUNET_HashCode);
+      wl = GNUNET_htonll(rec->mtime);
+      memcpy(buf, &wl, sizeof(unsigned long long));
+      buf += sizeof(unsigned long long);
+      wl = GNUNET_htonll(rec->last_seen);
+      memcpy(buf, &wl, sizeof(unsigned long long));
+      buf += sizeof(unsigned long long);
+      wl = GNUNET_htonll(rec->size);
+      memcpy(buf, &wl, sizeof(unsigned long long));
+      buf += sizeof(unsigned long long);
+      memcpy(buf, rec->filename, strlen(rec->filename));
+    }
+  return sizeof(unsigned long long) * 3 + sizeof(GNUNET_HashCode) + strlen(rec->filename) + sizeof(unsigned int);
+}
+
+/**
+ * Read a file record.
+ * @param head old head of the list, afterwards points to
+ *        the new head
+ * @param size number of bytes available in buf
+ * @return 0 on error, otherwise number of bytes read
+ */
+static unsigned int
+read_file_record(const char * buf,
+		 unsigned int size,
+		 struct FileRecord ** head)
+{
+  unsigned int wi; 
+  unsigned long long wl;
+  struct FileRecord * r;
+
+  if (size < sizeof(unsigned int))
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return 0;
+    }
+  memcpy(&wi, buf, sizeof(unsigned int));
+  if (size < ntohl(wi) + sizeof(unsigned long long) * 3 + sizeof(GNUNET_HashCode) + sizeof(unsigned int))
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return 0;
+    }
+  buf += sizeof(unsigned int);
+  r = GNUNET_malloc(sizeof(struct FileRecord));
+  r->next = *head;
+  memcpy(&r->hc, buf, sizeof(GNUNET_HashCode));
+  buf += sizeof(GNUNET_HashCode);
+  memcpy(&wl, buf, sizeof(unsigned long long));
+  r->mtime = (time_t) GNUNET_ntohll(wl);
+  buf += sizeof(unsigned long long);
+  memcpy(&wl, buf, sizeof(unsigned long long));
+  r->last_seen = (time_t) GNUNET_ntohll(wl);
+  buf += sizeof(unsigned long long);
+  memcpy(&wl, buf, sizeof(unsigned long long));
+  r->size = (off_t) GNUNET_ntohll(wl);
+  buf += sizeof(unsigned long long);
+  r->filename = GNUNET_malloc(ntohl(wi) + 1);
+  r->filename[ntohl(wi)] = '\0';
+  memcpy(r->filename,
+	 buf,
+	 ntohl(wi));
+  *head = r;
+  return ntohl(wi) + sizeof(unsigned long long) * 3 + sizeof(GNUNET_HashCode) + sizeof(unsigned int);
+}
+
+static struct FileRecord *
+read_all_records(const char * dir_name)
+{
+  long off;
+  unsigned int d;
+  unsigned long long size;
+  char * record_fn;
+  int fd;
+  char * buf;
+  struct FileRecord * ret;
+
+  record_fn = get_record_file_name(dir_name);
+  if ( (GNUNET_OK !=
+	GNUNET_disk_file_size(ectx,
+			      record_fn,
+			      &size,
+			      GNUNET_YES)) ||   
+       (-1 == (fd = GNUNET_disk_file_open(ectx,
+					  record_fn,
+					  O_RDONLY)) ) )
+    {
+      GNUNET_free(record_fn);
+      return NULL;
+    }
+  buf = MMAP(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+  if (buf == MAP_FAILED)
+    {
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+				   GNUNET_GE_ADMIN | GNUNET_GE_USER | 
+				   GNUNET_GE_ERROR | GNUNET_GE_BULK,
+				   "mmap",
+				   record_fn);
+      GNUNET_free(record_fn);
+      CLOSE(fd);
+      return NULL;
+    }
+  ret = NULL;
+  off = 0;
+  while (off < size)
+    {
+      d = read_file_record(&buf[off],
+			   size - off,
+			   &ret);
+      if (d == 0)
+	{
+	  GNUNET_GE_BREAK(NULL, 0);
+	  break;
+	}
+      off += d;
+    }
+  MUNMAP(buf, size);
+  CLOSE(fd);
+  return ret;
+}
+
+static void 
+write_all_records(struct DirectoryRecord * dr)
+{
+  const char dummy;
+  long off;
+  unsigned int d;
+  unsigned long long size;
+  char * record_fn;
+  int fd;
+  char * buf;
+  struct FileRecord * pos;
+
+  size = 0;
+  pos = dr->records;
+  while (pos != NULL)
+    {
+      size += write_file_record(NULL, 0, pos);  
+      pos = pos->next;
+    }
+  record_fn = get_record_file_name(dr->dirname);
+  if ( (-1 == (fd = GNUNET_disk_file_open(ectx,
+					  record_fn,
+					  O_RDWR | O_CREAT | O_TRUNC,
+					  S_IRUSR | S_IWUSR)) ) )
+    {
+      GNUNET_free(record_fn);
+      return;
+    }
+  LSEEK(fd, size - 1, SEEK_SET);
+  WRITE(fd, &dummy, 1);  
+  buf = MMAP(NULL, size, PROT_WRITE, MAP_SHARED, fd, 0);
+  if (buf == MAP_FAILED)
+    {
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+				   GNUNET_GE_ADMIN | GNUNET_GE_USER | 
+				   GNUNET_GE_ERROR | GNUNET_GE_BULK,
+				   "mmap",
+				   record_fn);
+      CLOSE(fd);
+      UNLINK(record_fn);
+      GNUNET_free(record_fn);
+      return;
+    }
+  off = 0;
+  pos = dr->records;
+  while (pos != NULL)
+    {
+      d = write_file_record(&buf[off],
+			    size - off,
+			    pos);
+      if (d == 0)
+	{
+	  GNUNET_GE_BREAK(NULL, 0);
+	  break;
+	}
+      pos = pos->next;
+      off += d;
+    }
+  MUNMAP(buf, size);
+  CLOSE(fd);
+}
+
+static struct FileRecord *
+find_entry (struct DirectoryRecord * dr,
+	    const char *filename)
+{
+  struct FileRecord *pos = dr->records;
   while ((pos != NULL) && (0 != strcmp (filename, pos->filename)))
     pos = pos->next;
   return pos;
 }
 
 static int
-test_run (const char *filename, const char *dirName, void *cls)
+test_run (const char *filename,
+	  const char *dirName,
+	  void *cls)
 {
+  struct DirectoryRecord * dr = cls;
   GNUNET_HashCode hc;
-  int *run = cls;
   struct FileRecord *rec;
   struct stat buf;
   char *fn;
@@ -197,21 +436,22 @@ test_run (const char *filename, const char *dirName, void *cls)
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  rec = find_entry (fn);
+  rec = find_entry (dr, fn);
   if (rec == NULL)
     {
       rec = GNUNET_malloc (sizeof (struct FileRecord));
-      rec->next = records;
+      rec->next = dr->records;
       rec->filename = GNUNET_strdup(fn);
       rec->mtime = buf.st_mtime;
       rec->size = buf.st_size;
       rec->last_seen = time (NULL);
       GNUNET_hash_file (NULL, fn, &rec->hc);
-      rec->next = records;
-      records = rec;
+      rec->next = dr->records;
+      dr->records = rec;
+      dr->records_changed = GNUNET_YES;
       if (GNUNET_NO == GNUNET_FS_test_indexed (sock, &rec->hc))
         {
-          *run = 1;
+          dr->run = 1;
 	  GNUNET_free (fn);
 	  /* keep iterating to mark all other files in this tree! */
           return GNUNET_OK;
@@ -225,13 +465,13 @@ test_run (const char *filename, const char *dirName, void *cls)
     {
       GNUNET_hash_file (NULL, fn, &hc);
       if (0 != memcmp (&hc, &rec->hc, sizeof (GNUNET_HashCode)))
-        *run = 1;
+        dr->run = 1;
       rec->mtime = buf.st_mtime;
       rec->size = buf.st_size;
       rec->hc = hc;
     }
   if (S_ISDIR (buf.st_mode))
-    GNUNET_disk_directory_scan (ectx, fn, &test_run, run);
+    GNUNET_disk_directory_scan (ectx, fn, &test_run, dr);
   GNUNET_free (fn);
   return GNUNET_OK;
 }
@@ -247,7 +487,8 @@ static int
 add_meta_data (void *cls,
                struct GNUNET_GC_Configuration *cfg,
                struct GNUNET_GE_Context *ectx,
-               const char *section, const char *option)
+               const char *section, 
+	       const char *option)
 {
   struct AddMetadataClosure *amc = cls;
   EXTRACTOR_KeywordType type;
@@ -288,16 +529,17 @@ add_meta_data (void *cls,
   return 0;
 }
 
-
 static int
-probe_directory (const char *filename, const char *dirName, void *unused)
+probe_directory (const char *filename, 
+		 const char *dirName, 
+		 void *cls)
 {
+  struct DirectoryRecord * dr = cls;
   struct stat buf;
   struct AddMetadataClosure amc;
   struct GNUNET_ECRS_URI *kuri;
   char *fn;
   char *keys;
-  int run;
 
   if (GNUNET_shutdown_test())
     return GNUNET_SYSERR; /* aborted */
@@ -310,17 +552,14 @@ probe_directory (const char *filename, const char *dirName, void *unused)
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
-      fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
+      fprintf (myout, "Could not stat `%s': %s\n", fn, STRERROR (errno));
       fflush (myout);
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  run = 0;
-  if (S_ISDIR (buf.st_mode))
-    GNUNET_disk_directory_scan (ectx, fn, &test_run, &run);
-  else
-    test_run (filename, dirName, &run);
-  if (0 == run)
+  dr->run = 0;
+  test_run (filename, dirName, dr);
+  if (0 == dr->run)
     {
       GNUNET_free (fn);
       return GNUNET_OK;
@@ -362,14 +601,18 @@ probe_directory (const char *filename, const char *dirName, void *unused)
  * @return return 0 for ok, -1 on error
  */
 int
-auto_share_main (const char *dirname)
+auto_share_main (int argc,
+		 char * const * argv)
 {
   int errorCode;
+  int work_done;
   unsigned long long verbose;
   GNUNET_CronTime delay;
   char *metafn;
-  struct FileRecord *pos;
+  struct FileRecord *rpos;
   int filedes[2];               /* pipe between client and parent */
+  struct DirectoryRecord * head;
+  struct DirectoryRecord * pos;
 
   errorCode = 0;
   if ((GNUNET_NO == debug_flag)
@@ -385,6 +628,7 @@ auto_share_main (const char *dirname)
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       goto quit;
     }
+      
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
@@ -403,42 +647,73 @@ auto_share_main (const char *dirname)
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
+  head = NULL;
+  while (argc > 0)
+    {
+      pos = GNUNET_malloc(sizeof(struct DirectoryRecord));
+      pos->dirname = GNUNET_expand_file_name (ectx, argv[--argc]);
+      pos->records = read_all_records(pos->dirname);
+      pos->records_changed = GNUNET_NO;
+      pos->run = 0;
+      pos->next = head;
+      head = pos;
+    }
   /* first insert all of the top-level files or directories */
   delay = 5 * GNUNET_CRON_SECONDS;
   while (GNUNET_NO == GNUNET_shutdown_test ())
     {
+      work_done = GNUNET_NO;
       GNUNET_thread_sleep (250 * GNUNET_CRON_MILLISECONDS);
-      GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, NULL);
-      if (GNUNET_YES == upload_done)
-        {
-          GNUNET_FSUI_upload_abort (ul);
-          GNUNET_FSUI_upload_stop (ul);
-          upload_done = GNUNET_NO;
-          ul = NULL;
-        }
-      if ((ul == NULL) && (GNUNET_NO == GNUNET_shutdown_test ()))
-        {
-          GNUNET_thread_sleep (delay);
-          delay *= 2;
-          if (delay > GNUNET_CRON_HOURS)
-            delay = GNUNET_CRON_HOURS;
-        }
+      pos = head;
+      while ( (pos != NULL) &&
+	      (GNUNET_NO == GNUNET_shutdown_test () ) )
+	{
+	  GNUNET_disk_directory_scan (ectx, pos->dirname, &probe_directory, pos);
+	  if (GNUNET_YES == upload_done)
+	    {
+	      work_done = GNUNET_YES;
+	      GNUNET_FSUI_upload_abort (ul);
+	      GNUNET_FSUI_upload_stop (ul);
+	      upload_done = GNUNET_NO;
+	      ul = NULL;
+	    }
+	  pos = pos->next;
+	}
+      if ( (ul == NULL) && 
+	   (work_done == GNUNET_NO) &&
+	   (GNUNET_NO == GNUNET_shutdown_test ()))
+	{
+	  GNUNET_thread_sleep (delay);
+	  delay *= 2;
+	  if (delay > GNUNET_CRON_HOURS)
+	    delay = GNUNET_CRON_HOURS;
+	}
       else
-        {
-          delay = 5 * GNUNET_CRON_SECONDS;
-        }
+	{
+	  delay = 5 * GNUNET_CRON_SECONDS;
+	}
     }
   GNUNET_FSUI_stop (ctx);
   if (gloKeywords != NULL)
     GNUNET_ECRS_uri_destroy (gloKeywords);
 quit:
-  while (records != NULL)
+  while (head != NULL)
     {
-      pos = records;
-      records = pos->next;
-      GNUNET_free (pos->filename);
-      GNUNET_free (pos);
-    }
+      if (head->records_changed)
+	write_all_records(head);
+      while (head->records != NULL)
+	{
+	  rpos = head->records;
+	  head->records = rpos->next;
+	  GNUNET_free (rpos->filename);
+	  GNUNET_free (rpos);
+	}
+      pos = head->next;
+      GNUNET_free (head->dirname);
+      GNUNET_free (head);
+      head = pos;
+    }     
+
   if (meta_cfg != NULL)
     GNUNET_GC_free (meta_cfg);
   if (sock != NULL)
@@ -527,10 +802,7 @@ ServiceMain (DWORD argc, LPSTR * argv)
     return;
 
   GNSetServiceStatus (hService, &theServiceStatus);
-
-  // FIXME
-  auto_share_main ("FIXME");
-
+  auto_share_main (argc, argv);
   theServiceStatus.dwCurrentState = SERVICE_STOPPED;
   GNSetServiceStatus (hService, &theServiceStatus);
 }
@@ -550,7 +822,6 @@ main (int argc, char *const *argv)
   int i;
   int errorCode;
   char *log_file_name;
-  char *dirname;
 
   errorCode = 0;
   myout = stdout;
@@ -582,7 +853,7 @@ main (int argc, char *const *argv)
       myout = fopen (log_file_name, "a");
       if (myout == NULL)
         {
-          fprintf (stderr,
+	  fprintf (stderr,
                    "Could not open logfile `%s': %s\n",
                    log_file_name, strerror (errno));
           GNUNET_free (log_file_name);
@@ -620,9 +891,7 @@ main (int argc, char *const *argv)
   else
 #endif
     {
-      dirname = GNUNET_expand_file_name (ectx, argv[i]);
-      errorCode = auto_share_main (dirname);
-      GNUNET_free (dirname);
+      errorCode = auto_share_main (argc-i, &argv[i]);
     }
 end:
   GNUNET_fini (ectx, cfg);

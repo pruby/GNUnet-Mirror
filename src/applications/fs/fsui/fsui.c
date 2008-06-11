@@ -178,6 +178,7 @@ updateDownloadThreads (void *c)
                   srl->test_download
                     = GNUNET_ECRS_file_download_partial_start (ctx->ectx,
                                                                ctx->cfg,
+							       sl->probe_context,
                                                                srl->fi.uri,
                                                                NULL,
                                                                off,
@@ -347,11 +348,10 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   unsigned int *av_certs;
   unsigned int *ap_ranks;
   char *fn;
-  char *gh;
   unsigned long long size;
-
+  
   GNUNET_GE_ASSERT (ectx, cfg != NULL);
-  ret = GNUNET_malloc (sizeof (GNUNET_FSUI_Context));
+  ret = GNUNET_malloc (sizeof (GNUNET_FSUI_Context));  
   memset (ret, 0, sizeof (GNUNET_FSUI_Context));
   ret->activeDownloads.state = GNUNET_FSUI_PENDING;     /* !? */
   ret->activeDownloads.ctx = ret;
@@ -362,20 +362,12 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   if (ret->threadPoolSize == 0)
     ret->threadPoolSize = 32;
   ret->activeDownloadThreads = 0;
-
-  GNUNET_GC_get_configuration_value_filename (cfg,
-                                              "GNUNET",
-                                              "GNUNET_HOME",
-                                              GNUNET_DEFAULT_HOME_DIRECTORY,
-                                              &gh);
-  GNUNET_disk_directory_create (ectx, gh);
-  fn = GNUNET_malloc (strlen (gh) + strlen (name) + 2 + 5);
-  strcpy (fn, gh);
-  GNUNET_free (gh);
-  strcat (fn, DIR_SEPARATOR_STR);
-  strcat (fn, name);
-  ret->name = fn;
-
+  ret->name = GNUNET_get_home_filename(ectx,
+				       cfg,
+				       GNUNET_NO,
+				       "fsui",
+				       name,
+				       NULL);
   /* 1) read state  in */
   if (doResume)
     {
@@ -391,7 +383,6 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Aquired IPC lock.\n");
 #endif
-      strcat (fn, ".res");
       GNUNET_FSUI_deserialize (ret);
     }
   else
@@ -486,6 +477,9 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   list = ret->activeSearches;
   while (list != NULL)
     {
+      list->probe_context 
+	= GNUNET_FS_create_search_context(ret->ectx,
+					  ret->cfg);
       if (list->state == GNUNET_FSUI_PENDING)
         {
           list->state = GNUNET_FSUI_ACTIVE;
@@ -729,6 +723,11 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
           if (spos->state != GNUNET_FSUI_PENDING)
             spos->state++;      /* _JOINED */
         }
+      if (spos->probe_context != NULL)
+	{
+	  GNUNET_FS_destroy_search_context(spos->probe_context);
+	  spos->probe_context = NULL;
+	}
       spos = spos->next;
     }
   /* 1c) stop unindexing */

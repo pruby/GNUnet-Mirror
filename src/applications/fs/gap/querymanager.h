@@ -38,8 +38,8 @@ int GNUNET_FS_QUERYMANAGER_done (void);
 
 /**
  * A client is asking us to run a query.  The query should be issued
- * until either a unique response has been obtained or until the
- * client disconnects.
+ * until either a unique response has been obtained, the client
+ * requests us to stop or until the client disconnects.
  *
  * @param target peer known to have the content, maybe NULL.
  * @param have_more do we have more results in our local datastore?
@@ -53,6 +53,16 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     const GNUNET_PeerIdentity * target,
                                     const struct ResponseList *seen,
                                     int have_more);
+
+/**
+ * A client is asking us to stop running a query (without disconnect).
+ */
+int
+GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
+				   unsigned int key_count,
+				   unsigned int anonymityLevel,
+				   unsigned int type,
+				   struct GNUNET_ClientHandle *client);
 
 /**
  * Handle the given response (by forwarding it to

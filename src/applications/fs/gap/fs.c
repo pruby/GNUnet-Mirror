@@ -525,6 +525,37 @@ CLEANUP:
 }
 
 /**
+ * Process a stop request from the client.
+ *
+ * @return GNUNET_SYSERR if the TCP connection should be closed, otherwise GNUNET_OK
+ */
+static int
+handle_cs_query_stop_request (struct GNUNET_ClientHandle *sock,
+                               const GNUNET_MessageHeader * req)
+{
+  const CS_fs_request_search_MESSAGE *rs;
+  unsigned int keyCount;
+  unsigned int type;
+  unsigned int anonymityLevel;
+
+  if (ntohs (req->size) < sizeof (CS_fs_request_search_MESSAGE))
+    {
+      GNUNET_GE_BREAK (ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  rs = (const CS_fs_request_search_MESSAGE *) req;
+  type = ntohl (rs->type);
+  anonymityLevel = ntohl (rs->anonymity_level);
+  keyCount =
+    1 + (ntohs (req->size) -
+         sizeof (CS_fs_request_search_MESSAGE)) / sizeof (GNUNET_HashCode);
+  GNUNET_FS_QUERYMANAGER_stop_query (&rs->query[0], keyCount, anonymityLevel,
+				     type, sock);
+  return GNUNET_OK;
+}
+
+
+/**
  * Return 1 if the current network (upstream) or CPU load is
  * (far) too high, 0 if the load is ok.
  */
@@ -815,8 +846,9 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_FS_MIGRATION_init (capi);
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _
-                 ("`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %d\n"),
+                 ("`%s' registering client handlers %d %d %d %d %d %d %d %d and P2P handlers %d %d\n"),
                  "fs", GNUNET_CS_PROTO_GAP_QUERY_START,
+                 "fs", GNUNET_CS_PROTO_GAP_QUERY_STOP,
                  GNUNET_CS_PROTO_GAP_INSERT,
                  GNUNET_CS_PROTO_GAP_INDEX, GNUNET_CS_PROTO_GAP_DELETE,
                  GNUNET_CS_PROTO_GAP_UNINDEX, GNUNET_CS_PROTO_GAP_TESTINDEX,
@@ -835,6 +867,11 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                     capi->cs_handler_register
                     (GNUNET_CS_PROTO_GAP_QUERY_START,
                      &handle_cs_query_start_request));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    capi->cs_handler_register
+                    (GNUNET_CS_PROTO_GAP_QUERY_STOP,
+                     &handle_cs_query_stop_request));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->cs_handler_register (GNUNET_CS_PROTO_GAP_INSERT,

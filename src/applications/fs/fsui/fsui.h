@@ -46,7 +46,7 @@
 /**
  * Strict upper limit on the number of concurrent probes.
  */
-#define GNUNET_FSUI_HARD_PROBE_LIMIT 32
+#define GNUNET_FSUI_HARD_PROBE_LIMIT 128
 
 /**
  * Track record for a given result.
@@ -169,6 +169,11 @@ typedef struct GNUNET_FSUI_SearchList
    * Context for this search
    */
   struct GNUNET_FSUI_Context *ctx;
+
+  /**
+   * Context used for availability probes.
+   */
+  struct GNUNET_FS_SearchContext *probe_context;
 
   /**
    * Handles to the ECRS SearchContexts.

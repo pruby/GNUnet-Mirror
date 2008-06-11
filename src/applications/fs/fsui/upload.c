@@ -305,7 +305,6 @@ GNUNET_FSUI_uploadThread (void *cls)
   struct GNUNET_GE_Memory *mem;
   struct GNUNET_GE_Context *ee;
 
-
   ectx = utc->shared->ctx->ectx;
   GNUNET_GE_ASSERT (ectx, utc->filename != NULL);
   cpos = utc->child;
@@ -317,6 +316,11 @@ GNUNET_FSUI_uploadThread (void *cls)
     }
   if (utc->state != GNUNET_FSUI_ACTIVE)
     return NULL;                /* aborted or suspended */
+  if (GNUNET_shutdown_test())
+    {
+      signalError (utc, _("Application aborted."));
+      return NULL;
+    }
   if (GNUNET_YES == GNUNET_disk_directory_test (ectx, utc->filename))
     {
       error = NULL;

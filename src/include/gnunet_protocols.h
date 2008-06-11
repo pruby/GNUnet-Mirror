@@ -125,7 +125,13 @@ extern "C"
 #define GNUNET_CS_PROTO_GAP_QUERY_START 8
 
 /**
+ * client to gnunetd: stop query
+ */
+#define GNUNET_CS_PROTO_GAP_QUERY_STOP 9
+
+/**
  * gnunetd to client: here is your answer
+ * (yes, same number as stop query!)
  */
 #define GNUNET_CS_PROTO_GAP_RESULT 9
 

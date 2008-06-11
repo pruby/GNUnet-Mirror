@@ -83,6 +83,20 @@ GNUNET_FS_start_search (struct
                         callback, void *closure);
 
 /**
+ * Stop searching for blocks matching the given key and type.
+ *
+ * @param callback method to call for each result
+ * @return GNUNET_OK (or GNUNET_SYSERR if this search
+ *   was never started for this context)
+ */
+int
+GNUNET_FS_stop_search (struct
+		       GNUNET_FS_SearchContext
+		       *ctx,
+		       GNUNET_DatastoreValueIterator
+		       callback, void *closure);
+
+/**
  * Insert a block.  Note that while the API is VERY similar to
  * GNUNET_FS_index in terms of signature, the block for GNUNET_FS_index must be in
  * plaintext, whereas the block passed to GNUNET_FS_insert must be encrypted!
