@@ -108,6 +108,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 
 		File "C:\GNUnet\bin\libgnunetmodule_state.dll" 
 		File "C:\GNUnet\bin\libgnunetutil-3.dll" 
+		; FS base?
+		File "C:\GNUnet\bin\libgnunetecrs_core-0.dll"
     File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
     ; Fixme: client only
     File "C:\GNUnet\bin\libgnunettraffic_api-0.dll"
@@ -258,11 +260,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 
 			File "C:\GNUnet\bin\libgnunetcollection-0.dll"
 			File "C:\GNUnet\bin\libgnunetecrs-0.dll"
-      File "C:\GNUnet\bin\libgnunetecrs_core-0.dll"
 			File "C:\GNUnet\bin\libgnunetfs-0.dll"
 			File "C:\GNUnet\bin\libgnunetfsui-0.dll"
       File "C:\GNUnet\bin\libgnunetidentity_api-0.dll"
-      File "C:\GNUnet\bin\libgnunetpseudonym-0.dll"
 			File "C:\GNUnet\bin\libgnunetnamespace-0.dll"
 			File "C:\GNUnet\bin\libgnuneturitrack-0.dll"			
 			SectionEnd
@@ -672,7 +672,6 @@ Section Uninstall
   Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
   Delete "$INSTDIR\bin\libgnunetidentity_api-0.dll"
 	Delete "$INSTDIR\bin\libgnuneturitrack-0.dll"
-  Delete "$INSTDIR\bin\libgnunetpseudonym-0.dll"
 	Delete "$INSTDIR\bin\libgnunetnamespace-0.dll"
 	Delete "$INSTDIR\bin\libgnunetcollection-0.dll"
 	Delete "$INSTDIR\bin\libgnunetgetoption_api-0.dll"
