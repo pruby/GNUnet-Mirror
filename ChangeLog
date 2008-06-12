@@ -1,3 +1,10 @@
+Wed Jun 11 22:17:09 MDT 2008
+	Made state of gnunet-auto-share persistent. 
+	Added support for multiple directories.  Improved
+	FSUI/ECRS APIs to reduce the number of threads needed
+	for probing.  Increased number of concurrent probes
+	allowed.
+
 Sat Jun  7 17:54:49 MDT 2008
 	Simplified namespaces a lot.  Shorter timeouts for
 	trying to connect to gnunetd to prevent interactive
