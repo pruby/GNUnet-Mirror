@@ -371,6 +371,12 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   /* 1) read state  in */
   if (doResume)
     {
+      fn = GNUNET_get_home_filename(ectx,
+				    cfg,
+				    GNUNET_NO,
+				    "fsui-locks",
+				    name,
+				    NULL);
       ret->ipc = GNUNET_IPC_semaphore_create (ectx, fn, 1);
 #if DEBUG_PERSISTENCE
       GNUNET_GE_LOG (ectx,
@@ -383,6 +389,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Aquired IPC lock.\n");
 #endif
+      GNUNET_free(fn);
       GNUNET_FSUI_deserialize (ret);
     }
   else
