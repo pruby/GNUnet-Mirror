@@ -91,17 +91,17 @@ plibc_panic (int err, char *msg)
 int
 InitWinEnv (struct GNUNET_GE_Context *ectx)
 {
-  int ret, init;
+  int ret;
 
   if (ectx)
     pEctx = ectx;
 
-  init = plibc_initialized ();
+  plibc_initialized ();
   plibc_set_panic_proc (plibc_panic);
   ret = plibc_init ("GNU", PACKAGE);
 
   /* don't load other DLLs twice */
-  if (init)
+  if (hNTDLL)
     return ret;
 
   hNTDLL = LoadLibrary ("ntdll.dll");
