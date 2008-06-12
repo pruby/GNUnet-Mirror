@@ -82,11 +82,11 @@ GNUNET_get_home_filename (struct GNUNET_GE_Context *ectx,
 
   GNUNET_GC_get_configuration_value_filename (cfg,
                                               is_daemon 
-					      ? "GNUNET" 
-					      : "GNUNETD",
+					      ? "GNUNETD" 
+					      : "GNUNET",
                                               is_daemon 
-					      ? "GNUNET_HOME" 
-					      : "GNUNETD_HOME",
+					      ? "GNUNETD_HOME" 
+					      : "GNUNET_HOME",
                                               is_daemon 
 					      ? GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY 
 					      : GNUNET_DEFAULT_HOME_DIRECTORY,
