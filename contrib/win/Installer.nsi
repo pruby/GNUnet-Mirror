@@ -115,6 +115,10 @@ SectionGroup "GNUnet" SEC_GNUNET
     File "C:\GNUnet\bin\libgnunettraffic_api-0.dll"
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
 		File "C:\GNUnet\bin\gnunet-update.exe" 
+    
+    SetOutPath "$INSTDIR\share\plibc"
+    File "C:\GNUnet\share\plibc\plibc.ini"
+    
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
     SetOutPath "$INSTDIR\var\run"
 		SetOutPath "$INSTDIR\tmp"
