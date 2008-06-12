@@ -598,7 +598,6 @@ readSearches (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
         return GNUNET_OK;
       list = GNUNET_malloc (sizeof (GNUNET_FSUI_SearchList));
       memset (list, 0, sizeof (GNUNET_FSUI_SearchList));
-      list->lock = GNUNET_mutex_create (GNUNET_NO);
       list->ctx = ctx;
       if ((GNUNET_OK != read_int (rb, (int *) &list->state)) ||
           (GNUNET_OK != read_long (rb, (long long *) &list->start_time)) ||
@@ -688,7 +687,6 @@ ERR:
     }
   if (list->uri != NULL)
     GNUNET_ECRS_uri_destroy (list->uri);
-  GNUNET_mutex_destroy (list->lock);
   GNUNET_free (list);
   return GNUNET_SYSERR;
 }

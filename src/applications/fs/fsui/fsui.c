@@ -94,7 +94,6 @@ updateDownloadThreads (void *c)
   sl = ctx->activeSearches;
   while (sl != NULL)
     {
-      GNUNET_mutex_lock (sl->lock);
       srl = sl->resultsReceived;
       while (srl != NULL)
         {
@@ -195,7 +194,6 @@ updateDownloadThreads (void *c)
 
           srl = srl->next;
         }
-      GNUNET_mutex_unlock (sl->lock);
       sl = sl->next;
     }
   GNUNET_mutex_unlock (ctx->lock);

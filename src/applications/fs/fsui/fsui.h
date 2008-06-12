@@ -156,11 +156,6 @@ typedef struct GNUNET_FSUI_SearchList
   GNUNET_CronTime start_time;
 
   /**
-   * Lock for the search.
-   */
-  struct GNUNET_Mutex *lock;
-
-  /**
    * Searches are kept in a simple linked list.
    */
   struct GNUNET_FSUI_SearchList *next;
