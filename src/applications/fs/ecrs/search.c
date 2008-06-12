@@ -92,13 +92,17 @@ struct GNUNET_ECRS_SearchContext
 
   int aborted;
 
+  int my_sctx;
+
   unsigned int anonymityLevel;
 
 };
 
 static int
 receive_response_callback (const GNUNET_HashCode * key,
-                           const GNUNET_DatastoreValue * value, void *cls);
+                           const GNUNET_DatastoreValue * value, 
+			   void *cls,
+			   unsigned long long uid);
 
 /**
  * Add a query to the SQC.
@@ -128,8 +132,7 @@ add_search (unsigned int type,
                           keyCount,
                           keys,
                           sqc->anonymityLevel,
-                          (GNUNET_DatastoreValueIterator) &
-                          receive_response_callback, ps);
+                          &receive_response_callback, ps);
 }
 
 /**
@@ -288,7 +291,9 @@ process_sblock_result (const GNUNET_EC_SBlock * sb,
  */
 static int
 receive_response_callback (const GNUNET_HashCode * key,
-                           const GNUNET_DatastoreValue * value, void *cls)
+                           const GNUNET_DatastoreValue * value, 
+			   void *cls,
+			   unsigned long long uid)
 {
   struct PendingSearch *ps = cls;
   struct GNUNET_ECRS_SearchContext *sqc = ps->context;
@@ -458,6 +463,7 @@ receive_response_callback (const GNUNET_HashCode * key,
 struct GNUNET_ECRS_SearchContext *
 GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
                           struct GNUNET_GC_Configuration *cfg,
+			  struct GNUNET_FS_SearchContext * sc,
                           const struct GNUNET_ECRS_URI *uri,
                           unsigned int anonymityLevel,
                           GNUNET_ECRS_SearchResultProcessor spcb,
@@ -484,12 +490,13 @@ GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
   ctx->spcb = spcb;
   ctx->spcbClosure = spcbClosure;
   ctx->aborted = GNUNET_NO;
-  ctx->sctx = GNUNET_FS_create_search_context (ectx, cfg);
+  ctx->sctx = sc == NULL ? GNUNET_FS_create_search_context (ectx, cfg) : sc;
   if (ctx->sctx == NULL)
     {
       GNUNET_free (ctx);
       return NULL;
     }
+  ctx->my_sctx = (sc == NULL);
   add_search_for_uri (uri, ctx);
   return ctx;
 }
@@ -504,13 +511,19 @@ void
 GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext *ctx)
 {
   struct PendingSearch *pos;
-  GNUNET_FS_destroy_search_context (ctx->sctx);
+
   while (ctx->queries != NULL)
     {
       pos = ctx->queries;
       ctx->queries = pos->next;
+      if (! ctx->my_sctx)
+	GNUNET_FS_stop_search(ctx->sctx,
+			      &receive_response_callback,
+			      pos);	
       GNUNET_free (pos);
     }
+  if (ctx->my_sctx)
+    GNUNET_FS_destroy_search_context (ctx->sctx);
   GNUNET_free (ctx);
 }
 
@@ -533,7 +546,8 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
   struct GNUNET_ECRS_SearchContext *ctx;
 
   ctx =
-    GNUNET_ECRS_search_start (ectx, cfg, uri, anonymityLevel, spcb,
+    GNUNET_ECRS_search_start (ectx, cfg, NULL,
+			      uri, anonymityLevel, spcb,
                               spcbClosure);
   if (ctx == NULL)
     return GNUNET_SYSERR;

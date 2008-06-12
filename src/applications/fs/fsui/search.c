@@ -239,6 +239,7 @@ create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
   srl->search =
     GNUNET_ECRS_search_start (pos->ctx->ectx,
                               pos->ctx->cfg,
+			      pos->probe_context,
                               srl->uri,
                               pos->anonymityLevel,
                               &GNUNET_FSUI_search_progress_callback, pos);
@@ -318,6 +319,7 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
       srl->uri = GNUNET_ECRS_uri_duplicate (uri);
       srl->search = GNUNET_ECRS_search_start (pos->ctx->ectx,
                                               pos->ctx->cfg,
+					      pos->probe_context,
                                               pos->uri,
                                               pos->anonymityLevel,
                                               &GNUNET_FSUI_search_progress_callback,
@@ -483,6 +485,7 @@ GNUNET_FSUI_search_restart (struct GNUNET_FSUI_SearchList *pos)
     {
       rec->search = GNUNET_ECRS_search_start (pos->ctx->ectx,
                                               pos->ctx->cfg,
+					      pos->probe_context,
                                               rec->uri,
                                               pos->anonymityLevel,
                                               &GNUNET_FSUI_search_progress_callback,

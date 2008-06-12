@@ -495,6 +495,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
             {
               rec->search = GNUNET_ECRS_search_start (list->ctx->ectx,
                                                       list->ctx->cfg,
+						      list->probe_context,
                                                       rec->uri,
                                                       list->anonymityLevel,
                                                       &GNUNET_FSUI_search_progress_callback,

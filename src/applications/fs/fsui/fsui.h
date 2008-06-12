@@ -171,7 +171,8 @@ typedef struct GNUNET_FSUI_SearchList
   struct GNUNET_FSUI_Context *ctx;
 
   /**
-   * Context used for availability probes.
+   * Context used for availability probes and the
+   * ECRS searches
    */
   struct GNUNET_FS_SearchContext *probe_context;
 

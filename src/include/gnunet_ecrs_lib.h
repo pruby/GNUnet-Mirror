@@ -594,6 +594,9 @@ struct GNUNET_ECRS_SearchContext;
 /**
  * Start search for content (asynchronous version).
  *
+ * @param sc context to use for searching, you can pass NULL (then
+ *        ECRS will manage its own context); if you pass non-NULL,
+ *        search_stop must be called before you can destroy the sc.
  * @param uri specifies the search parameters;
  *        this must be a simple URI (with a single
  *        keyword)
@@ -604,6 +607,7 @@ struct GNUNET_ECRS_SearchContext *GNUNET_ECRS_search_start (struct
                                                             struct
                                                             GNUNET_GC_Configuration
                                                             *cfg,
+							    struct GNUNET_FS_SearchContext * sc,
                                                             const struct
                                                             GNUNET_ECRS_URI
                                                             *uri,
@@ -675,6 +679,9 @@ struct GNUNET_ECRS_DownloadContext;
  * particular portion of the file (optimization), not to strictly
  * limit the download to exactly those bytes.
  *
+ * @param sc context to use for searching, you can pass NULL (then
+ *        ECRS will manage its own context); if you pass non-NULL,
+ *        partial_stop must be called before you can destroy the sc.
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file, maybe NULL (then no file is
  *        created on disk)
