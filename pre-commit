@@ -1,2 +1,11 @@
 #!/bin/sh
-indent -nut `find * -name "*.c"` `find * -name "*.h"`
+# NOTE: "touch mydir/no-indent" to make the tree starting at mydir untouchable
+l=""
+for n in `find . -name "no-indent"`
+do
+n=`dirname "$n"`
+l="-and -not -path \"$n/*\" $l"
+done
+indent -nut `echo $l | xargs find . -name "*.c"`
+indent -nut `echo $l | xargs find . -name "*.h"`
+
