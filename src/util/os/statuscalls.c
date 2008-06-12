@@ -340,7 +340,7 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
                                  GNUNET_GE_BULK,
                                  _
                                  ("Failed to parse interface data from `%s'.\n"),
-                                 PROC_NET_DEV);
+                                 "netstat -e");
                 }
             }
           iLine++;
