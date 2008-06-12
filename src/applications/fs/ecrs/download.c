@@ -216,6 +216,8 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
 
   if (rm->abortFlag == GNUNET_NO)
     rm->abortFlag = GNUNET_YES;
+  if (rm->my_sctx == GNUNET_YES)
+    GNUNET_FS_destroy_search_context (rm->sctx);
   while (rm->head != NULL)
     {
       pos = rm->head;
@@ -230,8 +232,6 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
   if (rm->main != NULL)
     GNUNET_thread_release_self (rm->main);
   GNUNET_free_non_null (rm->filename);
-  if (rm->my_sctx == GNUNET_YES)
-    GNUNET_FS_destroy_search_context (rm->sctx);
   rm->sctx = NULL;
   GNUNET_free (rm);
 }
