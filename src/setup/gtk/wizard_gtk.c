@@ -152,7 +152,6 @@ void
 load_step2setup_gtk (GtkButton * button, gpointer prev_window)
 {
   GtkWidget *entIP;
-  GtkWidget *chkFW;
   GtkTreeIter iter;
   GtkListStore *model;
   struct insert_nic_cls cls;
@@ -191,17 +190,6 @@ load_step2setup_gtk (GtkButton * button, gpointer prev_window)
                                             &val);
   gtk_entry_set_text (GTK_ENTRY (entIP), val);
   GNUNET_free (val);
-
-  chkFW = lookup_widget ("chkFW");
-#if 0
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkFW),
-                                GNUNET_GC_get_configuration_value_yesno
-                                (editCfg, "NAT", "LIMITED",
-                                 GNUNET_NO) == GNUNET_YES);
-#else
-  gtk_widget_hide (chkFW);
-#endif
-
   gtk_widget_show (curwnd);
 }
 
@@ -280,16 +268,22 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
 #ifndef MINGW
   if (NULL == uname || strlen (uname) == 0)
     {
-      if ((geteuid () == 0) || (NULL != getpwnam ("gnunet")))
-        user_name = GNUNET_strdup ("gnunet");
+      struct passwd * pwd;
+
+      if ( (geteuid() == 0) && (NULL != getpwnam ("gnunet")))
+	user_name = GNUNET_strdup ("gnunet");
       else
-        {
-          GNUNET_free_non_null (uname);
-          uname = getenv ("USER");
-          if (uname != NULL)
-            user_name = GNUNET_strdup (uname);
-          else
-            user_name = NULL;
+	{
+	  pwd = getpwuid(geteuid());
+	  if (pwd != NULL)
+	    user_name = GNUNET_strdup (pwd->pw_name);
+	  else
+	    {
+	      if (NULL != getenv ("USER"))
+		user_name = GNUNET_strdup (getenv("USER"));
+	      else
+		user_name = NULL;
+	    }
         }
     }
   else
@@ -523,17 +517,6 @@ on_entIP_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
   g_free (ret);
 }
 
-
-void
-on_chkFW_toggledsetup_gtk (GtkToggleButton * togglebutton, gpointer user_data)
-{
-#if 0
-  GNUNET_GC_set_configuration_value_choice (editCfg, err_ctx, "NAT",
-                                            "LIMITED",
-                                            gtk_toggle_button_get_active
-                                            (togglebutton) ? "YES" : "NO");
-#endif
-}
 
 void
 on_entUp_changedsetup_gtk (GtkEditable * editable, gpointer user_data)

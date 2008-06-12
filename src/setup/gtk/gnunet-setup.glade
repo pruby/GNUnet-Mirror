@@ -197,8 +197,7 @@ The "Network interface" is the device that connects your computer to the interne
 
 If your provider always assigns the same IP-Address to you (a "static" IP-Address), enter it into the "IP-Address" field. If your IP-Address changes every now and then ("dynamic" IP-Address) but there's a hostname that always points to your actual IP-Address ("Dynamic DNS"), you can also enter it here.
 If in doubt, leave the field empty. GNUnet will then try to determine your IP-Address.
-
-If you are connected to the internet through another computer doing SNAT, a router or a "hardware firewall" and other computers on the internet cannot connect to this computer, check the last option on this page. Leave it unchecked on direct connections through modems, ISDN cards and DNAT (also known as "port forwarding").</property>
+</property>
                       </widget>
                     </child>
                   </widget>
@@ -223,7 +222,7 @@ If you are connected to the internet through another computer doing SNAT, a rout
                           <widget class="GtkTable" id="table1">
                             <property name="visible">True</property>
                             <property name="border_width">5</property>
-                            <property name="n_rows">3</property>
+                            <property name="n_rows">2</property>
                             <property name="n_columns">2</property>
                             <property name="column_spacing">5</property>
                             <property name="row_spacing">5</property>
@@ -241,24 +240,6 @@ If you are connected to the internet through another computer doing SNAT, a rout
                                 <property name="right_attach">2</property>
                                 <property name="x_options">GTK_SHRINK | GTK_FILL</property>
                                 <property name="y_options">GTK_FILL</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkCheckButton" id="chkFW">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="label" translatable="yes">Computer cannot receive inbound connections (SNAT/Firewall)</property>
-                                <property name="use_underline">True</property>
-                                <property name="response_id">0</property>
-                                <property name="draw_indicator">True</property>
-                                <signal name="toggled" handler="on_chkFW_toggled" object="chkFW"/>
-                              </widget>
-                              <packing>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
@@ -581,7 +562,6 @@ The "Max. CPU usage" is the percentage of processor time GNUnet is allowed to us
                                     <property name="use_underline">True</property>
                                     <property name="response_id">0</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">radShare</property>
                                     <signal name="toggled" handler="on_radGNUnet_toggled" object="radGNUnet"/>
                                   </widget>
                                   <packing>
@@ -1524,11 +1504,13 @@ Leave the fields empty to run GNUnet with system privileges.</property>
   <widget class="GtkAboutDialog" id="aboutdialog">
     <property name="visible">True</property>
     <property name="title" translatable="yes">About gnunet-setup</property>
+    <property name="icon">gnunet-logo-color.png</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
-    <property name="name">gnunet-setup</property>
-    <property name="copyright" translatable="yes">(C) 2001-2007 Christian Grothoff (and other contributing authors)</property>
+    <property name="program_name">gnunet-setup</property>
+    <property name="version">0.8.0</property>
+    <property name="copyright" translatable="yes">(C) 2001-2008 Christian Grothoff (and other contributing authors)</property>
     <property name="comments" translatable="yes">This is the configuration tool for GNUnet.</property>
     <property name="website">http://gnunet.org/</property>
     <property name="website_label">http://gnunet.org/</property>
