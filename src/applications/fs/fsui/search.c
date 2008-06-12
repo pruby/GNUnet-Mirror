@@ -205,6 +205,16 @@ GNUNET_FSUI_search_progress_callback (const GNUNET_ECRS_FileInfo * fi,
   return GNUNET_OK;
 }
 
+static int
+count_mandatory_keywords (const char *keyword, int is_mandatory, void *closure)
+{
+  struct GNUNET_FSUI_SearchList *pos = closure;
+
+  if (is_mandatory)
+    pos->mandatory_keyword_count++;
+  return GNUNET_OK;
+}
+
 /**
  * This function is called on each keyword in the
  * search list.  Start the corresponding ECRS search.
@@ -226,8 +236,6 @@ create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
                                                       1, &keyword);
   GNUNET_hash (keyword, strlen (keyword), &srl->key);
   srl->is_required = is_mandatory;
-  if (is_mandatory)
-    pos->mandatory_keyword_count++;
   srl->next = pos->searches;
   pos->searches = srl;
   srl->search =
@@ -288,6 +296,7 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   if (GNUNET_ECRS_uri_test_ksk (uri))
     {
       /* (possibly boolean) keyword search */
+      GNUNET_ECRS_uri_get_keywords_from_ksk (uri, &count_mandatory_keywords, pos);
       GNUNET_ECRS_uri_get_keywords_from_ksk (uri, &create_ecrs_search, pos);
       if (pos->start_time == 0)
         {
