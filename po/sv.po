@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-06-07 23:46-0600\n"
+"POT-Creation-Date: 2008-06-11 23:26-0600\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -2000,7 +2000,7 @@ msgid "'%s(%s,%s)' failed.\n"
 msgstr "\"%s(%s,%s)\" misslyckades.\n"
 
 #: src/applications/dht/tools/dht-query.c:141
-#: src/applications/fs/tools/gnunet-auto-share.c:370
+#: src/applications/fs/tools/gnunet-auto-share.c:624
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr "Misslyckades att ansluta till gnunetd.\n"
@@ -2282,7 +2282,7 @@ msgid "# sessions established"
 msgstr "# sessioner etablerade"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
-#: src/applications/fs/tools/gnunet-auto-share.c:140
+#: src/applications/fs/tools/gnunet-auto-share.c:152
 #: src/applications/fs/tools/gnunet-insert.c:249
 #: src/applications/fs/tools/gnunet-search.c:125
 #: src/applications/fs/tools/gnunet-download.c:77
@@ -2453,13 +2453,13 @@ msgstr ""
 msgid "Listed %d matching entries.\n"
 msgstr "Listade %d matchande poster.\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:101
+#: src/applications/fs/tools/gnunet-auto-share.c:113
 #, fuzzy, c-format
 msgid "Upload of `%s' complete, URI is `%s'.\n"
 msgstr ""
 "Uppladdning av \"%s\" klar, aktuell genomsnittshastighet är %8.3f kbps.\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:110
+#: src/applications/fs/tools/gnunet-auto-share.c:122
 #: src/applications/fs/tools/gnunet-insert.c:223
 #, fuzzy, c-format
 msgid ""
@@ -2467,7 +2467,7 @@ msgid ""
 "Upload aborted.\n"
 msgstr "Nedladdning avbruten."
 
-#: src/applications/fs/tools/gnunet-auto-share.c:116
+#: src/applications/fs/tools/gnunet-auto-share.c:128
 #: src/applications/fs/tools/gnunet-insert.c:228
 #, fuzzy, c-format
 msgid ""
@@ -2477,7 +2477,7 @@ msgstr ""
 "\n"
 "Fel vid uppladdning av fil: %s\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:127
+#: src/applications/fs/tools/gnunet-auto-share.c:139
 #: src/applications/fs/tools/gnunet-insert.c:237
 #, c-format
 msgid ""
@@ -2485,13 +2485,13 @@ msgid ""
 "Unexpected event: %d\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:144
+#: src/applications/fs/tools/gnunet-auto-share.c:156
 msgid ""
 "run in debug mode; gnunet-auto-share will not daemonize and error messages "
 "will be written to stderr instead of a logfile"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:150
+#: src/applications/fs/tools/gnunet-auto-share.c:162
 #: src/applications/fs/tools/gnunet-insert.c:262
 #, fuzzy
 msgid ""
@@ -2501,30 +2501,30 @@ msgstr ""
 "använd libextractor för att lägga till ytterligare direktreferenser till "
 "katalogposter"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:152
+#: src/applications/fs/tools/gnunet-auto-share.c:164
 msgid "Automatically share a directory."
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:155
+#: src/applications/fs/tools/gnunet-auto-share.c:167
 #: src/applications/fs/tools/gnunet-insert.c:276
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
 "specified multiple times)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:160
+#: src/applications/fs/tools/gnunet-auto-share.c:172
 #: src/applications/fs/tools/gnunet-insert.c:293
 msgid "specify the priority of the content"
 msgstr "ange prioritet för innehållet"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:267
+#: src/applications/fs/tools/gnunet-auto-share.c:517
 #, c-format
 msgid "Unknown keyword type `%s' in metadata configuration\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:559
+#: src/applications/fs/tools/gnunet-auto-share.c:841
 #, fuzzy, c-format
-msgid "You must specify one and only one directory for sharing.\n"
+msgid "You must specify at least one directory for sharing.\n"
 msgstr "Du måste ange en och endast en fil att avindexera.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:113
@@ -2805,11 +2805,11 @@ msgstr "%d filer hittades i katalog.\n"
 msgid "File stored as `%s'.\n"
 msgstr "Fil lagrad som \"%s\".\n"
 
-#: src/applications/fs/uritrack/file_info.c:134
+#: src/applications/fs/uritrack/file_info.c:102
 msgid "Collecting file identifiers disabled.\n"
 msgstr ""
 
-#: src/applications/fs/uritrack/file_info.c:413
+#: src/applications/fs/uritrack/file_info.c:381
 #, c-format
 msgid "Deleted corrupt URI database in `%s'."
 msgstr ""
@@ -2834,22 +2834,22 @@ msgstr "Misslyckades att ansluta till gnunetd.\n"
 msgid "Cannot hash `%s'.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/upload.c:206
+#: src/applications/fs/ecrs/upload.c:216
 #, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr "Initiering av indexering av fil \"%s\" misslyckades.\n"
 
-#: src/applications/fs/ecrs/upload.c:214
-#, c-format
-msgid "Indexing file `%s' failed. Trying to insert file...\n"
+#: src/applications/fs/ecrs/upload.c:224
+#, fuzzy, c-format
+msgid "Indexing file `%s' failed. Suggestion: try to insert the file.\n"
 msgstr "Indexering av fil \"%s\" misslyckades. Försöker att infoga fil...\n"
 
-#: src/applications/fs/ecrs/upload.c:228
+#: src/applications/fs/ecrs/upload.c:238
 #, fuzzy, c-format
 msgid "Cannot open file `%s': `%s'"
 msgstr "Kan inte öppna konfigurationsfil \"%s\".\n"
 
-#: src/applications/fs/ecrs/upload.c:313
+#: src/applications/fs/ecrs/upload.c:323
 #, fuzzy, c-format
 msgid "Indexing data of file `%s' failed at position %llu.\n"
 msgstr "Indexering av data misslyckades vid position %i.\n"
@@ -2879,11 +2879,11 @@ msgid ""
 "`unknown' instead.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/search.c:150
+#: src/applications/fs/ecrs/search.c:153
 msgid "CHK URI not allowed for search.\n"
 msgstr "CHK URI tillåts inte för sökning.\n"
 
-#: src/applications/fs/ecrs/search.c:205
+#: src/applications/fs/ecrs/search.c:208
 msgid "LOC URI not allowed for search.\n"
 msgstr "LOC URI tillåts inte för sökning.\n"
 
@@ -2912,7 +2912,7 @@ msgstr "Formatet på filen \"%s\" är ogiltig.\n"
 msgid "Format of file `%s' is invalid, trying to remove.\n"
 msgstr "Formatet på filen \"%s\" är ogiltig.\n"
 
-#: src/applications/fs/ecrs/download.c:600
+#: src/applications/fs/ecrs/download.c:610
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
@@ -2920,17 +2920,22 @@ msgstr ""
 "Dekrypterat innehåll stämmer inte med nyckeln. Det är antingen ett fel eller "
 "en fil inlagd med onda avsikter. Hämtning avbruten.\n"
 
-#: src/applications/fs/ecrs/download.c:610
+#: src/applications/fs/ecrs/download.c:620
 msgid "IO error."
 msgstr ""
 
-#: src/applications/fs/collection/collection.c:567
-#: src/applications/fs/collection/collection.c:570
+#: src/applications/fs/collection/collection.c:557
+#: src/applications/fs/collection/collection.c:560
 #, c-format
 msgid "Revision %u"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:331
+#: src/applications/fs/fsui/upload.c:321
+#, fuzzy
+msgid "Application aborted."
+msgstr "_Alternativ"
+
+#: src/applications/fs/fsui/upload.c:335
 msgid "Failed to create temporary directory."
 msgstr ""
 
@@ -2963,30 +2968,30 @@ msgstr ""
 msgid "Datastore full.\n"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:784
+#: src/applications/fs/gap/fs.c:815
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:786
+#: src/applications/fs/gap/fs.c:817
 msgid "# gap requests dropped due to load"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:788
+#: src/applications/fs/gap/fs.c:819
 msgid "# gap content total received"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:790
+#: src/applications/fs/gap/fs.c:821
 msgid "# gap total trust awarded"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:818
+#: src/applications/fs/gap/fs.c:849
 #, fuzzy, c-format
 msgid ""
-"`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %"
-"d\n"
+"`%s' registering client handlers %d %d %d %d %d %d %d %d and P2P handlers %d "
+"%d\n"
 msgstr "\"%s\" registrerar klienthandtagen %d och %d\n"
 
-#: src/applications/fs/gap/fs.c:868
+#: src/applications/fs/gap/fs.c:905
 msgid "enables (anonymous) file-sharing"
 msgstr "aktiverar (anonym) fildelning"
 
@@ -3016,24 +3021,24 @@ msgstr ""
 msgid "# total RC of interned peer IDs in pid table"
 msgstr ""
 
-#: src/applications/fs/gap/querymanager.c:638
+#: src/applications/fs/gap/querymanager.c:708
 #, fuzzy
 msgid "# gap client queries received"
 msgstr "# klartext PONG-meddelanden mottagna"
 
-#: src/applications/fs/gap/querymanager.c:640
+#: src/applications/fs/gap/querymanager.c:710
 msgid "# gap replies sent to clients"
 msgstr ""
 
-#: src/applications/fs/gap/querymanager.c:642
+#: src/applications/fs/gap/querymanager.c:712
 msgid "# gap client requests tracked"
 msgstr ""
 
-#: src/applications/fs/gap/querymanager.c:644
+#: src/applications/fs/gap/querymanager.c:714
 msgid "# gap client requests injected"
 msgstr ""
 
-#: src/applications/fs/gap/querymanager.c:647
+#: src/applications/fs/gap/querymanager.c:717
 msgid "# gap query bloomfilter resizing updates"
 msgstr ""
 
@@ -3636,7 +3641,7 @@ msgstr "kör som användare LOGIN"
 msgid "run in client mode (for getting client configuration values)"
 msgstr "kör i klientläge (för att hämta värden från klientkonfiguration)"
 
-#: src/server/version.c:143
+#: src/server/version.c:129
 msgid ""
 "Failed to determine filename used to store GNUnet version information!\n"
 msgstr ""

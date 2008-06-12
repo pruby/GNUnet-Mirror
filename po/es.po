@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0e\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-06-07 23:46-0600\n"
+"POT-Creation-Date: 2008-06-11 23:26-0600\n"
 "PO-Revision-Date: 2006-06-29 12:05+0200\n"
 "Last-Translator: Miguel Angel Arruga <miguel.13@telefonica.net>\n"
 "Language-Team: Spanish\n"
@@ -2100,7 +2100,7 @@ msgid "'%s(%s,%s)' failed.\n"
 msgstr "'%s(%s, %s)' falló.\n"
 
 #: src/applications/dht/tools/dht-query.c:141
-#: src/applications/fs/tools/gnunet-auto-share.c:370
+#: src/applications/fs/tools/gnunet-auto-share.c:624
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr "Fallo al conectar a gnunetd.\n"
@@ -2393,7 +2393,7 @@ msgid "# sessions established"
 msgstr "# sesiones establecidas"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
-#: src/applications/fs/tools/gnunet-auto-share.c:140
+#: src/applications/fs/tools/gnunet-auto-share.c:152
 #: src/applications/fs/tools/gnunet-insert.c:249
 #: src/applications/fs/tools/gnunet-search.c:125
 #: src/applications/fs/tools/gnunet-download.c:77
@@ -2575,14 +2575,14 @@ msgstr "comienza a seguir las entradas de la base de datos del directorio"
 msgid "Listed %d matching entries.\n"
 msgstr "%d entradas encontradas.\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:101
+#: src/applications/fs/tools/gnunet-auto-share.c:113
 #, fuzzy, c-format
 msgid "Upload of `%s' complete, URI is `%s'.\n"
 msgstr ""
 "Subida de '%s' completada, la velocidad media de subida actual es %8.3f "
 "kbps.\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:110
+#: src/applications/fs/tools/gnunet-auto-share.c:122
 #: src/applications/fs/tools/gnunet-insert.c:223
 #, fuzzy, c-format
 msgid ""
@@ -2590,7 +2590,7 @@ msgid ""
 "Upload aborted.\n"
 msgstr "Descarga abortada"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:116
+#: src/applications/fs/tools/gnunet-auto-share.c:128
 #: src/applications/fs/tools/gnunet-insert.c:228
 #, fuzzy, c-format
 msgid ""
@@ -2600,7 +2600,7 @@ msgstr ""
 "\n"
 "Error subiendo el fichero %s\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:127
+#: src/applications/fs/tools/gnunet-auto-share.c:139
 #: src/applications/fs/tools/gnunet-insert.c:237
 #, c-format
 msgid ""
@@ -2608,7 +2608,7 @@ msgid ""
 "Unexpected event: %d\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:144
+#: src/applications/fs/tools/gnunet-auto-share.c:156
 #, fuzzy
 msgid ""
 "run in debug mode; gnunet-auto-share will not daemonize and error messages "
@@ -2617,7 +2617,7 @@ msgstr ""
 "se ejecuta en modo de depuración; gnunetd no sera un demonio y los mensajes "
 "de error serán escritos a través de stderr en vez de en un fichero de log"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:150
+#: src/applications/fs/tools/gnunet-auto-share.c:162
 #: src/applications/fs/tools/gnunet-insert.c:262
 #, fuzzy
 msgid ""
@@ -2627,11 +2627,11 @@ msgstr ""
 "usa libextractor para añadir referencias directas adicionales a las entradas "
 "del directorio"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:152
+#: src/applications/fs/tools/gnunet-auto-share.c:164
 msgid "Automatically share a directory."
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:155
+#: src/applications/fs/tools/gnunet-auto-share.c:167
 #: src/applications/fs/tools/gnunet-insert.c:276
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
@@ -2640,19 +2640,19 @@ msgstr ""
 "añade una clave adicional para todos los ficheros y directorios (esta opción "
 "puede ser especificada varias veces)"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:160
+#: src/applications/fs/tools/gnunet-auto-share.c:172
 #: src/applications/fs/tools/gnunet-insert.c:293
 msgid "specify the priority of the content"
 msgstr "especifica la prioridad del contenido"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:267
+#: src/applications/fs/tools/gnunet-auto-share.c:517
 #, c-format
 msgid "Unknown keyword type `%s' in metadata configuration\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:559
+#: src/applications/fs/tools/gnunet-auto-share.c:841
 #, fuzzy, c-format
-msgid "You must specify one and only one directory for sharing.\n"
+msgid "You must specify at least one directory for sharing.\n"
 msgstr "Debes especificar uno y solo un fichero para desindexar.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:113
@@ -2947,11 +2947,11 @@ msgstr "Falló al actualizar los datos del módulo '%s'\n"
 msgid "File stored as `%s'.\n"
 msgstr "Fichero almacenado en '%s'.\n"
 
-#: src/applications/fs/uritrack/file_info.c:134
+#: src/applications/fs/uritrack/file_info.c:102
 msgid "Collecting file identifiers disabled.\n"
 msgstr "Recolección de identificadores de fichero desactivada.\n"
 
-#: src/applications/fs/uritrack/file_info.c:413
+#: src/applications/fs/uritrack/file_info.c:381
 #, c-format
 msgid "Deleted corrupt URI database in `%s'."
 msgstr "Borrada base de datos de URIs corrupta en '%s'."
@@ -2975,24 +2975,24 @@ msgstr "Fallo al conectarse a gnunetd"
 msgid "Cannot hash `%s'.\n"
 msgstr "Imposible hallar el hash de '%s'.\n"
 
-#: src/applications/fs/ecrs/upload.c:206
+#: src/applications/fs/ecrs/upload.c:216
 #, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr ""
 "Durante la inicialización de la indexación del fichero '%s' se produjo un "
 "fallo.\n"
 
-#: src/applications/fs/ecrs/upload.c:214
-#, c-format
-msgid "Indexing file `%s' failed. Trying to insert file...\n"
+#: src/applications/fs/ecrs/upload.c:224
+#, fuzzy, c-format
+msgid "Indexing file `%s' failed. Suggestion: try to insert the file.\n"
 msgstr "Indexación del fichero '%s' fallida. Intentando insertar fichero...\n"
 
-#: src/applications/fs/ecrs/upload.c:228
+#: src/applications/fs/ecrs/upload.c:238
 #, fuzzy, c-format
 msgid "Cannot open file `%s': `%s'"
 msgstr "Imposible abrir el fichero de configuración '%s'.\n"
 
-#: src/applications/fs/ecrs/upload.c:313
+#: src/applications/fs/ecrs/upload.c:323
 #, fuzzy, c-format
 msgid "Indexing data of file `%s' failed at position %llu.\n"
 msgstr "La indexación de los datos falló en la posición %i.\n"
@@ -3024,11 +3024,11 @@ msgstr ""
 "Tipo de metadatos desconocido en la opción de metadatos '%s'.  Usando el "
 "tipo de metadatos 'desconocido' en su lugar.\n"
 
-#: src/applications/fs/ecrs/search.c:150
+#: src/applications/fs/ecrs/search.c:153
 msgid "CHK URI not allowed for search.\n"
 msgstr "CHK URI no autorizado para buscar.\n"
 
-#: src/applications/fs/ecrs/search.c:205
+#: src/applications/fs/ecrs/search.c:208
 msgid "LOC URI not allowed for search.\n"
 msgstr "LOC URI no autorizado para buscar.\n"
 
@@ -3057,7 +3057,7 @@ msgstr "El formato del fichero '%s' no es válido.\n"
 msgid "Format of file `%s' is invalid, trying to remove.\n"
 msgstr "El formato del fichero '%s' no es válido.\n"
 
-#: src/applications/fs/ecrs/download.c:600
+#: src/applications/fs/ecrs/download.c:610
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
@@ -3065,17 +3065,22 @@ msgstr ""
 "El contenido desencriptado no encuentra una clave. Esto puede ser un bug o "
 "un fichero introducido maliciosamente. Descarga abortada.\n"
 
-#: src/applications/fs/ecrs/download.c:610
+#: src/applications/fs/ecrs/download.c:620
 msgid "IO error."
 msgstr ""
 
-#: src/applications/fs/collection/collection.c:567
-#: src/applications/fs/collection/collection.c:570
+#: src/applications/fs/collection/collection.c:557
+#: src/applications/fs/collection/collection.c:560
 #, c-format
 msgid "Revision %u"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:331
+#: src/applications/fs/fsui/upload.c:321
+#, fuzzy
+msgid "Application aborted."
+msgstr "_Opciones"
+
+#: src/applications/fs/fsui/upload.c:335
 #, fuzzy
 msgid "Failed to create temporary directory."
 msgstr "Error en el formato del fichero (¿no es un directorio de GNUnet?)\n"
@@ -3111,31 +3116,31 @@ msgstr ""
 msgid "Datastore full.\n"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:784
+#: src/applications/fs/gap/fs.c:815
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:786
+#: src/applications/fs/gap/fs.c:817
 #, fuzzy
 msgid "# gap requests dropped due to load"
 msgstr "# Anuncios de los pares recibidos"
 
-#: src/applications/fs/gap/fs.c:788
+#: src/applications/fs/gap/fs.c:819
 msgid "# gap content total received"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:790
+#: src/applications/fs/gap/fs.c:821
 msgid "# gap total trust awarded"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:818
+#: src/applications/fs/gap/fs.c:849
 #, fuzzy, c-format
 msgid ""
-"`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %"
-"d\n"
+"`%s' registering client handlers %d %d %d %d %d %d %d %d and P2P handlers %d "
+"%d\n"
 msgstr "'%s' registrando manejadores de clientes %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/gap/fs.c:868
+#: src/applications/fs/gap/fs.c:905
 msgid "enables (anonymous) file-sharing"
 msgstr "activa la compartición de ficheros anónima"
 
@@ -3169,26 +3174,26 @@ msgstr ""
 msgid "# total RC of interned peer IDs in pid table"
 msgstr ""
 
-#: src/applications/fs/gap/querymanager.c:638
+#: src/applications/fs/gap/querymanager.c:708
 #, fuzzy
 msgid "# gap client queries received"
 msgstr "# mensajes PONG encriptados recibidos"
 
-#: src/applications/fs/gap/querymanager.c:640
+#: src/applications/fs/gap/querymanager.c:710
 msgid "# gap replies sent to clients"
 msgstr ""
 
-#: src/applications/fs/gap/querymanager.c:642
+#: src/applications/fs/gap/querymanager.c:712
 #, fuzzy
 msgid "# gap client requests tracked"
 msgstr "# mensajes PONG encriptados recibidos"
 
-#: src/applications/fs/gap/querymanager.c:644
+#: src/applications/fs/gap/querymanager.c:714
 #, fuzzy
 msgid "# gap client requests injected"
 msgstr "# mensajes PONG encriptados recibidos"
 
-#: src/applications/fs/gap/querymanager.c:647
+#: src/applications/fs/gap/querymanager.c:717
 msgid "# gap query bloomfilter resizing updates"
 msgstr ""
 
@@ -3795,7 +3800,7 @@ msgstr "ejecuta como el usuario LOGIN"
 msgid "run in client mode (for getting client configuration values)"
 msgstr ""
 
-#: src/server/version.c:143
+#: src/server/version.c:129
 msgid ""
 "Failed to determine filename used to store GNUnet version information!\n"
 msgstr ""

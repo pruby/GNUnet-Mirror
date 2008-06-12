@@ -120,11 +120,7 @@ static struct GNUNET_GC_Configuration *cfg;
 static char *
 getCollectionFileName ()
 {
-  return GNUNET_get_home_filename(ectx,
-				  cfg,
-				  GNUNET_NO,
-				  COLLECTION,
-				  NULL);
+  return GNUNET_get_home_filename (ectx, cfg, GNUNET_NO, COLLECTION, NULL);
 }
 
 /**
@@ -156,7 +152,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
     }
   /* read collection data */
   if (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES))
-    {      
+    {
       GNUNET_free (fn);
       return;
     }
@@ -515,12 +511,9 @@ GNUNET_CO_collection_publish_now ()
                     GNUNET_OK == GNUNET_ECRS_directory_create (ectx,
                                                                &dirData,
                                                                &dirLen,
-                                                               collectionData->
-                                                               file_count,
-                                                               collectionData->
-                                                               files,
-                                                               collectionData->
-                                                               meta));
+                                                               collectionData->file_count,
+                                                               collectionData->files,
+                                                               collectionData->meta));
   if (-1 == WRITE (fd, dirData, dirLen))
     {
       GNUNET_GE_LOG_STRERROR (ectx,
@@ -534,10 +527,10 @@ GNUNET_CO_collection_publish_now ()
   GNUNET_free (dirData);
   CLOSE (fd);
   if (GNUNET_OK != GNUNET_ECRS_file_upload (ectx, cfg, tmpName, GNUNET_NO,      /* indexing */
-                                            ntohl (collectionData->data.
-                                                   anonymityLevel),
-                                            ntohl (collectionData->data.
-                                                   priority),
+                                            ntohl (collectionData->
+                                                   data.anonymityLevel),
+                                            ntohl (collectionData->
+                                                   data.priority),
                                             GNUNET_get_time () +
                                             COLLECTION_ADV_LIFETIME, NULL,
                                             NULL, NULL, NULL, &directoryURI))
@@ -562,10 +555,10 @@ GNUNET_CO_collection_publish_now ()
   uri = GNUNET_ECRS_namespace_add_content (ectx,
                                            cfg,
                                            &collectionData->data.pid,
-                                           ntohl (collectionData->data.
-                                                  anonymityLevel),
-                                           ntohl (collectionData->data.
-                                                  priority),
+                                           ntohl (collectionData->
+                                                  data.anonymityLevel),
+                                           ntohl (collectionData->
+                                                  data.priority),
                                            GNUNET_get_time () +
                                            COLLECTION_ADV_LIFETIME,
                                            this_revision_string,

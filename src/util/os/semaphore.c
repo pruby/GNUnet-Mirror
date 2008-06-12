@@ -408,7 +408,7 @@ GNUNET_IPC_semaphore_up (struct GNUNET_IPC_Semaphore *sem)
   {
     int cnt;
 
-    GNUNET_mutex_lock(sem->internalLock);
+    GNUNET_mutex_lock (sem->internalLock);
     FLOCK (sem->fd, LOCK_EX);
     SEMA_LSEEK (sem->fd, 0, SEEK_SET);
     if (sizeof (int) != READ (sem->fd, &cnt, sizeof (int)))

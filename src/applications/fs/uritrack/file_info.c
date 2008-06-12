@@ -45,7 +45,9 @@ createIPC (struct GNUNET_GE_Context *ectx,
   char *ipcName;
   struct GNUNET_IPC_Semaphore *sem;
 
-  ipcName = GNUNET_get_home_filename(ectx, cfg, GNUNET_NO, "uritrack_ipc_lock", NULL);
+  ipcName =
+    GNUNET_get_home_filename (ectx, cfg, GNUNET_NO, "uritrack_ipc_lock",
+                              NULL);
   sem = GNUNET_IPC_semaphore_create (ectx, ipcName, 1);
   GNUNET_free (ipcName);
   return sem;
@@ -55,20 +57,14 @@ static char *
 getUriDbName (struct GNUNET_GE_Context *ectx,
               struct GNUNET_GC_Configuration *cfg)
 {
-  return GNUNET_get_home_filename(ectx, cfg,
-				  GNUNET_NO,
-				  STATE_NAME,
-				  NULL);
+  return GNUNET_get_home_filename (ectx, cfg, GNUNET_NO, STATE_NAME, NULL);
 }
 
 static char *
 getToggleName (struct GNUNET_GE_Context *ectx,
                struct GNUNET_GC_Configuration *cfg)
 {
-  return GNUNET_get_home_filename(ectx, cfg,
-				  GNUNET_NO,
-				  TRACK_OPTION,
-				  NULL);
+  return GNUNET_get_home_filename (ectx, cfg, GNUNET_NO, TRACK_OPTION, NULL);
 }
 
 /**

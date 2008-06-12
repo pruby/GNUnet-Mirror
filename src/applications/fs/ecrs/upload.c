@@ -189,12 +189,11 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           GNUNET_client_connection_destroy (sock);
           return GNUNET_SYSERR;
         }
-      if (GNUNET_YES == GNUNET_FS_test_indexed(sock, 
-					       &fileId))
-	{
-	  /* file already indexed; simulate only to get the URI! */
-	  doIndex = GNUNET_SYSERR;
-	}
+      if (GNUNET_YES == GNUNET_FS_test_indexed (sock, &fileId))
+        {
+          /* file already indexed; simulate only to get the URI! */
+          doIndex = GNUNET_SYSERR;
+        }
     }
   if (doIndex == GNUNET_YES)
     {
@@ -223,7 +222,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
                          _
                          ("Indexing file `%s' failed. Suggestion: try to insert the file.\n"),
                          filename);
-	  GNUNET_client_connection_destroy (sock);
+          GNUNET_client_connection_destroy (sock);
           return GNUNET_SYSERR;
         default:
           break;

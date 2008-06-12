@@ -239,7 +239,7 @@ create_ecrs_search (const char *keyword, int is_mandatory, void *closure)
   srl->search =
     GNUNET_ECRS_search_start (pos->ctx->ectx,
                               pos->ctx->cfg,
-			      pos->probe_context,
+                              pos->probe_context,
                               srl->uri,
                               pos->anonymityLevel,
                               &GNUNET_FSUI_search_progress_callback, pos);
@@ -266,15 +266,14 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   struct GNUNET_GE_Context *ectx;
   GNUNET_FSUI_Event event;
   struct SearchRecordList *srl;
-  struct GNUNET_FS_SearchContext * pc;
+  struct GNUNET_FS_SearchContext *pc;
 
   if (!(GNUNET_ECRS_uri_test_ksk (uri) || GNUNET_ECRS_uri_test_sks (uri)))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return NULL;
     }
-  pc = GNUNET_FS_create_search_context(ctx->ectx,
-				       ctx->cfg);
+  pc = GNUNET_FS_create_search_context (ctx->ectx, ctx->cfg);
   if (pc == NULL)
     return NULL;
   ectx = ctx->ectx;
@@ -319,7 +318,7 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
       srl->uri = GNUNET_ECRS_uri_duplicate (uri);
       srl->search = GNUNET_ECRS_search_start (pos->ctx->ectx,
                                               pos->ctx->cfg,
-					      pos->probe_context,
+                                              pos->probe_context,
                                               pos->uri,
                                               pos->anonymityLevel,
                                               &GNUNET_FSUI_search_progress_callback,
@@ -485,7 +484,7 @@ GNUNET_FSUI_search_restart (struct GNUNET_FSUI_SearchList *pos)
     {
       rec->search = GNUNET_ECRS_search_start (pos->ctx->ectx,
                                               pos->ctx->cfg,
-					      pos->probe_context,
+                                              pos->probe_context,
                                               rec->uri,
                                               pos->anonymityLevel,
                                               &GNUNET_FSUI_search_progress_callback,
@@ -578,7 +577,7 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_SearchList *sl)
     }
   GNUNET_mutex_destroy (pos->lock);
   if (pos->probe_context != NULL)
-    GNUNET_FS_destroy_search_context(pos->probe_context);
+    GNUNET_FS_destroy_search_context (pos->probe_context);
   GNUNET_free (pos);
   return GNUNET_OK;
 }

@@ -91,10 +91,9 @@ GNUNET_FS_start_search (struct
  */
 int
 GNUNET_FS_stop_search (struct
-		       GNUNET_FS_SearchContext
-		       *ctx,
-		       GNUNET_DatastoreValueIterator
-		       callback, void *closure);
+                       GNUNET_FS_SearchContext
+                       *ctx,
+                       GNUNET_DatastoreValueIterator callback, void *closure);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to

@@ -100,9 +100,8 @@ struct GNUNET_ECRS_SearchContext
 
 static int
 receive_response_callback (const GNUNET_HashCode * key,
-                           const GNUNET_DatastoreValue * value, 
-			   void *cls,
-			   unsigned long long uid);
+                           const GNUNET_DatastoreValue * value,
+                           void *cls, unsigned long long uid);
 
 /**
  * Add a query to the SQC.
@@ -291,9 +290,8 @@ process_sblock_result (const GNUNET_EC_SBlock * sb,
  */
 static int
 receive_response_callback (const GNUNET_HashCode * key,
-                           const GNUNET_DatastoreValue * value, 
-			   void *cls,
-			   unsigned long long uid)
+                           const GNUNET_DatastoreValue * value,
+                           void *cls, unsigned long long uid)
 {
   struct PendingSearch *ps = cls;
   struct GNUNET_ECRS_SearchContext *sqc = ps->context;
@@ -463,7 +461,7 @@ receive_response_callback (const GNUNET_HashCode * key,
 struct GNUNET_ECRS_SearchContext *
 GNUNET_ECRS_search_start (struct GNUNET_GE_Context *ectx,
                           struct GNUNET_GC_Configuration *cfg,
-			  struct GNUNET_FS_SearchContext * sc,
+                          struct GNUNET_FS_SearchContext *sc,
                           const struct GNUNET_ECRS_URI *uri,
                           unsigned int anonymityLevel,
                           GNUNET_ECRS_SearchResultProcessor spcb,
@@ -516,10 +514,8 @@ GNUNET_ECRS_search_stop (struct GNUNET_ECRS_SearchContext *ctx)
     {
       pos = ctx->queries;
       ctx->queries = pos->next;
-      if (! ctx->my_sctx)
-	GNUNET_FS_stop_search(ctx->sctx,
-			      &receive_response_callback,
-			      pos);	
+      if (!ctx->my_sctx)
+        GNUNET_FS_stop_search (ctx->sctx, &receive_response_callback, pos);
       GNUNET_free (pos);
     }
   if (ctx->my_sctx)
@@ -547,8 +543,7 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
 
   ctx =
     GNUNET_ECRS_search_start (ectx, cfg, NULL,
-			      uri, anonymityLevel, spcb,
-                              spcbClosure);
+                              uri, anonymityLevel, spcb, spcbClosure);
   if (ctx == NULL)
     return GNUNET_SYSERR;
   while (((NULL == tt) || (GNUNET_OK == tt (ttClosure)))

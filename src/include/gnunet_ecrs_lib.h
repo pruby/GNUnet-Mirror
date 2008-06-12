@@ -607,7 +607,9 @@ struct GNUNET_ECRS_SearchContext *GNUNET_ECRS_search_start (struct
                                                             struct
                                                             GNUNET_GC_Configuration
                                                             *cfg,
-							    struct GNUNET_FS_SearchContext * sc,
+                                                            struct
+                                                            GNUNET_FS_SearchContext
+                                                            *sc,
                                                             const struct
                                                             GNUNET_ECRS_URI
                                                             *uri,
@@ -693,7 +695,8 @@ struct GNUNET_ECRS_DownloadContext
   *GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
                                             struct GNUNET_GC_Configuration
                                             *cfg,
-					    struct GNUNET_FS_SearchContext * sc,
+                                            struct GNUNET_FS_SearchContext
+                                            *sc,
                                             const struct GNUNET_ECRS_URI *uri,
                                             const char *filename,
                                             unsigned long long offset,

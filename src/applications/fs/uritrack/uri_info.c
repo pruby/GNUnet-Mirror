@@ -36,11 +36,7 @@
 static char *
 getDBName (struct GNUNET_GC_Configuration *cfg)
 {
-  return GNUNET_get_home_filename(NULL,
-				  cfg,
-				  GNUNET_NO,
-				  "uri_info.db",
-				  NULL);
+  return GNUNET_get_home_filename (NULL, cfg, GNUNET_NO, "uri_info.db", NULL);
 }
 
 static unsigned long long

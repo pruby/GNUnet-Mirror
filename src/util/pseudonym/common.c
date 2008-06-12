@@ -42,13 +42,13 @@ GNUNET_pseudonym_internal_get_data_filename_ (struct GNUNET_GE_Context *ectx,
   GNUNET_EncName enc;
 
   if (psid != NULL)
-    GNUNET_hash_to_enc (psid, &enc);   
-  return GNUNET_get_home_filename(ectx,
-				  cfg,
-				  GNUNET_NO,
-				  prefix,
-				  (psid == NULL) ? NULL : (const char*)&enc,
-				  NULL);
+    GNUNET_hash_to_enc (psid, &enc);
+  return GNUNET_get_home_filename (ectx,
+                                   cfg,
+                                   GNUNET_NO,
+                                   prefix,
+                                   (psid ==
+                                    NULL) ? NULL : (const char *) &enc, NULL);
 }
 
 /* end of common.c */

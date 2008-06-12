@@ -204,11 +204,9 @@ void GNUNET_disk_filename_canonicalize (char *fn);
  *                private directory name.
  * @return the constructed filename
  */
-char *
-GNUNET_get_home_filename (struct GNUNET_GE_Context *ectx,
-			  struct GNUNET_GC_Configuration *cfg,
-			  int is_daemon,
-			  ...);
+char *GNUNET_get_home_filename (struct GNUNET_GE_Context *ectx,
+                                struct GNUNET_GC_Configuration *cfg,
+                                int is_daemon, ...);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

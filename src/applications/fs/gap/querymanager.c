@@ -223,10 +223,10 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
  */
 int
 GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
-				   unsigned int key_count,
-				   unsigned int anonymityLevel,
-				   unsigned int type,
-				   struct GNUNET_ClientHandle *client)
+                                   unsigned int key_count,
+                                   unsigned int anonymityLevel,
+                                   unsigned int type,
+                                   struct GNUNET_ClientHandle *client)
 {
   struct ClientDataList *cl;
   struct ClientDataList *cprev;
@@ -240,29 +240,29 @@ GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
     {
       cprev = cl;
       cl = cl->next;
-    }    
+    }
   if (cl == NULL)
     {
-      GNUNET_mutex_unlock(GNUNET_FS_lock);
-      return GNUNET_SYSERR; 
-   }  
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
+      return GNUNET_SYSERR;
+    }
   rprev = NULL;
   pos = cl->requests;
   while (pos != NULL)
     {
-      if ( (pos->type == type) &&
-	   (pos->key_count == key_count) &&
-	   (0 == memcmp(query,
-			&pos->queries[0],
-			sizeof(GNUNET_HashCode)*key_count)) &&
-	   (pos->anonymityLevel == anonymityLevel) )
-	break;
+      if ((pos->type == type) &&
+          (pos->key_count == key_count) &&
+          (0 == memcmp (query,
+                        &pos->queries[0],
+                        sizeof (GNUNET_HashCode) * key_count)) &&
+          (pos->anonymityLevel == anonymityLevel))
+        break;
       rprev = pos;
       pos = pos->next;
     }
   if (pos == NULL)
     {
-      GNUNET_mutex_unlock(GNUNET_FS_lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_SYSERR;
     }
   if (cl->request_tail == pos)
@@ -275,13 +275,13 @@ GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
   if (stats != NULL)
     stats->change (stat_gap_client_query_tracked, -1);
   if (cl->requests == NULL)
-    {      
+    {
       if (cl == clients_tail)
-	clients_tail = cprev;
+        clients_tail = cprev;
       if (cprev == NULL)
-	clients = cl->next;
+        clients = cl->next;
       else
-	cprev->next = cl->next;
+        cprev->next = cl->next;
       GNUNET_free (cl);
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);

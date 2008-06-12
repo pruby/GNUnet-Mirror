@@ -178,13 +178,11 @@ updateDownloadThreads (void *c)
                   srl->test_download
                     = GNUNET_ECRS_file_download_partial_start (ctx->ectx,
                                                                ctx->cfg,
-							       sl->probe_context,
+                                                               sl->
+                                                               probe_context,
                                                                srl->fi.uri,
-                                                               NULL,
-                                                               off,
-                                                               len,
-                                                               1,
-                                                               GNUNET_YES,
+                                                               NULL, off, len,
+                                                               1, GNUNET_YES,
                                                                &test_download_progress,
                                                                srl);
                   if (srl->test_download != NULL)
@@ -349,9 +347,9 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   unsigned int *ap_ranks;
   char *fn;
   unsigned long long size;
-  
+
   GNUNET_GE_ASSERT (ectx, cfg != NULL);
-  ret = GNUNET_malloc (sizeof (GNUNET_FSUI_Context));  
+  ret = GNUNET_malloc (sizeof (GNUNET_FSUI_Context));
   memset (ret, 0, sizeof (GNUNET_FSUI_Context));
   ret->activeDownloads.state = GNUNET_FSUI_PENDING;     /* !? */
   ret->activeDownloads.ctx = ret;
@@ -362,21 +360,14 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   if (ret->threadPoolSize == 0)
     ret->threadPoolSize = 32;
   ret->activeDownloadThreads = 0;
-  ret->name = GNUNET_get_home_filename(ectx,
-				       cfg,
-				       GNUNET_NO,
-				       "fsui",
-				       name,
-				       NULL);
+  ret->name = GNUNET_get_home_filename (ectx,
+                                        cfg, GNUNET_NO, "fsui", name, NULL);
   /* 1) read state  in */
   if (doResume)
     {
-      fn = GNUNET_get_home_filename(ectx,
-				    cfg,
-				    GNUNET_NO,
-				    "fsui-locks",
-				    name,
-				    NULL);
+      fn = GNUNET_get_home_filename (ectx,
+                                     cfg,
+                                     GNUNET_NO, "fsui-locks", name, NULL);
       ret->ipc = GNUNET_IPC_semaphore_create (ectx, fn, 1);
 #if DEBUG_PERSISTENCE
       GNUNET_GE_LOG (ectx,
@@ -389,7 +380,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Aquired IPC lock.\n");
 #endif
-      GNUNET_free(fn);
+      GNUNET_free (fn);
       GNUNET_FSUI_deserialize (ret);
     }
   else
@@ -484,9 +475,8 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   list = ret->activeSearches;
   while (list != NULL)
     {
-      list->probe_context 
-	= GNUNET_FS_create_search_context(ret->ectx,
-					  ret->cfg);
+      list->probe_context
+        = GNUNET_FS_create_search_context (ret->ectx, ret->cfg);
       if (list->state == GNUNET_FSUI_PENDING)
         {
           list->state = GNUNET_FSUI_ACTIVE;
@@ -495,7 +485,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
             {
               rec->search = GNUNET_ECRS_search_start (list->ctx->ectx,
                                                       list->ctx->cfg,
-						      list->probe_context,
+                                                      list->probe_context,
                                                       rec->uri,
                                                       list->anonymityLevel,
                                                       &GNUNET_FSUI_search_progress_callback,
@@ -732,10 +722,10 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
             spos->state++;      /* _JOINED */
         }
       if (spos->probe_context != NULL)
-	{
-	  GNUNET_FS_destroy_search_context(spos->probe_context);
-	  spos->probe_context = NULL;
-	}
+        {
+          GNUNET_FS_destroy_search_context (spos->probe_context);
+          spos->probe_context = NULL;
+        }
       spos = spos->next;
     }
   /* 1c) stop unindexing */

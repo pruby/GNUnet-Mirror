@@ -59,10 +59,10 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
  */
 int
 GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
-				   unsigned int key_count,
-				   unsigned int anonymityLevel,
-				   unsigned int type,
-				   struct GNUNET_ClientHandle *client);
+                                   unsigned int key_count,
+                                   unsigned int anonymityLevel,
+                                   unsigned int type,
+                                   struct GNUNET_ClientHandle *client);
 
 /**
  * Handle the given response (by forwarding it to

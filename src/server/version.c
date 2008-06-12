@@ -98,11 +98,7 @@ static char *
 getVersionFileName (struct GNUNET_GE_Context *ectx,
                     struct GNUNET_GC_Configuration *cfg)
 {
-  return GNUNET_get_home_filename(ectx,
-				  cfg,
-				  GNUNET_YES,
-				  VERSIONFILE,
-				  NULL);
+  return GNUNET_get_home_filename (ectx, cfg, GNUNET_YES, VERSIONFILE, NULL);
 }
 
 #define MAX_VS sizeof(GNUNET_EncName) + 64

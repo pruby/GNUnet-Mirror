@@ -531,7 +531,7 @@ CLEANUP:
  */
 static int
 handle_cs_query_stop_request (struct GNUNET_ClientHandle *sock,
-                               const GNUNET_MessageHeader * req)
+                              const GNUNET_MessageHeader * req)
 {
   const CS_fs_request_search_MESSAGE *rs;
   unsigned int keyCount;
@@ -550,7 +550,7 @@ handle_cs_query_stop_request (struct GNUNET_ClientHandle *sock,
     1 + (ntohs (req->size) -
          sizeof (CS_fs_request_search_MESSAGE)) / sizeof (GNUNET_HashCode);
   GNUNET_FS_QUERYMANAGER_stop_query (&rs->query[0], keyCount, anonymityLevel,
-				     type, sock);
+                                     type, sock);
   return GNUNET_OK;
 }
 

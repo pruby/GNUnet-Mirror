@@ -390,10 +390,9 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
  */
 int
 GNUNET_FS_stop_search (struct
-		       GNUNET_FS_SearchContext
-		       *ctx,
-		       GNUNET_DatastoreValueIterator
-		       callback, void *closure)
+                       GNUNET_FS_SearchContext
+                       *ctx,
+                       GNUNET_DatastoreValueIterator callback, void *closure)
 {
   struct GNUNET_FS_SearchHandle *pos;
   struct GNUNET_FS_SearchHandle *prev;
@@ -402,9 +401,8 @@ GNUNET_FS_stop_search (struct
   prev = NULL;
   GNUNET_mutex_lock (ctx->lock);
   pos = ctx->handles;
-  while ( (pos != NULL) &&
-	  ( (pos->callback != callback) ||
-	    (pos->closure != closure) ) )
+  while ((pos != NULL) &&
+         ((pos->callback != callback) || (pos->closure != closure)))
     {
       prev = pos;
       pos = pos->next;
@@ -412,17 +410,17 @@ GNUNET_FS_stop_search (struct
   if (pos != NULL)
     {
       if (prev == NULL)
-	ctx->handles = pos->next;
+        ctx->handles = pos->next;
       else
-	prev->next = pos->next;      
-      /* TODO: consider sending "stop" message	 
-	 to gnunetd? */
+        prev->next = pos->next;
+      /* TODO: consider sending "stop" message   
+         to gnunetd? */
       req = (CS_fs_request_search_MESSAGE *) & pos[1];
       req->header.type = htons (GNUNET_CS_PROTO_GAP_QUERY_STOP);
-      if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, 
-						       &req->header))
-	GNUNET_client_connection_close_temporarily (ctx->sock);
-      GNUNET_free(pos);
+      if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock,
+                                                       &req->header))
+        GNUNET_client_connection_close_temporarily (ctx->sock);
+      GNUNET_free (pos);
     }
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_SYSERR;
