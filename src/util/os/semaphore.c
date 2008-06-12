@@ -315,7 +315,7 @@ again:
   ret = GNUNET_malloc (sizeof (struct GNUNET_IPC_Semaphore));
   ret->ectx = ectx;
 
-  GNUNET_mutex_create (&ret->internalLock);
+  ret->internalLock = GNUNET_mutex_create (GNUNET_NO);
   ret->filename = GNUNET_strdup (basename);
   fd = -1;
   while (fd == -1)
@@ -341,7 +341,7 @@ again:
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                    GNUNET_GE_ERROR | GNUNET_GE_USER |
                                    GNUNET_GE_BULK, "open", ret->filename);
-      GNUNET_mutex_destroy (&ret->internalLock);
+      GNUNET_mutex_destroy (ret->internalLock);
       GNUNET_free (ret->filename);
       GNUNET_free (ret);
       return NULL;
@@ -408,7 +408,7 @@ GNUNET_IPC_semaphore_up (struct GNUNET_IPC_Semaphore *sem)
   {
     int cnt;
 
-    GNUNET_mutex_lock (&sem->internalLock);
+    GNUNET_mutex_lock(sem->internalLock);
     FLOCK (sem->fd, LOCK_EX);
     SEMA_LSEEK (sem->fd, 0, SEEK_SET);
     if (sizeof (int) != READ (sem->fd, &cnt, sizeof (int)))
@@ -417,7 +417,7 @@ GNUNET_IPC_semaphore_up (struct GNUNET_IPC_Semaphore *sem)
                                      GNUNET_GE_WARNING | GNUNET_GE_USER |
                                      GNUNET_GE_BULK, "read", sem->filename);
         FLOCK (sem->fd, LOCK_UN);
-        GNUNET_mutex_unlock (&sem->internalLock);
+        GNUNET_mutex_unlock (sem->internalLock);
         return;
       }
     cnt = htonl (ntohl (cnt) + 1);
@@ -427,7 +427,7 @@ GNUNET_IPC_semaphore_up (struct GNUNET_IPC_Semaphore *sem)
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
                                    GNUNET_GE_BULK, "write", sem->filename);
     FLOCK (sem->fd, LOCK_UN);
-    GNUNET_mutex_unlock (&sem->internalLock);
+    GNUNET_mutex_unlock (sem->internalLock);
   }
 #endif
 }
@@ -472,7 +472,7 @@ GNUNET_IPC_semaphore_down (struct GNUNET_IPC_Semaphore *sem, int mayBlock)
   {
     int cnt;
 
-    GNUNET_mutex_lock (&sem->internalLock);
+    GNUNET_mutex_lock (sem->internalLock);
     FLOCK (sem->fd, LOCK_EX);
     cnt = ntohl (0);
     while (htonl (cnt) == 0)
@@ -485,7 +485,7 @@ GNUNET_IPC_semaphore_down (struct GNUNET_IPC_Semaphore *sem, int mayBlock)
                                          GNUNET_GE_BULK, "read",
                                          sem->filename);
             FLOCK (sem->fd, LOCK_UN);
-            GNUNET_mutex_unlock (&sem->internalLock);
+            GNUNET_mutex_unlock (sem->internalLock);
             return GNUNET_SYSERR;
           }
         if (htonl (cnt) == 0)
@@ -504,7 +504,7 @@ GNUNET_IPC_semaphore_down (struct GNUNET_IPC_Semaphore *sem, int mayBlock)
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
                                    GNUNET_GE_BULK, "write", sem->filename);
     FLOCK (sem->fd, LOCK_UN);
-    GNUNET_mutex_unlock (&sem->internalLock);
+    GNUNET_mutex_unlock (sem->internalLock);
   }
   return GNUNET_OK;
 #else
@@ -564,7 +564,7 @@ GNUNET_IPC_semaphore_destroy (struct GNUNET_IPC_Semaphore *sem)
   {
     int cnt;
 
-    GNUNET_mutex_destroy (&sem->internalLock);
+    GNUNET_mutex_destroy (sem->internalLock);
     FLOCK (sem->fd, LOCK_EX);
     SEMA_LSEEK (sem->fd, sizeof (int), SEEK_SET);
     if (sizeof (int) == READ (sem->fd, &cnt, sizeof (int)))
