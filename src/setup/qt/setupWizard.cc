@@ -450,7 +450,7 @@ void GSetupWizard::welcome()
                     "</li>" +
                     "<li>" +
     tr("IRC chat with users and developers: ") +
-                      "<a href=\"http://irc.netsplit.de/channels/?chat=gnunet\">#gnunet</a> " +
+                      "<a href=\"http://gnunet.org/irc.php3\">#gnunet</a> " +
     tr("on Freenode") +
                     "</li>" +
                   "</ul>" +
