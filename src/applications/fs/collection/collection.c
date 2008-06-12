@@ -156,7 +156,7 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e,
     }
   /* read collection data */
   if (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES))
-    {
+    {      
       GNUNET_free (fn);
       return;
     }
@@ -422,10 +422,10 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_ECRS_uri_destroy (rootURI);
   collectionData = GNUNET_malloc (sizeof (CollectionInfo));
   memset (collectionData, 0, sizeof (CollectionInfo));
   GNUNET_ECRS_uri_get_namespace_from_sks (rootURI, &collectionData->data.pid);
+  GNUNET_ECRS_uri_destroy (rootURI);
   collectionData->data.priority = htonl (prio);
   collectionData->data.anonymityLevel = htonl (anonymityLevel);
   collectionData->meta = GNUNET_meta_data_duplicate (meta);
