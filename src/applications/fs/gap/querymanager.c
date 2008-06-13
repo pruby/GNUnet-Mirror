@@ -209,13 +209,14 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   if ((GNUNET_YES == GNUNET_FS_PLAN_request (client, 0, request)) &&
       (stats != NULL))
     stats->change (stat_gap_client_query_injected, 1);
-  if (request->anonymityLevel == 0)
+  if (anonymityLevel == 0)
     {
       request->last_dht_get = GNUNET_get_time ();
       request->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;
-      GNUNET_FS_DHT_execute_query (request->type, &request->queries[0]);
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
+  if (anonymityLevel == 0)
+    GNUNET_FS_DHT_execute_query (type, query);
 }
 
 /**

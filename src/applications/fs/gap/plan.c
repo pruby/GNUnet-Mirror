@@ -543,7 +543,6 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   double entropy;
   double prob;
 
-  GNUNET_mutex_lock (GNUNET_FS_lock);   /* needed? */
   info = clients;
   while ((info != NULL) && ((info->client != client) || (info->peer != peer)))
     info = info->next;
@@ -568,10 +567,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       rank = rank->next;
     }
   if (total_score == 0)
-    {
-      GNUNET_mutex_unlock (GNUNET_FS_lock);
-      return GNUNET_NO;         /* no peers available */
-    }
+    return GNUNET_NO;         /* no peers available */    
 
   entropy = 0;
   rank = rpc.rankings;
@@ -638,7 +634,6 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       GNUNET_FS_PT_change_rc (rank->peer, -1);
       GNUNET_free (rank);
     }
-  GNUNET_mutex_unlock (GNUNET_FS_lock);
   return target_count > 0 ? GNUNET_YES : GNUNET_NO;
 }
 
@@ -725,9 +720,12 @@ query_fill_callback (const GNUNET_PeerIdentity *
   unsigned int off;
   unsigned int ret;
 
+  /* no locking required: this method will be
+     called by the core only while the core
+     lock is held (which is the same as the
+     FS lock) */
   off = 0;
   peer = GNUNET_FS_PT_intern (receiver);
-  GNUNET_mutex_lock (GNUNET_FS_lock);
   pl = queries;
   while ((pl != NULL) && (pl->peer != peer))
     pl = pl->next;
@@ -773,7 +771,6 @@ query_fill_callback (const GNUNET_PeerIdentity *
           e = n;
         }
     }
-  GNUNET_mutex_unlock (GNUNET_FS_lock);
   GNUNET_FS_PT_change_rc (peer, -1);
   return off;
 }
