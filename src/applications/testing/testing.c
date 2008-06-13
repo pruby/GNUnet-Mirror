@@ -171,7 +171,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
      maybe creating public keys and waiting for
      entropy! */
   if (GNUNET_OK !=
-      GNUNET_wait_for_daemon_running (NULL, cfg, 10 * GNUNET_CRON_SECONDS))
+      GNUNET_wait_for_daemon_running (NULL, cfg, 60 * GNUNET_CRON_SECONDS))
     {
       fprintf (stderr, "Failed to confirm daemon running!\n");
       GNUNET_GC_free (cfg);
@@ -183,7 +183,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   dpath = NULL;
   round = 0;
   ret = GNUNET_SYSERR;
-  while ((round++ < 10) && (ret == GNUNET_SYSERR))
+  while ((round++ < 20) && (ret == GNUNET_SYSERR))
     {
       sock = GNUNET_client_connection_create (NULL, cfg);
       ret = GNUNET_IDENTITY_get_self (sock, &hello);
@@ -195,7 +195,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
         }
       else
         {
-          GNUNET_thread_sleep (150 * GNUNET_CRON_MILLISECONDS);
+          GNUNET_thread_sleep (1500 * GNUNET_CRON_MILLISECONDS);
         }
       GNUNET_client_connection_destroy (sock);
     }
@@ -292,7 +292,7 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
                   GNUNET_free_non_null (h2);
                   break;
                 }
-              GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
+              GNUNET_thread_sleep (1500 * GNUNET_CRON_MILLISECONDS);
             }
           GNUNET_free_non_null (h1);
           GNUNET_free_non_null (h2);
