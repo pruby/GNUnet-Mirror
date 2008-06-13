@@ -53,6 +53,18 @@ struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct
                                                                  GNUNET_GC_Configuration
                                                                  *cfg);
 
+/**
+ * Pause the search context briefly (stop sending
+ * results).  This will NOT cause gnunetd to pause 
+ * searching for data.
+ */
+void GNUNET_FS_suspend_search_context (struct GNUNET_FS_SearchContext *ctx);
+
+/**
+ * Resume the search context (start sending results again).
+ */
+void GNUNET_FS_resume_search_context (struct GNUNET_FS_SearchContext *ctx);
+
 void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
 
 /**

@@ -218,6 +218,8 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
     rm->abortFlag = GNUNET_YES;
   if (rm->my_sctx == GNUNET_YES)
     GNUNET_FS_destroy_search_context (rm->sctx);
+  else
+    GNUNET_FS_suspend_search_context (rm->sctx);
   while (rm->head != NULL)
     {
       pos = rm->head;
@@ -226,6 +228,8 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
       rm->head = pos->next;
       GNUNET_free (pos);
     }
+  if (rm->my_sctx != GNUNET_YES)
+    GNUNET_FS_resume_search_context (rm->sctx);
   rm->tail = NULL;
   if (rm->handle >= 0)
     CLOSE (rm->handle);

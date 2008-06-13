@@ -103,6 +103,13 @@ struct GNUNET_FS_SearchContext
    */
   int abort;
 
+  /**
+   * Counter for how many times this context has
+   * been suspended.  Results will not be passed
+   * on until the counter is zero.
+   */
+  unsigned int block_results;
+
 #if DEBUG_FSLIB
   unsigned int total_received;
 
@@ -199,6 +206,12 @@ reply_process_thread (void *cls)
           memcpy (&value[1], &rep[1], size);
           matched = 0;
           GNUNET_mutex_lock (ctx->lock);
+	  while (ctx->block_results > 0)
+	    {
+	      GNUNET_mutex_unlock (ctx->lock);
+	      GNUNET_thread_sleep(100 * GNUNET_CRON_MILLISECONDS);
+	      GNUNET_mutex_lock (ctx->lock);
+	    }
           prev = NULL;
           pos = ctx->handles;
           while (pos != NULL)
@@ -298,6 +311,24 @@ GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
                             GNUNET_GE_BULK, "PTHREAD_CREATE");
   return ret;
 }
+
+
+/**
+ * Resume the search context (start sending results again).
+ */
+void GNUNET_FS_resume_search_context (struct GNUNET_FS_SearchContext *ctx)
+{
+  ctx->block_results--;
+  GNUNET_thread_stop_sleep(ctx->thread);
+}
+
+void GNUNET_FS_suspend_search_context (struct GNUNET_FS_SearchContext *ctx)
+{
+  GNUNET_mutex_lock(ctx->lock);
+  ctx->block_results++;
+  GNUNET_mutex_unlock(ctx->lock);
+}
+
 
 void
 GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx)
