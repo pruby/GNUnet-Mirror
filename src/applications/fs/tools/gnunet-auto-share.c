@@ -603,6 +603,7 @@ auto_share_main (int argc, char *const *argv)
   if ((GNUNET_NO == debug_flag)
       && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes)))
     return GNUNET_SYSERR;
+  head = NULL;
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
@@ -632,7 +633,6 @@ auto_share_main (int argc, char *const *argv)
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
-  head = NULL;
   while (argc > 0)
     {
       pos = GNUNET_malloc (sizeof (struct DirectoryRecord));

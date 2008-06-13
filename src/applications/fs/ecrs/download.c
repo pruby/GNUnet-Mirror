@@ -879,7 +879,6 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                    void *ttClosure)
 {
   struct GNUNET_ECRS_DownloadContext *rm;
-  struct GNUNET_FS_SearchContext *sc;
   int ret;
 
   if (length == 0)
@@ -895,10 +894,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                                 no_temporaries,
                                                 dpcb, dpcbClosure);
   if (rm == NULL)
-    {
-      GNUNET_FS_destroy_search_context (sc);
-      return GNUNET_SYSERR;
-    }
+    return GNUNET_SYSERR;    
   while ((GNUNET_OK == tt (ttClosure)) &&
          (GNUNET_YES != GNUNET_shutdown_test ()) &&
          (rm->abortFlag == GNUNET_NO) && (rm->head != NULL))
