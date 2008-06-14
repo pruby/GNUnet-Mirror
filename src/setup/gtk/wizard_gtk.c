@@ -268,22 +268,22 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
 #ifndef MINGW
   if (NULL == uname || strlen (uname) == 0)
     {
-      struct passwd * pwd;
+      struct passwd *pwd;
 
-      if ( (geteuid() == 0) && (NULL != getpwnam ("gnunet")))
-	user_name = GNUNET_strdup ("gnunet");
+      if ((geteuid () == 0) && (NULL != getpwnam ("gnunet")))
+        user_name = GNUNET_strdup ("gnunet");
       else
-	{
-	  pwd = getpwuid(geteuid());
-	  if (pwd != NULL)
-	    user_name = GNUNET_strdup (pwd->pw_name);
-	  else
-	    {
-	      if (NULL != getenv ("USER"))
-		user_name = GNUNET_strdup (getenv("USER"));
-	      else
-		user_name = NULL;
-	    }
+        {
+          pwd = getpwuid (geteuid ());
+          if (pwd != NULL)
+            user_name = GNUNET_strdup (pwd->pw_name);
+          else
+            {
+              if (NULL != getenv ("USER"))
+                user_name = GNUNET_strdup (getenv ("USER"));
+              else
+                user_name = NULL;
+            }
         }
     }
   else

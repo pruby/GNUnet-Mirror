@@ -567,7 +567,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       rank = rank->next;
     }
   if (total_score == 0)
-    return GNUNET_NO;         /* no peers available */    
+    return GNUNET_NO;           /* no peers available */
 
   entropy = 0;
   rank = rpc.rankings;

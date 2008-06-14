@@ -383,15 +383,14 @@ writeAndProcess (SelectHandle * sh, Session * session)
 #endif
       if (ret == GNUNET_SYSERR)
         {
-	  if ( (errno == EPIPE) ||
-	       (errno == ECONNRESET) )
-	    GNUNET_GE_LOG_STRERROR (sh->ectx,
-				    GNUNET_GE_DEBUG | GNUNET_GE_USER |
-				    GNUNET_GE_ADMIN | GNUNET_GE_BULK, "send");
-	  else
-	    GNUNET_GE_LOG_STRERROR (sh->ectx,
-				    GNUNET_GE_WARNING | GNUNET_GE_USER |
-				    GNUNET_GE_ADMIN | GNUNET_GE_BULK, "send");
+          if ((errno == EPIPE) || (errno == ECONNRESET))
+            GNUNET_GE_LOG_STRERROR (sh->ectx,
+                                    GNUNET_GE_DEBUG | GNUNET_GE_USER |
+                                    GNUNET_GE_ADMIN | GNUNET_GE_BULK, "send");
+          else
+            GNUNET_GE_LOG_STRERROR (sh->ectx,
+                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                    GNUNET_GE_ADMIN | GNUNET_GE_BULK, "send");
           destroySession (sh, session);
           return GNUNET_SYSERR;
         }

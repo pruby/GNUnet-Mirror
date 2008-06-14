@@ -75,8 +75,7 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
     return;
   if ((ctx == NULL) &&
       (((kind & (GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK)) == 0) ||
-       ((kind & (GNUNET_GE_FATAL | GNUNET_GE_ERROR)) ==
-        0)))
+       ((kind & (GNUNET_GE_FATAL | GNUNET_GE_ERROR)) == 0)))
     return;
 
   va_start (va, message);

@@ -898,7 +898,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                                 no_temporaries,
                                                 dpcb, dpcbClosure);
   if (rm == NULL)
-    return GNUNET_SYSERR;    
+    return GNUNET_SYSERR;
   while ((GNUNET_OK == tt (ttClosure)) &&
          (GNUNET_YES != GNUNET_shutdown_test ()) &&
          (rm->abortFlag == GNUNET_NO) && (rm->head != NULL))

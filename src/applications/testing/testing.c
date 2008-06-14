@@ -277,7 +277,8 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
             {
               fprintf (stderr, ".");
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock1,
-                                                                 &h2->senderIdentity))
+                                                                 &h2->
+                                                                 senderIdentity))
                 {
                   ret = GNUNET_OK;
                   GNUNET_free_non_null (h1);
@@ -285,7 +286,8 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
                   break;
                 }
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock2,
-                                                                 &h1->senderIdentity))
+                                                                 &h1->
+                                                                 senderIdentity))
                 {
                   ret = GNUNET_OK;
                   GNUNET_free_non_null (h1);

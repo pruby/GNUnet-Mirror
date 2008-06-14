@@ -206,12 +206,12 @@ reply_process_thread (void *cls)
           memcpy (&value[1], &rep[1], size);
           matched = 0;
           GNUNET_mutex_lock (ctx->lock);
-	  while (ctx->block_results > 0)
-	    {
-	      GNUNET_mutex_unlock (ctx->lock);
-	      GNUNET_thread_sleep(100 * GNUNET_CRON_MILLISECONDS);
-	      GNUNET_mutex_lock (ctx->lock);
-	    }
+          while (ctx->block_results > 0)
+            {
+              GNUNET_mutex_unlock (ctx->lock);
+              GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
+              GNUNET_mutex_lock (ctx->lock);
+            }
           prev = NULL;
           pos = ctx->handles;
           while (pos != NULL)
@@ -316,17 +316,19 @@ GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
 /**
  * Resume the search context (start sending results again).
  */
-void GNUNET_FS_resume_search_context (struct GNUNET_FS_SearchContext *ctx)
+void
+GNUNET_FS_resume_search_context (struct GNUNET_FS_SearchContext *ctx)
 {
   ctx->block_results--;
-  GNUNET_thread_stop_sleep(ctx->thread);
+  GNUNET_thread_stop_sleep (ctx->thread);
 }
 
-void GNUNET_FS_suspend_search_context (struct GNUNET_FS_SearchContext *ctx)
+void
+GNUNET_FS_suspend_search_context (struct GNUNET_FS_SearchContext *ctx)
 {
-  GNUNET_mutex_lock(ctx->lock);
+  GNUNET_mutex_lock (ctx->lock);
   ctx->block_results++;
-  GNUNET_mutex_unlock(ctx->lock);
+  GNUNET_mutex_unlock (ctx->lock);
 }
 
 
@@ -444,7 +446,7 @@ GNUNET_FS_stop_search (struct
         ctx->handles = pos->next;
       else
         prev->next = pos->next;
-      /* TODO: consider sending "stop" message   
+      /* TODO: consider sending "stop" message
          to gnunetd? */
       req = (CS_fs_request_search_MESSAGE *) & pos[1];
       req->header.type = htons (GNUNET_CS_PROTO_GAP_QUERY_STOP);
