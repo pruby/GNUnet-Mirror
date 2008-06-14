@@ -94,7 +94,7 @@ EOF
 
 		# This is need to migrate data from 0.6.1b or later
 		echo -n "Migrating previous GNUnet data (gnunet-update): "
-		gnunet-update
+		gnunet-update || true
 		echo "done."
 
 		# Cleaning
