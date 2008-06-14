@@ -160,7 +160,9 @@ test_sch (void *ch_cls,
 static int
 check ()
 {
+#if TCP_SYNCNT
   static int zero = 0;
+#endif
   struct sockaddr_in serverAddr;
   struct GNUNET_SelectHandle *sh;
   int listen_sock;
@@ -203,9 +205,9 @@ check ()
 
   write_sock = SOCKET (PF_INET, SOCK_STREAM, 6);
 
-  memset ((char *) &serverAddr, 0, sizeof (serverAddr));
+  memset (&serverAddr, 0, sizeof (serverAddr));
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
+  serverAddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
   serverAddr.sin_port = htons (PORT);
   i = CONNECT (write_sock,
                (struct sockaddr *) &serverAddr, sizeof (serverAddr));
