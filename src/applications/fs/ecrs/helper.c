@@ -26,6 +26,7 @@
  */
 
 #include "platform.h"
+#include <limits.h>
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
@@ -272,6 +273,7 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
   unsigned int j;
   char *renameTo;
   char *ret;
+  size_t max;
   struct stat filestat;
 
   path = GNUNET_strdup (filename);
@@ -283,6 +285,8 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
   l = EXTRACTOR_loadDefaultLibraries ();
   list = EXTRACTOR_getKeywords (l, filename);
   key = EXTRACTOR_extractLast (EXTRACTOR_TITLE, list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast (EXTRACTOR_SOFTWARE, list);
   if (key == NULL)
     key = EXTRACTOR_extractLast (EXTRACTOR_DESCRIPTION, list);
   if (key == NULL)
@@ -330,26 +334,34 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
     }
   if (mime == NULL)
     {
+      max = strlen (path) + strlen (key) +
+	strlen (DIR_SEPARATOR_STR) + 20;
       renameTo =
-        GNUNET_malloc (strlen (path) + strlen (key) +
-                       strlen (DIR_SEPARATOR_STR) + 20);
-      strcpy (renameTo, path);
-      if (path[strlen (path) - 1] != DIR_SEPARATOR)
-        strcat (renameTo, DIR_SEPARATOR_STR);
-      strcat (renameTo, key);
+        GNUNET_malloc (max);
+      GNUNET_snprintf(renameTo,
+		      max,
+		      "%s%s%.*s",
+		      path,
+		      (path[strlen(path)-1] != DIR_SEPARATOR) ? DIR_SEPARATOR_STR : "",
+		      GNUNET_MIN(255, PATH_MAX - strlen(path) - 32),
+		      key);
     }
   else
     {
+      max = strlen (path) + strlen (key) + strlen (mime) +
+	strlen (DIR_SEPARATOR_STR) + 20;
       renameTo =
-        GNUNET_malloc (strlen (path) + strlen (key) + strlen (mime) +
-                       strlen (DIR_SEPARATOR_STR) + 20);
-      strcpy (renameTo, path);
-      if (path[strlen (path) - 1] != DIR_SEPARATOR)
-        strcat (renameTo, DIR_SEPARATOR_STR);
-      strcat (renameTo, key);
-      if (strcasecmp (renameTo + strlen (renameTo) - strlen (mime), mime) !=
-          0)
-        strcat (renameTo, mime);
+        GNUNET_malloc (max);
+      GNUNET_snprintf(renameTo,
+		      max,
+		      "%s%s%.*s%s",
+		      path,
+		      (path[strlen(path)-1] != DIR_SEPARATOR) ? DIR_SEPARATOR_STR : "",
+		      GNUNET_MIN(255 - strlen(mime), PATH_MAX - strlen(path) - 64),
+		      key,
+		      (strcasecmp (renameTo + strlen (renameTo) - strlen (mime), mime) != 0) ? mime : "");
+
+
     }
   for (i = strlen (renameTo) - 1; i >= 0; i--)
     if (!isprint (renameTo[i]))
