@@ -199,6 +199,8 @@ int GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx,
  *           enabled
  * @param doAutoStart GNUNET_YES to enable autostart of the
  *        application, GNUNET_NO to disable it
+ * @param servicename name of the service as displayed by the OS
+ * @param application path to service binary
  * @param username name of the user account to use
  * @param groupname name of the group to use
  * @returns GNUNET_YES on success, GNUNET_NO if unsupported, GNUNET_SYSERR on failure or one of
@@ -212,11 +214,13 @@ int GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx,
  *  Unix
  *    2 startup script could not be opened
  */
-int GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
-                                int testCapability,
-                                int doAutoStart,
-                                const char *application,
-                                const char *username, const char *groupname);
+int
+GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
+                            int testCapability,
+                            int doAutoStart,
+                            const char *servicename,
+                            const char *application,
+                            const char *username, const char *groupname);
 
 /**
  * @brief Add or remove a service account for GNUnet

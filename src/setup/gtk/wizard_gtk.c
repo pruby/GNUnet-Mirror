@@ -472,8 +472,8 @@ on_finish_clickedsetup_gtk (GtkButton * button, gpointer user_data)
         return;
       }
 
-  if (GNUNET_GNS_wiz_autostart_service (doAutoStart, user_name, group_name) !=
-      GNUNET_OK)
+  if (GNUNET_GNS_wiz_autostart_service (err_ctx, GNUNET_SERVICE_TYPE_GNUNETD,
+      doAutoStart, user_name, group_name) != GNUNET_OK)
     {
 #ifndef MINGW
       showErr (_("Unable to change startup process:"), STRERROR (errno));

@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "wizard_util.h"
 
 
 /**
@@ -76,30 +77,42 @@ GNUNET_GNS_wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg,
 
 /**
  * @brief Make GNUnet start automatically
+ * @param serviceType GNUNET_SERVICE_TYPE_xxx
  * @param doAutoStart true to enable autostart, false to disable it
  * @param username name of the user account to use
  * @param groupname name of the group to use
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_GNS_wiz_autostart_service (int doAutoStart, char *username,
-                                  char *groupname)
+GNUNET_GNS_wiz_autostart_service (struct GNUNET_GE_Context *ectx, int serviceType,
+                                  int doAutoStart, char *username, char *groupname)
 {
   int ret;
   char *exe;
+  char *name;
 
   exe = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
-  exe = (char *) GNUNET_realloc (exe, strlen (exe) + 12);       /* 11 = "gnunetd.exe" */
-  strcat (exe,
-#ifndef WINDOWS
-          "gnunetd");
-#else
-          "gnunetd.exe");
+  exe = (char *) GNUNET_realloc (exe, strlen (exe) + 22);       /* 11 = "gnunet-auto-share.exe" */
+  if (serviceType == GNUNET_SERVICE_TYPE_GNUNETD)
+    {
+      strcat(exe, "gnunetd");
+      name = "GNUnet";
+    }
+  else if (serviceType == GNUNET_SERVICE_TYPE_AUTOSHARE)
+    {
+      strcat(exe, "gnunet-auto-share");
+      name = "GNUnet Auto Share";
+    }
+  else
+    return GNUNET_SYSERR;
+    
+#ifdef WINDOWS
+  strcat (exe, ".exe");
 #endif
 
   ret =
-    GNUNET_configure_autostart (NULL /* FIXME 0.7.1 NILS */ , 0, doAutoStart,
-                                exe, username, groupname);
+    GNUNET_configure_autostart (ectx , 0, doAutoStart,
+                                name, exe, username, groupname);
   GNUNET_free (exe);
   if (ret != GNUNET_YES)
     {

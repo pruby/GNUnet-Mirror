@@ -119,7 +119,7 @@ PrintAdapters ()
 void
 Install ()
 {
-  switch (InstallAsService (NULL))
+  switch (InstallAsService ("GNUnet"))
     {
     case 0:
       printf (_("GNUnet service installed successfully.\n"));
@@ -147,7 +147,7 @@ Install ()
 void
 Uninstall ()
 {
-  switch (UninstallService ())
+  switch (UninstallService ("GNUnet"))
     {
     case 0:
       printf (_("Service deleted.\n"));

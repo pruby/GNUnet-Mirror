@@ -212,13 +212,15 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
 
 /**
  * @brief Installs the Windows service
+ * @param servicename name of the service as diplayed by the SCM
+ * @param application path to the application binary
  * @param username the name of the service's user account
  * @returns 0 on success
  *          1 if the Windows version doesn't support services
  *          2 if the SCM could not be opened
  *          3 if the service could not be created
  */
-int InstallAsService(char *username)
+int InstallAsService(char *servicename, char *application, char *username)
 {
   SC_HANDLE hManager, hService;
   char szEXE[_MAX_PATH + 17] = "\"";
@@ -227,7 +229,7 @@ int InstallAsService(char *username)
   if (! GNOpenSCManager)
     return 1;
 
-  plibc_conv_to_win_path("/bin/gnunetd.exe", szEXE + 1);
+  plibc_conv_to_win_path(application, szEXE + 1);
   strcat(szEXE, "\" --win-service");
   hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
   if (! hManager)
@@ -239,7 +241,7 @@ int InstallAsService(char *username)
   	sprintf(user, ".\\%s", username);
   }
 
-  hService = GNCreateService(hManager, (LPCTSTR) "GNUnet", (LPCTSTR) "GNUnet", 0,
+  hService = GNCreateService(hManager, (LPCTSTR) servicename, (LPCTSTR) servicename, 0,
     SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, (LPCTSTR) szEXE,
     NULL, NULL, NULL, (LPCTSTR) user, (LPCTSTR) username);
   
@@ -256,13 +258,14 @@ int InstallAsService(char *username)
 
 /**
  * @brief Uninstall Windows service
+ * @param servicename name of the service to delete
  * @returns 0 on success
  *          1 if the Windows version doesn't support services
  *          2 if the SCM could not be openend
  *          3 if the service cannot be accessed
  *          4 if the service cannot be deleted
  */
-int UninstallService()
+int UninstallService(char *servicename)
 {
   SC_HANDLE hManager, hService;
   
@@ -273,7 +276,7 @@ int UninstallService()
   if (! hManager)
     return 2;
 
-  if (! (hService = GNOpenService(hManager, (LPCTSTR) "GNUnet", DELETE)))
+  if (! (hService = GNOpenService(hManager, (LPCTSTR) servicename, DELETE)))
     if (GetLastError() != ERROR_SERVICE_DOES_NOT_EXIST)
       return 3;
      else

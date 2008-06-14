@@ -224,7 +224,7 @@ void GSetupWizard::loadDefaults()
     editUser->setText(user_name);
   if (group_name != NULL)
     editGroup->setText(group_name);
-  cap = GNUNET_configure_autostart (ectx, 1, 1, NULL, NULL, NULL);
+  cap = GNUNET_configure_autostart (ectx, 1, 1, NULL, NULL, NULL, NULL);
   cbAutostart->setEnabled(cap);
   cap = GNUNET_configure_user_account(1, 1, NULL, NULL);
   if (!cap) {
@@ -357,8 +357,8 @@ void GSetupWizard::nextClicked()
           return;
         }
   
-    if (GNUNET_GNS_wiz_autostart_service (cbAutostart->isChecked(), user_name, group_name) !=
-        GNUNET_OK)
+    if (GNUNET_GNS_wiz_autostart_service (ectx, GNUNET_SERVICE_TYPE_GNUNETD,
+        cbAutostart->isChecked(), user_name, group_name) != GNUNET_OK)
       {
 #ifndef Q_OS_WIN32
           QMessageBox::critical(this, tr("Error"), QString("Unable to change startup process: ") +
@@ -366,6 +366,15 @@ void GSetupWizard::nextClicked()
 #endif
       }
 
+    if (GNUNET_GNS_wiz_autostart_service (ectx, GNUNET_SERVICE_TYPE_AUTOSHARE,
+        cbAutoshare->isChecked(), user_name, group_name) != GNUNET_OK)
+      {
+#ifndef Q_OS_WIN32
+          QMessageBox::critical(this, tr("Error"), QString("Unable to change startup process for auto-share: ") +
+            STRERROR(errno));
+#endif
+      }    
+    
     GNUNET_free(user_name);
     GNUNET_free(group_name);
   
