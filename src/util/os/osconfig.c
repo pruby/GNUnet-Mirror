@@ -351,7 +351,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                            GNUNET_GE_ADMIN |
                                            GNUNET_GE_IMMEDIATE, "fopen",
                                            "/etc/init.d/gnunetd");
-              FREE (initscript);
+              GNUNET_free (initscript);
               return 2;
             }
 
@@ -362,22 +362,23 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                    "#\n"
                    "\n"
                    "PIDFILE=/var/run/gnunetd/%s.pid\n"
+                   "APPNAME=%s\n"
                    "\n"
                    "case \"$1\" in\n"
                    "  start)\n"
-                   "  	echo -n \"Starting %s: \"\n"
+                   "  	echo -n \"Starting $APPNAME: \"\n"
                    "  	%s\n && echo ok || echo failed\n"
                    "  	;;\n"
                    "  stop)\n"
-                   "  	echo -n \"Stopping %s: \"\n"
+                   "  	echo -n \"Stopping $APPNAME: \"\n"
                    "  	kill `cat $PIDFILE`\n && echo ok || echo failed\n"
                    "  	;;\n"
                    "  reload)\n"
-                   "  	echo -n \"Reloading %s: \"\n"
+                   "  	echo -n \"Reloading $APPNAME: \"\n"
                    "  	kill -HUP `cat $PIDFILE`\n && echo ok || echo failed\n"
                    "  	;;\n"
                    "  restart|force-reload)\n"
-                   "  	echo \"Restarting %s...\"\n"
+                   "  	echo \"Restarting $APPNAME...\"\n"
                    "  	$0 stop\n"
                    "  	sleep 1\n"
                    "  	$0 start\n"
@@ -390,9 +391,10 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                    "esac\n"
                    "exit 0\n",
                    "gnunet-setup",
+		   application,
                    servicename,
-                   servicename,
-                   application, servicename, servicename, initscript);
+                   application,
+		   initscript);
           fclose (f);
           if (0 != CHMOD (initscript,
                           S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
@@ -402,7 +404,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                            | GNUNET_GE_ADMIN |
                                            GNUNET_GE_IMMEDIATE, "chmod",
                                            initscript);
-              FREE (initscript);
+              GNUNET_free (initscript);
               return GNUNET_SYSERR;
             }
         }
@@ -434,7 +436,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                      "/usr/sbin/update-rc.d gnunetd defaults",
                                      WEXITSTATUS (ret));
                     }
-                  FREE (initscript);
+                  GNUNET_free (initscript);
                   return GNUNET_SYSERR;
                 }
             }
@@ -463,12 +465,12 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                      "/sbin/rc-update add gnunetd default",
                                      WEXITSTATUS (ret));
                     }
-                  FREE (initscript);
+		  GNUNET_free (initscript);
                   return GNUNET_SYSERR;
                 }
             }
         }
-      FREE (initscript);
+      GNUNET_free (initscript);
       return GNUNET_YES;
     }
   else
@@ -479,7 +481,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                        GNUNET_GE_WARNING | GNUNET_GE_USER |
                                        GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                                        "unlink", initscript);
-          FREE (initscript);
+          GNUNET_free (initscript);
           return GNUNET_SYSERR;
         }
       errno = 0;
@@ -492,7 +494,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                            | GNUNET_GE_ADMIN |
                                            GNUNET_GE_IMMEDIATE, "system",
                                            "/usr/sbin/update-rc.d");
-              FREE (initscript);
+              GNUNET_free (initscript);
               return GNUNET_SYSERR;
             }
         }
@@ -505,15 +507,15 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                            | GNUNET_GE_ADMIN |
                                            GNUNET_GE_IMMEDIATE, "system",
                                            "/sbin/rc-update");
-              FREE (initscript);
+              GNUNET_free (initscript);
               return GNUNET_SYSERR;
             }
         }
-      FREE (initscript);
+      GNUNET_free (initscript);
       return GNUNET_YES;
     }
+  GNUNET_free (initscript);
 #endif
-  FREE (initscript);
   return GNUNET_SYSERR;
 }
 
