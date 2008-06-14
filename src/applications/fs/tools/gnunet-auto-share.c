@@ -533,8 +533,9 @@ probe_directory (const char *filename, const char *dirName, void *cls)
     return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 1);
+  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
   strcpy (fn, dirName);
+  strcat (fn, DIR_SEPARATOR_STR);
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
@@ -582,18 +583,19 @@ probe_directory (const char *filename, const char *dirName, void *cls)
 /**
  * Actual main function.
  *
- * @param argc number of arguments from the command line
- * @param argv command line arguments
  * @return return 0 for ok, -1 on error
  */
 int
-auto_share_main (int argc, char *const *argv)
+auto_share_main ()
 {
   int errorCode;
   int work_done;
   unsigned long long verbose;
   GNUNET_CronTime delay;
   char *metafn;
+  char *dirs;
+  char *dirs_idx1;
+  char *dirs_idx2;
   struct FileRecord *rpos;
   int filedes[2];               /* pipe between client and parent */
   struct DirectoryRecord *head;
@@ -624,6 +626,9 @@ auto_share_main (int argc, char *const *argv)
                                               "METADATA",
                                               GNUNET_DEFAULT_HOME_DIRECTORY
                                               "/metadata.conf", &metafn);
+  GNUNET_GC_get_configuration_value_string (cfg,
+                                            "GNUNET-AUTO-SHARE",
+                                            "DIRS", "", &dirs);
   meta_cfg = GNUNET_GC_create ();
   if (GNUNET_YES == GNUNET_disk_file_test (NULL, metafn))
     GNUNET_GC_parse_configuration (meta_cfg, metafn);
@@ -633,16 +638,29 @@ auto_share_main (int argc, char *const *argv)
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
-  while (argc > 0)
-    {
-      pos = GNUNET_malloc (sizeof (struct DirectoryRecord));
-      pos->dirname = GNUNET_expand_file_name (ectx, argv[--argc]);
-      pos->records = read_all_records (pos->dirname);
-      pos->records_changed = GNUNET_NO;
-      pos->run = 0;
-      pos->next = head;
-      head = pos;
-    }
+
+  dirs_idx1 = dirs_idx2 = dirs;
+  while (1)
+    if (*dirs_idx2 == ';' || *dirs_idx2 == 0)
+      {
+        *dirs_idx2 = 0;
+
+        pos = GNUNET_malloc (sizeof (struct DirectoryRecord));
+        pos->dirname = GNUNET_expand_file_name (ectx, dirs_idx1);
+        pos->records = read_all_records (pos->dirname);
+        pos->records_changed = GNUNET_NO;
+        pos->run = 0;
+        pos->next = head;
+        head = pos;
+
+        if (*dirs_idx2 == 0)
+          break;
+
+        dirs_idx1 = ++dirs_idx2;
+      }
+    else
+      dirs_idx2++;
+
   /* first insert all of the top-level files or directories */
   delay = 5 * GNUNET_CRON_SECONDS;
   while (GNUNET_NO == GNUNET_shutdown_test ())
@@ -734,7 +752,8 @@ auto_share_shutdown_request (struct GNUNET_GC_Configuration *cfg, int sig)
           SERVICE_STATUS theStat;
 
           /* Init proper shutdown through the SCM */
-          if (GNControlService (hService, SERVICE_CONTROL_STOP, &theStat))
+          if (GNControlService
+              ((SC_HANDLE) hService, SERVICE_CONTROL_STOP, &theStat))
             {
               /* Success */
 
@@ -769,9 +788,6 @@ ServiceCtrlHandler (DWORD dwOpcode)
     auto_share_shutdown_request (NULL, dwOpcode);
 }
 
-/**
- * called by gnunetd.c::ServiceMain()
- */
 void
 ServiceMain (DWORD argc, LPSTR * argv)
 {
@@ -786,7 +802,7 @@ ServiceMain (DWORD argc, LPSTR * argv)
     return;
 
   GNSetServiceStatus (hService, &theServiceStatus);
-  auto_share_main (argc, argv);
+  auto_share_main ();
   theServiceStatus.dwCurrentState = SERVICE_STOPPED;
   GNSetServiceStatus (hService, &theServiceStatus);
 }
@@ -818,13 +834,44 @@ main (int argc, char *const *argv)
       errorCode = -1;
       goto end;
     }
-  if (i > argc - 1)
+
+  if (i < argc)
     {
-      fprintf (stderr,
-               _("You must specify at least one directory for sharing.\n"));
-      errorCode = -1;
+      char *dirs;
+      unsigned int dirs_len;
+
+      GNUNET_GC_get_configuration_value_string (cfg, "GNUNET-AUTO-SHARE",
+                                                "DIRS", "", &dirs);
+      dirs_len = strlen (dirs);
+
+      while (i < argc)
+        {
+          dirs =
+            (char *) GNUNET_realloc (dirs, dirs_len + strlen (argv[i]) + 2);
+          if (dirs_len > 0)
+            strcat (dirs, ";");
+          strcat (dirs, argv[i]);
+
+          i++;
+        }
+
+      GNUNET_GC_set_configuration_value_string (cfg, ectx,
+                                                "GNUNET-AUTO-SHARE", "DIRS",
+                                                dirs);
+      if (GNUNET_GC_write_configuration (cfg, cfgFilename) != GNUNET_SYSERR)
+        {
+          FPRINTF (myout,
+                   _("The specified directories were added to the list of "
+                     "shared directories.\n"), NULL);
+          errorCode = 0;
+        }
+      else
+        errorCode = -1;
+      GNUNET_free (dirs);
+
       goto end;
     }
+
   if (GNUNET_YES != debug_flag)
     {
       GNUNET_GC_get_configuration_value_filename (cfg,
@@ -874,7 +921,7 @@ main (int argc, char *const *argv)
   else
 #endif
     {
-      errorCode = auto_share_main (argc - i, &argv[i]);
+      errorCode = auto_share_main ();
     }
 end:
   GNUNET_fini (ectx, cfg);
