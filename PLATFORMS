@@ -22,15 +22,18 @@ GNU/Linux (Alpha):
 FreeBSD (x86):
 - perfect
 
-OpenBSD/NetBSD:
-- known to be problematic (to say the least),
-  see Mantis #1313.
+OpenBSD:
+- tested without the gtk+, qt, guile, ncurses and mysql dependencies 
+  (so no gnunet-gtk or gnunet-setup) on OpenBSD 4.2 
+
+NetBSD:
+- unknown
 
 OS X (10.3.7, PowerPC):
 - GNUNET_PREFIX needs to be set properly for 'make check'
 - You may have to recompile some libraries (if you get a linker error)
   libgpg-error: add configure flag --disable-nls
-  libgmp" add configure flag --with-pic
+  libgmp: add configure flag --with-pic
   [Thanks, kkaz/johnh, see Mantis #968]
 
 Solaris:

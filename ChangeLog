@@ -1,3 +1,6 @@
+Fri Jun 13 23:51:00 MDT 2008
+	GNUnet now compiles on OpenBSD.
+
 Wed Jun 11 22:17:09 MDT 2008
 	Made state of gnunet-auto-share persistent. 
 	Added support for multiple directories.  Improved

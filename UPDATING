@@ -8,8 +8,8 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
-0.8.0pre0 to 0.8.0pre1
-======================
+0.8.0pre0 and 0.8.0pre1 to 0.8.0
+================================
 
 Just run gnunet-update.
 
@@ -28,5 +28,6 @@ running the new version will not connect to peers running 0.7.3 and
 older.  Check that the hostlists that you are using in your
 configuration file are for peers running HEAD.
 
-Read up on gnunet-auto-share.
+You may also want to read up on the new gnunet-auto-share tool and
+study the namespaces tutorial on the GNUnet webpage.
 
