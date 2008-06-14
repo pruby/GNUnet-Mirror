@@ -309,9 +309,9 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
 #else
   struct stat buf;
   int ret;
-  char *initscipt;
+  char *initscript;
 
-  initscript = (char *) MALLOC (strlen (servicename) + 13);
+  initscript = GNUNET_malloc (strlen (servicename) + 13);
   strcpy (initscript, "/etc/init.d/");
   strcat (initscript, servicename);
 
@@ -324,7 +324,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                        GNUNET_GE_ERROR | GNUNET_GE_USER |
                                        GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                                        "access", "/usr/sbin/update-rc.d");
-          FREE (initscript);
+          GNUNET_free (initscript);
           return GNUNET_SYSERR;
         }
     }
