@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnunet 0.8.0pre1\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-06-11 23:26-0600\n"
+"POT-Creation-Date: 2008-06-13 23:20-0600\n"
 "PO-Revision-Date: 2008-06-03 17:00+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
@@ -40,9 +40,9 @@ msgid "Yes"
 msgstr "Có"
 
 #: src/setup/ncurses/wizard_curs.c:119 src/setup/ncurses/wizard_curs.c:184
-#: src/setup/ncurses/wizard_curs.c:300 src/setup/ncurses/mconf.c:193
-#: src/setup/ncurses/mconf.c:298 src/setup/ncurses/mconf.c:381
-#: src/setup/ncurses/mconf.c:481
+#: src/setup/ncurses/wizard_curs.c:300 src/setup/ncurses/mconf.c:191
+#: src/setup/ncurses/mconf.c:289 src/setup/ncurses/mconf.c:370
+#: src/setup/ncurses/mconf.c:465
 msgid "Internal error! (Choice invalid?)"
 msgstr "Lỗi nội bộ (sai chọn ?)"
 
@@ -275,7 +275,7 @@ msgstr ""
 "Bật tùy chọn này thì tiến trình GNUnet nền được tự động khởi chạy mỗi lần mở "
 "máy tính. Không thì bạn cần phải tự khởi chạy GNUnet mỗi lần để sử dụng nó."
 
-#: src/setup/ncurses/wizard_curs.c:453 src/setup/gtk/wizard_gtk.c:420
+#: src/setup/ncurses/wizard_curs.c:453 src/setup/gtk/wizard_gtk.c:414
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Không thể lưu tập tin cấu hình « %s »:"
@@ -296,7 +296,7 @@ msgstr "Lưu cấu hình không?"
 msgid "Save configuration now?"
 msgstr "Lưu cấu hình ngay bây giờ không?"
 
-#: src/setup/ncurses/wizard_curs.c:536 src/setup/ncurses/mconf.c:525
+#: src/setup/ncurses/wizard_curs.c:536 src/setup/ncurses/mconf.c:509
 msgid "GNUnet Configuration"
 msgstr "Cấu hình GNUnet"
 
@@ -316,32 +316,32 @@ msgstr "Lên"
 msgid "Cancel"
 msgstr "Thôi"
 
-#: src/setup/ncurses/mconf.c:229 src/setup/ncurses/mconf.c:428
+#: src/setup/ncurses/mconf.c:224 src/setup/ncurses/mconf.c:414
 msgid "Internal error! (Value invalid?)"
 msgstr "Lỗi nội bộ (giá trị sai ?)"
 
-#: src/setup/ncurses/mconf.c:414
+#: src/setup/ncurses/mconf.c:403
 msgid "Invalid input, expecting floating point value."
 msgstr "Dữ liệu nhập sai, mong đợi giá trị chấm động."
 
-#: src/setup/ncurses/mconf.c:460
+#: src/setup/ncurses/mconf.c:446
 msgid "Invalid input, expecting integer."
 msgstr "Dữ liệu nhập sai, mong đợi số nguyên."
 
-#: src/setup/ncurses/mconf.c:468
+#: src/setup/ncurses/mconf.c:454
 msgid "Value is not in legal range."
 msgstr "Giá trị không nằm trong phạm vi được phép."
 
-#: src/setup/ncurses/mconf.c:537 src/setup/text/conf.c:569
+#: src/setup/ncurses/mconf.c:521 src/setup/text/conf.c:569
 #, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr "Cấu hình chưa thay đổi thì không cần lưu lại.\n"
 
-#: src/setup/ncurses/mconf.c:543
+#: src/setup/ncurses/mconf.c:527
 msgid "Do you wish to save your new configuration?"
 msgstr "Bạn có muốn lưu cấu hình mới không?"
 
-#: src/setup/ncurses/mconf.c:557
+#: src/setup/ncurses/mconf.c:541
 #, c-format
 msgid ""
 "\n"
@@ -350,7 +350,7 @@ msgstr ""
 "\n"
 "Kết thúc cấu hình.\n"
 
-#: src/setup/ncurses/mconf.c:562
+#: src/setup/ncurses/mconf.c:546
 #, c-format
 msgid ""
 "\n"
@@ -439,19 +439,19 @@ msgstr "Gặp lỗi khi lưu cấu hình."
 msgid "(unknown connection)"
 msgstr "(không rõ kết nối)"
 
-#: src/setup/gtk/wizard_gtk.c:444
+#: src/setup/gtk/wizard_gtk.c:438
 msgid "Do you want to save the new configuration?"
 msgstr "Bạn có muốn lưu cấu hình mới này không?"
 
-#: src/setup/gtk/wizard_gtk.c:476
+#: src/setup/gtk/wizard_gtk.c:470
 msgid "Unable to create user account:"
 msgstr "Không thể tạo tài khoản người dùng:"
 
-#: src/setup/gtk/wizard_gtk.c:485
+#: src/setup/gtk/wizard_gtk.c:479
 msgid "Unable to change startup process:"
 msgstr "Không thể thay đổi tiến trình khởi chạy:"
 
-#: src/setup/gtk/wizard_gtk.c:500
+#: src/setup/gtk/wizard_gtk.c:494
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -722,7 +722,7 @@ msgstr "Gặp lỗi khi cấp quyền dịch vụ cho người dùng"
 msgid "Unknown error while creating a new user"
 msgstr "Gặp lỗi không rõ trong khi tạo một người dùng mới"
 
-#: src/setup/lib/gns.c:315
+#: src/setup/lib/gns.c:297
 #, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
@@ -989,7 +989,7 @@ msgstr "Không tìm thấy địa chỉ IP của máy « %s »: %s\n"
 msgid "Received malformed message (too small) from connection. Closing.\n"
 msgstr "Nhận được thông báo bị hỏng (quá nhỏ) từ kết nối. Đang đóng.\n"
 
-#: src/util/network/select.c:490
+#: src/util/network/select.c:496
 #, c-format
 msgid "select listen socket for `%s' not valid!\n"
 msgstr "sai chọn ổ cắm lắng nghe cho « %s »\n"
@@ -1034,7 +1034,7 @@ msgstr "libgcrypt không có phiên bản mong đợi (yêu cầu phiên bản %
 
 #: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
 #: src/util/crypto/hostkey_gcrypt.c:64 src/util/crypto/hostkey_gcrypt.c:71
-#: src/util/loggers/file.c:278 src/util/loggers/file.c:296
+#: src/util/loggers/file.c:277 src/util/loggers/file.c:295
 #: src/applications/sqstore_sqlite/sqlite.c:45
 #: src/applications/sqstore_sqlite/sqlite.c:52
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
@@ -1259,12 +1259,12 @@ msgstr "TiB"
 msgid "Failed to expand `$HOME': environment variable `HOME' not set"
 msgstr "Lỗi mở rộng biến môi trường « $HOME »: chưa đặt biến môi trường « HOME »"
 
-#: src/util/loggers/file.c:236
+#: src/util/loggers/file.c:235
 #, c-format
 msgid "Failed to open log-file `%s': %s\n"
 msgstr "Lỗi mở tập tin ghi sự kiện « %s »: %s\n"
 
-#: src/util/loggers/file.c:257
+#: src/util/loggers/file.c:256
 msgid "GNUnet error log"
 msgstr "Bản ghi lỗi GNUnet"
 
@@ -2027,7 +2027,7 @@ msgstr "Tôi là đồng đẳng « %s ».\n"
 
 #: src/applications/dht/tools/dht_multipeer_test.c:77
 #: src/applications/dht/tools/dht_twopeer_test.c:47
-#: src/applications/dht/module/table.c:782
+#: src/applications/dht/module/table.c:783
 msgid "# dht connections"
 msgstr "# các kết nối dht"
 
@@ -2060,7 +2060,7 @@ msgid "'%s(%s,%s)' failed.\n"
 msgstr "« %s(%s,%s) » bị lỗi.\n"
 
 #: src/applications/dht/tools/dht-query.c:141
-#: src/applications/fs/tools/gnunet-auto-share.c:624
+#: src/applications/fs/tools/gnunet-auto-share.c:610
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr "Lỗi kết nối đến gnunetd.\n"
@@ -2080,15 +2080,15 @@ msgstr "Câu lệnh « %s » cần đến hai đối số (« %s » và « %s »
 msgid "Unsupported command `%s'.  Aborting.\n"
 msgstr "Lệnh không được hỗ trợ « %s ». Đang hủy bỏ.\n"
 
-#: src/applications/dht/module/table.c:784
+#: src/applications/dht/module/table.c:785
 msgid "# dht discovery messages received"
 msgstr "# các thông báo phát hiện dht được nhận"
 
-#: src/applications/dht/module/table.c:786
+#: src/applications/dht/module/table.c:787
 msgid "# dht route host lookups performed"
 msgstr "# các việc tra tìm đường tới máy dht được làm"
 
-#: src/applications/dht/module/table.c:788
+#: src/applications/dht/module/table.c:789
 msgid "# dht discovery messages sent"
 msgstr "# các thông báo phát hiện dht được gửi"
 
@@ -2595,12 +2595,12 @@ msgstr ""
 msgid "specify the priority of the content"
 msgstr "xác định mức ưu tiên của nội dung"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:517
+#: src/applications/fs/tools/gnunet-auto-share.c:505
 #, c-format
 msgid "Unknown keyword type `%s' in metadata configuration\n"
 msgstr "Không rõ kiểu từ khoá « %s » trong cấu hình siêu dữ liệu\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:841
+#: src/applications/fs/tools/gnunet-auto-share.c:824
 #, fuzzy, c-format
 msgid "You must specify at least one directory for sharing.\n"
 msgstr "Phải ghi rõ chỉ một thư mục để chia sẻ.\n"
@@ -2896,11 +2896,11 @@ msgstr "Không tìm thấy tập tin nào trong thư mục « %s »\n"
 msgid "File stored as `%s'.\n"
 msgstr "Tập tin được lưu dạng « %s ».\n"
 
-#: src/applications/fs/uritrack/file_info.c:102
+#: src/applications/fs/uritrack/file_info.c:98
 msgid "Collecting file identifiers disabled.\n"
 msgstr "Chức năng thu thập các đồ nhận diện tập tin đã bị tắt.\n"
 
-#: src/applications/fs/uritrack/file_info.c:381
+#: src/applications/fs/uritrack/file_info.c:377
 #, c-format
 msgid "Deleted corrupt URI database in `%s'."
 msgstr "Đã xoá cơ sở dữ liệu địa chỉ URI bị hỏng trong « %s »."
@@ -2924,22 +2924,22 @@ msgstr "Không kết nối được đến trình nền gnunetd."
 msgid "Cannot hash `%s'.\n"
 msgstr "Không thể tạo mẫu duy nhất đại diện cho « %s ».\n"
 
-#: src/applications/fs/ecrs/upload.c:216
+#: src/applications/fs/ecrs/upload.c:215
 #, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr "Lỗi sơ khởi tập tin đánh chỉ mục « %s ».\n"
 
-#: src/applications/fs/ecrs/upload.c:224
+#: src/applications/fs/ecrs/upload.c:223
 #, fuzzy, c-format
 msgid "Indexing file `%s' failed. Suggestion: try to insert the file.\n"
 msgstr "Lỗi đánh chỉ mục tập tin « %s ». Đang thử chèn tập tin...\n"
 
-#: src/applications/fs/ecrs/upload.c:238
+#: src/applications/fs/ecrs/upload.c:237
 #, c-format
 msgid "Cannot open file `%s': `%s'"
 msgstr "Không thể mở tập tin « %s »: « %s »"
 
-#: src/applications/fs/ecrs/upload.c:323
+#: src/applications/fs/ecrs/upload.c:322
 #, c-format
 msgid "Indexing data of file `%s' failed at position %llu.\n"
 msgstr "Đánh chỉ mục dữ liệu của tập tin « %s » bị lỗi tại vị tri %llu.\n"
@@ -2971,11 +2971,11 @@ msgstr ""
 "Không rõ kiểu siêu dữ liệu trong tùy chọn siêu dữ liệu « %s ». Đang ùng kiểu "
 "siêu dữ liệu « không rõ » (unknown) để thay thế.\n"
 
-#: src/applications/fs/ecrs/search.c:153
+#: src/applications/fs/ecrs/search.c:152
 msgid "CHK URI not allowed for search.\n"
 msgstr "Không cho phép địa chỉ URI CHK khi tìm kiếm.\n"
 
-#: src/applications/fs/ecrs/search.c:208
+#: src/applications/fs/ecrs/search.c:207
 msgid "LOC URI not allowed for search.\n"
 msgstr "Không cho phép địa chỉ URI LOC khi tìm kiếm.\n"
 
@@ -3004,7 +3004,7 @@ msgstr "Định dạng của tập tin « %s » là không hợp lệ.\n"
 msgid "Format of file `%s' is invalid, trying to remove.\n"
 msgstr "Định dạng của tập tin « %s » là không hợp lệ nên thử gỡ bỏ.\n"
 
-#: src/applications/fs/ecrs/download.c:610
+#: src/applications/fs/ecrs/download.c:612
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
@@ -3012,12 +3012,12 @@ msgstr ""
 "Nội dung đã giải mã không tương ứng chìa khóa. Đây là một lỗi hoặc một tập "
 "tin chèn vào với ý xấu. Tiến trình tải xuống bị hủy bỏ.\n"
 
-#: src/applications/fs/ecrs/download.c:620
+#: src/applications/fs/ecrs/download.c:622
 msgid "IO error."
 msgstr "Lỗi VR."
 
-#: src/applications/fs/collection/collection.c:557
-#: src/applications/fs/collection/collection.c:560
+#: src/applications/fs/collection/collection.c:550
+#: src/applications/fs/collection/collection.c:553
 #, c-format
 msgid "Revision %u"
 msgstr ""
@@ -3033,7 +3033,7 @@ msgstr ""
 msgid "Failed to create temporary directory."
 msgstr "Lỗi tạo thư mục tạm thời."
 
-#: src/applications/fs/fsui/deserialize.c:929
+#: src/applications/fs/fsui/deserialize.c:927
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
 msgstr "Tập tin tình trạng FSUI « %s » có lỗi cú pháp tại khoảng bù %u.\n"
@@ -3042,19 +3042,19 @@ msgstr "Tập tin tình trạng FSUI « %s » có lỗi cú pháp tại khoảng
 msgid "Unindexing failed (no reason given)"
 msgstr "Lỗi bỏ chỉ mục (không đưa ra lý do)."
 
-#: src/applications/fs/gap/plan.c:970
+#: src/applications/fs/gap/plan.c:967
 msgid "# gap requests total sent"
 msgstr "# tổng số yêu cầu lỗ hổng được gửi"
 
-#: src/applications/fs/gap/plan.c:972
+#: src/applications/fs/gap/plan.c:969
 msgid "# gap content total planned"
 msgstr "# tổng số nội dung lỗ hổng dự định"
 
-#: src/applications/fs/gap/plan.c:974
+#: src/applications/fs/gap/plan.c:971
 msgid "# gap routes succeeded"
 msgstr "# tổng số định tuyến lỗ hổng thành công"
 
-#: src/applications/fs/gap/plan.c:975
+#: src/applications/fs/gap/plan.c:972
 msgid "# trust spent"
 msgstr "# độ tin cậy được tiêu phí"
 
@@ -3122,23 +3122,23 @@ msgstr "# các mã số đồng đẳng bị giam giữ riêng biệt trong bả
 msgid "# total RC of interned peer IDs in pid table"
 msgstr "# tổng số RC của mã số đồng đẳng bị giam giữ trong bảng PID"
 
-#: src/applications/fs/gap/querymanager.c:708
+#: src/applications/fs/gap/querymanager.c:709
 msgid "# gap client queries received"
 msgstr "# các yêu cầu khách lỗ hổng được nhận"
 
-#: src/applications/fs/gap/querymanager.c:710
+#: src/applications/fs/gap/querymanager.c:711
 msgid "# gap replies sent to clients"
 msgstr "# các đáp ứng lỗ hổng được gửi cho trình/máy khách"
 
-#: src/applications/fs/gap/querymanager.c:712
+#: src/applications/fs/gap/querymanager.c:713
 msgid "# gap client requests tracked"
 msgstr "# các yêu cầu máy/trình khách lỗ hổng được theo dõi"
 
-#: src/applications/fs/gap/querymanager.c:714
+#: src/applications/fs/gap/querymanager.c:715
 msgid "# gap client requests injected"
 msgstr "# các yêu cầu máy/trình khách lỗ hổng được phun vào"
 
-#: src/applications/fs/gap/querymanager.c:717
+#: src/applications/fs/gap/querymanager.c:718
 msgid "# gap query bloomfilter resizing updates"
 msgstr ""
 "# các bản cập nhật thay đổi kích cỡ bộ lọc bloomfilter truy vấn lỗ hổng"
@@ -3196,17 +3196,17 @@ msgstr "Lỗi lấy thông kê về truyền tải.\n"
 msgid "scp command is : %s \n"
 msgstr "Câu lệnh scp là: %s\n"
 
-#: src/applications/testing/remote.c:505
+#: src/applications/testing/remote.c:504
 #, c-format
 msgid "Friend list of %s:%d\n"
 msgstr "Danh sách bạn bè của %s:%d\n"
 
-#: src/applications/testing/remote.c:527
+#: src/applications/testing/remote.c:526
 #, c-format
 msgid "scp command for friend file copy is : %s \n"
 msgstr "Câu lệnh scp cho bản sao tập tin bạn bè là: %s\n"
 
-#: src/applications/testing/remote.c:549
+#: src/applications/testing/remote.c:548
 #, c-format
 msgid "connecting peer %s:%d to peer %s:%d\n"
 msgstr "đang kết nối đồng đẳng %s:%d tới đồng đẳng %s:%d\n"
@@ -3232,7 +3232,7 @@ msgstr ""
 "Đang kết nối các điểm nút theo địa hình học hình xuyến hai chiều: %u hàng, %"
 "u cột\n"
 
-#: src/applications/testing/remotetopologies.c:483
+#: src/applications/testing/remotetopologies.c:481
 #, c-format
 msgid "Failed to establish connection with peers.\n"
 msgstr "Lỗi thiết lập kết nối với đồng đẳng.\n"
@@ -3250,9 +3250,9 @@ msgstr "Sai dữ liệu nạp và khởi động được lấy từ « %s ».\n
 #: src/applications/bootstrap_http/http.c:365
 #: src/applications/bootstrap_http/http.c:375
 #: src/applications/bootstrap_http/http.c:385 src/transports/upnp/upnp.c:356
-#: src/transports/upnp/upnp.c:541 src/transports/http.c:1083
-#: src/transports/http.c:1207 src/transports/http.c:1375
-#: src/transports/http.c:1775 src/transports/http.c:1825
+#: src/transports/upnp/upnp.c:541 src/transports/http.c:1085
+#: src/transports/http.c:1209 src/transports/http.c:1377
+#: src/transports/http.c:1777 src/transports/http.c:1827
 #, c-format
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr "%s bị lỗi tại %s:%d: « %s »\n"
@@ -3748,7 +3748,7 @@ msgstr "chạy dưới người dùng ĐĂNG_NHẬP"
 msgid "run in client mode (for getting client configuration values)"
 msgstr "chạy trong chế độ khách (để lấy các giá trị cấu hình của máy khách)"
 
-#: src/server/version.c:129
+#: src/server/version.c:125
 msgid ""
 "Failed to determine filename used to store GNUnet version information!\n"
 msgstr ""
@@ -4176,7 +4176,7 @@ msgstr ""
 msgid "upnp: NAT Returned IP: %s\n"
 msgstr "upnp: địa chỉ IP được NAT trả về: %s\n"
 
-#: src/transports/http.c:2017 src/transports/tcp.c:795
+#: src/transports/http.c:2019 src/transports/tcp.c:797
 #, c-format
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
@@ -4185,63 +4185,63 @@ msgstr ""
 "Dịch vụ UPnP không thể nạp được. Để tắt UPnP, đặt tùy chọn cấu hình « UPNP » "
 "trong phần « %s » thành « NO » (không).\n"
 
-#: src/transports/http.c:2026
+#: src/transports/http.c:2028
 msgid "# bytes received via HTTP"
 msgstr "# các byte đã nhận qua HTTP"
 
-#: src/transports/http.c:2027
+#: src/transports/http.c:2029
 msgid "# bytes sent via HTTP"
 msgstr "# các byte đã gửi qua HTTP"
 
-#: src/transports/http.c:2029
+#: src/transports/http.c:2031
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# các byte loại bỏ bởi HTTP (đi ra)"
 
-#: src/transports/http.c:2030
+#: src/transports/http.c:2032
 msgid "# HTTP GET issued"
 msgstr "# Tín hiệu HTTP GET được gửi"
 
-#: src/transports/http.c:2032
+#: src/transports/http.c:2034
 msgid "# HTTP GET received"
 msgstr "# Tín hiệu HTTP GET được nhận"
 
-#: src/transports/http.c:2033
+#: src/transports/http.c:2035
 msgid "# HTTP PUT issued"
 msgstr "# Tín hiệu HTTP PUT được gửi"
 
-#: src/transports/http.c:2035
+#: src/transports/http.c:2037
 msgid "# HTTP PUT received"
 msgstr "# Tín hiệu HTTP PUT được nhận"
 
-#: src/transports/http.c:2037
+#: src/transports/http.c:2039
 msgid "# HTTP select calls"
 msgstr "# các cuộc gọi HTTP select (lựa chọn)"
 
-#: src/transports/http.c:2039
+#: src/transports/http.c:2041
 msgid "# HTTP send calls"
 msgstr "# các cuộc gọi HTTP send (gửi)"
 
-#: src/transports/http.c:2042
+#: src/transports/http.c:2044
 msgid "# HTTP curl send callbacks"
 msgstr "# các cuộc gọi ngược HTTP curl send (hàm curl gửi)"
 
-#: src/transports/http.c:2044
+#: src/transports/http.c:2046
 msgid "# HTTP curl receive callbacks"
 msgstr "# các cuộc gọi ngược HTTP curl receive (hàm curl nhận)"
 
-#: src/transports/http.c:2046
+#: src/transports/http.c:2048
 msgid "# HTTP mhd access callbacks"
 msgstr "# các cuộc gọi ngược HTTP mhd access (hàm mhd truy cập)"
 
-#: src/transports/http.c:2048
+#: src/transports/http.c:2050
 msgid "# HTTP mhd read callbacks"
 msgstr "# các cuộc gọi ngược HTTP mhd read (hàm mhd đọc)"
 
-#: src/transports/http.c:2050
+#: src/transports/http.c:2052
 msgid "# HTTP mhd close callbacks"
 msgstr "# các cuộc gọi ngược HTTP mhd close (hàm mhd đóng)"
 
-#: src/transports/http.c:2052
+#: src/transports/http.c:2054
 msgid "# HTTP connect calls"
 msgstr "# các cuộc gọi HTTP connect (kết nối)"
 
@@ -4250,7 +4250,7 @@ msgstr "# các cuộc gọi HTTP connect (kết nối)"
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "Lỗi lấy địa chỉ %s (bên ngoài) của mình.\n"
 
-#: src/transports/udp.c:472 src/transports/tcp.c:712
+#: src/transports/udp.c:472 src/transports/tcp.c:714
 #, c-format
 msgid "Failed to bind to %s port %d.\n"
 msgstr "Lỗi đóng kết đến cổng %s %d.\n"
@@ -4276,15 +4276,15 @@ msgstr "# các byte loại bỏ bởi UDP (đi ra)"
 msgid "# UDP connections (right now)"
 msgstr "# các kết nối UDP (lúc này)"
 
-#: src/transports/tcp.c:805
+#: src/transports/tcp.c:807
 msgid "# bytes received via TCP"
 msgstr "# các byte đã nhận qua TCP"
 
-#: src/transports/tcp.c:806
+#: src/transports/tcp.c:808
 msgid "# bytes sent via TCP"
 msgstr "# các byte đã gừi qua TCP"
 
-#: src/transports/tcp.c:808
+#: src/transports/tcp.c:810
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr "# các byte loại đi bởi TCP (đi ra)"
 
