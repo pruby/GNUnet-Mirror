@@ -115,6 +115,9 @@ GNUNET_socket_destroy (struct GNUNET_SocketHandle *s)
 #ifdef FREEBSD
           (errno != ECONNRESET) &&
 #endif
+#ifdef OPENBSD
+          (errno != EINVAL) &&
+#endif
           (errno != ENOTCONN))
         GNUNET_GE_LOG_STRERROR (s->ectx,
                                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
