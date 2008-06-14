@@ -1,7 +1,8 @@
-Primary developers (0.7.x series):
+Primary developers (0.8.x series):
 Christian Grothoff <christian@grothoff.org>
+Heikki Lindholm <holindho@cs.helsinki.fi>
 Nils Durner <durner@gnunet.org>
-Michael John Wensley <michael@wensley.org.uk>
+Milan Bouchet-Valat <nalimilan@club.fr>
 
 Code contributions also came from:
 Adam Warrington [ UPnP ]
@@ -33,6 +34,7 @@ Kyle McMartin <kyle@debian.org> [ SHA-512]
 Larry Waldo
 Ludovic Courtès <ludo@chbouib.org>
 Marko Räihä
+Michael John Wensley <michael@wensley.org.uk>
 Nathan Evans <nevans6@du.edu>
 Paul Ruth <ruth@cs.purdue.edu>
 Renaldo Ferreira <rf@cs.purdue.edu>
