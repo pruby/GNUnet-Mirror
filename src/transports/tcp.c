@@ -533,7 +533,9 @@ static int
 tcp_connect (const GNUNET_MessageHello * hello,
              GNUNET_TSession ** tsessionPtr, int may_reuse)
 {
+#if TCP_SYNCNT
   static int zero = 0;
+#endif
   const HostAddress *haddr;
   int sock;
   struct sockaddr_in soaddr4;
