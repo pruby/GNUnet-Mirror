@@ -16,6 +16,9 @@ http://vserver1236.vserver-on.de/hostlist-074
 - Correctness: 
   * clean up and test VPN code
   * test RPC code (write a small demo)
+- Ease of use:
+  * improve gnunet-setup (more auto-detection in wizards, more testing)
+  * external IP detector webpage
 
 0.8.2 [12'08] (aka "integration"):
 - Performance:
