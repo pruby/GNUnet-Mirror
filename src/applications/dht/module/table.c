@@ -46,6 +46,7 @@
  */
 
 #include "platform.h"
+#include <math.h>
 #include "table.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
