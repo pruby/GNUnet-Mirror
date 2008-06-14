@@ -187,8 +187,7 @@ If you want to setup an alternate hostlist server, you must run a permanent node
 If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts manually.")
   '()
   #t
-;;  "http://gnunet.org/hostlist.php http://gnunet.mine.nu:8081/hostlist http://de.gnunet.org/cgi-bin/hostlist.cgi"
-  "http://vserver1236.vserver-on.de/hostlist-074"
+  "http://gnunet.org/hostlist.php http://gnunet.mine.nu:8081/hostlist http://vserver1236.vserver-on.de/hostlist-074"
   '()
   'always) )
 
