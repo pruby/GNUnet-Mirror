@@ -32,8 +32,9 @@
 
 int GNUNET_GNS_wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg,
                                    const char *name, int suggestion);
-int GNUNET_GNS_wiz_autostart_service (struct GNUNET_GE_Context *ectx, int serviceType,
-                                  int doAutoStart, char *username, char *groupname);
+int GNUNET_GNS_wiz_autostart_service (struct GNUNET_GE_Context *ectx,
+                                      int serviceType, int doAutoStart,
+                                      char *username, char *groupname);
 int GNUNET_GNS_wiz_create_group_user (char *group_name, char *user_name);
 
 

@@ -84,8 +84,9 @@ GNUNET_GNS_wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_GNS_wiz_autostart_service (struct GNUNET_GE_Context *ectx, int serviceType,
-                                  int doAutoStart, char *username, char *groupname)
+GNUNET_GNS_wiz_autostart_service (struct GNUNET_GE_Context *ectx,
+                                  int serviceType, int doAutoStart,
+                                  char *username, char *groupname)
 {
   int ret;
   char *exe;
@@ -95,23 +96,23 @@ GNUNET_GNS_wiz_autostart_service (struct GNUNET_GE_Context *ectx, int serviceTyp
   exe = (char *) GNUNET_realloc (exe, strlen (exe) + 22);       /* 11 = "gnunet-auto-share.exe" */
   if (serviceType == GNUNET_SERVICE_TYPE_GNUNETD)
     {
-      strcat(exe, "gnunetd");
+      strcat (exe, "gnunetd");
       name = "GNUnet";
     }
   else if (serviceType == GNUNET_SERVICE_TYPE_AUTOSHARE)
     {
-      strcat(exe, "gnunet-auto-share");
+      strcat (exe, "gnunet-auto-share");
       name = "GNUnet Auto Share";
     }
   else
     return GNUNET_SYSERR;
-    
+
 #ifdef WINDOWS
   strcat (exe, ".exe");
 #endif
 
   ret =
-    GNUNET_configure_autostart (ectx , 0, doAutoStart,
+    GNUNET_configure_autostart (ectx, 0, doAutoStart,
                                 name, exe, username, groupname);
   GNUNET_free (exe);
   if (ret != GNUNET_YES)
