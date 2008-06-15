@@ -237,12 +237,12 @@ GNUNET_EC_file_block_check_and_get_query (unsigned int size,
       }
     case GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
       {
-        GNUNET_GE_BREAK (NULL, 0);      /* should never be used here! */
+        GNUNET_GE_BREAK_OP (NULL, 0);      /* should never be used here! */
         return GNUNET_SYSERR;
       }
     default:
       {
-        GNUNET_GE_BREAK (NULL, 0);      /* unknown block type */
+        GNUNET_GE_BREAK_OP (NULL, 0);      /* unknown block type */
         return GNUNET_SYSERR;
       }
     }                           /* end switch */
