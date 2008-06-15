@@ -852,6 +852,7 @@ main (int argc, char *const *argv)
           if (dirs_len > 0)
             strcat (dirs, ";");
           strcat (dirs, fullname);
+	  GNUNET_free(fullname);
           i++;
         }
       GNUNET_GC_set_configuration_value_string (cfg, ectx,
