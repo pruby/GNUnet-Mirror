@@ -196,7 +196,11 @@ get_record_file_name (const char *dirname)
   GNUNET_hash_to_enc (&hc, &enc);
   return GNUNET_get_home_filename (ectx,
                                    cfg,
+#ifndef MINGW
                                    GNUNET_NO,
+#else
+                                   GNUNET_YES,
+#endif
                                    "auto-share-info",
                                    (const char *) &enc, NULL);
 }
@@ -665,6 +669,9 @@ auto_share_main ()
   while (1)
     if ((*dirs_idx2 == ';') || (*dirs_idx2 == '\0'))
       {
+        int end;
+        
+        end = *dirs_idx2 == '\0';
         *dirs_idx2 = 0;
 
         pos = GNUNET_malloc (sizeof (struct DirectoryRecord));
@@ -674,8 +681,8 @@ auto_share_main ()
         pos->run = 0;
         pos->next = head;
         head = pos;
-
-        if (*dirs_idx2 == 0)
+        
+        if (end)
           break;
 
         dirs_idx1 = ++dirs_idx2;
