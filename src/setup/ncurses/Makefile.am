@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+INCLUDES = -I$(top_srcdir)/src/include -I$(top_srcdir)/src/setup/lib
 
 plugindir = $(libdir)/GNUnet
 

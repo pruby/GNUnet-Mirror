@@ -29,6 +29,7 @@
 #include "gnunet_util.h"
 #include "glade_support.h"
 #include "wizard_gtk.h"
+#include "wizard_util.h"
 #include "gconf.h"
 
 /**
@@ -325,7 +326,7 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
     gtk_entry_set_text (GTK_ENTRY (entUser), user_name);
   if (group_name != NULL)
     gtk_entry_set_text (GTK_ENTRY (entGroup), group_name);
-  cap = GNUNET_configure_autostart (err_ctx, 1, 1, NULL, NULL, NULL);
+  cap = GNUNET_configure_autostart (err_ctx, GNUNET_YES, GNUNET_YES, NULL, NULL, NULL, NULL);
   gtk_widget_set_sensitive (entUser, cap);
 #ifdef WINDOWS
   cap = FALSE;
@@ -364,7 +365,7 @@ load_step5setup_gtk (GtkButton * button, gpointer prev_window)
                                 (editCfg, "FS", "ACTIVEMIGRATION",
                                  GNUNET_YES) == GNUNET_YES);
 
-  if (GNUNET_configure_autostart (err_ctx, 1, 1, NULL, NULL, NULL))
+  if (GNUNET_configure_autostart (err_ctx, GNUNET_YES, GNUNET_YES, NULL, NULL, NULL, NULL))
     gtk_widget_set_sensitive (chkStart, TRUE);
 
 
