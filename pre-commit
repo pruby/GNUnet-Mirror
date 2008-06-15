@@ -12,6 +12,6 @@ if test -x "$(which dos2unix)";
 then
   dos2unix -ko `echo $l | xargs find . -name "*.c"`
   dos2unix -ko `echo $l | xargs find . -name "*.h"`
-  rm `echo $l | find . -name "*.?~"`
+  rm `echo $l | xargs find . -name "*.?~"`
 fi;
 
