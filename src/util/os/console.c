@@ -27,24 +27,22 @@
  * receives a SIGTERM/SIGHUP etc.
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util_os.h"
+#include "gnunet_util_threads.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_disk.h"
-#include "platform.h"
 
 
 static char *
-getPIDFile (struct GNUNET_GC_Configuration *cfg)
+getPIDFile (struct GNUNET_GC_Configuration *cfg,
+            const char *section, const char *value, const char *def)
 {
   char *pif;
 
-  GNUNET_GC_get_configuration_value_filename (cfg,
-                                              "GNUNETD",
-                                              "PIDFILE",
-                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
-                                              "/gnunetd/pid", &pif);
+  GNUNET_GC_get_configuration_value_filename (cfg, section, value, def, &pif);
   return pif;
 }
 
@@ -56,7 +54,10 @@ getPIDFile (struct GNUNET_GC_Configuration *cfg)
  */
 int
 GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
-                       struct GNUNET_GC_Configuration *cfg, unsigned int pid)
+                       struct GNUNET_GC_Configuration *cfg,
+                       unsigned int pid,
+                       const char *section,
+                       const char *value, const char *def)
 {
   FILE *pidfd;
   char *pif;
@@ -64,7 +65,7 @@ GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
   char *rdir;
   int len;
 
-  pif = getPIDFile (cfg);
+  pif = getPIDFile (cfg, section, value, def);
   if (pif == NULL)
     return GNUNET_OK;           /* no PID file */
   GNUNET_GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "",
@@ -118,11 +119,92 @@ GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
   return GNUNET_OK;
 }
 
+/**
+ * Write our process ID to the pid file.
+ *
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ */
+int
+GNUNET_pid_file_kill_owner (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg,
+                            const char *section,
+                            const char *value, const char *def)
+{
+  FILE *pidfd;
+  char *pif;
+  unsigned int pid;
+  unsigned int attempt;
+  struct stat sbuf;
+
+  pif = getPIDFile (cfg, section, value, def);
+  if (pif == NULL)
+    return GNUNET_OK;           /* no PID file */
+  pidfd = FOPEN (pif, "r");
+  if (pidfd == NULL)
+    {
+      GNUNET_free (pif);
+      return GNUNET_NO;
+    }
+  if (1 != FSCANF (pidfd, "%u", &pid))
+    {
+      fclose (pidfd);
+      GNUNET_free (pif);
+      return GNUNET_SYSERR;
+    }
+  fclose (pidfd);
+  errno = 0;
+  if ((0 != KILL (pid, SIGTERM)) && (errno != ESRCH))
+    {
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "kill");
+      GNUNET_free (pif);
+      return GNUNET_SYSERR;
+    }
+  if (errno == 0)
+    {
+      attempt = 0;
+      while ((0 == STAT (pif, &sbuf)) &&
+             (GNUNET_shutdown_test () == GNUNET_NO) && (attempt < 200))
+        {
+          /* wait for at most 10 seconds */
+          GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+          attempt--;
+        }
+      if (0 != STAT (pif, &sbuf))
+        {
+          GNUNET_free (pif);
+          return GNUNET_OK;
+        }
+      if (0 != KILL (pid, SIGKILL))
+        {
+          GNUNET_GE_LOG_STRERROR (ectx,
+                                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_BULK, "kill");
+          GNUNET_free (pif);
+          return GNUNET_SYSERR;
+        }
+    }
+  if (0 != UNLINK (pif))
+    {
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                   GNUNET_GE_BULK, "unlink", pif);
+      GNUNET_free (pif);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_free (pif);
+  return GNUNET_OK;
+}
+
+
 int
 GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
-                        struct GNUNET_GC_Configuration *cfg)
+                        struct GNUNET_GC_Configuration *cfg,
+                        const char *section,
+                        const char *value, const char *def)
 {
-  char *pif = getPIDFile (cfg);
+  char *pif = getPIDFile (cfg, section, value, def);
   if (pif == NULL)
     return GNUNET_OK;           /* no PID file */
   if (GNUNET_YES == GNUNET_disk_file_test (ectx, pif))
@@ -150,7 +232,9 @@ GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_terminal_detach (struct GNUNET_GE_Context *ectx,
-                        struct GNUNET_GC_Configuration *cfg, int *filedes)
+                        struct GNUNET_GC_Configuration *cfg, int *filedes,
+                        const char *section,
+                        const char *value, const char *def)
 {
   pid_t pid;
   int nullfd;
@@ -192,7 +276,7 @@ GNUNET_terminal_detach (struct GNUNET_GE_Context *ectx,
       fflush (stdout);
       if (ok == GNUNET_OK)
         {
-          GNUNET_pid_file_write (ectx, cfg, pid);
+          GNUNET_pid_file_write (ectx, cfg, pid, section, value, def);
           exit (0);
         }
       else

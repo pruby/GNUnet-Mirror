@@ -334,32 +334,32 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
     }
   if (mime == NULL)
     {
-      max = strlen (path) + strlen (key) +
-	strlen (DIR_SEPARATOR_STR) + 20;
-      renameTo =
-        GNUNET_malloc (max);
-      GNUNET_snprintf(renameTo,
-		      max,
-		      "%s%s%.*s",
-		      path,
-		      (path[strlen(path)-1] != DIR_SEPARATOR) ? DIR_SEPARATOR_STR : "",
-		      GNUNET_MIN(255, PATH_MAX - strlen(path) - 32),
-		      key);
+      max = strlen (path) + strlen (key) + strlen (DIR_SEPARATOR_STR) + 20;
+      renameTo = GNUNET_malloc (max);
+      GNUNET_snprintf (renameTo,
+                       max,
+                       "%s%s%.*s",
+                       path,
+                       (path[strlen (path) - 1] !=
+                        DIR_SEPARATOR) ? DIR_SEPARATOR_STR : "",
+                       GNUNET_MIN (255, PATH_MAX - strlen (path) - 32), key);
     }
   else
     {
       max = strlen (path) + strlen (key) + strlen (mime) +
-	strlen (DIR_SEPARATOR_STR) + 20;
-      renameTo =
-        GNUNET_malloc (max);
-      GNUNET_snprintf(renameTo,
-		      max,
-		      "%s%s%.*s%s",
-		      path,
-		      (path[strlen(path)-1] != DIR_SEPARATOR) ? DIR_SEPARATOR_STR : "",
-		      GNUNET_MIN(255 - strlen(mime), PATH_MAX - strlen(path) - 64),
-		      key,
-		      (strcasecmp (renameTo + strlen (renameTo) - strlen (mime), mime) != 0) ? mime : "");
+        strlen (DIR_SEPARATOR_STR) + 20;
+      renameTo = GNUNET_malloc (max);
+      GNUNET_snprintf (renameTo,
+                       max,
+                       "%s%s%.*s%s",
+                       path,
+                       (path[strlen (path) - 1] !=
+                        DIR_SEPARATOR) ? DIR_SEPARATOR_STR : "",
+                       GNUNET_MIN (255 - strlen (mime),
+                                   PATH_MAX - strlen (path) - 64), key,
+                       (strcasecmp
+                        (renameTo + strlen (renameTo) - strlen (mime),
+                         mime) != 0) ? mime : "");
 
 
     }

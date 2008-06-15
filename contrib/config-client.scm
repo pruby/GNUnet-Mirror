@@ -270,6 +270,18 @@ The default is to use filenames and to break larger words at spaces (and undersc
   '()
   'fs-loaded) )
 
+(define (gnunet-fs-autoshare-pidfile builder)
+ (builder
+  "GNUNET-AUTO-SHARE"
+  "PIDFILE"
+  (_ "Location of the file with the PID of any running gnunet-auto-share daemon process")
+  (nohelp)
+  '()
+  #t
+  "$GNUNET_HOME/gnunet-auto-share.pid"
+  '()
+  'fs-loaded) )
+
 (define (gnunet-fs-autoshare-log builder)
  (builder
   "GNUNET-AUTO-SHARE"

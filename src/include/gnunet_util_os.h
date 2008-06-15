@@ -333,14 +333,31 @@ char *GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind);
  */
 int GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
                            struct GNUNET_GC_Configuration *cfg,
-                           unsigned int pid);
+                           unsigned int pid,
+                           const char *section,
+                           const char *value, const char *def);
 
 /**
  * Delete the PID file (to be called when the daemon
  * shuts down)
  */
 int GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
-                            struct GNUNET_GC_Configuration *cfg);
+                            struct GNUNET_GC_Configuration *cfg,
+                            const char *section,
+                            const char *value, const char *def);
+
+/**
+ * Kill the process that wrote the current PID file
+ * (and try to wait for it to terminate).
+ * 
+ * @return GNUNET_OK kill successful
+ *         GNUNET_NO no PID file exists
+ *         GNUNET_SYSERR kill seems to have failed
+ */
+int GNUNET_pid_file_kill_owner (struct GNUNET_GE_Context *ectx,
+                                struct GNUNET_GC_Configuration *cfg,
+                                const char *section,
+                                const char *value, const char *def);
 
 
 /**
@@ -348,12 +365,16 @@ int GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
  * in the way a good deamon should.  Also writes the PID
  * file.
  *
+ * @param section section in the configuration for the PID filename
+ * @param value value in the configuration for the PID filename
  * @param filedes pointer to an array of 2 file descriptors
  *        to complete the detachment protocol (handshake)
  */
 int GNUNET_terminal_detach (struct GNUNET_GE_Context *ectx,
                             struct GNUNET_GC_Configuration *cfg,
-                            int *filedes);
+                            int *filedes,
+                            const char *section,
+                            const char *value, const char *def);
 
 /**
  * Complete the handshake of detaching from the terminal.

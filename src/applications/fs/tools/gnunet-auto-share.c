@@ -31,6 +31,8 @@
 #include "gnunet_util.h"
 #include <extractor.h>
 
+#define PIDFILE_DATA "GNUNET-AUTO-SHARE", "PIDFILE", GNUNET_DEFAULT_HOME_DIRECTORY DIR_SEPARATOR_STR "gnunet-auto-share.pid"
+
 struct FileRecord
 {
   struct FileRecord *next;
@@ -420,7 +422,7 @@ test_run (const char *filename, const char *dirName, void *cls)
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
-      fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
+      fprintf (myout, _("Could not access `%s': %s\n"), fn, strerror (errno));
       fflush (myout);
       GNUNET_free (fn);
       return GNUNET_OK;
@@ -601,10 +603,22 @@ auto_share_main ()
   struct DirectoryRecord *head;
   struct DirectoryRecord *pos;
 
+  if (GNUNET_SYSERR == GNUNET_pid_file_kill_owner (ectx, cfg, PIDFILE_DATA))
+    {
+      fprintf (myout, _("Failed to stop running gnunet-auto-share.\n"));
+      fflush (myout);
+      errorCode = -1;
+      if (GNUNET_NO == debug_flag)
+        GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
+      return GNUNET_SYSERR;
+    }
   errorCode = 0;
   if ((GNUNET_NO == debug_flag)
-      && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes)))
+      && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes,
+                                               PIDFILE_DATA)))
     return GNUNET_SYSERR;
+  if (GNUNET_NO != debug_flag)
+    GNUNET_pid_file_write (ectx, cfg, getpid (), PIDFILE_DATA);
   head = NULL;
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
@@ -641,7 +655,7 @@ auto_share_main ()
 
   dirs_idx1 = dirs_idx2 = dirs;
   while (1)
-    if (*dirs_idx2 == ';' || *dirs_idx2 == 0)
+    if ((*dirs_idx2 == ';') || (*dirs_idx2 == '\0'))
       {
         *dirs_idx2 = 0;
 
@@ -720,6 +734,7 @@ quit:
     GNUNET_GC_free (meta_cfg);
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
+  GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
   return errorCode;
 }
 
@@ -840,37 +855,86 @@ main (int argc, char *const *argv)
       char *dirs;
       unsigned int dirs_len;
       char *fullname;
+      struct stat stbuf;
+      const char *dirs_idx1;
+      char *dirs_idx2;
+      char *base;
+      int seen;
+      int added;
 
       GNUNET_GC_get_configuration_value_string (cfg, "GNUNET-AUTO-SHARE",
                                                 "DIRS", "", &dirs);
       dirs_len = strlen (dirs);
+      added = 0;
       while (i < argc)
         {
-	  fullname = GNUNET_expand_file_name(ectx,
-					     argv[i]);
-          dirs = GNUNET_realloc (dirs, dirs_len + strlen (fullname) + 2);
-          if (dirs_len > 0)
-            strcat (dirs, ";");
-          strcat (dirs, fullname);
-	  GNUNET_free(fullname);
+          fullname = GNUNET_expand_file_name (ectx, argv[i]);
+          if (0 != STAT (fullname, &stbuf))
+            {
+              FPRINTF (myout,
+                       _("Could not access `%s': %s\n"),
+                       fullname, STRERROR (errno));
+              errorCode = 1;
+              GNUNET_free (fullname);
+              GNUNET_free (dirs);
+              goto end;
+            }
+          seen = 0;
+          dirs_idx1 = dirs_idx2 = base = GNUNET_strdup (dirs);
+          while (1)
+            {
+              if ((*dirs_idx2 == ';') || (*dirs_idx2 == '\0'))
+                {
+                  *dirs_idx2 = 0;
+                  if (0 == strcmp (dirs_idx1, fullname))
+                    {
+                      seen = 1;
+                      FPRINTF (myout,
+                               _
+                               ("Directory `%s' is already on the list of shared directories.\n"),
+                               fullname);
+                      break;
+                    }
+                  if (*dirs_idx2 == 0)
+                    break;
+                  dirs_idx1 = ++dirs_idx2;
+                }
+              else
+                dirs_idx2++;
+            }
+          GNUNET_free (base);
+          if (seen == 0)
+            {
+              dirs = GNUNET_realloc (dirs, dirs_len + strlen (fullname) + 2);
+              if (dirs_len > 0)
+                strcat (dirs, ";");
+              strcat (dirs, fullname);
+              GNUNET_free (fullname);
+              added = 1;
+            }
           i++;
         }
       GNUNET_GC_set_configuration_value_string (cfg, ectx,
                                                 "GNUNET-AUTO-SHARE", "DIRS",
                                                 dirs);
+      GNUNET_free (dirs);
       if (GNUNET_GC_write_configuration (cfg, cfgFilename) != GNUNET_SYSERR)
         {
-          FPRINTF (myout,
-                   "%s",
-		   _("The specified directories were added to the list of "
-                     "shared directories.\n"));
+          if (added)
+            {
+              FPRINTF (myout,
+                       "%s",
+                       _
+                       ("The specified directories were added to the list of "
+                        "shared directories.\n"));
+            }
           errorCode = 0;
         }
       else
-        errorCode = -1;
-      GNUNET_free (dirs);
-
-      goto end;
+        {
+          errorCode = -1;
+          goto end;
+        }
     }
 
   if (GNUNET_YES != debug_flag)
@@ -885,26 +949,12 @@ main (int argc, char *const *argv)
       if (myout == NULL)
         {
           fprintf (stderr,
-                   "Could not open logfile `%s': %s\n",
+                   _("Could not open logfile `%s': %s\n"),
                    log_file_name, strerror (errno));
           GNUNET_free (log_file_name);
           errorCode = -1;
           goto end;
         }
-      GNUNET_free (log_file_name);
-
-      GNUNET_GC_get_configuration_value_filename (cfg,
-                                                  "GNUNET",
-                                                  "GNUNET_HOME",
-                                                  GNUNET_DEFAULT_HOME_DIRECTORY,
-                                                  &log_file_name);
-      log_file_name =
-        GNUNET_realloc (log_file_name, strlen (log_file_name) + 30);
-      strcat (log_file_name, "gnunet-auto-share.pid");
-      GNUNET_GC_set_configuration_value_string (cfg,
-                                                NULL,
-                                                "GNUNETD",
-                                                "PIDFILE", log_file_name);
       GNUNET_free (log_file_name);
     }
 #ifdef MINGW

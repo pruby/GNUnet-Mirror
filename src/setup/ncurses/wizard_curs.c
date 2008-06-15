@@ -472,9 +472,13 @@ finish ()
       showCursErr (_("Unable to create user account for daemon."), "");
       ret = GNUNET_SYSERR;
     }
-  if ((GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", GNUNET_NO)) && 
-      (GNUNET_OK != GNUNET_GNS_wiz_autostart_service (ectx, GNUNET_SERVICE_TYPE_GNUNETD, GNUNET_YES,
-						      user_name, group_name)))
+  if ((GNUNET_YES ==
+       GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART",
+                                                GNUNET_NO))
+      && (GNUNET_OK !=
+          GNUNET_GNS_wiz_autostart_service (ectx, GNUNET_SERVICE_TYPE_GNUNETD,
+                                            GNUNET_YES, user_name,
+                                            group_name)))
     {
       showCursErr (_("Unable to setup autostart for daemon."), "");
       ret = GNUNET_SYSERR;

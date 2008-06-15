@@ -189,7 +189,7 @@ static int
 termProcess (int pid)
 {
 #ifndef MINGW
-  return kill (pid, SIGTERM) == 0;
+  return KILL (pid, SIGTERM) == 0;
 #else
   int ret;
   DWORD dwExitCode = 0;

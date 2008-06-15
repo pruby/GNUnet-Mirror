@@ -391,10 +391,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                    "esac\n"
                    "exit 0\n",
                    "gnunet-setup",
-		   application,
-                   servicename,
-                   application,
-		   initscript);
+                   application, servicename, application, initscript);
           fclose (f);
           if (0 != CHMOD (initscript,
                           S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
@@ -465,7 +462,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                      "/sbin/rc-update add gnunetd default",
                                      WEXITSTATUS (ret));
                     }
-		  GNUNET_free (initscript);
+                  GNUNET_free (initscript);
                   return GNUNET_SYSERR;
                 }
             }

@@ -450,6 +450,7 @@ extern "C"
 #endif
 #define CREAT(p, m) creat(p, m)
 #undef FOPEN
+#define KILL(p,s) kill(p,s)
 #define FOPEN(f, m) fopen(f, m)
 #define FTRUNCATE(f, l) ftruncate(f, l)
 #define OPENDIR(d) opendir(d)

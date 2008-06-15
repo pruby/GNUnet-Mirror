@@ -1,4 +1,4 @@
-.TH GNUNET-AUTO-SHARE "1" "17 Feb 2008" "GNUnet"
+.TH GNUNET-AUTO-SHARE "1" "14 Jun 2008" "GNUnet"
 .SH NAME
 gnunet\-auto\-share \- process to share a directory
 .SH SYNOPSIS
@@ -10,11 +10,15 @@ In order to share files with other GNUnet users, the files must first
 be made available to GNUnet.  This tool allows you to automatically
 share all files from certain directories.
 .PP
-In order to start sharing files, invoke gnunet-auto-share with the
+In order to start sharing files, invoke gnunet\-auto\-share with the
 name of the directories.  As long as gnunet-auto-share is running, any
 files placed in the directories will be automatically shared.  
 Note that files that you share may not always continue to be
-available after you leave the network.
+available after you leave the network.  gnunet\-auto\-share remembers
+the list of shared directories in the configuration file.  So the next
+time you start gnunet\-auto\-share, you do not have to specify the
+directories again; however, you can run gnunet\-auto\-share multiple
+times, specifying additional directories each time.  
 .PP
 gnunet\-auto\-share will automatically extract keywords from the files that
 are shared.  Users that want to download files from GNUnet use
@@ -40,8 +44,7 @@ you have the same filename corresponding to different files in
 multiple directories, you cannot specify different meta data.  The keys are the 
 various metadata types and the entries correspond to the metadata
 values.  The special type "keyword" can be used to specify a list
-of keywords that should be used for the respective file.  Multiple
-keywords should be separated by "AND".  Example:
+of keywords that should be used for the respective file. Example:
 
  [COPYING]
  title = "The GNU Public License"
@@ -52,7 +55,7 @@ keywords should be separated by "AND".  Example:
  description = "The most frequently used free software license"
  language = "English"
  organization = "Free Software Foundation"
- keywords = "GPL AND GNU AND free AND license AND public AND FSF AND test"
+ keywords = "GPL GNU free license public FSF test"
  
  [gnunet-logo.svg]
  title = "Official logo of teh GNUnet project"
@@ -61,7 +64,7 @@ keywords should be separated by "AND".  Example:
  artist = "Nicklas Larsson"
  date = "14.7.2005"
  organization = "The GNU Project"
- keywords = "GNUnet AND logo"
+ keywords = "GNUnet logo"
  contributor = "Christian Muellner"
 
 Metadata specification only works for files in the top-level

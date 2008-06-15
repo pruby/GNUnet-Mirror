@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-06-14 00:56-0600\n"
+"POT-Creation-Date: 2008-06-14 18:48-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,48 +16,48 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/setup/ncurses/wizard_curs.c:73 src/setup/lib/wizard_util.c:141
-#: src/setup/lib/wizard_util.c:196
+#: src/setup/ncurses/wizard_curs.c:72 src/setup/lib/wizard_util.c:155
+#: src/setup/lib/wizard_util.c:210
 msgid "Error"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:81
+#: src/setup/ncurses/wizard_curs.c:80
 msgid "Help"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:88
+#: src/setup/ncurses/wizard_curs.c:87
 msgid "Error!"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:102 src/applications/vpn/cs.c:94
+#: src/setup/ncurses/wizard_curs.c:101 src/applications/vpn/cs.c:94
 msgid "No"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:103 src/applications/vpn/cs.c:94
+#: src/setup/ncurses/wizard_curs.c:102 src/applications/vpn/cs.c:94
 msgid "Yes"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:119 src/setup/ncurses/wizard_curs.c:184
-#: src/setup/ncurses/wizard_curs.c:300 src/setup/ncurses/mconf.c:193
+#: src/setup/ncurses/wizard_curs.c:118 src/setup/ncurses/wizard_curs.c:183
+#: src/setup/ncurses/wizard_curs.c:299 src/setup/ncurses/mconf.c:193
 #: src/setup/ncurses/mconf.c:298 src/setup/ncurses/mconf.c:381
 #: src/setup/ncurses/mconf.c:481
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:151
+#: src/setup/ncurses/wizard_curs.c:150
 msgid "Abort"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:152
+#: src/setup/ncurses/wizard_curs.c:151
 msgid "Ok"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:219 src/setup/ncurses/wizard_curs.c:285
-#: src/setup/ncurses/wizard_curs.c:426
+#: src/setup/ncurses/wizard_curs.c:218 src/setup/ncurses/wizard_curs.c:284
+#: src/setup/ncurses/wizard_curs.c:425
 msgid "GNUnet configuration"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:221
+#: src/setup/ncurses/wizard_curs.c:220
 msgid ""
 "Welcome to GNUnet!\n"
 "\n"
@@ -74,38 +74,38 @@ msgid ""
 "the GNUnet team"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:287
+#: src/setup/ncurses/wizard_curs.c:286
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:305 src/setup/ncurses/wizard_curs.c:319
+#: src/setup/ncurses/wizard_curs.c:304 src/setup/ncurses/wizard_curs.c:318
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
 "you are using DSL."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:316
+#: src/setup/ncurses/wizard_curs.c:315
 msgid "Network configuration: interface"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:318
+#: src/setup/ncurses/wizard_curs.c:317
 msgid ""
 "What is the name of the network interface that connects your computer to the "
 "Internet?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:329
+#: src/setup/ncurses/wizard_curs.c:328
 msgid "Network configuration: IP"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:331
+#: src/setup/ncurses/wizard_curs.c:330
 msgid "What is this computer's public IP address or hostname?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:332
+#: src/setup/ncurses/wizard_curs.c:331
 msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-"
 "Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
@@ -117,15 +117,15 @@ msgid ""
 "If in doubt, leave this empty."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:347
+#: src/setup/ncurses/wizard_curs.c:346
 msgid "Bandwidth configuration: upload"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:349
+#: src/setup/ncurses/wizard_curs.c:348
 msgid "How much upstream bandwidth (in bytes/s) may be used?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:350
+#: src/setup/ncurses/wizard_curs.c:349
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -136,15 +136,15 @@ msgid ""
 "connection allows."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:362
+#: src/setup/ncurses/wizard_curs.c:361
 msgid "Bandwidth configuration: download"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:364
+#: src/setup/ncurses/wizard_curs.c:363
 msgid "How much downstream bandwidth (in bytes/s) may be used?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:365
+#: src/setup/ncurses/wizard_curs.c:364
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -155,29 +155,29 @@ msgid ""
 "your actual connection allows."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:377
+#: src/setup/ncurses/wizard_curs.c:376
 msgid "Quota configuration"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:378
+#: src/setup/ncurses/wizard_curs.c:377
 msgid "What is the maximum size of the datastore in MB?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:379
+#: src/setup/ncurses/wizard_curs.c:378
 msgid ""
 "The GNUnet datastore contains all content that GNUnet needs to store "
 "(indexed, inserted and migrated content)."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:391
+#: src/setup/ncurses/wizard_curs.c:390
 msgid "Daemon configuration: user account"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:392
+#: src/setup/ncurses/wizard_curs.c:391
 msgid "As which user should gnunetd be run?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:394
+#: src/setup/ncurses/wizard_curs.c:393
 msgid ""
 "For security reasons, it is a good idea to let this setup create a new user "
 "account under which the GNUnet service is started at system startup.\n"
@@ -189,15 +189,15 @@ msgid ""
 "Leave the field empty to run GNUnet with system privileges.\n"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:411
+#: src/setup/ncurses/wizard_curs.c:410
 msgid "Daemon configuration: group account"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:412
+#: src/setup/ncurses/wizard_curs.c:411
 msgid "As which group should gnunetd be run?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:414
+#: src/setup/ncurses/wizard_curs.c:413
 msgid ""
 "For security reasons, it is a good idea to let this setup create a new group "
 "for the chosen user account.\n"
@@ -208,43 +208,43 @@ msgid ""
 "server and have access to GNUnet server data.\n"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:428
+#: src/setup/ncurses/wizard_curs.c:427
 msgid "Do you want to automatically launch GNUnet as a system service?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:430
+#: src/setup/ncurses/wizard_curs.c:429
 msgid ""
 "If you say \"yes\" here, the GNUnet background process will be automatically "
 "started when you turn on your computer. If you say \"no\" here, you have to "
 "launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:453 src/setup/gtk/wizard_gtk.c:414
+#: src/setup/ncurses/wizard_curs.c:452 src/setup/gtk/wizard_gtk.c:415
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:473
+#: src/setup/ncurses/wizard_curs.c:472
 msgid "Unable to create user account for daemon."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:480
+#: src/setup/ncurses/wizard_curs.c:479
 msgid "Unable to setup autostart for daemon."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:495
+#: src/setup/ncurses/wizard_curs.c:494
 msgid "Save configuration?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:496
+#: src/setup/ncurses/wizard_curs.c:495
 msgid "Save configuration now?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:536 src/setup/ncurses/mconf.c:525
+#: src/setup/ncurses/wizard_curs.c:535 src/setup/ncurses/mconf.c:525
 msgid "GNUnet Configuration"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:540
+#: src/setup/ncurses/wizard_curs.c:539
 msgid "Back"
 msgstr ""
 
@@ -375,23 +375,23 @@ msgstr ""
 msgid "Error saving configuration."
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:140
+#: src/setup/gtk/wizard_gtk.c:141
 msgid "(unknown connection)"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:438
+#: src/setup/gtk/wizard_gtk.c:439
 msgid "Do you want to save the new configuration?"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:470
+#: src/setup/gtk/wizard_gtk.c:471
 msgid "Unable to create user account:"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:479
+#: src/setup/gtk/wizard_gtk.c:481
 msgid "Unable to change startup process:"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:494
+#: src/setup/gtk/wizard_gtk.c:496
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -596,51 +596,51 @@ msgid ""
 "Internal error: entry `%s' in section `%s' not found for visibility change!\n"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:112
+#: src/setup/lib/wizard_util.c:126
 msgid "Can't open Service Control Manager"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:118
+#: src/setup/lib/wizard_util.c:132
 msgid "Can't create service"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:122
+#: src/setup/lib/wizard_util.c:136
 msgid "Error changing the permissions of the GNUnet directory"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:127
+#: src/setup/lib/wizard_util.c:141
 msgid "Cannot write to the registry"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:130
+#: src/setup/lib/wizard_util.c:144
 msgid "Can't access the service"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:133
+#: src/setup/lib/wizard_util.c:147
 msgid "Can't delete the service"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:136
+#: src/setup/lib/wizard_util.c:150
 msgid "Unknown error"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:172
+#: src/setup/lib/wizard_util.c:186
 msgid "This version of Windows does not support multiple users."
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:176
+#: src/setup/lib/wizard_util.c:190
 msgid "Error creating user"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:180
+#: src/setup/lib/wizard_util.c:194
 msgid "Error accessing local security policy"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:185
+#: src/setup/lib/wizard_util.c:199
 msgid "Error granting service right to user"
 msgstr ""
 
-#: src/setup/lib/wizard_util.c:190
+#: src/setup/lib/wizard_util.c:204
 msgid "Unknown error while creating a new user"
 msgstr ""
 
@@ -1068,7 +1068,7 @@ msgstr ""
 msgid "Setting open descriptor limit not supported.\n"
 msgstr ""
 
-#: src/util/os/osconfig.c:416 src/util/os/osconfig.c:444
+#: src/util/os/osconfig.c:435 src/util/os/osconfig.c:464
 #, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr ""
@@ -1939,7 +1939,7 @@ msgid "'%s(%s,%s)' failed.\n"
 msgstr ""
 
 #: src/applications/dht/tools/dht-query.c:141
-#: src/applications/fs/tools/gnunet-auto-share.c:610
+#: src/applications/fs/tools/gnunet-auto-share.c:612
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr ""
@@ -2444,9 +2444,9 @@ msgstr ""
 msgid "Unknown keyword type `%s' in metadata configuration\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:824
-#, c-format
-msgid "You must specify at least one directory for sharing.\n"
+#: src/applications/fs/tools/gnunet-auto-share.c:865
+msgid ""
+"The specified directories were added to the list of shared directories.\n"
 msgstr ""
 
 #: src/applications/fs/tools/gnunet-insert.c:113
@@ -2762,20 +2762,20 @@ msgstr ""
 msgid "Indexing data of file `%s' failed at position %llu.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/helper.c:90
+#: src/applications/fs/ecrs/helper.c:91
 msgid "No keywords specified!\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/helper.c:98
+#: src/applications/fs/ecrs/helper.c:99
 msgid "Number of double-quotes not balanced!\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/helper.c:383
+#: src/applications/fs/ecrs/helper.c:395
 #, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/helper.c:393
+#: src/applications/fs/ecrs/helper.c:405
 #, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr ""
@@ -4230,45 +4230,45 @@ msgid ""
 "hosts manually."
 msgstr ""
 
-#: contrib/config-daemon.scm:199
+#: contrib/config-daemon.scm:198
 msgid "HTTP Proxy Server"
 msgstr ""
 
-#: contrib/config-daemon.scm:201
+#: contrib/config-daemon.scm:200
 msgid ""
 "If you have to use a proxy for outbound HTTP connections, specify the proxy "
 "configuration here.  Default is no proxy."
 msgstr ""
 
-#: contrib/config-daemon.scm:213
+#: contrib/config-daemon.scm:212
 msgid ""
 "Name of the directory where gnunetd should store contact information about "
 "peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:215
+#: contrib/config-daemon.scm:214
 msgid ""
 "Unless you want to share the directory directly using a webserver, the "
 "default is most likely just fine."
 msgstr ""
 
-#: contrib/config-daemon.scm:241 contrib/config-client.scm:140
+#: contrib/config-daemon.scm:240 contrib/config-client.scm:140
 msgid "How long should logs be kept?"
 msgstr ""
 
-#: contrib/config-daemon.scm:243 contrib/config-client.scm:142
+#: contrib/config-daemon.scm:242 contrib/config-client.scm:142
 msgid ""
 "How long should logs be kept? If you specify a value greater than zero, a "
 "log is created each day with the date appended to its filename. These logs "
 "are deleted after $KEEPLOG days.\tTo keep logs forever, set this value to 0."
 msgstr ""
 
-#: contrib/config-daemon.scm:254
+#: contrib/config-daemon.scm:253
 msgid ""
 "What maximum number of open file descriptors should be requested from the OS?"
 msgstr ""
 
-#: contrib/config-daemon.scm:256
+#: contrib/config-daemon.scm:255
 msgid ""
 "The default of 1024 should be fine for most systems.  If your system can "
 "support more, increasing the number might help support additional clients on "
@@ -4280,66 +4280,66 @@ msgid ""
 "run with what it is given."
 msgstr ""
 
-#: contrib/config-daemon.scm:267
+#: contrib/config-daemon.scm:266
 msgid "Where should gnunetd write the logs?"
 msgstr ""
 
-#: contrib/config-daemon.scm:279
+#: contrib/config-daemon.scm:278
 msgid "Enable for extra-verbose logging."
 msgstr ""
 
-#: contrib/config-daemon.scm:291 contrib/config-client.scm:165
+#: contrib/config-daemon.scm:290 contrib/config-client.scm:165
 msgid "Logging"
 msgstr ""
 
-#: contrib/config-daemon.scm:292 contrib/config-client.scm:166
+#: contrib/config-daemon.scm:291 contrib/config-client.scm:166
 msgid "Specify which system messages should be logged how"
 msgstr ""
 
-#: contrib/config-daemon.scm:297 contrib/config-client.scm:170
+#: contrib/config-daemon.scm:296 contrib/config-client.scm:170
 msgid "Logging of events for users"
 msgstr ""
 
-#: contrib/config-daemon.scm:298 contrib/config-client.scm:171
+#: contrib/config-daemon.scm:297 contrib/config-client.scm:171
 msgid "Logging of events for the system administrator"
 msgstr ""
 
-#: contrib/config-daemon.scm:310
+#: contrib/config-daemon.scm:309
 msgid "Where should gnunetd write the PID?"
 msgstr ""
 
-#: contrib/config-daemon.scm:311
+#: contrib/config-daemon.scm:310
 msgid ""
 "The default is no longer /var/run/gnunetd.pid since we could not delete the "
 "file on shutdown at that location."
 msgstr ""
 
-#: contrib/config-daemon.scm:323
+#: contrib/config-daemon.scm:322
 msgid "As which user should gnunetd run?"
 msgstr ""
 
-#: contrib/config-daemon.scm:325
+#: contrib/config-daemon.scm:324
 msgid ""
 "Empty means \"current user\". On computer startup, it is root/SYSTEM.  Under "
 "Windows, this setting affects the creation of a new system service only."
 msgstr ""
 
-#: contrib/config-daemon.scm:338
+#: contrib/config-daemon.scm:337
 msgid "Should gnunetd be automatically started when the system boots?"
 msgstr ""
 
-#: contrib/config-daemon.scm:339
+#: contrib/config-daemon.scm:338
 msgid ""
 "Set to YES if gnunetd should be automatically started on boot.  If this "
 "option is set, gnunet-setup will install a script to start the daemon upon "
 "completion.  This option may not work on all systems."
 msgstr ""
 
-#: contrib/config-daemon.scm:351
+#: contrib/config-daemon.scm:350
 msgid "Which transport mechanisms should GNUnet use?"
 msgstr ""
 
-#: contrib/config-daemon.scm:353
+#: contrib/config-daemon.scm:352
 msgid ""
 "Use a space-separated list of modules, e.g.  \"udp smtp tcp\".  The "
 "available transports are udp, tcp, http, smtp and nat.\n"
@@ -4353,11 +4353,11 @@ msgid ""
 "itself."
 msgstr ""
 
-#: contrib/config-daemon.scm:367
+#: contrib/config-daemon.scm:366
 msgid "Which applications should gnunetd support?"
 msgstr ""
 
-#: contrib/config-daemon.scm:369
+#: contrib/config-daemon.scm:368
 msgid ""
 "Whenever this option is changed, you MUST run gnunet-update. Currently, the "
 "available applications are:\n"
@@ -4397,11 +4397,11 @@ msgid ""
 "compromise your anonymity."
 msgstr ""
 
-#: contrib/config-daemon.scm:400
+#: contrib/config-daemon.scm:399
 msgid "Disable client-server connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:401
+#: contrib/config-daemon.scm:400
 msgid ""
 "This option can be used to tell gnunetd not to open the client port.  When "
 "run like this, gnunetd will participate as a peer in the network but not "
@@ -4410,22 +4410,22 @@ msgid ""
 "prevent you from running diagnostic tools like gnunet-stats!"
 msgstr ""
 
-#: contrib/config-daemon.scm:413
+#: contrib/config-daemon.scm:412
 msgid "YES disables IPv6 support, NO enables IPv6 support"
 msgstr ""
 
-#: contrib/config-daemon.scm:414
+#: contrib/config-daemon.scm:413
 msgid ""
 "This option may be useful on peers where the kernel does not support IPv6.  "
 "You might also want to set this option if you do not have an IPv6 network "
 "connection."
 msgstr ""
 
-#: contrib/config-daemon.scm:426
+#: contrib/config-daemon.scm:425
 msgid "Disable peer discovery"
 msgstr ""
 
-#: contrib/config-daemon.scm:427
+#: contrib/config-daemon.scm:426
 msgid ""
 "The option 'PRIVATE-NETWORK' can be used to limit the connections of this "
 "peer to peers of which the hostkey has been copied by hand to data/hosts;  "
@@ -4437,15 +4437,15 @@ msgid ""
 "lines above would need some minor editing :-)."
 msgstr ""
 
-#: contrib/config-daemon.scm:438
+#: contrib/config-daemon.scm:437
 msgid "Disable advertising this peer to other peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:450
+#: contrib/config-daemon.scm:449
 msgid "Disable automatic establishment of connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:451
+#: contrib/config-daemon.scm:450
 msgid ""
 "If this option is enabled, GNUnet will not automatically establish "
 "connections to other peers, but instead wait for applications to "
@@ -4453,21 +4453,21 @@ msgid ""
 "connect to us)."
 msgstr ""
 
-#: contrib/config-daemon.scm:462
+#: contrib/config-daemon.scm:461
 msgid "Enable advertising of other peers by this peer"
 msgstr ""
 
-#: contrib/config-daemon.scm:463
+#: contrib/config-daemon.scm:462
 msgid ""
 "This option may be useful during testing, but turning it off is dangerous! "
 "If in any doubt, set it to YES (which is the default)."
 msgstr ""
 
-#: contrib/config-daemon.scm:474
+#: contrib/config-daemon.scm:473
 msgid "Port for communication with GNUnet user interfaces"
 msgstr ""
 
-#: contrib/config-daemon.scm:475
+#: contrib/config-daemon.scm:474
 msgid ""
 "Which is the client-server port that is used between gnunetd and the clients "
 "(TCP only).  You may firewall this port for non-local machines (but you do "
@@ -4475,15 +4475,15 @@ msgid ""
 "connections from machines that are listed under TRUSTED)."
 msgstr ""
 
-#: contrib/config-daemon.scm:486
+#: contrib/config-daemon.scm:485
 msgid "Port for the integrated hostlist HTTP server"
 msgstr ""
 
-#: contrib/config-daemon.scm:498
+#: contrib/config-daemon.scm:497
 msgid "IPv4 networks allowed to use gnunetd server"
 msgstr ""
 
-#: contrib/config-daemon.scm:499 contrib/config-daemon.scm:511
+#: contrib/config-daemon.scm:498 contrib/config-daemon.scm:510
 msgid ""
 "This option specifies which hosts are trusted enough to connect as clients "
 "(to the TCP port).  This is useful if you run gnunetd on one host of your "
@@ -4494,73 +4494,73 @@ msgid ""
 "separated by a semicolon, spaces are not allowed."
 msgstr ""
 
-#: contrib/config-daemon.scm:510
+#: contrib/config-daemon.scm:509
 msgid "IPv6 networks allowed to use gnunetd server"
 msgstr ""
 
-#: contrib/config-daemon.scm:523
+#: contrib/config-daemon.scm:522
 msgid "Limit connections to the specfied set of peers."
 msgstr ""
 
-#: contrib/config-daemon.scm:524
+#: contrib/config-daemon.scm:523
 msgid ""
 "If this option is not set, any peer is allowed to connect.  If it is set, "
 "only the specified peers are allowed. Specify the list of peer IDs (not IPs!)"
 msgstr ""
 
-#: contrib/config-daemon.scm:535
+#: contrib/config-daemon.scm:534
 msgid "Run gnunetd as this group."
 msgstr ""
 
-#: contrib/config-daemon.scm:536
+#: contrib/config-daemon.scm:535
 msgid ""
 "When started as root, gnunetd will change permissions to the given group."
 msgstr ""
 
-#: contrib/config-daemon.scm:547
+#: contrib/config-daemon.scm:546
 msgid "Prevent the specfied set of peers from connecting."
 msgstr ""
 
-#: contrib/config-daemon.scm:548
+#: contrib/config-daemon.scm:547
 msgid ""
 "If this option is not set, any peer is allowed to connect.  If the ID of a "
 "peer is listed here, connections from that peer will be refused.  Specify "
 "the list of peer IDs (not IPs!)"
 msgstr ""
 
-#: contrib/config-daemon.scm:559
+#: contrib/config-daemon.scm:558
 msgid "Topology Maintenance"
 msgstr ""
 
-#: contrib/config-daemon.scm:560
+#: contrib/config-daemon.scm:559
 msgid "Rarely used settings for peer advertisements and connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:580
+#: contrib/config-daemon.scm:579
 msgid "General settings"
 msgstr ""
 
-#: contrib/config-daemon.scm:581
+#: contrib/config-daemon.scm:580
 msgid "Settings that change the behavior of GNUnet in general"
 msgstr ""
 
-#: contrib/config-daemon.scm:608
+#: contrib/config-daemon.scm:607
 msgid "Modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:609
+#: contrib/config-daemon.scm:608
 msgid "Settings that select specific implementations for GNUnet modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:627
+#: contrib/config-daemon.scm:626
 msgid "Fundamentals"
 msgstr ""
 
-#: contrib/config-daemon.scm:647
+#: contrib/config-daemon.scm:646
 msgid "Which database should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:649
+#: contrib/config-daemon.scm:648
 msgid ""
 "Which database should be used?  The options are \"sqstore_sqlite\" and "
 "\"sqstore_mysql\".  You must run gnunet-update after changing this value!\n"
@@ -4569,27 +4569,27 @@ msgid ""
 "is relatively simple.  Read the file doc/README.mysql for how to setup mysql."
 msgstr ""
 
-#: contrib/config-daemon.scm:662 contrib/config-daemon.scm:675
+#: contrib/config-daemon.scm:661 contrib/config-daemon.scm:674
 msgid "Which topology should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:663
+#: contrib/config-daemon.scm:662
 msgid "Which database should be used for the temporary datastore of the DHT?"
 msgstr ""
 
-#: contrib/config-daemon.scm:677
+#: contrib/config-daemon.scm:676
 msgid ""
 "Which topology should be used?  The only option at the moment is "
 "\"topology_default\""
 msgstr ""
 
-#: contrib/config-daemon.scm:691
+#: contrib/config-daemon.scm:690
 msgid ""
 "The minimum number of connected friends before this peer is allowed to "
 "connect to peers that are not listed as friends"
 msgstr ""
 
-#: contrib/config-daemon.scm:692
+#: contrib/config-daemon.scm:691
 msgid ""
 "Note that this option does not guarantee that the peer will be able to "
 "connect to the specified number of friends.  Also, if the peer had connected "
@@ -4602,54 +4602,54 @@ msgid ""
 "is higher than the overall connection target)."
 msgstr ""
 
-#: contrib/config-daemon.scm:703
+#: contrib/config-daemon.scm:702
 msgid ""
 "If set to YES, the peer is only allowed to connect to other peers that are "
 "explicitly specified as friends"
 msgstr ""
 
-#: contrib/config-daemon.scm:704
+#: contrib/config-daemon.scm:703
 msgid ""
 "Use YES only if you have (trustworthy) friends that use GNUnet and are "
 "afraid of establishing (direct) connections to unknown peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:715
+#: contrib/config-daemon.scm:714
 msgid "List of friends for friend-to-friend topology"
 msgstr ""
 
-#: contrib/config-daemon.scm:716
+#: contrib/config-daemon.scm:715
 msgid ""
 "Specifies the name of a file which contains a list of GNUnet peer IDs that "
 "are friends.  If used with the friend-to-friend topology, this will ensure "
 "that GNUnet only connects to these peers (via any available transport)."
 msgstr ""
 
-#: contrib/config-daemon.scm:727
+#: contrib/config-daemon.scm:726
 msgid "Friend-to-Friend Topology Specification"
 msgstr ""
 
-#: contrib/config-daemon.scm:728
+#: contrib/config-daemon.scm:727
 msgid "Settings for restricting connections to friends"
 msgstr ""
 
-#: contrib/config-daemon.scm:745
+#: contrib/config-daemon.scm:744
 msgid "Name of the MySQL database GNUnet should use"
 msgstr ""
 
-#: contrib/config-daemon.scm:757
+#: contrib/config-daemon.scm:756
 msgid "Configuration file that specifies the MySQL username and password"
 msgstr ""
 
-#: contrib/config-daemon.scm:769
+#: contrib/config-daemon.scm:768
 msgid "Configuration of the MySQL database"
 msgstr ""
 
-#: contrib/config-daemon.scm:788
+#: contrib/config-daemon.scm:787
 msgid "MB of diskspace GNUnet can use for anonymous file sharing"
 msgstr ""
 
-#: contrib/config-daemon.scm:790
+#: contrib/config-daemon.scm:789
 msgid ""
 "How much disk space (MB) is GNUnet allowed to use for anonymous file "
 "sharing?  This does not take indexed files into account, only the space "
@@ -4660,11 +4660,11 @@ msgid ""
 "Note that if you change the quota, you need to run gnunet-update afterwards."
 msgstr ""
 
-#: contrib/config-daemon.scm:804
+#: contrib/config-daemon.scm:803
 msgid "Number of entries in the migration buffer"
 msgstr ""
 
-#: contrib/config-daemon.scm:805
+#: contrib/config-daemon.scm:804
 msgid ""
 "Each entry uses about 32k of memory.  More entries can reduce disk IO and "
 "CPU usage at the expense of having gnunetd use more memory. Very large "
@@ -4672,19 +4672,19 @@ msgid ""
 "from sending unsolicited responses."
 msgstr ""
 
-#: contrib/config-daemon.scm:817
+#: contrib/config-daemon.scm:816
 msgid "Size of the routing table for anonymous routing."
 msgstr ""
 
-#: contrib/config-daemon.scm:829
+#: contrib/config-daemon.scm:828
 msgid "Size of the routing table for DHT routing."
 msgstr ""
 
-#: contrib/config-daemon.scm:842
+#: contrib/config-daemon.scm:841
 msgid "Allow migrating content to this peer."
 msgstr ""
 
-#: contrib/config-daemon.scm:844
+#: contrib/config-daemon.scm:843
 msgid ""
 "If you say yes here, GNUnet will migrate content to your server, and you "
 "will not be able to control what data is stored on your machine. \n"
@@ -4696,13 +4696,13 @@ msgid ""
 "can be considered liable for it."
 msgstr ""
 
-#: contrib/config-daemon.scm:858
+#: contrib/config-daemon.scm:857
 msgid ""
 "MB of diskspace GNUnet can use for caching DHT index data (the data will be "
 "stored in /tmp)"
 msgstr ""
 
-#: contrib/config-daemon.scm:859
+#: contrib/config-daemon.scm:858
 msgid ""
 "DHT index data is inherently small and expires comparatively quickly.  It is "
 "deleted whenever gnunetd is shut down.\n"
@@ -4710,19 +4710,19 @@ msgid ""
 "The size of the DSTORE QUOTA is specified in MB."
 msgstr ""
 
-#: contrib/config-daemon.scm:873
+#: contrib/config-daemon.scm:872
 msgid "Options for anonymous file sharing"
 msgstr ""
 
-#: contrib/config-daemon.scm:892
+#: contrib/config-daemon.scm:891
 msgid "Applications"
 msgstr ""
 
-#: contrib/config-daemon.scm:908
+#: contrib/config-daemon.scm:907
 msgid "Is this machine unreachable behind a NAT?"
 msgstr ""
 
-#: contrib/config-daemon.scm:909
+#: contrib/config-daemon.scm:908
 msgid ""
 "Set to YES if this machine is behind a NAT that limits connections from the "
 "outside to the GNUnet port and that cannot be traversed using UPnP. Note "
@@ -4737,164 +4737,164 @@ msgid ""
 "otherwise."
 msgstr ""
 
-#: contrib/config-daemon.scm:920
+#: contrib/config-daemon.scm:919
 msgid "Which port should be used by the TCP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:932 contrib/config-daemon.scm:1023
-#: contrib/config-daemon.scm:1173
+#: contrib/config-daemon.scm:931 contrib/config-daemon.scm:1022
+#: contrib/config-daemon.scm:1172
 msgid "Should we try to determine our external IP using UPnP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:944
+#: contrib/config-daemon.scm:943
 msgid "Which IP(v4)s are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:956
+#: contrib/config-daemon.scm:955
 msgid ""
 "Which IP(v4)s are allowed to connect? Leave empty to use the IP of your "
 "primary network interface."
 msgstr ""
 
-#: contrib/config-daemon.scm:968 contrib/config-daemon.scm:1221
+#: contrib/config-daemon.scm:967 contrib/config-daemon.scm:1220
 msgid "Which IPv6s are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:980 contrib/config-daemon.scm:1233
+#: contrib/config-daemon.scm:979 contrib/config-daemon.scm:1232
 msgid ""
 "Which IPv6s are allowed to connect? Leave empty to allow any IP to connect."
 msgstr ""
 
-#: contrib/config-daemon.scm:993
+#: contrib/config-daemon.scm:992
 msgid "TCP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1011
+#: contrib/config-daemon.scm:1010
 msgid "Which port should be used by the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1035
+#: contrib/config-daemon.scm:1034
 msgid "Which is the external port of the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1036
+#: contrib/config-daemon.scm:1035
 msgid ""
 "Use this option if your firewall maps, say, port 80 to your real HTTP port.  "
 "This can be useful in making the HTTP messages appear even more legit "
 "(without needing to run gnunetd as root due to the use of a privileged port)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1047
+#: contrib/config-daemon.scm:1046
 msgid "HTTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1066
+#: contrib/config-daemon.scm:1065
 msgid "What is the maximum transfer unit for SMTP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1078
+#: contrib/config-daemon.scm:1077
 msgid ""
 "What is the maximum number of e-mails that gnunetd would be allowed to send "
 "per hour?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1079
+#: contrib/config-daemon.scm:1078
 msgid "Use 0 for unlimited"
 msgstr ""
 
-#: contrib/config-daemon.scm:1090
+#: contrib/config-daemon.scm:1089
 msgid "Which e-mail address should be used to send e-mail to this peer?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1091
+#: contrib/config-daemon.scm:1090
 msgid ""
 "You must make sure that e-mail received at this address is forwarded to the "
 "PIPE which is read by gnunetd.  Use the FILTER option to filter e-mail with "
 "procmail and the PIPE option to set the name of the pipe."
 msgstr ""
 
-#: contrib/config-daemon.scm:1102
+#: contrib/config-daemon.scm:1101
 msgid ""
 "Which header line should other peers include in e-mails to enable filtering?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1103
+#: contrib/config-daemon.scm:1102
 msgid ""
 "You can specify a header line here which can then be used by procmail to "
 "filter GNUnet e-mail from your inbox and forward it to gnunetd."
 msgstr ""
 
-#: contrib/config-daemon.scm:1114
+#: contrib/config-daemon.scm:1113
 msgid "What is the filename of the pipe where gnunetd can read its e-mail?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1115
+#: contrib/config-daemon.scm:1114
 msgid "Have a look at contrib/dot-procmailrc for an example .procmailrc file."
 msgstr ""
 
-#: contrib/config-daemon.scm:1126
+#: contrib/config-daemon.scm:1125
 msgid "What is the name and port of the server for outgoing e-mail?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1127
+#: contrib/config-daemon.scm:1126
 msgid "The basic format is HOSTNAME:PORT."
 msgstr ""
 
-#: contrib/config-daemon.scm:1138
+#: contrib/config-daemon.scm:1137
 msgid "SMTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1161
+#: contrib/config-daemon.scm:1160
 msgid "Which port should be used by the UDP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1185
+#: contrib/config-daemon.scm:1184
 msgid "What is the maximum transfer unit for UDP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1197
+#: contrib/config-daemon.scm:1196
 msgid "Which IPs are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1209
+#: contrib/config-daemon.scm:1208
 msgid ""
 "Which IPs are allowed to connect? Leave empty to allow connections from any "
 "IP."
 msgstr ""
 
-#: contrib/config-daemon.scm:1245
+#: contrib/config-daemon.scm:1244
 msgid "UDP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1267
+#: contrib/config-daemon.scm:1266
 msgid "Network interface"
 msgstr ""
 
-#: contrib/config-daemon.scm:1279
+#: contrib/config-daemon.scm:1278
 msgid "External IP address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1291
+#: contrib/config-daemon.scm:1290
 msgid "External IPv6 address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1303
+#: contrib/config-daemon.scm:1302
 msgid "Transports"
 msgstr ""
 
-#: contrib/config-daemon.scm:1325
+#: contrib/config-daemon.scm:1324
 msgid "What is the maximum number of bytes per second that we may receive?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1337
+#: contrib/config-daemon.scm:1336
 msgid "What is the maximum number of bytes per second that we may send?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1349
+#: contrib/config-daemon.scm:1348
 msgid "What is the maximum CPU load (percentage)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1350
+#: contrib/config-daemon.scm:1349
 msgid ""
 "The highest tolerable CPU load. Load here always refers to the total system "
 "load, that is it includes CPU utilization by other processes.  A value of 50 "
@@ -4904,11 +4904,11 @@ msgid ""
 "values above 100."
 msgstr ""
 
-#: contrib/config-daemon.scm:1361
+#: contrib/config-daemon.scm:1360
 msgid "What is the maximum IO load (permille)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1363
+#: contrib/config-daemon.scm:1362
 msgid ""
 "The highest tolerable IO load.  Load here refers to the percentage of CPU "
 "cycles wasted waiting for IO for the entire system, that is it includes disk "
@@ -4918,36 +4918,36 @@ msgid ""
 "values are typically between 10 and 75."
 msgstr ""
 
-#: contrib/config-daemon.scm:1374
+#: contrib/config-daemon.scm:1373
 msgid "What is the maximum CPU load (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1375
+#: contrib/config-daemon.scm:1374
 msgid ""
 "The highest tolerable CPU load.  This is the hard limit, so once it is "
 "reached, gnunetd will start to massively drop data to reduce the load.  Use "
 "with caution."
 msgstr ""
 
-#: contrib/config-daemon.scm:1386
+#: contrib/config-daemon.scm:1385
 msgid "What is the maximum upstream bandwidth (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1387
+#: contrib/config-daemon.scm:1386
 msgid ""
 "The limit is given as a percentage of the MAXNETUPBPS limit.  Use 100 to "
 "have MAXNETUPBPS be the hard limit.  Use zero for no limit."
 msgstr ""
 
-#: contrib/config-daemon.scm:1398
+#: contrib/config-daemon.scm:1397
 msgid "Should we disable random padding (experimental option)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1410
+#: contrib/config-daemon.scm:1409
 msgid "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES."
 msgstr ""
 
-#: contrib/config-daemon.scm:1412
+#: contrib/config-daemon.scm:1411
 msgid ""
 "Basic bandwidth limitation (YES) means simply that the bandwidth limits "
 "specified apply to GNUnet and only to GNUnet.  If set to YES, you simply "
@@ -4992,11 +4992,11 @@ msgid ""
 "since it is irrelevant)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1429
+#: contrib/config-daemon.scm:1428
 msgid "Network interface to monitor"
 msgstr ""
 
-#: contrib/config-daemon.scm:1430
+#: contrib/config-daemon.scm:1429
 msgid ""
 "For which interfaces should we do accounting?  GNUnet will evaluate the "
 "total traffic (not only the GNUnet related traffic) and adjust its bandwidth "
@@ -5007,11 +5007,11 @@ msgid ""
 "number reported by  'gnunet-win-tool -n'."
 msgstr ""
 
-#: contrib/config-daemon.scm:1441
+#: contrib/config-daemon.scm:1440
 msgid "Load management"
 msgstr ""
 
-#: contrib/config-daemon.scm:1466 contrib/config-client.scm:401
+#: contrib/config-daemon.scm:1465 contrib/config-client.scm:401
 msgid "Root node"
 msgstr ""
 

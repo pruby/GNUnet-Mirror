@@ -43,6 +43,8 @@ static struct GNUNET_GE_Context *ectx = NULL;
 static struct GNUNET_CronManager *cron;
 static struct GNUNET_LoadMonitor *mon;
 
+#define PIDFILE_DATA "GNUNETD", "PIDFILE", GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/gnunetd/pid"
+
 static char *cfgFilename = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 
 static int debug_flag;
@@ -97,16 +99,17 @@ gnunet_main ()
   int filedes[2];               /* pipe between client and parent */
 
   if ((GNUNET_NO == debug_flag)
-      && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes)))
+      && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes,
+                                               PIDFILE_DATA)))
     return GNUNET_SYSERR;
   if (GNUNET_NO != debug_flag)
-    GNUNET_pid_file_write (ectx, cfg, (unsigned int) getpid ());
+    GNUNET_pid_file_write (ectx, cfg, (unsigned int) getpid (), PIDFILE_DATA);
   if (NULL == (mon = GNUNET_network_monitor_create (ectx, cfg)))
     {
       if (GNUNET_NO == debug_flag)
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       else
-        GNUNET_pid_file_delete (ectx, cfg);
+        GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
       return GNUNET_SYSERR;
     }
   cron = GNUNET_cron_create (ectx);
@@ -220,16 +223,16 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  GNUNET_pid_file_write (ectx, cfg, getpid ());
+  GNUNET_pid_file_write (ectx, cfg, getpid (), PIDFILE_DATA);
   if (GNUNET_OK != GNUNET_CORE_startup_change_user (ectx, cfg))
     {
-      GNUNET_pid_file_delete (ectx, cfg);
+      GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
   if (GNUNET_OK != GNUNET_CORE_startup_check_permissions (ectx, cfg))
     {
-      GNUNET_pid_file_delete (ectx, cfg);
+      GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
@@ -271,7 +274,7 @@ main (int argc, char *const *argv)
                      _
                      ("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
                      "gnunet-update");
-      GNUNET_pid_file_delete (ectx, cfg);
+      GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
@@ -289,7 +292,7 @@ main (int argc, char *const *argv)
   else
 #endif
     ret = gnunet_main ();
-  GNUNET_pid_file_delete (ectx, cfg);
+  GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
   GNUNET_fini (ectx, cfg);
   if (ret != GNUNET_OK)
     return 1;

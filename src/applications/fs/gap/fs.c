@@ -848,7 +848,7 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                  _
                  ("`%s' registering client handlers %d %d %d %d %d %d %d %d and P2P handlers %d %d\n"),
                  "fs", GNUNET_CS_PROTO_GAP_QUERY_START,
-		 GNUNET_CS_PROTO_GAP_QUERY_STOP,
+                 GNUNET_CS_PROTO_GAP_QUERY_STOP,
                  GNUNET_CS_PROTO_GAP_INSERT,
                  GNUNET_CS_PROTO_GAP_INDEX, GNUNET_CS_PROTO_GAP_DELETE,
                  GNUNET_CS_PROTO_GAP_UNINDEX, GNUNET_CS_PROTO_GAP_TESTINDEX,

@@ -389,9 +389,9 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
       stat_filter_failed =
         stats->create (gettext_noop ("# bloom filter false positives"));
 
-      stats->set (stats->
-                  create (gettext_noop ("# bytes allowed in datastore")),
-                  quota);
+      stats->
+        set (stats->create (gettext_noop ("# bytes allowed in datastore")),
+             quota);
     }
   state = capi->service_request ("state");
   if (state != NULL)
