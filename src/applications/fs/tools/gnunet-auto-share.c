@@ -862,7 +862,7 @@ main (int argc, char *const *argv)
         {
           FPRINTF (myout,
                    _("The specified directories were added to the list of "
-                     "shared directories.\n"), NULL);
+                     "shared directories.\n"));
           errorCode = 0;
         }
       else
