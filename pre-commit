@@ -8,10 +8,10 @@ l="-and -not -path \"$n/*\" $l"
 done
 indent -nut `echo $l | xargs find . -name "*.c"`
 indent -nut `echo $l | xargs find . -name "*.h"`
-if test -x "$(which dos2unix)";
+if test -x "`which 'dos2unix'`"
 then
   dos2unix -ko `echo $l | xargs find . -name "*.c"`
   dos2unix -ko `echo $l | xargs find . -name "*.h"`
   rm `echo $l | xargs find . -name "*.?~"`
-fi;
+fi
 
