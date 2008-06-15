@@ -839,22 +839,21 @@ main (int argc, char *const *argv)
     {
       char *dirs;
       unsigned int dirs_len;
+      char *fullname;
 
       GNUNET_GC_get_configuration_value_string (cfg, "GNUNET-AUTO-SHARE",
                                                 "DIRS", "", &dirs);
       dirs_len = strlen (dirs);
-
       while (i < argc)
         {
-          dirs =
-            (char *) GNUNET_realloc (dirs, dirs_len + strlen (argv[i]) + 2);
+	  fullname = GNUNET_expand_file_name(ectx,
+					     argv[i]);
+          dirs = GNUNET_realloc (dirs, dirs_len + strlen (fullname) + 2);
           if (dirs_len > 0)
             strcat (dirs, ";");
-          strcat (dirs, argv[i]);
-
+          strcat (dirs, fullname);
           i++;
         }
-
       GNUNET_GC_set_configuration_value_string (cfg, ectx,
                                                 "GNUNET-AUTO-SHARE", "DIRS",
                                                 dirs);
