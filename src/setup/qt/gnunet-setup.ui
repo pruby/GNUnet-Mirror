@@ -898,6 +898,9 @@ It also helps to spread popular content over different peers to enhance availabi
           </item>
           <item>
            <widget class="QCheckBox" name="cbAutoshare" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
             <property name="font" >
              <font>
               <weight>75</weight>
