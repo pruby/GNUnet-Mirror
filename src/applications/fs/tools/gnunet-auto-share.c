@@ -861,7 +861,8 @@ main (int argc, char *const *argv)
       if (GNUNET_GC_write_configuration (cfg, cfgFilename) != GNUNET_SYSERR)
         {
           FPRINTF (myout,
-                   _("The specified directories were added to the list of "
+                   "%s",
+		   _("The specified directories were added to the list of "
                      "shared directories.\n"));
           errorCode = 0;
         }
