@@ -749,7 +749,7 @@ quit:
 void
 auto_share_shutdown_initiate ()
 {
-  // FIXME
+  GNUNET_shutdown_initiate();
 }
 
 /**
