@@ -71,7 +71,13 @@ static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_FSUI_Context *ctx;
 
-static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename =
+#ifndef MINGW  
+  GNUNET_DEFAULT_CLIENT_CONFIG_FILE
+#else
+  GNUNET_DEFAULT_CLIENT_SITE_CONFIG_FILE
+#endif
+  ;
 
 static struct GNUNET_ECRS_URI *gloKeywords;
 
@@ -154,6 +160,8 @@ static struct GNUNET_CommandLineOption gnunetauto_shareOptions[] = {
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
    1, &GNUNET_getopt_configure_set_uint, &anonymity},
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  {'@', "win-service", NULL, "", 0,
+   &GNUNET_getopt_configure_set_option, "GNUNET-AUTO-SHARE:WINSERVICE"},
   {'d', "debug", NULL,
    gettext_noop ("run in debug mode; gnunet-auto-share will "
                  "not daemonize and error messages will "
@@ -964,7 +972,7 @@ main (int argc, char *const *argv)
                                                GNUNET_NO) == GNUNET_YES)
     {
       SERVICE_TABLE_ENTRY DispatchTable[] =
-        { {"gnunet-auto-share", ServiceMain}
+        { {"GNUnet Auto Share", ServiceMain}
       , {NULL, NULL}
       };
       errorCode = (GNStartServiceCtrlDispatcher (DispatchTable) != 0);

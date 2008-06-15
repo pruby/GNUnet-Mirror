@@ -214,6 +214,8 @@ SectionGroup "GNUnet" SEC_GNUNET
       inst_conf:
         SetOutPath "$DATADIR\GNU\GNUnet\etc"
         File "C:\GNUnet\etc\gnunetd.conf"
+        ; site wide user config (gnunet-auto-share)
+        File "C:\GNUnet\etc\gnunet.conf"
       noinst_conf:
         FileClose $0
 		SectionEnd
