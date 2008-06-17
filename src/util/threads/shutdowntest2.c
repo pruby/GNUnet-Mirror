@@ -32,7 +32,7 @@ check ()
   if (GNUNET_shutdown_test () != GNUNET_NO)
     return 1;
 #ifndef MINGW
-  KILL (getpid (), SIGINT);
+  PLIBC_KILL (getpid (), SIGINT);
 #else
   GenerateConsoleCtrlEvent (CTRL_C_EVENT, 0);
 #endif

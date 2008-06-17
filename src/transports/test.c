@@ -309,7 +309,7 @@ main (int argc, char *const *argv)
     done ();
   if (pid != 0)
     {
-      KILL (pid, SIGTERM);
+      PLIBC_KILL (pid, SIGTERM);
       waitpid (pid, &pos, 0);
       if (WEXITSTATUS (pos) != 0)
         res = GNUNET_SYSERR;
@@ -334,7 +334,7 @@ cleanup:
   GNUNET_fini (api.ectx, api.cfg);
   if (pid != 0)
     {
-      KILL (pid, SIGTERM);
+      PLIBC_KILL (pid, SIGTERM);
       waitpid (pid, &res, 0);
     }
   GNUNET_free (expectedValue);
