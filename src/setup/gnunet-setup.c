@@ -260,7 +260,7 @@ main (int argc, char *const *argv)
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_REQUEST |
                          GNUNET_GE_USER,
-                         _("No interface specified, using default\n"));
+                         _("No interface specified, using default.\n"));
           operation = "config";
 #if HAVE_DIALOG
           operation = "menuconfig";
@@ -412,7 +412,7 @@ main (int argc, char *const *argv)
   GNUNET_free (cfgFilename);
   if (done == GNUNET_NO)
     {
-      fprintf (stderr, _("Unknown operation `%s'\n"), operation);
+      fprintf (stderr, _("Unknown operation '%s'.\n"), operation);
       fprintf (stderr, _("Use --help to get a list of options.\n"));
 #if HAVE_GUILE
       GNUNET_GNS_free_specification (gns);

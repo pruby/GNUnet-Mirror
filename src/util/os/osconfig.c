@@ -309,11 +309,16 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
 #else
   struct stat buf;
   int ret;
+  int i;
   char *initscript;
 
-  initscript = GNUNET_malloc (strlen (servicename) + 13);
+  i = strlen (application) - 1;
+  while ( (application < &application[i]) && (application[i] != DIR_SEPARATOR) )
+    i--;
+
+  initscript = GNUNET_malloc (strlen (&application[i]) + 13);
   strcpy (initscript, "/etc/init.d/");
-  strcat (initscript, servicename);
+  strcat (initscript, &application[i]);
 
   /* Unix */
   if ((ACCESS ("/usr/sbin/update-rc.d", X_OK) != 0))
@@ -484,7 +489,8 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
       errno = 0;
       if (ACCESS ("/usr/sbin/update-rc.d", W_OK) == 0)
         {
-          if (-1 != system ("/usr/sbin/update-rc.d gnunetd remove"))
+          ret = system ("/usr/sbin/update-rc.d gnunetd remove");
+          if (ret != 0)
             {
               GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                            GNUNET_GE_WARNING | GNUNET_GE_USER
@@ -497,7 +503,8 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
         }
       else if (ACCESS ("/sbin/rc-update", W_OK) == 0)
         {
-          if (-1 != system ("/sbin/rc-update del gnunetd"))
+          ret = system ("/sbin/rc-update del gnunetd");
+          if (ret != 0)
             {
               GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                            GNUNET_GE_WARNING | GNUNET_GE_USER

@@ -175,7 +175,7 @@ GNUNET_GNS_wiz_create_group_user (char *group_name, char *user_name)
 
   ret = GNUNET_configure_user_account (0, 1, user_name, group_name);
 
-  if (ret)
+  if (ret != GNUNET_OK)
     {
 #ifdef MINGW
       char *err;
