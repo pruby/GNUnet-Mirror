@@ -180,6 +180,7 @@ static int
 addLeafToTree (GtkWidget * parent, struct GNUNET_GNS_TreeNode *pos)
 {
   GtkWidget *ebox;
+  GtkWidget *childBox;
   GtkWidget *box;
   GtkWidget *w;
   GtkWidget *choice;
@@ -201,21 +202,23 @@ addLeafToTree (GtkWidget * parent, struct GNUNET_GNS_TreeNode *pos)
       gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 10);
       break;
     case GNUNET_GNS_TYPE_STRING:
-      ebox = gtk_vbox_new (FALSE, 10);
+      ebox = gtk_vbox_new (FALSE, 5);
       w = gtk_entry_new ();
       label = gtk_label_new (pos->description);
       gtk_label_set_mnemonic_widget (GTK_LABEL (label), w);
-      gtk_box_pack_start (GTK_BOX (ebox), label, FALSE, FALSE, 10);
+      gtk_box_pack_start (GTK_BOX (ebox), label, FALSE, FALSE, 5);
       gtk_entry_set_text (GTK_ENTRY (w), pos->value.String.val);
       g_signal_connect (w, "changed", G_CALLBACK (&string_update), pos);
       tooltip (w, pos->help);
-      gtk_box_pack_start (GTK_BOX (ebox), w, TRUE, TRUE, 10);
-      gtk_box_pack_start (GTK_BOX (box), ebox, TRUE, TRUE, 10);
+      gtk_box_pack_start (GTK_BOX (ebox), w, TRUE, TRUE, 5);
+      gtk_box_pack_start (GTK_BOX (box), ebox, TRUE, TRUE, 0);
       break;
     case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
       i = 0;
+      ebox = gtk_vbox_new (FALSE, 5);
+      childBox = gtk_hbox_new (FALSE, 5);
       label = gtk_label_new (pos->description);
-      gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
+      gtk_box_pack_start (GTK_BOX (ebox), label, FALSE, FALSE, 5);
       while (NULL != (lri = pos->value.String.legalRange[i]))
         {
 
@@ -236,9 +239,11 @@ addLeafToTree (GtkWidget * parent, struct GNUNET_GNS_TreeNode *pos)
                || (' ' == strstr (pos->value.String.val, lri)[-1])))
             gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), TRUE);
           g_signal_connect (w, "toggled", G_CALLBACK (&multi_update), pos);
-          gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 5);
+          gtk_box_pack_start (GTK_BOX (childBox), w, FALSE, FALSE, 5);
           i++;
         }
+      gtk_box_pack_start (GTK_BOX (ebox), childBox, FALSE, FALSE, 5);
+      gtk_box_pack_start (GTK_BOX (box), ebox, FALSE, FALSE, 0);
       break;
     case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       w = NULL;
@@ -326,6 +331,7 @@ addNodeToTree (GtkNotebook * parent, struct GNUNET_GNS_TreeNode *pos)
           have = have | addNodeToTree (notebook, child);
           break;
         case GNUNET_GNS_KIND_LEAF:
+          gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
           have = have | addLeafToTree (vbox, child);
           break;
         case GNUNET_GNS_KIND_ROOT:
