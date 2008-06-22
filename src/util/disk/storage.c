@@ -523,10 +523,10 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
                             GNUNET_DirectoryEntryCallback callback,
                             void *data)
 {
-  struct dirent **finfo = NULL;
+  DIR *dinfo;
+  struct dirent *finfo;
   struct stat istat;
-  int count;
-  int n;
+  int count = 0;
 
   GNUNET_GE_ASSERT (ectx, dirName != NULL);
   if (0 != STAT (dirName, &istat))
@@ -543,36 +543,33 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
                      _("Expected `%s' to be a directory!\n"), dirName);
       return GNUNET_SYSERR;
     }
-  count = scandir (dirName, &finfo, 0, alphasort);
-  if (count < 0)
+  errno = 0;
+  dinfo = OPENDIR (dirName);
+  if ((errno == EACCES) || (dinfo == NULL))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                   GNUNET_GE_BULK, "scandir", dirName);
-      if (finfo != NULL)
-        GNUNET_free (finfo);
+                                   GNUNET_GE_BULK, "opendir", dirName);
+      if (dinfo != NULL)
+        closedir (dinfo);
       return GNUNET_SYSERR;
     }
-  n = count;
-  while (n--)
+  while ((finfo = readdir (dinfo)) != NULL)
     {
-      if ((0 == strcmp (finfo[n]->d_name, ".")) ||
-          (0 == strcmp (finfo[n]->d_name, "..")))
+      if ((0 == strcmp (finfo->d_name, ".")) ||
+          (0 == strcmp (finfo->d_name, "..")))
         continue;
       if (callback != NULL)
         {
-          if (GNUNET_OK != callback (finfo[n]->d_name, dirName, data))
+          if (GNUNET_OK != callback (finfo->d_name, dirName, data))
             {
-              GNUNET_free (finfo[n]);
-              while (n--)
-                GNUNET_free (finfo[n]);
-              GNUNET_free (finfo);
+              closedir (dinfo);
               return GNUNET_SYSERR;
             }
         }
-        GNUNET_free (finfo[n]);
+      count++;
     }
-  GNUNET_free (finfo);
+  closedir (dinfo);
   return count;
 }
 
