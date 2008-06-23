@@ -74,4 +74,4 @@ main (int argc, const char *argv[])
   return 0;
 }
 
-/* end of deamontest.c */
+/* end of daemontest.c */

@@ -362,7 +362,7 @@ int GNUNET_pid_file_kill_owner (struct GNUNET_GE_Context *ectx,
 
 /**
  * Fork and start a new session to go into the background
- * in the way a good deamon should.  Also writes the PID
+ * in the way a good daemon should.  Also writes the PID
  * file.
  *
  * @param section section in the configuration for the PID filename

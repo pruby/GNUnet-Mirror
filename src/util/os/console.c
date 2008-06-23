@@ -225,7 +225,7 @@ GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
 
 /**
  * Fork and start a new session to go into the background
- * in the way a good deamon should.
+ * in the way a good daemon should.
  *
  * @param filedes pointer to an array of 2 file descriptors
  *        to complete the detachment protocol (handshake)
