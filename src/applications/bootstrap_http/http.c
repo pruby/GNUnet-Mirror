@@ -248,14 +248,14 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   if (ret != CURLE_OK)
     goto cleanup;
   CURL_EASY_SETOPT (curl, CURLOPT_FAILONERROR, 1);
-  CURL_EASY_SETOPT (curl, CURLOPT_URL, &url[pos]);
+  CURL_EASY_SETOPT (curl, CURLOPT_URL, url);
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                 _("Trying to download hostlist from `%s'\n"), &url[pos]);
+                 _("Trying to download hostlist from `%s'\n"), url);
   if (strlen (proxy) > 0)
     CURL_EASY_SETOPT (curl, CURLOPT_PROXY, proxy);
   CURL_EASY_SETOPT (curl, CURLOPT_BUFFERSIZE, 1024);    /* a bit more than one HELLO */
-  if (0 == strncmp (&url[pos], "http", 4))
+  if (0 == strncmp (url, "http", 4))
     CURL_EASY_SETOPT (curl, CURLOPT_USERAGENT, "GNUnet");
   CURL_EASY_SETOPT (curl, CURLOPT_CONNECTTIMEOUT, 150L);
   /* NOTE: use of CONNECTTIMEOUT without also
