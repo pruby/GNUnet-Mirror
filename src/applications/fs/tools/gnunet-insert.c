@@ -414,6 +414,14 @@ main (int argc, char *const *argv)
           errorCode = -1;
           goto quit;
         }
+      if (NULL == this_id)
+        {
+          fprintf (stderr,
+                   _("Option `%s' is required when using option `%s'.\n"),
+                   "-t", "-P");
+          errorCode = -1;
+          goto quit;
+        }   
     }
   else
     {                           /* ordinary insertion checks */
