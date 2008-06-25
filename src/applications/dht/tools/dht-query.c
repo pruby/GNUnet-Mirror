@@ -86,9 +86,9 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_SECONDS;
   ret = GNUNET_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              (void *) key);
-  if (ret == 0)
-    printf (_("%s(%s) operation returned no results.\n"), "get", key);
+                              &hc);
+  if (ret == GNUNET_SYSERR)
+    printf (_("%s(%s) failed.\n"), "get", key);
 }
 
 static void
