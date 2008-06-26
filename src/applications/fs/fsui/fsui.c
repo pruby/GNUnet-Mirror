@@ -760,7 +760,6 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
     }
   /* 1d) stop uploading */
   upos = ctx->activeUploads.child;
-  suspend_active_upload(upos);
   while (upos != NULL)
     {
       if ((upos->state == GNUNET_FSUI_ACTIVE) ||
@@ -768,8 +767,9 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
           (upos->state == GNUNET_FSUI_ERROR)
           || (upos->state == GNUNET_FSUI_COMPLETED))
         {
-          /* NOTE: will force transitive termination
-             of rest of tree! */
+	  if (upos->state == GNUNET_FSUI_ACTIVE)
+	    upos->state = GNUNET_FSUI_PENDING;
+	  suspend_active_upload(upos->child);
           GNUNET_thread_stop_sleep (upos->shared->handle);
           GNUNET_thread_join (upos->shared->handle, &unused);
           if (upos->state != GNUNET_FSUI_PENDING)

@@ -573,9 +573,15 @@ freeUploadList (struct GNUNET_FSUI_UploadList *ul)
   if (ul->keywords != NULL)
     GNUNET_ECRS_uri_destroy (ul->keywords);
   if (ul->uri != NULL)
-    GNUNET_ECRS_uri_destroy (ul->uri);
+    {
+      GNUNET_ECRS_uri_destroy (ul->uri);
+      ul->uri = NULL;
+    }
   if (ul->meta != NULL)
-    GNUNET_meta_data_destroy (ul->meta);
+    {
+      GNUNET_meta_data_destroy (ul->meta);
+      ul->meta = NULL;
+    }
   /* unlink from parent */
   next = ul->parent->child;
   if (next == NULL)
@@ -624,17 +630,17 @@ addChildUpload (const char *name, const char *dirName, void *data)
   struct GNUNET_FSUI_UploadList *parent = data;
   char *filename;
   struct GNUNET_FSUI_UploadList *child;
-  struct GNUNET_MetaData *md;
+  struct GNUNET_MetaData *md_tmp;
 
   filename = GNUNET_malloc (strlen (dirName) + strlen (name) + 2);
   strcpy (filename, dirName);
   if (dirName[strlen (dirName) - 1] != DIR_SEPARATOR)
     strcat (filename, DIR_SEPARATOR_STR);
   strcat (filename, name);
-  md = GNUNET_meta_data_create ();
-  child = addUploads (parent->shared, filename, NULL, md, parent);
+  md_tmp = GNUNET_meta_data_create ();
+  child = addUploads (parent->shared, filename, NULL, md_tmp, parent);
   GNUNET_free (filename);
-  GNUNET_meta_data_destroy (md);
+  GNUNET_meta_data_destroy (md_tmp);
   if (child == NULL)
     return GNUNET_SYSERR;
   parent->total += child->total;
