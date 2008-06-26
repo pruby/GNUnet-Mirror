@@ -38,11 +38,12 @@ poll_thread (void *cls)
 
   while (info->aborted == GNUNET_NO)
     {
-      if (GNUNET_client_connection_test_connected (info->sock) == 0)
-        break;
       reply = NULL;
       if (GNUNET_OK != GNUNET_client_connection_read (info->sock, &reply))
-        break;
+	{
+	  GNUNET_GE_BREAK(NULL, info->aborted != GNUNET_NO);	    
+	  break;
+	}
       if ((sizeof (CS_dht_request_put_MESSAGE) > ntohs (reply->size)) ||
           (GNUNET_CS_PROTO_DHT_REQUEST_PUT != ntohs (reply->type)))
         {
@@ -120,10 +121,7 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
   req.type = htonl (type);
   req.key = *key;
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req.header))
-    {
-      return GNUNET_SYSERR;
-    }
-
+    return GNUNET_SYSERR;   
   return GNUNET_OK;
 }
 
@@ -149,10 +147,7 @@ GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
   req.type = htonl (type);
   req.key = *key;
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req.header))
-    {
-      return GNUNET_SYSERR;
-    }
-
+    return GNUNET_SYSERR;
   return GNUNET_OK;
 
 }
