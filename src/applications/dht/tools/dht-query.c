@@ -36,7 +36,7 @@
  * How long should a "GET" run (or how long should
  * content last on the network).
  */
-static GNUNET_CronTime timeout;
+static GNUNET_CronTime timeout = 30 * GNUNET_CRON_SECONDS;
 
 static struct GNUNET_GE_Context *ectx;
 
@@ -67,7 +67,7 @@ printCallback (const GNUNET_HashCode * hash,
                unsigned int type,
                unsigned int size, const char *data, void *unused)
 {
-  printf ("%s: '%.*s'\n", "get", size, data);
+  printf ("%s: `%.*s'\n", "get", size, data);
   return GNUNET_OK;
 }
 
@@ -81,14 +81,12 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Issuing '%s(%s)' command.\n", "get", key);
+                 "Issuing `%s(%s)' command.\n", "get", key);
 #endif
-  if (timeout == 0)
-    timeout = 30 * GNUNET_CRON_SECONDS;
   ret = GNUNET_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &hc);
   if (ret == GNUNET_SYSERR)
-    printf (_("%s(%s) failed.\n"), "get", key);
+    printf (_("`%s(%s)' failed.\n"), "get", key);
   GNUNET_thread_sleep(timeout);
   ret = GNUNET_DHT_get_stop(ctx, 
 			    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -106,19 +104,17 @@ do_put (struct GNUNET_ClientServerConnection *sock,
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 _("Issuing '%s(%s,%s)' command.\n"), "put", key, value);
+                 _("Issuing `%s(%s,%s)' command.\n"), "put", key, value);
 #endif
-  if (timeout == 0)
-    timeout = 30 * GNUNET_CRON_MINUTES;
   if (GNUNET_OK ==
       GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                       strlen (value), value))
     {
-      printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
+      printf (_("`%s(%s,%s)' succeeded\n"), "put", key, value);
     }
   else
     {
-      printf (_("'%s(%s,%s)' failed.\n"), "put", key, value);
+      printf (_("`%s(%s,%s)' failed.\n"), "put", key, value);
     }
 }
 
