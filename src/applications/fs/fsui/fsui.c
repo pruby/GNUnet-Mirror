@@ -650,6 +650,20 @@ freeUploadList (struct GNUNET_FSUI_Context *ctx,
     }
 }
 
+static void
+suspend_active_upload(struct GNUNET_FSUI_UploadList * ul)
+{
+  while (ul != NULL)
+    {
+      if (ul->state == GNUNET_FSUI_ACTIVE)
+	{
+	  ul->state = GNUNET_FSUI_PENDING;
+	  suspend_active_upload(ul->child);
+	}
+      ul = ul->next;
+    }
+}
+
 /**
  * Stop all processes under FSUI control (serialize state, continue
  * later if possible).
@@ -746,6 +760,7 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
     }
   /* 1d) stop uploading */
   upos = ctx->activeUploads.child;
+  suspend_active_upload(upos);
   while (upos != NULL)
     {
       if ((upos->state == GNUNET_FSUI_ACTIVE) ||
@@ -755,8 +770,6 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
         {
           /* NOTE: will force transitive termination
              of rest of tree! */
-          if (upos->state == GNUNET_FSUI_ACTIVE)
-            upos->state = GNUNET_FSUI_PENDING;
           GNUNET_thread_stop_sleep (upos->shared->handle);
           GNUNET_thread_join (upos->shared->handle, &unused);
           if (upos->state != GNUNET_FSUI_PENDING)
