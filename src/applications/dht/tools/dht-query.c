@@ -89,6 +89,11 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
                               &hc);
   if (ret == GNUNET_SYSERR)
     printf (_("%s(%s) failed.\n"), "get", key);
+  GNUNET_thread_sleep(timeout);
+  ret = GNUNET_DHT_get_stop(ctx, 
+			    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+			    &hc);
+  GNUNET_GE_ASSERT(NULL, ret == GNUNET_OK);
 }
 
 static void
