@@ -868,7 +868,6 @@ readUploads (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
 #endif
           break;
         }
-
     }
   return GNUNET_SYSERR;
 }

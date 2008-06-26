@@ -368,7 +368,8 @@ writeUploadList (WriteBuffer * wb,
         break;
       upos = upos->next;
     }
-  WRITEINT (wb, 0);
+  if (top != GNUNET_YES)
+    WRITEINT (wb, 0);
 }
 
 static void
