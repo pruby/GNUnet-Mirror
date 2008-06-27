@@ -47,12 +47,21 @@ poll_thread (void *cls)
       reply = NULL;
       if (GNUNET_OK != GNUNET_client_connection_read (info->sock, &reply))
 	{
+	  /* FIXME: we need to handle this better,
+	     if we were not aborted, we need to try
+	     to reconnect! -- this assertion failure
+	     is more like a warning to the end-user/developer
+	     that the code is not yet perfect... */
 	  GNUNET_GE_BREAK(NULL, info->aborted != GNUNET_NO);	    
 	  break;
 	}
       if ((sizeof (CS_dht_request_put_MESSAGE) > ntohs (reply->size)) ||
           (GNUNET_CS_PROTO_DHT_REQUEST_PUT != ntohs (reply->type)))
         {
+	  fprintf(stderr,
+		  "Received message of type %u and size %u\n",
+		  ntohs(reply->type),
+		  ntohs(reply->size));
           GNUNET_GE_BREAK (NULL, 0);
           GNUNET_free (reply);
           break;                /*  invalid reply */

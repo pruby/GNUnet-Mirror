@@ -222,7 +222,7 @@ main (int argc, const char **argv)
   printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);
   if (found < NUM_PEERS * NUM_PEERS / 2)
     {
-      printf ("Not enough results (not even 50%), marking test as failed!\n");
+      printf ("Not enough results (not even 50%%), marking test as failed!\n");
       ret = 1;
     }
 FAILURE:
