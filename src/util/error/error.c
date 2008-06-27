@@ -34,7 +34,7 @@
  * After how many seconds do we always print
  * that "message X was repeated N times"?
  */
-#define BULK_DELAY_THRESHOLD (30 * GNUNET_CRON_SECONDS)
+#define BULK_DELAY_THRESHOLD (90 * GNUNET_CRON_SECONDS)
 
 /**
  * After how many repetitions do we always print
@@ -137,12 +137,12 @@ flush_bulk(struct GNUNET_GE_Context*ctx,
 
   snprintf(msg,
 	   sizeof(msg),
-	   _("%s Message `%.*s' repeated %u times in the last %llums\n"),
+	   _("%s Message `%.*s' repeated %u times in the last %llus\n"),
 	   datestr,
 	   BULK_TRACK_SIZE,
 	   ctx->last_bulk,
 	   ctx->last_bulk_repeat,
-	   GNUNET_get_time() - ctx->last_bulk_time);
+	   (GNUNET_get_time() - ctx->last_bulk_time) / GNUNET_CRON_SECONDS);
   if (ctx != NULL)
     ctx->handler (ctx->cls, ctx->last_bulk_kind, datestr, msg);
   else
