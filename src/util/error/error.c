@@ -129,7 +129,9 @@ flush_bulk(struct GNUNET_GE_Context*ctx,
 	   const char * datestr)
 {
   char msg[DATE_STR_SIZE + BULK_TRACK_SIZE + 256];
-  
+
+  if (ctx->last_bulk_time == 0)
+    return;
   if (ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] == '\n') 
     ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] = '\0';
 
