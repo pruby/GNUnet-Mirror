@@ -190,7 +190,7 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
   if ( (kind & GNUNET_GE_BULK) != 0)
     {
       if ( (ctx->last_bulk_time != 0) &&
-	   (0 == strncmp(message,
+	   (0 == strncmp(buf,
 			 ctx->last_bulk,
 			 sizeof(ctx->last_bulk))) )
 	{
@@ -205,7 +205,7 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
 	  if (ctx->last_bulk_time != 0)
 	    flush_bulk(ctx, date);
 	  strncpy(ctx->last_bulk,
-		  message,
+		  buf,
 		  sizeof(ctx->last_bulk));
 	  ctx->last_bulk_repeat = 0;
 	  ctx->last_bulk_time = now;
