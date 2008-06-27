@@ -209,7 +209,7 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  GNUNET_hash ("key2", 4, &key);
+  GNUNET_hash ("key 1", 4, &key);
   value = GNUNET_malloc (8);
   memset (value, 'A', 8);
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
@@ -217,7 +217,7 @@ main (int argc, const char **argv)
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  GNUNET_hash ("key", 3, &key);
+  GNUNET_hash ("key 2", 3, &key);
   value = GNUNET_malloc (8);
   memset (value, 'B', 8);
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
@@ -225,37 +225,34 @@ main (int argc, const char **argv)
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  GNUNET_hash ("key2", 4, &key);
+  GNUNET_hash ("key 1", 4, &key);
   peer2count = 10;
-  printf ("Getting key 2 from peer 2 (stored at peer 1)");
-  do
-    {
-      printf (".");
-      fflush (stdout);
-      if (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer2,
-                                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                             &key))
-        break;
-    }
+  printf ("Getting key 1 from peer 2 (stored at peer 1)");
+  CHECK (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer2,
+					    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					    &key));  
   while (peer2count > 0);
+  CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer2,
+					   GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					   &key));  
   printf (peer2count > 0 ? " OK!\n" : "?\n");
 
   CHECK (peer2count > 0);
 
-  printf ("Getting key 1 from peer 1 (stored at peer 2)");
+  printf ("Getting key 2 from peer 1 (stored at peer 2)");
   peer1count = 10;
-  do
-    {
-      printf (".");
-      fflush (stdout);
-      if (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer1,
-                                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                             &key))
-        break;
-    }
+  CHECK (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer1,
+					    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					    &key));
+
   while (peer1count > 0);
   printf (peer1count > 0 ? " OK!\n" : "?\n");
   CHECK (peer1count > 0);
+
+  CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer1,
+					   GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					   &key));
+
   /* end of actual test code */
 
 FAILURE:

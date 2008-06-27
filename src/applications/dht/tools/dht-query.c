@@ -86,7 +86,7 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
   ret = GNUNET_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &hc);
   if (ret == GNUNET_SYSERR)
-    printf (_("`%s(%s)' failed.\n"), "get", key);
+    printf ("`%s(%s)' failed.\n", "get", key);
   GNUNET_thread_sleep(timeout);
   ret = GNUNET_DHT_get_stop(ctx, 
 			    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -110,11 +110,11 @@ do_put (struct GNUNET_ClientServerConnection *sock,
       GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                       strlen (value), value))
     {
-      printf (_("`%s(%s,%s)' succeeded\n"), "put", key, value);
+      printf ("`%s(%s,%s)' succeeded\n", "put", key, value);
     }
   else
     {
-      printf (_("`%s(%s,%s)' failed.\n"), "put", key, value);
+      printf ("`%s(%s,%s)' failed.\n", "put", key, value);
     }
 }
 
