@@ -129,25 +129,33 @@ flush_bulk(struct GNUNET_GE_Context*ctx,
 	   const char * datestr)
 {
   char msg[DATE_STR_SIZE + BULK_TRACK_SIZE + 256];
+  GNUNET_CronTime now;
+  int rev;
 
-  if (ctx->last_bulk_time == 0)
+  if ( (ctx->last_bulk_time == 0) ||
+       (ctx->last_bulk_repeat == 0) )
     return;
+  now = GNUNET_get_time();
+  rev = 0;
   if (ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] == '\n') 
-    ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] = '\0';
-
+    {
+      rev = 1;
+      ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] = '\0';
+    }
   snprintf(msg,
 	   sizeof(msg),
-	   _("%s Message `%.*s' repeated %u times in the last %llus\n"),
-	   datestr,
+	   _("Message `%.*s' repeated %u times in the last %llus\n"),
 	   BULK_TRACK_SIZE,
 	   ctx->last_bulk,
 	   ctx->last_bulk_repeat,
-	   (GNUNET_get_time() - ctx->last_bulk_time) / GNUNET_CRON_SECONDS);
+	   (now - ctx->last_bulk_time) / GNUNET_CRON_SECONDS);
+  if (rev == 1)
+    ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE-1)] = '\n';
   if (ctx != NULL)
     ctx->handler (ctx->cls, ctx->last_bulk_kind, datestr, msg);
   else
     fprintf (stderr, "%s %s", datestr, msg);
-  ctx->last_bulk_time = 0;
+  ctx->last_bulk_time = now;
   ctx->last_bulk_repeat = 0;
 }
 
@@ -214,7 +222,10 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
     }
   if ( (now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
        (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD) )
-    flush_bulk(ctx, date);
+    {
+      flush_bulk(ctx, date);
+      ctx->last_bulk_time = 0;
+    }
   if (ctx != NULL)
     ctx->handler (ctx->cls, kind, date, buf);
   else
