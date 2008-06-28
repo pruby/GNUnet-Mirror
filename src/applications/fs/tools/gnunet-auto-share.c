@@ -968,11 +968,6 @@ main (int argc, char *const *argv)
                                fullname);
                       break;
                     }
-		  else
-		    fprintf(stderr,
-			    "No match between `%s' and `%s'\n",
-			    fullname,
-			    dirs_idx1);
 		  if (do_break)
 		    break;
                   dirs_idx1 = ++dirs_idx2;
