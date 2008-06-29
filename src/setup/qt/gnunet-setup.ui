@@ -225,44 +225,6 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
            </spacer>
           </item>
           <item>
-           <widget class="QLabel" name="label_5" >
-            <property name="text" >
-             <string>If you are connected to the internet through another computer doing SNAT, a router or a "hardware firewall" and other computers on the internet cannot connect to this computer, check the this option on this page. Leave it unchecked on direct connections through modems, ISDN cards and DNAT (also known as "port forwarding").</string>
-            </property>
-            <property name="wordWrap" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
-             <number>6</number>
-            </property>
-            <item>
-             <widget class="QCheckBox" name="cbSNAT" >
-              <property name="font" >
-               <font>
-                <family>MS Shell Dlg 2</family>
-                <pointsize>8</pointsize>
-                <weight>75</weight>
-                <italic>false</italic>
-                <bold>true</bold>
-                <underline>false</underline>
-                <strikeout>false</strikeout>
-               </font>
-              </property>
-              <property name="text" >
-               <string>Computer cannot receive inbound connections</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
            <spacer>
             <property name="orientation" >
              <enum>Qt::Vertical</enum>

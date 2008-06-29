@@ -67,7 +67,7 @@ QString GSetupWizard::header()
             "<td>&nbsp;</td>"
           "</tr>"
         "</table>"
-        "<br>"  
+        "<br>"
   );
 }
 
@@ -75,20 +75,20 @@ GSetupWizard::GSetupWizard(QDialog *parent, struct GNUNET_GE_Context *ectx, stru
 {
   setupUi(this);
   welcome();
-  
+
   curPage = 0;
 
   this->ectx = ectx;
   this->cfg = cfg;
   this->cfg_fn = cfg_fn;
-  
+
   pbPrev->setHidden(true);
-  
+
   connect(pbNext, SIGNAL(clicked()), this, SLOT(nextClicked()));
   connect(pbPrev, SIGNAL(clicked()), this, SLOT(prevClicked()));
   connect(pbClose, SIGNAL(clicked()) , this, SLOT(abortClicked()));
   connect(htmlWelcome, SIGNAL(anchorClicked(const QUrl &)), this, SLOT(linkHandler(const QUrl &)));
-  
+
   loadDefaults();
 }
 
@@ -96,12 +96,12 @@ static int insert_nic (const char *name, int defaultNIC, void *cls)
 {
   QString str;
   QComboBox *cmbIF;
-  
+
   cmbIF = (QComboBox *) cls;
   str = name;
   if (str.length() == 0)
     str = QObject::tr("(unknown connection)");
-  
+
   cmbIF->addItem(str);
   if (defaultNIC)
     cmbIF->setCurrentIndex(cmbIF->count() - 1);
@@ -113,18 +113,15 @@ void GSetupWizard::loadDefaults()
 {
   char *val;
   unsigned long long num;
-  
+
   // page 2
   GNUNET_list_network_interfaces (ectx, &insert_nic, cmbIF);
-  
+
   GNUNET_GC_get_configuration_value_string (cfg, "NETWORK", "IP", "",
                                             &val);
   editIP->setText(val);
   GNUNET_free_non_null(val);
-  
-  cbSNAT->setChecked(GNUNET_GC_get_configuration_value_yesno(cfg, "NAT", "LIMITED",
-                                 GNUNET_NO) == GNUNET_YES);
-                                 
+
   // page 3
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "LOAD",
@@ -132,7 +129,7 @@ void GSetupWizard::loadDefaults()
                                             &val);
   editUp->setText(val);
   GNUNET_free_non_null(val);
-  
+
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "LOAD",
                                             "MAXNETDOWNBPSTOTAL", "50000",
@@ -151,12 +148,12 @@ void GSetupWizard::loadDefaults()
   {
     rbShared->setChecked(true);
   }
-  
+
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "LOAD", "MAXCPULOAD", "50", &val);
   spinCPU->setValue(atoi(val));
   GNUNET_free_non_null(val);
-  
+
   // page 4
   char *uname = NULL;
   char *gname = NULL;
@@ -192,7 +189,7 @@ void GSetupWizard::loadDefaults()
   if (NULL == gname || strlen (gname) == 0)
     {
       struct group *grp;
-      
+
       if ((geteuid () == 0) || (NULL != getgrnam ("gnunet")))
         group_name = GNUNET_strdup ("gnunet");
       else
@@ -234,7 +231,7 @@ void GSetupWizard::loadDefaults()
 #ifdef WINDOWS
   cap = FALSE;
 #endif
-  
+
   if (!cap) {
     editGroup->setEnabled(false);
     editGroup->setText("");
@@ -242,11 +239,11 @@ void GSetupWizard::loadDefaults()
 
   GNUNET_free_non_null(uname);
   GNUNET_free_non_null(gname);
-  
+
   // page 5
   GNUNET_GC_get_configuration_value_number(cfg, "FS", "QUOTA", 1, 1000000, 1024, &num);
   spinQuota->setValue(num);
-  
+
   cbMigr->setChecked(GNUNET_GC_get_configuration_value_yesno
                                 (cfg, "FS", "ACTIVEMIGRATION",
                                  GNUNET_YES) == GNUNET_YES);
@@ -259,11 +256,11 @@ void GSetupWizard::loadDefaults()
 int GSetupWizard::saveConf()
 {
   GString str;
-  
+
   str = cmbIF->currentText();
 #ifdef Q_OS_WIN32
   int idx;
-  
+
   idx = str.lastIndexOf("- ");
   if (idx == -1)
   {
@@ -278,21 +275,20 @@ int GSetupWizard::saveConf()
   GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "INTERFACES", str.toUtf8CStr());
   str = editIP->text();
   GNUNET_GC_set_configuration_value_string(cfg, ectx, "NETWORK", "IP", str.toUtf8CStr());
-  GNUNET_GC_set_configuration_value_choice(cfg, ectx, "NAT", "LIMITED", cbSNAT->isChecked() ? "YES" : "NO");
   str = editDown->text();
   GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETDOWNBPSTOTAL", str.toUtf8CStr());
   str = editUp->text();
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETUPBPSTOTAL", str.toUtf8CStr());  
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETUPBPSTOTAL", str.toUtf8CStr());
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "LOAD", "BASICLIMITING", rbFull->isChecked() ? "YES" : "NO");
-  GNUNET_GC_set_configuration_value_number(cfg, ectx, "LOAD", "MAXCPULOAD", spinCPU->value());  
+  GNUNET_GC_set_configuration_value_number(cfg, ectx, "LOAD", "MAXCPULOAD", spinCPU->value());
   str = editUser->text();
   GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "USER", str.toUtf8CStr());
   str = editGroup->text();
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "GROUP", str.toUtf8CStr());  
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "GROUP", str.toUtf8CStr());
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "FS", "ACTIVEMIGRATION", cbMigr->isChecked() ? "YES" : "NO");
-  GNUNET_GC_set_configuration_value_number(cfg, ectx, "FS", "QUOTA", spinQuota->value());  
+  GNUNET_GC_set_configuration_value_number(cfg, ectx, "FS", "QUOTA", spinQuota->value());
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "GNUNETD", "AUTOSTART", cbAutostart->isChecked() ? "YES" : "NO");
-  
+
   if (GNUNET_GC_write_configuration (cfg, cfg_fn))
     {
       QMessageBox::critical(this, tr("Error"), tr("Unable to save configuration file ") +
@@ -306,7 +302,7 @@ void GSetupWizard::abortClicked()
 {
   QMessageBox::StandardButton ret;
   int ok;
-  
+
   ret = QMessageBox::question(this, tr("Save"), tr("Do you want to save the new configuration?"),
     QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
   switch(ret)
@@ -321,7 +317,7 @@ void GSetupWizard::abortClicked()
     default:
       ok = GNUNET_NO;
   }
-  
+
   if (ok)
     qApp->quit();
 }
@@ -329,7 +325,7 @@ void GSetupWizard::abortClicked()
 void GSetupWizard::nextClicked()
 {
   pbPrev->setHidden(false);
-  
+
   if (curPage == 3)
   {
     pbNext->setIcon(QIcon(":/pixmaps/exit.png"));
@@ -339,12 +335,12 @@ void GSetupWizard::nextClicked()
   {
     GString str;
     char *user_name, *group_name;
-    
+
     str = editUser->text();
     user_name = strdup(str.toUtf8CStr());
     str = editGroup->text();
     group_name = strdup(str.toUtf8CStr());
-    
+
     if (cbAutostart->isChecked() && strlen(user_name))
       if (!GNUNET_GNS_wiz_create_group_user (group_name, user_name))
         {
@@ -356,7 +352,7 @@ void GSetupWizard::nextClicked()
           GNUNET_free(group_name);
           return;
         }
-  
+
     if (GNUNET_GNS_wiz_autostart_service (ectx, GNUNET_SERVICE_TYPE_GNUNETD,
         cbAutostart->isChecked(), user_name, group_name) != GNUNET_OK)
       {
@@ -373,25 +369,25 @@ void GSetupWizard::nextClicked()
           QMessageBox::critical(this, tr("Error"), QString("Unable to change startup process for auto-share: ") +
             STRERROR(errno));
 #endif
-      }    
-    
+      }
+
     GNUNET_free(user_name);
     GNUNET_free(group_name);
-  
+
     if (GNUNET_OK != saveConf ())
       return;
-    
+
     if (cbGNUpdate->isChecked())
       {
         QProcess proc;
         QStringList args;
         char *bin;
-        
+
         args << "-L" << "INFO" << "-c" << cfg_fn;
-        bin = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);        
+        bin = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
         proc.setWorkingDirectory(bin);
         proc.setStandardErrorFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.err");
-        proc.setStandardOutputFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.out");        
+        proc.setStandardOutputFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.out");
         GNUNET_free_non_null(bin);
         proc.start("gnunet-update", args);
         proc.waitForFinished(-1);
@@ -412,7 +408,7 @@ void GSetupWizard::nextClicked()
 
     return;
   }
-  
+
   curPage++;
   stackedWidget->setCurrentIndex(curPage);
 }
@@ -422,13 +418,13 @@ void GSetupWizard::prevClicked()
   if (curPage == 4)
   {
     pbNext->setIcon(QIcon(":/pixmaps/go-next.png"));
-    pbNext->setText(tr("Next"));    
+    pbNext->setText(tr("Next"));
   }
   else if (curPage == 1)
     pbPrev->setHidden(true);
   else if (curPage == 0)
     return;
-  
+
   curPage--;
   stackedWidget->setCurrentIndex(curPage);
 }
