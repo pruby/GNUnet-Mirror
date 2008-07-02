@@ -131,16 +131,22 @@ flush_bulk(struct GNUNET_GE_Context*ctx,
   char msg[DATE_STR_SIZE + BULK_TRACK_SIZE + 256];
   GNUNET_CronTime now;
   int rev;
+  char *last;
 
   if ( (ctx->last_bulk_time == 0) ||
        (ctx->last_bulk_repeat == 0) )
     return;
   now = GNUNET_get_time();
   rev = 0;
-  if (ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] == '\n') 
+  last = memchr(ctx->last_bulk, '\0', BULK_TRACK_SIZE);
+  if(last == NULL)
+    last = &ctx->last_bulk[BULK_TRACK_SIZE-1];
+  else if(last != ctx->last_bulk)
+    last--;
+  if (last[0] == '\n') 
     {
       rev = 1;
-      ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE)-1] = '\0';
+      last[0] = '\0';
     }
   snprintf(msg,
 	   sizeof(msg),
@@ -150,7 +156,7 @@ flush_bulk(struct GNUNET_GE_Context*ctx,
 	   ctx->last_bulk_repeat,
 	   (now - ctx->last_bulk_time) / GNUNET_CRON_SECONDS);
   if (rev == 1)
-    ctx->last_bulk[strnlen(ctx->last_bulk, BULK_TRACK_SIZE-1)] = '\n';
+    last[0] = '\n';
   if (ctx != NULL)
     ctx->handler (ctx->cls, ctx->last_bulk_kind, datestr, msg);
   else
