@@ -115,7 +115,6 @@ static struct GNUNET_CommandLineOption gnunetsetupOptions[] = {
    gettext_noop ("update a value in the configuration file"),
    1, &set_option_helper, NULL},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
-  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
