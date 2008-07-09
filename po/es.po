@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0e\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-06-14 18:48-0600\n"
+"POT-Creation-Date: 2008-06-14 20:51-0600\n"
 "PO-Revision-Date: 2006-06-29 12:05+0200\n"
 "Last-Translator: Miguel Angel Arruga <miguel.13@telefonica.net>\n"
 "Language-Team: Spanish\n"
@@ -41,9 +41,9 @@ msgid "Yes"
 msgstr "Sí"
 
 #: src/setup/ncurses/wizard_curs.c:118 src/setup/ncurses/wizard_curs.c:183
-#: src/setup/ncurses/wizard_curs.c:299 src/setup/ncurses/mconf.c:193
-#: src/setup/ncurses/mconf.c:298 src/setup/ncurses/mconf.c:381
-#: src/setup/ncurses/mconf.c:481
+#: src/setup/ncurses/wizard_curs.c:299 src/setup/ncurses/mconf.c:191
+#: src/setup/ncurses/mconf.c:289 src/setup/ncurses/mconf.c:370
+#: src/setup/ncurses/mconf.c:465
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
@@ -316,7 +316,7 @@ msgstr ""
 "automáticamente arrancado cuando enciendas tu ordenador. Si dices \"no\" "
 "aquí, tendrás que ejecutar GNUnet tu mismo cada vez que quieras usarlo."
 
-#: src/setup/ncurses/wizard_curs.c:452 src/setup/gtk/wizard_gtk.c:415
+#: src/setup/ncurses/wizard_curs.c:452 src/setup/gtk/wizard_gtk.c:418
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Imposible guardar el fichero de configuración '%s':"
@@ -326,26 +326,26 @@ msgstr "Imposible guardar el fichero de configuración '%s':"
 msgid "Unable to create user account for daemon."
 msgstr "Imposible crear la cuenta de usuario:"
 
-#: src/setup/ncurses/wizard_curs.c:479
+#: src/setup/ncurses/wizard_curs.c:483
 msgid "Unable to setup autostart for daemon."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:494
+#: src/setup/ncurses/wizard_curs.c:498
 #, fuzzy
 msgid "Save configuration?"
 msgstr "Configuración de GNUnet"
 
-#: src/setup/ncurses/wizard_curs.c:495
+#: src/setup/ncurses/wizard_curs.c:499
 #, fuzzy
 msgid "Save configuration now?"
 msgstr "Configuración de GNUnet"
 
-#: src/setup/ncurses/wizard_curs.c:535 src/setup/ncurses/mconf.c:525
+#: src/setup/ncurses/wizard_curs.c:539 src/setup/ncurses/mconf.c:509
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "Configuración de GNUnet"
 
-#: src/setup/ncurses/wizard_curs.c:539
+#: src/setup/ncurses/wizard_curs.c:543
 msgid "Back"
 msgstr "Atrás"
 
@@ -361,41 +361,41 @@ msgstr "Arriba"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/setup/ncurses/mconf.c:229 src/setup/ncurses/mconf.c:428
+#: src/setup/ncurses/mconf.c:224 src/setup/ncurses/mconf.c:414
 msgid "Internal error! (Value invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:414
+#: src/setup/ncurses/mconf.c:403
 msgid "Invalid input, expecting floating point value."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:460
+#: src/setup/ncurses/mconf.c:446
 msgid "Invalid input, expecting integer."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:468
+#: src/setup/ncurses/mconf.c:454
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:537 src/setup/text/conf.c:569
+#: src/setup/ncurses/mconf.c:521 src/setup/text/conf.c:569
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr ""
 "La configuración o la versión de GNUnet cambiaron.  ¡Debes ejecutar '%s'!\n"
 
-#: src/setup/ncurses/mconf.c:543
+#: src/setup/ncurses/mconf.c:527
 #, fuzzy
 msgid "Do you wish to save your new configuration?"
 msgstr "¿Quieres guardar tu configuración?"
 
-#: src/setup/ncurses/mconf.c:557
+#: src/setup/ncurses/mconf.c:541
 #, fuzzy, c-format
 msgid ""
 "\n"
 "End of configuration.\n"
 msgstr " gconfig\tConfiguración GTK\n"
 
-#: src/setup/ncurses/mconf.c:562
+#: src/setup/ncurses/mconf.c:546
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -488,20 +488,20 @@ msgstr "Imposible guardar la configuración"
 msgid "(unknown connection)"
 msgstr "Conexión de red"
 
-#: src/setup/gtk/wizard_gtk.c:439
+#: src/setup/gtk/wizard_gtk.c:442
 #, fuzzy
 msgid "Do you want to save the new configuration?"
 msgstr "¿Quieres guardar tu configuración?"
 
-#: src/setup/gtk/wizard_gtk.c:471
+#: src/setup/gtk/wizard_gtk.c:474
 msgid "Unable to create user account:"
 msgstr "Imposible crear la cuenta de usuario:"
 
-#: src/setup/gtk/wizard_gtk.c:481
+#: src/setup/gtk/wizard_gtk.c:484
 msgid "Unable to change startup process:"
 msgstr "Imposible cambiar el proceso de arranque:"
 
-#: src/setup/gtk/wizard_gtk.c:496
+#: src/setup/gtk/wizard_gtk.c:499
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -760,7 +760,7 @@ msgstr "Error garantizando el servicio correcto al usuario"
 msgid "Unknown error while creating a new user"
 msgstr "Error desconocido mientras se creaba un nuevo usuario"
 
-#: src/setup/lib/gns.c:315
+#: src/setup/lib/gns.c:297
 #, fuzzy, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
@@ -1193,7 +1193,7 @@ msgstr ""
 msgid "Setting open descriptor limit not supported.\n"
 msgstr ""
 
-#: src/util/os/osconfig.c:435 src/util/os/osconfig.c:464
+#: src/util/os/osconfig.c:432 src/util/os/osconfig.c:461
 #, fuzzy, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr "'%s' falló con el código de error %s: %s"
@@ -2100,7 +2100,7 @@ msgid "'%s(%s,%s)' failed.\n"
 msgstr "'%s(%s, %s)' falló.\n"
 
 #: src/applications/dht/tools/dht-query.c:141
-#: src/applications/fs/tools/gnunet-auto-share.c:612
+#: src/applications/fs/tools/gnunet-auto-share.c:626
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr "Fallo al conectar a gnunetd.\n"
@@ -2393,7 +2393,7 @@ msgid "# sessions established"
 msgstr "# sesiones establecidas"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
-#: src/applications/fs/tools/gnunet-auto-share.c:152
+#: src/applications/fs/tools/gnunet-auto-share.c:154
 #: src/applications/fs/tools/gnunet-insert.c:249
 #: src/applications/fs/tools/gnunet-search.c:125
 #: src/applications/fs/tools/gnunet-download.c:77
@@ -2575,14 +2575,14 @@ msgstr "comienza a seguir las entradas de la base de datos del directorio"
 msgid "Listed %d matching entries.\n"
 msgstr "%d entradas encontradas.\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:113
+#: src/applications/fs/tools/gnunet-auto-share.c:115
 #, fuzzy, c-format
 msgid "Upload of `%s' complete, URI is `%s'.\n"
 msgstr ""
 "Subida de '%s' completada, la velocidad media de subida actual es %8.3f "
 "kbps.\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:122
+#: src/applications/fs/tools/gnunet-auto-share.c:124
 #: src/applications/fs/tools/gnunet-insert.c:223
 #, fuzzy, c-format
 msgid ""
@@ -2590,7 +2590,7 @@ msgid ""
 "Upload aborted.\n"
 msgstr "Descarga abortada"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:128
+#: src/applications/fs/tools/gnunet-auto-share.c:130
 #: src/applications/fs/tools/gnunet-insert.c:228
 #, fuzzy, c-format
 msgid ""
@@ -2600,7 +2600,7 @@ msgstr ""
 "\n"
 "Error subiendo el fichero %s\n"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:139
+#: src/applications/fs/tools/gnunet-auto-share.c:141
 #: src/applications/fs/tools/gnunet-insert.c:237
 #, c-format
 msgid ""
@@ -2608,7 +2608,7 @@ msgid ""
 "Unexpected event: %d\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:156
+#: src/applications/fs/tools/gnunet-auto-share.c:158
 #, fuzzy
 msgid ""
 "run in debug mode; gnunet-auto-share will not daemonize and error messages "
@@ -2617,7 +2617,7 @@ msgstr ""
 "se ejecuta en modo de depuración; gnunetd no sera un demonio y los mensajes "
 "de error serán escritos a través de stderr en vez de en un fichero de log"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:162
+#: src/applications/fs/tools/gnunet-auto-share.c:164
 #: src/applications/fs/tools/gnunet-insert.c:262
 #, fuzzy
 msgid ""
@@ -2627,11 +2627,11 @@ msgstr ""
 "usa libextractor para añadir referencias directas adicionales a las entradas "
 "del directorio"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:164
+#: src/applications/fs/tools/gnunet-auto-share.c:166
 msgid "Automatically share a directory."
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:167
+#: src/applications/fs/tools/gnunet-auto-share.c:169
 #: src/applications/fs/tools/gnunet-insert.c:276
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
@@ -2640,20 +2640,41 @@ msgstr ""
 "añade una clave adicional para todos los ficheros y directorios (esta opción "
 "puede ser especificada varias veces)"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:172
+#: src/applications/fs/tools/gnunet-auto-share.c:174
 #: src/applications/fs/tools/gnunet-insert.c:293
 msgid "specify the priority of the content"
 msgstr "especifica la prioridad del contenido"
 
-#: src/applications/fs/tools/gnunet-auto-share.c:505
+#: src/applications/fs/tools/gnunet-auto-share.c:425
+#: src/applications/fs/tools/gnunet-auto-share.c:875
+#, fuzzy, c-format
+msgid "Could not access `%s': %s\n"
+msgstr "Imposible ejecutar '%s': %s\n"
+
+#: src/applications/fs/tools/gnunet-auto-share.c:507
 #, c-format
 msgid "Unknown keyword type `%s' in metadata configuration\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:865
+#: src/applications/fs/tools/gnunet-auto-share.c:608
+#, fuzzy, c-format
+msgid "Failed to stop running gnunet-auto-share.\n"
+msgstr "Fallo al conectar a gnunetd.\n"
+
+#: src/applications/fs/tools/gnunet-auto-share.c:894
+#, c-format
+msgid "Directory `%s' is already on the list of shared directories.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:928
 msgid ""
 "The specified directories were added to the list of shared directories.\n"
 msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:952
+#, fuzzy, c-format
+msgid "Could not open logfile `%s': %s\n"
+msgstr "Fichero almacenado en '%s'.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:113
 #, c-format
@@ -3069,8 +3090,8 @@ msgstr ""
 msgid "IO error."
 msgstr ""
 
+#: src/applications/fs/collection/collection.c:550
 #: src/applications/fs/collection/collection.c:553
-#: src/applications/fs/collection/collection.c:556
 #, c-format
 msgid "Revision %u"
 msgstr ""
@@ -3253,17 +3274,17 @@ msgstr "Fallo en las estadísticas del tráfico.\n"
 msgid "scp command is : %s \n"
 msgstr ""
 
-#: src/applications/testing/remote.c:505
+#: src/applications/testing/remote.c:504
 #, fuzzy, c-format
 msgid "Friend list of %s:%d\n"
 msgstr "Fallo al conectar a gnunetd.\n"
 
-#: src/applications/testing/remote.c:527
+#: src/applications/testing/remote.c:526
 #, c-format
 msgid "scp command for friend file copy is : %s \n"
 msgstr ""
 
-#: src/applications/testing/remote.c:549
+#: src/applications/testing/remote.c:548
 #, fuzzy, c-format
 msgid "connecting peer %s:%d to peer %s:%d\n"
 msgstr "Imposible conectar a %u.%u.%u.%u:%u: %s\n"
@@ -3288,7 +3309,7 @@ msgstr "Esperando a los pares para conectar (%u ciclos restantes)...\n"
 msgid "Connecting nodes in 2d torus topology: %u rows %u columns\n"
 msgstr ""
 
-#: src/applications/testing/remotetopologies.c:483
+#: src/applications/testing/remotetopologies.c:481
 #, fuzzy, c-format
 msgid "Failed to establish connection with peers.\n"
 msgstr "Se produjo un error estableciendo conexión con gnunetd.\n"
@@ -3306,9 +3327,9 @@ msgstr "Formato del pseudónimo '%s' no es válido.\n"
 #: src/applications/bootstrap_http/http.c:365
 #: src/applications/bootstrap_http/http.c:375
 #: src/applications/bootstrap_http/http.c:385 src/transports/upnp/upnp.c:356
-#: src/transports/upnp/upnp.c:541 src/transports/http.c:1083
-#: src/transports/http.c:1207 src/transports/http.c:1375
-#: src/transports/http.c:1775 src/transports/http.c:1825
+#: src/transports/upnp/upnp.c:541 src/transports/http.c:1085
+#: src/transports/http.c:1209 src/transports/http.c:1377
+#: src/transports/http.c:1777 src/transports/http.c:1827
 #, fuzzy, c-format
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr "'%s' falló en %s: %d con error: '%s'.\n"
@@ -3783,7 +3804,7 @@ msgstr "Actualizando los datos del módulo '%s'\n"
 msgid "Failed to update data for module `%s'\n"
 msgstr "Falló al actualizar los datos del módulo '%s'\n"
 
-#: src/server/gnunet-update.c:222 src/server/gnunetd.c:121
+#: src/server/gnunet-update.c:222 src/server/gnunetd.c:124
 #, fuzzy
 msgid "Core initialization failed.\n"
 msgstr "Conexión fallida\n"
@@ -3805,17 +3826,17 @@ msgid ""
 "Failed to determine filename used to store GNUnet version information!\n"
 msgstr ""
 
-#: src/server/gnunetd.c:83
+#: src/server/gnunetd.c:85
 #, c-format
 msgid "`%s' startup complete.\n"
 msgstr "'%s' comienzo completo.\n"
 
-#: src/server/gnunetd.c:87
+#: src/server/gnunetd.c:89
 #, c-format
 msgid "`%s' is shutting down.\n"
 msgstr "'%s' se esta cerrando.\n"
 
-#: src/server/gnunetd.c:176
+#: src/server/gnunetd.c:179
 msgid ""
 "run in debug mode; gnunetd will not daemonize and error messages will be "
 "written to stderr instead of a logfile"
@@ -3823,24 +3844,24 @@ msgstr ""
 "se ejecuta en modo de depuración; gnunetd no sera un demonio y los mensajes "
 "de error serán escritos a través de stderr en vez de en un fichero de log"
 
-#: src/server/gnunetd.c:180
+#: src/server/gnunetd.c:183
 msgid "Starts the gnunetd daemon."
 msgstr "Arranca el demonio de gnunetd."
 
-#: src/server/gnunetd.c:183
+#: src/server/gnunetd.c:186
 msgid "disable padding with random data (experimental)"
 msgstr ""
 
-#: src/server/gnunetd.c:187
+#: src/server/gnunetd.c:190
 msgid "print all log messages to the console (only works together with -d)"
 msgstr ""
 
-#: src/server/gnunetd.c:191
+#: src/server/gnunetd.c:194
 #, fuzzy
 msgid "specify username as which gnunetd should run"
 msgstr "especifica el host en el que gnunetd esta ejecutandose"
 
-#: src/server/gnunetd.c:272
+#: src/server/gnunetd.c:275
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
@@ -4222,73 +4243,73 @@ msgstr "'%s' falló en %s: %d con error: '%s'.\n"
 msgid "upnp: NAT Returned IP: %s\n"
 msgstr ""
 
-#: src/transports/http.c:2017 src/transports/tcp.c:797
+#: src/transports/http.c:2019 src/transports/tcp.c:797
 #, c-format
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"%s\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2026
+#: src/transports/http.c:2028
 msgid "# bytes received via HTTP"
 msgstr "# bytes recibidos vía HTTP"
 
-#: src/transports/http.c:2027
+#: src/transports/http.c:2029
 msgid "# bytes sent via HTTP"
 msgstr "# bytes mandados vía HTTP"
 
-#: src/transports/http.c:2029
+#: src/transports/http.c:2031
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "#bytes omitidos vía HTTP (salientes)"
 
-#: src/transports/http.c:2030
+#: src/transports/http.c:2032
 msgid "# HTTP GET issued"
 msgstr ""
 
-#: src/transports/http.c:2032
+#: src/transports/http.c:2034
 #, fuzzy
 msgid "# HTTP GET received"
 msgstr "# bytes recibidos por TCP"
 
-#: src/transports/http.c:2033
+#: src/transports/http.c:2035
 msgid "# HTTP PUT issued"
 msgstr ""
 
-#: src/transports/http.c:2035
+#: src/transports/http.c:2037
 #, fuzzy
 msgid "# HTTP PUT received"
 msgstr "# bytes recibidos por TCP"
 
-#: src/transports/http.c:2037
+#: src/transports/http.c:2039
 msgid "# HTTP select calls"
 msgstr ""
 
-#: src/transports/http.c:2039
+#: src/transports/http.c:2041
 msgid "# HTTP send calls"
 msgstr ""
 
-#: src/transports/http.c:2042
+#: src/transports/http.c:2044
 msgid "# HTTP curl send callbacks"
 msgstr ""
 
-#: src/transports/http.c:2044
+#: src/transports/http.c:2046
 #, fuzzy
 msgid "# HTTP curl receive callbacks"
 msgstr "# bytes recibidos por TCP"
 
-#: src/transports/http.c:2046
+#: src/transports/http.c:2048
 msgid "# HTTP mhd access callbacks"
 msgstr ""
 
-#: src/transports/http.c:2048
+#: src/transports/http.c:2050
 msgid "# HTTP mhd read callbacks"
 msgstr ""
 
-#: src/transports/http.c:2050
+#: src/transports/http.c:2052
 msgid "# HTTP mhd close callbacks"
 msgstr ""
 
-#: src/transports/http.c:2052
+#: src/transports/http.c:2054
 #, fuzzy
 msgid "# HTTP connect calls"
 msgstr "# de pares conectados"
@@ -5317,7 +5338,7 @@ msgstr ""
 msgid "Load management"
 msgstr "Argumentos en la linea de comandos inválidos.\n"
 
-#: contrib/config-daemon.scm:1465 contrib/config-client.scm:401
+#: contrib/config-daemon.scm:1465 contrib/config-client.scm:413
 msgid "Root node"
 msgstr ""
 
@@ -5390,18 +5411,24 @@ msgid "Location of the file specifying metadata for the auto-share directory"
 msgstr ""
 
 #: contrib/config-client.scm:277
-msgid "Location of the log file for gnunet-auto-share"
+msgid ""
+"Location of the file with the PID of any running gnunet-auto-share daemon "
+"process"
 msgstr ""
 
 #: contrib/config-client.scm:289
+msgid "Location of the log file for gnunet-auto-share"
+msgstr ""
+
+#: contrib/config-client.scm:301
 msgid "File-Sharing options"
 msgstr ""
 
-#: contrib/config-client.scm:307
+#: contrib/config-client.scm:319
 msgid "Which plugins should be loaded by gnunet-gtk?"
 msgstr ""
 
-#: contrib/config-client.scm:308
+#: contrib/config-client.scm:320
 msgid ""
 "Load the about plugin for the about dialog.  The daemon plugin allows "
 "starting and stopping of gnunetd and displays information about gnunetd.  "
@@ -5409,31 +5436,31 @@ msgid ""
 "displays various statistics about gnunetd."
 msgstr ""
 
-#: contrib/config-client.scm:319
+#: contrib/config-client.scm:331
 msgid "How frequently (in milli-seconds) should the statistics update?"
 msgstr ""
 
-#: contrib/config-client.scm:320
+#: contrib/config-client.scm:332
 msgid ""
 "Each pixel in the stats dialog corresponds to the time interval specified "
 "here."
 msgstr ""
 
-#: contrib/config-client.scm:332
+#: contrib/config-client.scm:344
 msgid "Do not show thumbnail previews from meta-data in search results"
 msgstr ""
 
-#: contrib/config-client.scm:333
+#: contrib/config-client.scm:345
 msgid ""
 "This option is useful for people who maybe offended by some previews or use "
 "gnunet-gtk at work and would like to avoid bad surprises."
 msgstr ""
 
-#: contrib/config-client.scm:344
+#: contrib/config-client.scm:356
 msgid "Do not show search results for files that were uploaded by us"
 msgstr ""
 
-#: contrib/config-client.scm:345
+#: contrib/config-client.scm:357
 msgid ""
 "This option is useful to eliminate files that the user already has from the "
 "search.  Naturally, enabling this option maybe confusing because some "
@@ -5442,20 +5469,20 @@ msgid ""
 "used to determine which files the user is sharing)"
 msgstr ""
 
-#: contrib/config-client.scm:357
+#: contrib/config-client.scm:369
 msgid "To which directory should gnunet-gtk save downloads to?"
 msgstr ""
 
-#: contrib/config-client.scm:369
+#: contrib/config-client.scm:381
 msgid "Options related to gnunet-gtk"
 msgstr ""
 
-#: contrib/config-client.scm:389
+#: contrib/config-client.scm:401
 #, fuzzy
 msgid "Full pathname of GNUnet client HOME directory"
 msgstr "Error en el formato del fichero (¿no es un directorio de GNUnet?)\n"
 
-#: contrib/config-client.scm:390
+#: contrib/config-client.scm:402
 msgid "The directory for GNUnet files that belong to the user."
 msgstr ""
 
@@ -5968,9 +5995,6 @@ msgstr ""
 
 #~ msgid "Cannot connect to LOOPBACK port %d: %s\n"
 #~ msgstr "Imposible conectar al puerto de LOOPBACK %d: %s\n"
-
-#~ msgid "Could not execute `%s': %s\n"
-#~ msgstr "Imposible ejecutar '%s': %s\n"
 
 #~ msgid "No client service started. Trying again in 30 seconds.\n"
 #~ msgstr ""

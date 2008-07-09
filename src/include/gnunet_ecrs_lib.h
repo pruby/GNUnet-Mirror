@@ -449,13 +449,13 @@ int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
  * as well as KNBlocks under all keywords specified in
  * the advertisementURI.
  *
- * @param name the name for the namespace
  * @param anonymity_level for the namespace advertismement
  * @param priority for the namespace advertisement
  * @param expiration for the namespace advertisement
  * @param advertisementURI the keyword (!) URI to advertise the
  *        namespace under (GNUNET_EC_KNBlock)
  * @param meta meta-data for the namespace advertisement
+ *        (will be used to derive a name)
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
  *
