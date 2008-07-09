@@ -388,11 +388,13 @@ read_namespace_key (struct GNUNET_GC_Configuration *cfg,
 /**
  * Add an entry into a namespace.
  *
- * @param name in which namespace to publish, use just the
- *        nickname of the namespace
- * @param dst to which URI should the namespace entry refer?
+ * @param dstU to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
  *        entry?
+ * @param thisId name of this entry in the namespace (keyword/identifier)
+ * @param nextId name of the update for this entry (to be published in
+ *               the future; maybe NULL)
+ * @param pid unique identifier of the namespace/pseudonym
  * @return URI on success, NULL on error
  */
 struct GNUNET_ECRS_URI *
