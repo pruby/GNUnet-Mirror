@@ -166,7 +166,7 @@ write_namespace_key (struct GNUNET_GC_Configuration *cfg,
  * @param rootURI set to the URI of the namespace, NULL if
  *        no advertisement was created
  *
- * @return GNUNET_OK on success, GNUNET_SYSERR on error (namespace already exists)
+ * @return URI on success, NULL on error 
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,

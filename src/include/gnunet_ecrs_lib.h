@@ -459,7 +459,7 @@ int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
  *
- * @return URI on success, NULL on error (namespace already exists)
+ * @return URI on success, NULL on error
  */
 struct GNUNET_ECRS_URI *GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context
                                                       *ectx,
