@@ -971,10 +971,18 @@ done_module_fs ()
   datastore = NULL;
   coreAPI->service_release (identity);
   identity = NULL;
-
-
-  // GNUNET_mutex_destroy (GNUNET_FS_lock);
   GNUNET_FS_lock = NULL;
 }
+
+
+/**
+ * Update FS.
+ */
+void
+update_module_fs (GNUNET_UpdateAPI * uapi)
+{
+  uapi->service_update("datastore");
+}
+
 
 /* end of fs.c */

@@ -1,3 +1,7 @@
+Thu Jul 10 00:59:31 MDT 2008
+	Fixed bug where datastore resizing would not 
+	result in bloomfilter update during gnunet-update.
+
 Sat Jun 28 23:43:00 MDT 2008
 	Fixed bug preventing namespace advertisements from
 	being processed.
