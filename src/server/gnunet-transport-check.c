@@ -424,7 +424,12 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-
+  /* have no client disturb us! */
+  GNUNET_GC_set_configuration_value_string (cfg,
+					    NULL,
+					    "TCPSERVER",
+					    "DISABLE",
+					    "YES");
   expectedValue = GNUNET_malloc (expectedSize);
   pos = expectedSize;
   expectedValue[--pos] = '\0';

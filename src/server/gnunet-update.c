@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -191,7 +191,12 @@ work ()
   uapi.service_release = &GNUNET_CORE_release_service;
   uapi.ectx = ectx;
   uapi.cfg = cfg;
-
+  /* have no client disturb us! */
+  GNUNET_GC_set_configuration_value_string (cfg,
+					    NULL,
+					    "TCPSERVER",
+					    "DISABLE",
+					    "YES");
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "MODULES",
                                             "topology",
