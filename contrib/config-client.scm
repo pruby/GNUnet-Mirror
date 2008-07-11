@@ -242,7 +242,7 @@ However, active testing and qualified feedback of these features is always welco
 The default is to use filenames and to break larger words at spaces (and underscores, etc.).  This should be just fine for most people. The '-' before a library name indicates that this should be executed last and makes only sense for the split-library.")
   '()
   #t
-  "libextractor_filename:-libextractor_split:-libextractor_split(0123456789._ ,%@-\n_[]{};):-libextractor_lower:-libextractor_thumbnail"
+  "libextractor_filename:-libextractor_split:-libextractor_split(0123456789._ ,%@-\n_[]{};/):-libextractor_lower:-libextractor_thumbnail"
   '()
   'advanced) )
 
