@@ -581,6 +581,7 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
       dl->state = GNUNET_FSUI_ABORTED_JOINED;
       GNUNET_ECRS_file_download_partial_stop (dl->handle);
       dl->handle = NULL;
+      dl->ctx->activeDownloadThreads--;
       dl->runTime = GNUNET_get_time () - dl->startTime;
       event.type = GNUNET_FSUI_download_aborted;
       event.data.DownloadAborted.dc.pos = dl;
