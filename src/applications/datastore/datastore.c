@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -127,7 +127,15 @@ get (const GNUNET_HashCode * query,
 #endif
       if (stats != NULL)
         stats->change (stat_filtered, 1);
-      return 0;
+
+#if 0
+      /* this is just an extra check to validate that 
+	 the bloomfilter was corret; doing this check
+	 is very costly -- do not do in production! */
+      ret = sq->get (query, NULL, type, iter, closure);
+      GNUNET_GE_BREAK(NULL, ret == 0);
+#endif
+      return ret;
     }
   ret = sq->get (query, NULL, type, iter, closure);
   if ((ret == 0) && (stats != NULL))
@@ -487,6 +495,13 @@ release_module_datastore ()
   coreAPI = NULL;
 }
 
+struct FAAProgressInfo
+{
+  unsigned long long pos;
+  unsigned long long total;
+  GNUNET_CronTime start;
+};
+
 /**
  * Callback that adds all element of the SQStore to the
  * bloomfilter.
@@ -496,7 +511,21 @@ filterAddAll (const GNUNET_HashCode * key,
               const GNUNET_DatastoreValue * value, void *closure,
               unsigned long long uid)
 {
+  struct FAAProgressInfo * pi = closure;
+  unsigned int pct_old;
+  unsigned int pct;
+
   makeAvailable (key);
+  pct_old = (100 * pi->pos) / pi->total;  
+  pi->pos += ntohl(value->size);
+  pct = (100 * pi->pos) / pi->total;    
+  if (pct != pct_old)
+    {
+      fprintf(stdout,
+	      _("Datastore conversion at approximately %u%%\n"),
+	      pct);
+    }
+
   return GNUNET_OK;
 }
 
@@ -512,6 +541,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   unsigned long long lastQuota;
   unsigned long long *lq;
   GNUNET_State_ServiceAPI *state;
+  struct FAAProgressInfo pi;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (uapi->cfg,
                                                       "FS",
@@ -540,8 +570,17 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   sq = uapi->service_request ("sqstore");
   if (sq != NULL)
     {
-      sq->iterateAllNow (&filterAddAll, NULL);
+      fprintf(stdout,
+	      _("Starting datastore conversion (this may take a while).\n"));
+      pi.start = GNUNET_get_time();
+      pi.pos = 0;
+      pi.total = GNUNET_ntohll(*lq);
+      if (pi.total == 0)
+	pi.total = 1;
+      sq->iterateAllNow (&filterAddAll, &pi);
       uapi->service_release (sq);
+      fprintf(stdout,
+	      _("Completed datastore conversion.\n"));
     }
   else
     {
