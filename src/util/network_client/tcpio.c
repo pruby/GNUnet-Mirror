@@ -303,7 +303,7 @@ GNUNET_client_connection_ensure_connected (struct
         {
           GNUNET_GE_LOG (sock->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                         _("Error connecting to %s:%u\n"), host, port);
+                         _("Error connecting to %s:%u. Is the daemon running?\n"), host, port);
           return GNUNET_SYSERR;
         }
       soaddr = NULL;
