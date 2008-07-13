@@ -735,9 +735,9 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   dblock = (const GNUNET_EC_DBlock *) &msg[1];
 
   expiration = GNUNET_ntohll (msg->expiration);
-  if ( (expiration > GNUNET_GAP_MAX_MIGRATION_EXP) &&
-       (ntohl(dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD) )
-    return GNUNET_OK; /* expired KSK block -- ignore! */
+  if ((expiration > GNUNET_GAP_MAX_MIGRATION_EXP) &&
+      (ntohl (dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD))
+    return GNUNET_OK;           /* expired KSK block -- ignore! */
   if (GNUNET_OK !=
       GNUNET_EC_file_block_check_and_get_query (data_size,
                                                 dblock, GNUNET_YES, &query))
@@ -752,9 +752,9 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
                                         &query,
                                         expiration, data_size, dblock);
   /* convert expiration to absolute time and bound properly for
-     storage in local datastore */  
-  now = GNUNET_get_time();
-  if (expiration > GNUNET_GAP_MAX_MIGRATION_EXP) 
+     storage in local datastore */
+  now = GNUNET_get_time ();
+  if (expiration > GNUNET_GAP_MAX_MIGRATION_EXP)
     {
       /* expired, sometime in the past */
       expiration = now - 1;
@@ -762,10 +762,10 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   else
     {
       /* expires in future, apply bounding! */
-      if (ntohl(dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
-	expiration %= GNUNET_GAP_MAX_MIGRATION_EXP_KSK;
+      if (ntohl (dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
+        expiration %= GNUNET_GAP_MAX_MIGRATION_EXP_KSK;
       else
-	expiration %= GNUNET_GAP_MAX_MIGRATION_EXP;
+        expiration %= GNUNET_GAP_MAX_MIGRATION_EXP;
       expiration += now;
     }
   /* forward to local clients */
@@ -1002,7 +1002,7 @@ done_module_fs ()
 void
 update_module_fs (GNUNET_UpdateAPI * uapi)
 {
-  uapi->service_update("datastore");
+  uapi->service_update ("datastore");
 }
 
 

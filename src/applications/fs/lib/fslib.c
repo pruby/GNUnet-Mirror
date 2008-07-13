@@ -497,8 +497,8 @@ GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
           return GNUNET_SYSERR;
         }
       if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
-        {	  
-          GNUNET_GE_BREAK (NULL, GNUNET_shutdown_test());
+        {
+          GNUNET_GE_BREAK (NULL, GNUNET_shutdown_test ());
           GNUNET_free (ri);
           return GNUNET_SYSERR;
         }

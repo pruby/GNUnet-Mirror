@@ -67,7 +67,7 @@ result_callback_peer1 (const GNUNET_HashCode * key,
   if ((8 != size) ||
       (0 != memcmp (expect, data, size)) ||
       (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
-    return GNUNET_SYSERR;    
+    return GNUNET_SYSERR;
   peer1count--;
   return GNUNET_OK;
 }
@@ -86,8 +86,8 @@ result_callback_peer2 (const GNUNET_HashCode * key,
   memset (expect, (*i), sizeof (expect));
   if ((8 != size) ||
       (0 != memcmp (expect, data, size)) ||
-      (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))    
-    return GNUNET_SYSERR;    
+      (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
+    return GNUNET_SYSERR;
   peer2count--;
   return GNUNET_OK;
 }
@@ -147,8 +147,7 @@ main (int argc, const char **argv)
   sock = GNUNET_client_connection_create (NULL, cfg);
   printf ("Waiting for peers to DHT-connect (1->2)");
   while (GNUNET_OK ==
-         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect,
-                                      NULL))
+         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf (".");
       fflush (stdout);
@@ -181,8 +180,7 @@ main (int argc, const char **argv)
   printf ("Waiting for peers to DHT-connect (2->1)");
   sock = GNUNET_client_connection_create (NULL, cfg);
   while (GNUNET_OK ==
-         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect,
-                                      NULL))
+         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf (".");
       fflush (stdout);
@@ -233,20 +231,20 @@ main (int argc, const char **argv)
   printf ("Getting key 1 from peer 2 (stored at peer 1)");
   want = 'A';
   CHECK (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer2,
-					    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					    &key));  
+                                            GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                            &key));
   for (k = 0; k < NUM_ROUNDS; k++)
     {
-      if (0 == (k %10))
-	printf (".");
+      if (0 == (k % 10))
+        printf (".");
       fflush (stdout);
-      GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       if (peer2count < 10)
-	break;
-    }  
+        break;
+    }
   CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer2,
-					   GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					   &key));  
+                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                           &key));
   printf (peer2count < 10 ? " OK!\n" : "?\n");
   CHECK (peer2count < 10);
 
@@ -255,20 +253,20 @@ main (int argc, const char **argv)
   peer1count = 10;
   want = 'B';
   CHECK (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer1,
-					    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					    &key));
+                                            GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                            &key));
   for (k = 0; k < NUM_ROUNDS; k++)
     {
-      if (0 == (k %10))
-	printf (".");
+      if (0 == (k % 10))
+        printf (".");
       fflush (stdout);
-      GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       if (peer2count < 10)
-	break;
+        break;
     }
   CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer1,
-					   GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					   &key));
+                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                           &key));
   printf (peer1count < 10 ? " OK!\n" : "?\n");
   CHECK (peer1count < 10);
 

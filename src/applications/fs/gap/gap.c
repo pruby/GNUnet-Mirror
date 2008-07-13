@@ -184,15 +184,15 @@ datastore_value_processor (const GNUNET_HashCode * key,
   if (now > et)
     {
       et -= now;
-      if (ntohl(value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
-	et %= GNUNET_GAP_MAX_MIGRATION_EXP_KSK;
+      if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
+        et %= GNUNET_GAP_MAX_MIGRATION_EXP_KSK;
       else
-	et %= GNUNET_GAP_MAX_MIGRATION_EXP;
+        et %= GNUNET_GAP_MAX_MIGRATION_EXP;
     }
   else
     {
-      if (ntohl(value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
-	return want_more; /* expired KSK -- ignore! */
+      if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
+        return want_more;       /* expired KSK -- ignore! */
       /* indicate entry has expired */
       et = -1;
     }

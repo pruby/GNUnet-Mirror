@@ -130,10 +130,10 @@ get (const GNUNET_HashCode * query,
 
 #if 0
       /* this is just an extra check to validate that 
-	 the bloomfilter was corret; doing this check
-	 is very costly -- do not do in production! */
+         the bloomfilter was corret; doing this check
+         is very costly -- do not do in production! */
       ret = sq->get (query, NULL, type, iter, closure);
-      GNUNET_GE_BREAK(NULL, ret == 0);
+      GNUNET_GE_BREAK (NULL, ret == 0);
 #endif
       return ret;
     }
@@ -353,10 +353,9 @@ cronMaintenance (void *unused)
 {
   available = quota - sq->getSize ();
   sq->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
-			     &freeSpaceExpired, NULL);
+                             &freeSpaceExpired, NULL);
   if ((available < 0) || (available < MIN_GNUNET_free))
-    sq->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY,
-			    &freeSpaceLow, NULL);    
+    sq->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY, &freeSpaceLow, NULL);
 }
 
 /**
@@ -392,9 +391,9 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
       stat_filter_failed =
         stats->create (gettext_noop ("# bloom filter false positives"));
 
-      stats->
-        set (stats->create (gettext_noop ("# bytes allowed in datastore")),
-             quota);
+      stats->set (stats->
+                  create (gettext_noop ("# bytes allowed in datastore")),
+                  quota);
     }
   state = capi->service_request ("state");
   if (state != NULL)
@@ -506,19 +505,18 @@ filterAddAll (const GNUNET_HashCode * key,
               const GNUNET_DatastoreValue * value, void *closure,
               unsigned long long uid)
 {
-  struct FAAProgressInfo * pi = closure;
+  struct FAAProgressInfo *pi = closure;
   unsigned int pct_old;
   unsigned int pct;
 
   makeAvailable (key);
-  pct_old = (100 * pi->pos) / pi->total;  
-  pi->pos += ntohl(value->size);
-  pct = (100 * pi->pos) / pi->total;    
+  pct_old = (100 * pi->pos) / pi->total;
+  pi->pos += ntohl (value->size);
+  pct = (100 * pi->pos) / pi->total;
   if (pct != pct_old)
     {
-      fprintf(stdout,
-	      _("Datastore conversion at approximately %u%%\n"),
-	      pct);
+      fprintf (stdout,
+               _("Datastore conversion at approximately %u%%\n"), pct);
     }
 
   return GNUNET_OK;
@@ -565,17 +563,16 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   sq = uapi->service_request ("sqstore");
   if (sq != NULL)
     {
-      fprintf(stdout,
-	      _("Starting datastore conversion (this may take a while).\n"));
-      pi.start = GNUNET_get_time();
+      fprintf (stdout,
+               _("Starting datastore conversion (this may take a while).\n"));
+      pi.start = GNUNET_get_time ();
       pi.pos = 0;
-      pi.total = GNUNET_ntohll(*lq);
+      pi.total = GNUNET_ntohll (*lq);
       if (pi.total == 0)
-	pi.total = 1;
+        pi.total = 1;
       sq->iterateAllNow (&filterAddAll, &pi);
       uapi->service_release (sq);
-      fprintf(stdout,
-	      _("Completed datastore conversion.\n"));
+      fprintf (stdout, _("Completed datastore conversion.\n"));
     }
   else
     {

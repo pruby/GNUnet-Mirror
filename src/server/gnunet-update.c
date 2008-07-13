@@ -193,10 +193,8 @@ work ()
   uapi.cfg = cfg;
   /* have no client disturb us! */
   GNUNET_GC_set_configuration_value_string (cfg,
-					    NULL,
-					    "TCPSERVER",
-					    "DISABLE",
-					    "YES");
+                                            NULL,
+                                            "TCPSERVER", "DISABLE", "YES");
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "MODULES",
                                             "topology",

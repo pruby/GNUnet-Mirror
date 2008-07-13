@@ -58,12 +58,13 @@ result_callback (const GNUNET_HashCode * key,
 
   memset (expect, (*i), sizeof (expect));
 #if 0
-  fprintf (stderr, "Got %u %u `%.*s' (want `%.*s')\n", type, size, size, data, sizeof(expect), expect);
+  fprintf (stderr, "Got %u %u `%.*s' (want `%.*s')\n", type, size, size, data,
+           sizeof (expect), expect);
 #endif
   if ((8 != size) ||
       (0 != memcmp (expect, data, size)) ||
       (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
-    return GNUNET_SYSERR;    
+    return GNUNET_SYSERR;
   found++;
   return GNUNET_OK;
 }
@@ -165,7 +166,7 @@ main (int argc, const char **argv)
           GNUNET_GC_free (cfg);
           return -1;
         }
-      GNUNET_hash (buf, strlen(buf), &key);
+      GNUNET_hash (buf, strlen (buf), &key);
       value = GNUNET_malloc (8);
       memset (value, 'A' + i, 8);
       CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
@@ -186,31 +187,30 @@ main (int argc, const char **argv)
       ctx_array[i] =
         GNUNET_DHT_context_create (cfg, ectx, &result_callback, &c);
       for (j = 0; j < NUM_PEERS; j++)
-        { 
-	  c = 'A' + j;
-	  GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
-          GNUNET_hash (buf, strlen(buf), &key);
+        {
+          c = 'A' + j;
+          GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
+          GNUNET_hash (buf, strlen (buf), &key);
           printf ("Peer %d gets key %d", i, j);
-	  last = found;
-	  GNUNET_DHT_get_start (ctx_array[i],
-				GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-				&key);
-	  for (k = 0; k < NUM_ROUNDS; k++)
+          last = found;
+          GNUNET_DHT_get_start (ctx_array[i],
+                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                &key);
+          for (k = 0; k < NUM_ROUNDS; k++)
             {
-              if (0 == (k %10))
-		printf (".");
-	      fflush (stdout);
-	      GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
-	      if (last < found)
-		break;
+              if (0 == (k % 10))
+                printf (".");
+              fflush (stdout);
+              GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+              if (last < found)
+                break;
             }
-	  GNUNET_DHT_get_stop (ctx_array[i],
-			       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-			       &key);
+          GNUNET_DHT_get_stop (ctx_array[i],
+                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, &key);
           if (k < NUM_ROUNDS)
-	    printf (" OK!\n");
+            printf (" OK!\n");
           else
-	    printf ("?\n");
+            printf ("?\n");
         }
     }
 
@@ -222,7 +222,8 @@ main (int argc, const char **argv)
   printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);
   if (found < NUM_PEERS * NUM_PEERS / 2)
     {
-      printf ("Not enough results (not even 50%%), marking test as failed!\n");
+      printf
+        ("Not enough results (not even 50%%), marking test as failed!\n");
       ret = 1;
     }
 FAILURE:

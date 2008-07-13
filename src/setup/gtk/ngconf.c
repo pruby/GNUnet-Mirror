@@ -331,7 +331,7 @@ addNodeToTree (GtkNotebook * parent, struct GNUNET_GNS_TreeNode *pos)
           have = have | addNodeToTree (notebook, child);
           break;
         case GNUNET_GNS_KIND_LEAF:
-          gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
+          gtk_container_set_border_width (GTK_CONTAINER (vbox), 10);
           have = have | addLeafToTree (vbox, child);
           break;
         case GNUNET_GNS_KIND_ROOT:

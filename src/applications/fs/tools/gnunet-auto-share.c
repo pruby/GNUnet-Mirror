@@ -72,7 +72,7 @@ static struct GNUNET_GE_Context *ectx;
 static struct GNUNET_FSUI_Context *ctx;
 
 static char *cfgFilename =
-#ifndef MINGW  
+#ifndef MINGW
   GNUNET_DEFAULT_CLIENT_CONFIG_FILE
 #else
   GNUNET_DEFAULT_CLIENT_SITE_CONFIG_FILE
@@ -111,14 +111,13 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
   switch (event->type)
     {
     case GNUNET_FSUI_upload_progress:
-      if ( (*verboselevel > 2) &&
-	   (event->data.UploadProgress.uc.pos != ul) )
+      if ((*verboselevel > 2) && (event->data.UploadProgress.uc.pos != ul))
         {
           fprintf (myout,
                    _("Upload of `%s' at %llu out of %llu bytes.\n"),
                    event->data.UploadProgress.filename,
-		   event->data.UploadProgress.completed,
-		   event->data.UploadProgress.total);
+                   event->data.UploadProgress.completed,
+                   event->data.UploadProgress.total);
           fflush (myout);
         }
       break;
@@ -149,8 +148,7 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_started:
-      if ( (*verboselevel > 1) &&
-	   (ul == NULL) )
+      if ((*verboselevel > 1) && (ul == NULL))
         {
           fprintf (myout,
                    _("Starting upload of `%s'.\n"),
@@ -161,29 +159,28 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_upload_stopped:
       break;
     case GNUNET_FSUI_upload_suspended:
-      if ( (ul != NULL) &&
-	   (event->data.UploadSuspended.uc.pos == ul) )
-	{
-	  fprintf (myout, _("Uploading suspended.\n"));
+      if ((ul != NULL) && (event->data.UploadSuspended.uc.pos == ul))
+        {
+          fprintf (myout, _("Uploading suspended.\n"));
           fflush (myout);
-	  ul = NULL;
-	}
+          ul = NULL;
+        }
       break;
     case GNUNET_FSUI_upload_resumed:
       if (ul == NULL)
-	{
-	  ul = event->data.UploadResumed.uc.pos;
-	  if (GNUNET_FSUI_ACTIVE != event->data.UploadResumed.state)
-	    {
-	      upload_done = GNUNET_YES;
-	    }
-	  else
-	    {
-	      fprintf (myout, _("Uploading `%s' resumed.\n"),
-		       event->data.UploadResumed.filename);
-	      fflush (myout);
-	    }
-	}
+        {
+          ul = event->data.UploadResumed.uc.pos;
+          if (GNUNET_FSUI_ACTIVE != event->data.UploadResumed.state)
+            {
+              upload_done = GNUNET_YES;
+            }
+          else
+            {
+              fprintf (myout, _("Uploading `%s' resumed.\n"),
+                       event->data.UploadResumed.filename);
+              fflush (myout);
+            }
+        }
       break;
     default:
       fprintf (myout, _("Unexpected event: %d\n"), event->type);
@@ -236,8 +233,7 @@ get_record_file_name (const char *dirname)
 
   GNUNET_hash (dirname, strlen (dirname), &hc);
   GNUNET_hash_to_enc (&hc, &enc);
-  return GNUNET_get_home_filename (ectx,
-                                   cfg,
+  return GNUNET_get_home_filename (ectx, cfg,
 #ifndef MINGW
                                    GNUNET_NO,
 #else
@@ -712,7 +708,7 @@ auto_share_main ()
     if ((*dirs_idx2 == ';') || (*dirs_idx2 == '\0'))
       {
         int end;
-        
+
         end = *dirs_idx2 == '\0';
         *dirs_idx2 = 0;
 
@@ -723,7 +719,7 @@ auto_share_main ()
         pos->run = 0;
         pos->next = head;
         head = pos;
-        
+
         if (end)
           break;
 
@@ -739,37 +735,36 @@ auto_share_main ()
       work_done = GNUNET_NO;
       GNUNET_thread_sleep (250 * GNUNET_CRON_MILLISECONDS);
       if (ul == NULL)
-	{
-	  pos = head;
-	  while ((pos != NULL) && (GNUNET_NO == GNUNET_shutdown_test ()))
-	    {
-	      GNUNET_disk_directory_scan (ectx, pos->dirname, &probe_directory,
-					  pos);
-	      if (GNUNET_YES == upload_done)
-		{
-		  work_done = GNUNET_YES;
-		  GNUNET_FSUI_upload_abort (ul);
-		  GNUNET_FSUI_upload_stop (ul);
-		  upload_done = GNUNET_NO;
-		  ul = NULL;
-		}
-	      pos = pos->next;
-	    }
-	}
+        {
+          pos = head;
+          while ((pos != NULL) && (GNUNET_NO == GNUNET_shutdown_test ()))
+            {
+              GNUNET_disk_directory_scan (ectx, pos->dirname,
+                                          &probe_directory, pos);
+              if (GNUNET_YES == upload_done)
+                {
+                  work_done = GNUNET_YES;
+                  GNUNET_FSUI_upload_abort (ul);
+                  GNUNET_FSUI_upload_stop (ul);
+                  upload_done = GNUNET_NO;
+                  ul = NULL;
+                }
+              pos = pos->next;
+            }
+        }
       else
-	{
-	  if (GNUNET_YES == upload_done)
-	    {
-	      work_done = GNUNET_YES;
-	      GNUNET_FSUI_upload_abort (ul);
-	      GNUNET_FSUI_upload_stop (ul);
-	      upload_done = GNUNET_NO;
-	      ul = NULL;
-	    }
-	}
+        {
+          if (GNUNET_YES == upload_done)
+            {
+              work_done = GNUNET_YES;
+              GNUNET_FSUI_upload_abort (ul);
+              GNUNET_FSUI_upload_stop (ul);
+              upload_done = GNUNET_NO;
+              ul = NULL;
+            }
+        }
       if ((ul == NULL) &&
-          (work_done == GNUNET_NO) &&
-	  (GNUNET_NO == GNUNET_shutdown_test ()))
+          (work_done == GNUNET_NO) && (GNUNET_NO == GNUNET_shutdown_test ()))
         {
           GNUNET_thread_sleep (delay);
           delay *= 2;
@@ -813,7 +808,7 @@ quit:
 void
 auto_share_shutdown_initiate ()
 {
-  GNUNET_shutdown_initiate();
+  GNUNET_shutdown_initiate ();
 }
 
 /**
@@ -957,7 +952,7 @@ main (int argc, char *const *argv)
             {
               if ((*dirs_idx2 == ';') || (*dirs_idx2 == '\0'))
                 {
-		  do_break = ('\0' == *dirs_idx2);
+                  do_break = ('\0' == *dirs_idx2);
                   *dirs_idx2 = '\0';
                   if (0 == strcmp (dirs_idx1, fullname))
                     {
@@ -968,8 +963,8 @@ main (int argc, char *const *argv)
                                fullname);
                       break;
                     }
-		  if (do_break)
-		    break;
+                  if (do_break)
+                    break;
                   dirs_idx1 = ++dirs_idx2;
                 }
               else

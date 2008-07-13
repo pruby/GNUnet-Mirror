@@ -177,8 +177,7 @@ updateDownloadThreads (void *c)
                   srl->test_download
                     = GNUNET_ECRS_file_download_partial_start (ctx->ectx,
                                                                ctx->cfg,
-                                                               sl->
-                                                               probe_context,
+                                                               sl->probe_context,
                                                                srl->fi.uri,
                                                                NULL, off, len,
                                                                1, GNUNET_YES,
@@ -651,15 +650,15 @@ freeUploadList (struct GNUNET_FSUI_Context *ctx,
 }
 
 static void
-suspend_active_upload(struct GNUNET_FSUI_UploadList * ul)
+suspend_active_upload (struct GNUNET_FSUI_UploadList *ul)
 {
   while (ul != NULL)
     {
       if (ul->state == GNUNET_FSUI_ACTIVE)
-	{
-	  ul->state = GNUNET_FSUI_PENDING;
-	  suspend_active_upload(ul->child);
-	}
+        {
+          ul->state = GNUNET_FSUI_PENDING;
+          suspend_active_upload (ul->child);
+        }
       ul = ul->next;
     }
 }
@@ -767,9 +766,9 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
           (upos->state == GNUNET_FSUI_ERROR)
           || (upos->state == GNUNET_FSUI_COMPLETED))
         {
-	  if (upos->state == GNUNET_FSUI_ACTIVE)
-	    upos->state = GNUNET_FSUI_PENDING;
-	  suspend_active_upload(upos->child);
+          if (upos->state == GNUNET_FSUI_ACTIVE)
+            upos->state = GNUNET_FSUI_PENDING;
+          suspend_active_upload (upos->child);
           GNUNET_thread_stop_sleep (upos->shared->handle);
           GNUNET_thread_join (upos->shared->handle, &unused);
           if (upos->state != GNUNET_FSUI_PENDING)

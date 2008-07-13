@@ -315,8 +315,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
   i = strlen (application) - 1;
   if (i <= 0)
     return GNUNET_SYSERR;
-  while ( (i > 0) &&
-	  (application[i] != DIR_SEPARATOR) )
+  while ((i > 0) && (application[i] != DIR_SEPARATOR))
     i--;
 
   initscript = GNUNET_malloc (strlen (&application[i]) + 13);

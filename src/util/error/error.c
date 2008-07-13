@@ -52,7 +52,7 @@
 /**
  * How many characters can a date/time string
  * be at most?
- */ 
+ */
 #define DATE_STR_SIZE 64
 
 
@@ -125,36 +125,34 @@ GNUNET_GE_applies (GNUNET_GE_KIND have, GNUNET_GE_KIND mask)
 }
 
 static void
-flush_bulk(struct GNUNET_GE_Context*ctx,
-	   const char * datestr)
+flush_bulk (struct GNUNET_GE_Context *ctx, const char *datestr)
 {
   char msg[DATE_STR_SIZE + BULK_TRACK_SIZE + 256];
   GNUNET_CronTime now;
   int rev;
   char *last;
 
-  if ( (ctx->last_bulk_time == 0) ||
-       (ctx->last_bulk_repeat == 0) )
+  if ((ctx->last_bulk_time == 0) || (ctx->last_bulk_repeat == 0))
     return;
-  now = GNUNET_get_time();
+  now = GNUNET_get_time ();
   rev = 0;
-  last = memchr(ctx->last_bulk, '\0', BULK_TRACK_SIZE);
-  if(last == NULL)
-    last = &ctx->last_bulk[BULK_TRACK_SIZE-1];
-  else if(last != ctx->last_bulk)
+  last = memchr (ctx->last_bulk, '\0', BULK_TRACK_SIZE);
+  if (last == NULL)
+    last = &ctx->last_bulk[BULK_TRACK_SIZE - 1];
+  else if (last != ctx->last_bulk)
     last--;
-  if (last[0] == '\n') 
+  if (last[0] == '\n')
     {
       rev = 1;
       last[0] = '\0';
     }
-  snprintf(msg,
-	   sizeof(msg),
-	   _("Message `%.*s' repeated %u times in the last %llus\n"),
-	   BULK_TRACK_SIZE,
-	   ctx->last_bulk,
-	   ctx->last_bulk_repeat,
-	   (now - ctx->last_bulk_time) / GNUNET_CRON_SECONDS);
+  snprintf (msg,
+            sizeof (msg),
+            _("Message `%.*s' repeated %u times in the last %llus\n"),
+            BULK_TRACK_SIZE,
+            ctx->last_bulk,
+            ctx->last_bulk_repeat,
+            (now - ctx->last_bulk_time) / GNUNET_CRON_SECONDS);
   if (rev == 1)
     last[0] = '\n';
   if (ctx != NULL)
@@ -200,36 +198,32 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
   memset (date, 0, DATE_STR_SIZE);
   tmptr = localtime (&timetmp);
   strftime (date, DATE_STR_SIZE, "%b %d %H:%M:%S", tmptr);
-  now = GNUNET_get_time();
-  if ( (kind & GNUNET_GE_BULK) != 0)
+  now = GNUNET_get_time ();
+  if ((kind & GNUNET_GE_BULK) != 0)
     {
-      if ( (ctx->last_bulk_time != 0) &&
-	   (0 == strncmp(buf,
-			 ctx->last_bulk,
-			 sizeof(ctx->last_bulk))) )
-	{
-	  ctx->last_bulk_repeat++;
-	  if ( (now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
-	       (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD) )
-	    flush_bulk(ctx, date);
-	  return;
-	}
+      if ((ctx->last_bulk_time != 0) &&
+          (0 == strncmp (buf, ctx->last_bulk, sizeof (ctx->last_bulk))))
+        {
+          ctx->last_bulk_repeat++;
+          if ((now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
+              (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD))
+            flush_bulk (ctx, date);
+          return;
+        }
       else
-	{
-	  if (ctx->last_bulk_time != 0)
-	    flush_bulk(ctx, date);
-	  strncpy(ctx->last_bulk,
-		  buf,
-		  sizeof(ctx->last_bulk));
-	  ctx->last_bulk_repeat = 0;
-	  ctx->last_bulk_time = now;
-	  ctx->last_bulk_kind = kind;
-	}
+        {
+          if (ctx->last_bulk_time != 0)
+            flush_bulk (ctx, date);
+          strncpy (ctx->last_bulk, buf, sizeof (ctx->last_bulk));
+          ctx->last_bulk_repeat = 0;
+          ctx->last_bulk_time = now;
+          ctx->last_bulk_kind = kind;
+        }
     }
-  if ( (now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
-       (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD) )
+  if ((now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
+      (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD))
     {
-      flush_bulk(ctx, date);
+      flush_bulk (ctx, date);
       ctx->last_bulk_time = 0;
     }
   if (ctx != NULL)
@@ -301,14 +295,14 @@ GNUNET_GE_free_context (GNUNET_GE_Context * ctx)
   char date[DATE_STR_SIZE];
   time_t timetmp;
   struct tm *tmptr;
- 
+
   if (ctx == NULL)
     return;
   time (&timetmp);
   memset (date, 0, DATE_STR_SIZE);
   tmptr = localtime (&timetmp);
   strftime (date, DATE_STR_SIZE, "%b %d %H:%M:%S", tmptr);
-  flush_bulk(ctx, date);
+  flush_bulk (ctx, date);
   if (ctx->destruct != NULL)
     ctx->destruct (ctx->cls);
   free (ctx);

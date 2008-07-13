@@ -423,7 +423,7 @@ main (int argc, char *const *argv)
                    "-t", "-P");
           errorCode = -1;
           goto quit;
-        }   
+        }
     }
   else
     {                           /* ordinary insertion checks */
@@ -461,16 +461,14 @@ main (int argc, char *const *argv)
                                            gloKeywords,
                                            anonymity,
                                            priority,
-                                           start_time + expiration,
-                                           us, meta);
+                                           start_time + expiration, us, meta);
       if (topKeywords != NULL)
         GNUNET_ECRS_publish_under_keyword (ectx,
                                            cfg,
                                            topKeywords,
                                            anonymity,
                                            priority,
-                                           start_time + expiration,
-                                           us, meta);
+                                           start_time + expiration, us, meta);
       GNUNET_ECRS_uri_destroy (us);
       goto quit;
     }
