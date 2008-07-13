@@ -180,11 +180,22 @@ datastore_value_processor (const GNUNET_HashCode * key,
     }
   et = GNUNET_ntohll (value->expiration_time);
   now = GNUNET_get_time ();
+  /* convert to relative expiration time */
   if (now > et)
-    et -= now;
+    {
+      et -= now;
+      if (ntohl(value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
+	et %= GNUNET_GAP_MAX_MIGRATION_EXP_KSK;
+      else
+	et %= GNUNET_GAP_MAX_MIGRATION_EXP;
+    }
   else
-    et = 0;
-  et %= GNUNET_GAP_MAX_MIGRATION_EXP;
+    {
+      if (ntohl(value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
+	return want_more; /* expired KSK -- ignore! */
+      /* indicate entry has expired */
+      et = -1;
+    }
   size =
     sizeof (P2P_gap_reply_MESSAGE) + ntohl (value->size) -
     sizeof (GNUNET_DatastoreValue);

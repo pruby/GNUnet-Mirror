@@ -313,7 +313,11 @@ receive_response_callback (const GNUNET_HashCode * key,
   unsigned int size;
   int ret;
   GNUNET_HashCode query;
+  GNUNET_CronTime expiration;
 
+  expiration = GNUNET_ntohll(value->expiration_time);
+  if (expiration < GNUNET_get_time() )
+    return GNUNET_OK; /* expired, ignore! */
   type = ntohl (value->type);
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
 #if DEBUG_SEARCH

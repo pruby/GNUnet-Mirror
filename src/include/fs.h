@@ -318,7 +318,7 @@ typedef struct
 
   /**
    * When does this result expire?  The given time
-   * is relative (and in big-endian).
+   * is relative (and in big-endian).  
    */
   unsigned long long expiration;
 
@@ -440,6 +440,11 @@ typedef struct
  *
  */
 #define GNUNET_GAP_MAX_MIGRATION_EXP (1L * GNUNET_CRON_MONTHS)
+
+/**
+ * Same as MIGRATION_EXP except for KSK blocks.
+ */
+#define GNUNET_GAP_MAX_MIGRATION_EXP_KSK (6L * GNUNET_CRON_HOURS)
 
 /**
  * Estimated size of most blocks transported with

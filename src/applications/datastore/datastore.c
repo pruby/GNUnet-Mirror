@@ -110,7 +110,7 @@ static int
 get (const GNUNET_HashCode * query,
      unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
 {
-  int ret;
+  int ret = 0;
 
   if (!testAvailable (query))
     {
@@ -212,7 +212,7 @@ typedef struct
   int exists;
   const GNUNET_DatastoreValue *value;
   unsigned long long uid;
-  unsigned long long expiration;
+  GNUNET_CronTime expiration;
 } CE;
 
 static int
@@ -322,8 +322,6 @@ freeSpaceExpired (const GNUNET_HashCode * key,
                   const GNUNET_DatastoreValue * value, void *closure,
                   unsigned long long uid)
 {
-  if ((available > 0) && (available >= MIN_GNUNET_free))
-    return GNUNET_SYSERR;
   if (GNUNET_get_time () < GNUNET_ntohll (value->expiration_time))
     return GNUNET_SYSERR;       /* not expired */
   available += ntohl (value->size);
@@ -354,14 +352,11 @@ static void
 cronMaintenance (void *unused)
 {
   available = quota - sq->getSize ();
+  sq->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
+			     &freeSpaceExpired, NULL);
   if ((available < 0) || (available < MIN_GNUNET_free))
-    {
-      sq->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
-                                 &freeSpaceExpired, NULL);
-      if ((available < 0) || (available < MIN_GNUNET_free))
-        sq->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY,
-                                &freeSpaceLow, NULL);
-    }
+    sq->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY,
+			    &freeSpaceLow, NULL);    
 }
 
 /**

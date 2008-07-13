@@ -722,6 +722,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   unsigned int prio;
   unsigned long long expiration;
   double preference;
+  GNUNET_CronTime now;
 
   size = ntohs (pmsg->size);
   if (size < sizeof (P2P_gap_reply_MESSAGE))
@@ -732,6 +733,11 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
   data_size = size - sizeof (P2P_gap_reply_MESSAGE);
   dblock = (const GNUNET_EC_DBlock *) &msg[1];
+
+  expiration = GNUNET_ntohll (msg->expiration);
+  if ( (expiration > GNUNET_GAP_MAX_MIGRATION_EXP) &&
+       (ntohl(dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD) )
+    return GNUNET_OK; /* expired KSK block -- ignore! */
   if (GNUNET_OK !=
       GNUNET_EC_file_block_check_and_get_query (data_size,
                                                 dblock, GNUNET_YES, &query))
@@ -741,11 +747,27 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
     }
   if ((stats != NULL) && (sender != NULL))
     stats->change (stat_gap_content_received, 1);
-  expiration = GNUNET_ntohll (msg->expiration);
   /* forward to other peers */
   prio = GNUNET_FS_GAP_handle_response (sender,
                                         &query,
                                         expiration, data_size, dblock);
+  /* convert expiration to absolute time and bound properly for
+     storage in local datastore */  
+  now = GNUNET_get_time();
+  if (expiration > GNUNET_GAP_MAX_MIGRATION_EXP) 
+    {
+      /* expired, sometime in the past */
+      expiration = now - 1;
+    }
+  else
+    {
+      /* expires in future, apply bounding! */
+      if (ntohl(dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
+	expiration %= GNUNET_GAP_MAX_MIGRATION_EXP_KSK;
+      else
+	expiration %= GNUNET_GAP_MAX_MIGRATION_EXP;
+      expiration += now;
+    }
   /* forward to local clients */
   prio += GNUNET_FS_QUERYMANAGER_handle_response (sender,
                                                   &query,
@@ -761,8 +783,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       value->type = dblock->type;
       value->priority = htonl (prio);
       value->anonymity_level = htonl (1);
-      value->expiration_time =
-        GNUNET_htonll (expiration + GNUNET_get_time ());
+      value->expiration_time = GNUNET_htonll (expiration);
       memcpy (&value[1], dblock, data_size);
       datastore->putUpdate (&query, value);
       GNUNET_free (value);
