@@ -167,3 +167,5 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
     }
   return GNUNET_OK;
 }
+
+/* end of parser.c */

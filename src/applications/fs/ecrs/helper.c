@@ -184,6 +184,7 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
           else
             *(w++) = *(r++);
         }
+      *w = '\0';
       uri->data.ksk.keywords[i] = GNUNET_strdup (val);
       GNUNET_free (val);
     }
