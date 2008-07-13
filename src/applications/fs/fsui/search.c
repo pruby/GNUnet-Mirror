@@ -68,11 +68,14 @@ processResult (struct GNUNET_FSUI_SearchList *ctx,
       event.data.SearchResult.sc.cctx = ctx->cctx;
       event.data.SearchResult.fi = pos->fi;
       event.data.SearchResult.searchURI = ctx->uri;
+    }
+  ctx->ctx->ecb (ctx->ctx->ecbClosure, &event);
+  if (! update)
+    {
       GNUNET_URITRACK_add_state (ctx->ctx->ectx,
                                  ctx->ctx->cfg, pos->fi.uri,
                                  GNUNET_URITRACK_SEARCH_RESULT);
     }
-  ctx->ctx->ecb (ctx->ctx->ecbClosure, &event);
 }
 
 /**
