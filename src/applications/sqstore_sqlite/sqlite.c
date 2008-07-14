@@ -1335,6 +1335,7 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
         {
           sqlite3_reset (stmt);
           GNUNET_mutex_unlock (lock);
+	  GNUNET_GE_BREAK(NULL, 0);
           return GNUNET_NO;
         }
       LOG_SQLITE (dbh,
