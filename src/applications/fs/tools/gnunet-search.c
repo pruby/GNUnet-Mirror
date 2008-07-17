@@ -151,9 +151,6 @@ main (int argc, char *const *argv)
   struct GNUNET_FSUI_Context *ctx;
   struct GNUNET_FSUI_SearchList *s;
 
-  if (argc <= 1)
-      return -1;
-
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-search [OPTIONS] [KEYWORDS]",
