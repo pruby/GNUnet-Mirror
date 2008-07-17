@@ -601,9 +601,20 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
       dl->state = GNUNET_FSUI_ABORTED_JOINED;
     }
   if (0 != UNLINK (dl->filename))
-    GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
-                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                 GNUNET_GE_BULK, "unlink", dl->filename);
+    {
+      if (errno == EISDIR)
+	{
+	  if ( (0 != RMDIR(dl->filename)) &&
+	       (errno != ENOTEMPTY) ) 
+	    GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
+					 GNUNET_GE_WARNING | GNUNET_GE_USER |
+					 GNUNET_GE_BULK, "rmdir", dl->filename);
+	}
+      else if (errno != ENOENT)
+	GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
+				     GNUNET_GE_WARNING | GNUNET_GE_USER |
+				     GNUNET_GE_BULK, "unlink", dl->filename);
+    }
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }
