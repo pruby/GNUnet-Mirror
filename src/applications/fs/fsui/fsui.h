@@ -48,6 +48,36 @@
  */
 #define GNUNET_FSUI_HARD_PROBE_LIMIT 128
 
+
+/**
+ * If we have more downloads pending then we
+ * can support concurrently, after how much
+ * runtime of a download (without progress)
+ * should we consider pausing it to give others
+ * a chance?  Specified as a bit-mask where 
+ * each bit represents a minute of time.
+ * (0xFF == 8 minutes, 0x7FFF == 15 minutes).
+ * Note that all legal values correspond to
+ * values computable using "(1 << (N+1))-1"
+ * Where "N" would be the number of minutes
+ * without progress.  A 64-bit value is
+ * permissable.<p>
+ *
+ * Note that downloads will NOT be automatically
+ * paused even if they do not make any progress
+ * UNLESS all download threads are in use.
+ */
+#define GNUNET_FSUI_DL_KILL_TIME_MASK 0x7FFF
+
+/**
+ * If a download was paused because it failed
+ * to make any progress and because other downloads
+ * were pending, how long until we may try it again
+ * (assuming that our download queues continue to
+ * be entirely filled the whole time)?
+ */
+#define GNUNET_FSUI_DL_KILL_PERIOD (6 * GNUNET_CRON_HOURS)
+
 /**
  * Track record for a given result.
  */
@@ -236,6 +266,12 @@ typedef struct GNUNET_FSUI_DownloadList
   unsigned long long completed;
 
   /**
+   * Bit (1 << T) is set to 1 if we made any progress
+   * "T" minutes ago.
+   */
+  unsigned long long progressBits;
+
+  /**
    * URI for this download.
    */
   GNUNET_ECRS_FileInfo fi;
@@ -305,6 +341,18 @@ typedef struct GNUNET_FSUI_DownloadList
    * be used instead (since runTime maybe outdated).
    */
   GNUNET_CronTime runTime;
+
+  /**
+   * Last time we updated (shifted) our progressBits.
+   */
+  GNUNET_CronTime lastProgressTime;
+
+  /**
+   * How long is this thread blocked from resuming if
+   * all download queues are busy? (only
+   * valid if the thread state is FSUI_PENDING).
+   */
+  GNUNET_CronTime block_resume;
 
   /**
    * Is this a recursive download? (GNUNET_YES/GNUNET_NO)
