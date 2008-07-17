@@ -383,6 +383,11 @@ GNUNET_CORE_p2p_test_handler_registered (unsigned short type,
   return ret;
 }
 
+#if HAVE_UNALIGNED_64_ACCESS
+#define ALIGN_REQUIRED sizeof(unsigned int)
+#else
+#define ALIGN_REQUIRED sizeof(unsigned long long)
+#endif
 
 /**
  * Handle a message (that was decrypted if needed).
@@ -443,10 +448,11 @@ GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
             }
           return;
         }
-      if ((pos % sizeof (long)) != 0)
-        {
+
+      if ((pos % ALIGN_REQUIRED) != 0)
+	{
           /* correct misalignment; we allow messages to _not_ be a
-             multiple of sizeof(long) bytes (if absolutely necessary; it should be
+             multiple of 4-bytes (if absolutely necessary; it should be
              avoided where the cost for doing so is not prohibitive);
              however we also (need to) guaranteed word-alignment for the
              handlers; so we must re-align the message if it is
@@ -457,8 +463,8 @@ GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
         }
       else
         {
-          part = (const GNUNET_MessageHeader *) &msg[pos];
-        }
+          part = (const GNUNET_MessageHeader *) &msg[pos];        
+	}
       pos += plen;
 
       ptyp = htons (part->type);
