@@ -85,11 +85,13 @@ updateDownloadThreads (void *c)
                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                    "Download thread manager schedules pending downloads...\n");
 #endif
+  ctx->next_min_block_resume = -1;
   while (dpos != NULL)
     {
       GNUNET_FSUI_updateDownloadThread (dpos);
       dpos = dpos->next;
     }
+  ctx->min_block_resume = ctx->next_min_block_resume;
   now = GNUNET_get_time ();
   sl = ctx->activeSearches;
   while (sl != NULL)

@@ -70,15 +70,6 @@
 #define GNUNET_FSUI_DL_KILL_TIME_MASK 0x7FFF
 
 /**
- * If a download was paused because it failed
- * to make any progress and because other downloads
- * were pending, how long until we may try it again
- * (assuming that our download queues continue to
- * be entirely filled the whole time)?
- */
-#define GNUNET_FSUI_DL_KILL_PERIOD (6 * GNUNET_CRON_HOURS)
-
-/**
  * Track record for a given result.
  */
 struct SearchResultList
@@ -348,7 +339,7 @@ typedef struct GNUNET_FSUI_DownloadList
   GNUNET_CronTime lastProgressTime;
 
   /**
-   * How long is this thread blocked from resuming if
+   * When was this thread blocked from resuming if
    * all download queues are busy? (only
    * valid if the thread state is FSUI_PENDING).
    */
@@ -514,6 +505,19 @@ typedef struct GNUNET_FSUI_UploadList
  */
 typedef struct GNUNET_FSUI_Context
 {
+
+  /**
+   * What is the minimum, non-zero block_resume value of
+   * any download? (updated in each iteration over
+   * all downloads).
+   */
+  GNUNET_CronTime min_block_resume;
+
+  /**
+   * Running value in this iteration of the update
+   * for min_block_resume.
+   */
+  GNUNET_CronTime next_min_block_resume;
 
   struct GNUNET_GE_Context *ectx;
 

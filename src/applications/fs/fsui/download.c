@@ -453,7 +453,6 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
   if (list == NULL)
     return GNUNET_NO;
   ectx = list->ctx->ectx;
-
 #if DEBUG_DTM
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -467,10 +466,14 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
   if ((list->ctx->threadPoolSize
        > list->ctx->activeDownloadThreads) &&
       (list->state == GNUNET_FSUI_PENDING) &&
-      ( (list->block_resume < now) ||
+      ( (list->block_resume == 0) ||
+	(list->block_resume == list->ctx->min_block_resume) ||
 	(list->ctx->threadPoolSize > list->ctx->activeDownloadThreads + 1) ) &&
       ((list->total > list->completed) || (list->total == 0)))
     {
+      if (list->block_resume == list->ctx->min_block_resume)
+	list->ctx->min_block_resume = -1;	
+      list->block_resume = 0;
 #if DEBUG_DTM
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -509,7 +512,7 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
     {
       if ( (list->ctx->threadPoolSize == list->ctx->activeDownloadThreads) &&
 	   (0 == (list->progressBits & GNUNET_FSUI_DL_KILL_TIME_MASK)) )
-	list->block_resume = now + GNUNET_FSUI_DL_KILL_PERIOD;	
+	list->block_resume = now;
       else
 	list->block_resume = 0;
 #if DEBUG_DTM
@@ -588,6 +591,10 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
         ret = GNUNET_YES;
       dpos = dpos->next;
     }
+  if ( (list->block_resume != 0) &&
+       (list->state == GNUNET_FSUI_PENDING) &&
+       (list->block_resume < list->ctx->next_min_block_resume) )
+    list->ctx->next_min_block_resume = list->block_resume;
   return ret;
 }
 
