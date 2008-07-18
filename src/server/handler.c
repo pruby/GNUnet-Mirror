@@ -449,7 +449,7 @@ GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
           return;
         }
 
-      if ((pos % ALIGN_REQUIRED) != 0)
+      if (((&msg[pos] - (char *)0) & (ALIGN_REQUIRED-1)) != 0)
 	{
           /* correct misalignment; we allow messages to _not_ be a
              multiple of 4-bytes (if absolutely necessary; it should be
