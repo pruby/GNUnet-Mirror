@@ -64,10 +64,13 @@ GNUNET_meta_data_create ()
 void
 GNUNET_meta_data_destroy (MetaData * md)
 {
-  int i;
-  for (i = 0; i < md->itemCount; i++)
+  int i, ic;
+
+  ic = md ? md->itemCount : 0;
+  for (i = 0; i < ic; i++)
     GNUNET_free (md->items[i].data);
-  GNUNET_array_grow (md->items, md->itemCount, 0);
+  if (ic)
+    GNUNET_array_grow (md->items, ic, 0);
   GNUNET_free (md);
 }
 
@@ -478,7 +481,7 @@ GNUNET_meta_data_serialize (struct GNUNET_GE_Context *ectx,
 
   if (max < sizeof (MetaDataHeader))
     return GNUNET_SYSERR;       /* far too small */
-  ic = md->itemCount;
+  ic = md ? md->itemCount : 0;
   hdr = NULL;
   while (1)
     {
@@ -563,7 +566,7 @@ GNUNET_meta_data_get_serialized_size (const MetaData * md, int part)
   int len;
   unsigned int ic;
 
-  ic = md->itemCount;
+  ic = md ? md->itemCount : 0;
   size = sizeof (MetaDataHeader);
   size += sizeof (unsigned int) * ic;
   for (i = 0; i < ic; i++)
@@ -572,11 +575,11 @@ GNUNET_meta_data_get_serialized_size (const MetaData * md, int part)
     size++;
   hdr = GNUNET_malloc (size);
   hdr->version = htonl (0);
-  hdr->entries = htonl (md->itemCount);
+  hdr->entries = htonl (ic);
   for (i = 0; i < ic; i++)
     ((unsigned int *) &hdr[1])[i] = htonl ((unsigned int) md->items[i].type);
   pos = sizeof (MetaDataHeader);
-  pos += sizeof (unsigned int) * md->itemCount;
+  pos += sizeof (unsigned int) * ic;
   for (i = 0; i < ic; i++)
     {
       len = strlen (md->items[i].data) + 1;
