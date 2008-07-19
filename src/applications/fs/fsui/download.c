@@ -762,7 +762,8 @@ GNUNET_FSUI_download_stop (struct GNUNET_FSUI_DownloadList *dl)
     GNUNET_ECRS_uri_destroy (dl->completedDownloads[i]);
   GNUNET_array_grow (dl->completedDownloads, dl->completedDownloadsCount, 0);
   GNUNET_ECRS_uri_destroy (dl->fi.uri);
-  GNUNET_meta_data_destroy (dl->fi.meta);
+  if (dl->fi.meta != NULL)
+    GNUNET_meta_data_destroy (dl->fi.meta);
   GNUNET_free (dl->filename);
   GNUNET_free (dl);
   return GNUNET_OK;
