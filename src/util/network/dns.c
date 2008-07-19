@@ -572,13 +572,12 @@ GNUNET_get_ip_from_hostname (struct GNUNET_GE_Context *ectx,
 
 void __attribute__ ((constructor)) GNUNET_dns_ltdl_init ()
 {
-  lock = GNUNET_mutex_create (GNUNET_YES);
+  lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
 void __attribute__ ((destructor)) GNUNET_dns_ltdl_fini ()
 {
   struct IPCache *pos;
-  GNUNET_mutex_destroy (lock);
   while (head != NULL)
     {
       pos = head->next;
@@ -601,4 +600,5 @@ void __attribute__ ((destructor)) GNUNET_dns_ltdl_fini ()
       adns_finish (a_state);
     }
 #endif
+  GNUNET_mutex_destroy (lock);
 }
