@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-06-14 20:51-0600\n"
+"POT-Creation-Date: 2008-07-19 23:44-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,9 +38,9 @@ msgid "Yes"
 msgstr ""
 
 #: src/setup/ncurses/wizard_curs.c:118 src/setup/ncurses/wizard_curs.c:183
-#: src/setup/ncurses/wizard_curs.c:299 src/setup/ncurses/mconf.c:191
-#: src/setup/ncurses/mconf.c:289 src/setup/ncurses/mconf.c:370
-#: src/setup/ncurses/mconf.c:465
+#: src/setup/ncurses/wizard_curs.c:299 src/setup/ncurses/mconf.c:193
+#: src/setup/ncurses/mconf.c:298 src/setup/ncurses/mconf.c:381
+#: src/setup/ncurses/mconf.c:481
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
@@ -240,7 +240,7 @@ msgstr ""
 msgid "Save configuration now?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:539 src/setup/ncurses/mconf.c:509
+#: src/setup/ncurses/wizard_curs.c:539 src/setup/ncurses/mconf.c:525
 msgid "GNUnet Configuration"
 msgstr ""
 
@@ -260,39 +260,39 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:224 src/setup/ncurses/mconf.c:414
+#: src/setup/ncurses/mconf.c:229 src/setup/ncurses/mconf.c:428
 msgid "Internal error! (Value invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:403
+#: src/setup/ncurses/mconf.c:414
 msgid "Invalid input, expecting floating point value."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:446
+#: src/setup/ncurses/mconf.c:460
 msgid "Invalid input, expecting integer."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:454
+#: src/setup/ncurses/mconf.c:468
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:521 src/setup/text/conf.c:569
+#: src/setup/ncurses/mconf.c:537 src/setup/text/conf.c:569
 #, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:527
+#: src/setup/ncurses/mconf.c:543
 msgid "Do you wish to save your new configuration?"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:541
+#: src/setup/ncurses/mconf.c:557
 #, c-format
 msgid ""
 "\n"
 "End of configuration.\n"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:546
+#: src/setup/ncurses/mconf.c:562
 #, c-format
 msgid ""
 "\n"
@@ -359,19 +359,19 @@ msgstr ""
 msgid "Error: can't delete service: %s\n"
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:383
+#: src/setup/gtk/ngconf.c:389
 msgid "Configuration saved."
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:393
+#: src/setup/gtk/ngconf.c:399
 msgid "Failed to save configuration."
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:418
+#: src/setup/gtk/ngconf.c:424
 msgid "Configuration changed. Save?"
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:431
+#: src/setup/gtk/ngconf.c:437
 msgid "Error saving configuration."
 msgstr ""
 
@@ -426,7 +426,7 @@ msgstr ""
 msgid "generate configuration for gnunetd, the GNUnet daemon"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:111 src/server/gnunet-update.c:265
+#: src/setup/gnunet-setup.c:111 src/server/gnunet-update.c:268
 msgid "print a value from the configuration file to stdout"
 msgstr ""
 
@@ -438,31 +438,31 @@ msgstr ""
 msgid "update a value in the configuration file"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:257
+#: src/setup/gnunet-setup.c:256
 #, c-format
 msgid "Too many arguments.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:263
-msgid "No interface specified, using default\n"
+#: src/setup/gnunet-setup.c:262
+msgid "No interface specified, using default.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:342
+#: src/setup/gnunet-setup.c:341
 #, c-format
 msgid "Undefined option.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:395
+#: src/setup/gnunet-setup.c:394
 #, c-format
 msgid "`%s' is not available.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:415
+#: src/setup/gnunet-setup.c:414
 #, c-format
-msgid "Unknown operation `%s'\n"
+msgid "Unknown operation '%s'.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:416 src/util/getopt/getopt.c:1072
+#: src/setup/gnunet-setup.c:415 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr ""
@@ -644,7 +644,7 @@ msgstr ""
 msgid "Unknown error while creating a new user"
 msgstr ""
 
-#: src/setup/lib/gns.c:297
+#: src/setup/lib/gns.c:315
 #, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
@@ -661,66 +661,71 @@ msgstr ""
 msgid "Expected `%s' to be a directory!\n"
 msgstr ""
 
-#: src/util/error/error.c:116
+#: src/util/error/error.c:153
+#, c-format
+msgid "Message `%.*s' repeated %u times in the last %llus\n"
+msgstr ""
+
+#: src/util/error/error.c:256
 #, c-format
 msgid ""
 "\n"
 "Press any key to continue\n"
 msgstr ""
 
-#: src/util/error/error.c:189 src/util/error/error.c:224
+#: src/util/error/error.c:338 src/util/error/error.c:373
 msgid "DEBUG"
 msgstr ""
 
-#: src/util/error/error.c:191 src/util/error/error.c:226
+#: src/util/error/error.c:340 src/util/error/error.c:375
 msgid "STATUS"
 msgstr ""
 
-#: src/util/error/error.c:193 src/util/error/error.c:230
+#: src/util/error/error.c:342 src/util/error/error.c:379
 msgid "WARNING"
 msgstr ""
 
-#: src/util/error/error.c:195 src/util/error/error.c:232
+#: src/util/error/error.c:344 src/util/error/error.c:381
 msgid "ERROR"
 msgstr ""
 
-#: src/util/error/error.c:197 src/util/error/error.c:234
+#: src/util/error/error.c:346 src/util/error/error.c:383
 msgid "FATAL"
 msgstr ""
 
-#: src/util/error/error.c:199 src/util/error/error.c:236
+#: src/util/error/error.c:348 src/util/error/error.c:385
 msgid "USER"
 msgstr ""
 
-#: src/util/error/error.c:201 src/util/error/error.c:238
+#: src/util/error/error.c:350 src/util/error/error.c:387
 msgid "ADMIN"
 msgstr ""
 
-#: src/util/error/error.c:203 src/util/error/error.c:240
+#: src/util/error/error.c:352 src/util/error/error.c:389
 msgid "DEVELOPER"
 msgstr ""
 
-#: src/util/error/error.c:205 src/util/error/error.c:242
+#: src/util/error/error.c:354 src/util/error/error.c:391
 msgid "REQUEST"
 msgstr ""
 
-#: src/util/error/error.c:207 src/util/error/error.c:244
+#: src/util/error/error.c:356 src/util/error/error.c:393
 msgid "BULK"
 msgstr ""
 
-#: src/util/error/error.c:209 src/util/error/error.c:246
+#: src/util/error/error.c:358 src/util/error/error.c:395
 msgid "IMMEDIATE"
 msgstr ""
 
-#: src/util/error/error.c:211
+#: src/util/error/error.c:360
 msgid "ALL"
 msgstr ""
 
-#: src/util/error/error.c:228
+#: src/util/error/error.c:377
 msgid "INFO"
 msgstr ""
 
-#: src/util/error/error.c:247
+#: src/util/error/error.c:396
 msgid "NOTHING"
 msgstr ""
 
@@ -735,7 +740,7 @@ msgstr ""
 
 #: src/util/network_client/tcpio.c:306
 #, c-format
-msgid "Error connecting to %s:%u\n"
+msgid "Error connecting to %s:%u. Is the daemon running?\n"
 msgstr ""
 
 #: src/util/network_client/tcpio.c:367
@@ -1000,8 +1005,8 @@ msgstr ""
 #: src/applications/dstore_sqlite/dstore.c:376
 #: src/applications/dstore_sqlite/dstore.c:480
 #: src/applications/dstore_sqlite/dstore.c:524
-#: src/include/gnunet_util_error.h:251 src/include/gnunet_util_error.h:258
-#: src/include/gnunet_util_error.h:265
+#: src/include/gnunet_util_error.h:249 src/include/gnunet_util_error.h:256
+#: src/include/gnunet_util_error.h:263
 #, c-format
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr ""
@@ -1011,16 +1016,21 @@ msgstr ""
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr ""
 
-#: src/util/os/user.c:136 src/util/os/user.c:181
+#: src/util/os/user.c:108 src/util/os/user.c:126
+#, c-format
+msgid "`%s' returned with error code %u"
+msgstr ""
+
+#: src/util/os/user.c:157 src/util/os/user.c:202
 #, c-format
 msgid "Cannot obtain information about user `%s': %s\n"
 msgstr ""
 
-#: src/util/os/user.c:137
+#: src/util/os/user.c:158
 msgid "No such user"
 msgstr ""
 
-#: src/util/os/user.c:152
+#: src/util/os/user.c:173
 #, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr ""
@@ -1068,7 +1078,7 @@ msgstr ""
 msgid "Setting open descriptor limit not supported.\n"
 msgstr ""
 
-#: src/util/os/osconfig.c:432 src/util/os/osconfig.c:461
+#: src/util/os/osconfig.c:439 src/util/os/osconfig.c:468
 #, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr ""
@@ -1181,29 +1191,44 @@ msgstr ""
 msgid "no-name"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:173
-#: src/applications/datastore/datastore.c:189
+#: src/applications/datastore/datastore.c:183
+#: src/applications/datastore/datastore.c:199
 #, c-format
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:388
+#: src/applications/datastore/datastore.c:401
 msgid "# requests filtered by bloom filter"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:390
+#: src/applications/datastore/datastore.c:403
 msgid "# bloom filter false positives"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:393
+#: src/applications/datastore/datastore.c:406
 msgid "# bytes allowed in datastore"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:410
+#: src/applications/datastore/datastore.c:423
 msgid "Failed to load state service. Trying to do without.\n"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:552
+#: src/applications/datastore/datastore.c:532
+#, c-format
+msgid "Datastore conversion at approximately %u%%\n"
+msgstr ""
+
+#: src/applications/datastore/datastore.c:579
+#, c-format
+msgid "Starting datastore conversion (this may take a while).\n"
+msgstr ""
+
+#: src/applications/datastore/datastore.c:587
+#, c-format
+msgid "Completed datastore conversion.\n"
+msgstr ""
+
+#: src/applications/datastore/datastore.c:595
 msgid "Failed to load sqstore service.  Check your configuration!\n"
 msgstr ""
 
@@ -1414,7 +1439,7 @@ msgstr ""
 msgid "sqlite datastore"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1456
+#: src/applications/sqstore_sqlite/sqlite.c:1457
 #: src/applications/sqstore_mysql/mysql.c:1649
 msgid "# bytes in datastore"
 msgstr ""
@@ -1904,7 +1929,7 @@ msgstr ""
 msgid "I am peer `%s'.\n"
 msgstr ""
 
-#: src/applications/dht/tools/dht_multipeer_test.c:77
+#: src/applications/dht/tools/dht_multipeer_test.c:76
 #: src/applications/dht/tools/dht_twopeer_test.c:47
 #: src/applications/dht/module/table.c:783
 msgid "# dht connections"
@@ -1918,28 +1943,13 @@ msgstr ""
 msgid "allow TIME ms to process a GET command"
 msgstr ""
 
-#: src/applications/dht/tools/dht-query.c:91
+#: src/applications/dht/tools/dht-query.c:106
 #, c-format
-msgid "%s(%s) operation returned no results.\n"
-msgstr ""
-
-#: src/applications/dht/tools/dht-query.c:104
-#, c-format
-msgid "Issuing '%s(%s,%s)' command.\n"
-msgstr ""
-
-#: src/applications/dht/tools/dht-query.c:112
-#, c-format
-msgid "'%s(%s,%s)' succeeded\n"
-msgstr ""
-
-#: src/applications/dht/tools/dht-query.c:116
-#, c-format
-msgid "'%s(%s,%s)' failed.\n"
+msgid "Issuing `%s(%s,%s)' command.\n"
 msgstr ""
 
 #: src/applications/dht/tools/dht-query.c:141
-#: src/applications/fs/tools/gnunet-auto-share.c:626
+#: src/applications/fs/tools/gnunet-auto-share.c:676
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr ""
@@ -2214,8 +2224,8 @@ msgid "# sessions established"
 msgstr ""
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
-#: src/applications/fs/tools/gnunet-auto-share.c:154
-#: src/applications/fs/tools/gnunet-insert.c:249
+#: src/applications/fs/tools/gnunet-auto-share.c:199
+#: src/applications/fs/tools/gnunet-insert.c:251
 #: src/applications/fs/tools/gnunet-search.c:125
 #: src/applications/fs/tools/gnunet-download.c:77
 msgid "set the desired LEVEL of sender-anonymity"
@@ -2288,7 +2298,7 @@ msgstr ""
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:179
 #: src/applications/fs/tools/gnunet-pseudonym.c:241
-#: src/applications/fs/tools/gnunet-insert.c:99
+#: src/applications/fs/tools/gnunet-insert.c:101
 #, c-format
 msgid "\tUnknown namespace `%s'\n"
 msgstr ""
@@ -2381,218 +2391,255 @@ msgstr ""
 msgid "Listed %d matching entries.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:115
+#: src/applications/fs/tools/gnunet-auto-share.c:117
+#, c-format
+msgid "Upload of `%s' at %llu out of %llu bytes.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:130
 #, c-format
 msgid "Upload of `%s' complete, URI is `%s'.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:124
-#: src/applications/fs/tools/gnunet-insert.c:223
+#: src/applications/fs/tools/gnunet-auto-share.c:139
+#, c-format
+msgid "Upload aborted.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:145
+#, c-format
+msgid "Error uploading file: %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:154
+#, c-format
+msgid "Starting upload of `%s'.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:164
+#, c-format
+msgid "Uploading suspended.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:179
+#, c-format
+msgid "Uploading `%s' resumed.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:186
+#, c-format
+msgid "Unexpected event: %d\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:205
+msgid ""
+"run in debug mode; gnunet-auto-share will not daemonize and error messages "
+"will be written to stderr instead of a logfile"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:211
+#: src/applications/fs/tools/gnunet-insert.c:264
+msgid ""
+"do not use libextractor to add additional references to directory entries "
+"and/or the published file"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:213
+msgid "Automatically share a directory."
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:216
+#: src/applications/fs/tools/gnunet-insert.c:278
+msgid ""
+"add an additional keyword for all files and directories (this option can be "
+"specified multiple times)"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:221
+#: src/applications/fs/tools/gnunet-insert.c:295
+msgid "specify the priority of the content"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:475
+#: src/applications/fs/tools/gnunet-auto-share.c:942
+#, c-format
+msgid "Could not access `%s': %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:557
+#, c-format
+msgid "Unknown keyword type `%s' in metadata configuration\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:658
+#, c-format
+msgid "Failed to stop running gnunet-auto-share.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:962
+#, c-format
+msgid "Directory `%s' is already on the list of shared directories.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:996
+msgid ""
+"The specified directories were added to the list of shared directories.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-auto-share.c:1020
+#, c-format
+msgid "Could not open logfile `%s': %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:115
+#, c-format
+msgid "Created entry `%s' in namespace `%s'\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:120
+#, c-format
+msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:140
+#, c-format
+msgid "Keywords for file `%s':\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:148
+msgid "filename"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:150
+msgid "mimetype"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:191
+#, c-format
+msgid "%16llu of %16llu bytes inserted (estimating %6s to completion) - %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:203
+#, c-format
+msgid "Upload of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:214
+#, c-format
+msgid "File `%s' has URI: %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:225
 #, c-format
 msgid ""
 "\n"
 "Upload aborted.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:130
-#: src/applications/fs/tools/gnunet-insert.c:228
+#: src/applications/fs/tools/gnunet-insert.c:230
 #, c-format
 msgid ""
 "\n"
 "Error uploading file: %s"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:141
-#: src/applications/fs/tools/gnunet-insert.c:237
+#: src/applications/fs/tools/gnunet-insert.c:239
 #, c-format
 msgid ""
 "\n"
 "Unexpected event: %d\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-auto-share.c:158
-msgid ""
-"run in debug mode; gnunet-auto-share will not daemonize and error messages "
-"will be written to stderr instead of a logfile"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:164
-#: src/applications/fs/tools/gnunet-insert.c:262
-msgid ""
-"do not use libextractor to add additional references to directory entries "
-"and/or the published file"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:166
-msgid "Automatically share a directory."
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:169
-#: src/applications/fs/tools/gnunet-insert.c:276
-msgid ""
-"add an additional keyword for all files and directories (this option can be "
-"specified multiple times)"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:174
-#: src/applications/fs/tools/gnunet-insert.c:293
-msgid "specify the priority of the content"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:425
-#: src/applications/fs/tools/gnunet-auto-share.c:875
-#, c-format
-msgid "Could not access `%s': %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:507
-#, c-format
-msgid "Unknown keyword type `%s' in metadata configuration\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:608
-#, c-format
-msgid "Failed to stop running gnunet-auto-share.\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:894
-#, c-format
-msgid "Directory `%s' is already on the list of shared directories.\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:928
-msgid ""
-"The specified directories were added to the list of shared directories.\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-auto-share.c:952
-#, c-format
-msgid "Could not open logfile `%s': %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:113
-#, c-format
-msgid "Created entry `%s' in namespace `%s'\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:118
-#, c-format
-msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:138
-#, c-format
-msgid "Keywords for file `%s':\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:146
-msgid "filename"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:148
-msgid "mimetype"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:189
-#, c-format
-msgid "%16llu of %16llu bytes inserted (estimating %6s to completion) - %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:201
-#, c-format
-msgid "Upload of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:212
-#, c-format
-msgid "File `%s' has URI: %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:253
+#: src/applications/fs/tools/gnunet-insert.c:255
 msgid ""
 "even if gnunetd is running on the local machine, force the creation of a "
 "copy instead of making a link to the GNUnet share directory"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:258
+#: src/applications/fs/tools/gnunet-insert.c:260
 msgid "disable adding the creation time to the metadata of the uploaded file"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:266
+#: src/applications/fs/tools/gnunet-insert.c:268
 msgid ""
 "print list of extracted keywords that would be used, but do not perform "
 "upload"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:268
+#: src/applications/fs/tools/gnunet-insert.c:270
 msgid "Make files available to GNUnet for sharing."
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:272
+#: src/applications/fs/tools/gnunet-insert.c:274
 msgid ""
 "add an additional keyword for the top-level file or directory (this option "
 "can be specified multiple times)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:281
+#: src/applications/fs/tools/gnunet-insert.c:283
 msgid "set the meta-data for the given TYPE to the given VALUE"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:284
+#: src/applications/fs/tools/gnunet-insert.c:286
 msgid ""
 "do not index, perform full insertion (stores entire file in encrypted form "
 "in GNUnet database)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:289
+#: src/applications/fs/tools/gnunet-insert.c:291
 msgid ""
 "specify ID of an updated version to be published in the future (for "
 "namespace insertions only)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:297
+#: src/applications/fs/tools/gnunet-insert.c:299
 msgid "publish the files under the pseudonym NAME (place file into namespace)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:300
+#: src/applications/fs/tools/gnunet-insert.c:302
 msgid ""
 "only simulte the process but do not do any actual publishing (useful to "
 "compute URIs)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:304
+#: src/applications/fs/tools/gnunet-insert.c:306
 msgid ""
 "set the ID of this version of the publication (for namespace insertions only)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:308
+#: src/applications/fs/tools/gnunet-insert.c:310
 msgid ""
 "URI to be published (can be used instead of passing a file to add keywords "
 "to the file with the respective URI)"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:345
+#: src/applications/fs/tools/gnunet-insert.c:347
 #, c-format
 msgid "You must specify one and only one filename for insertion.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:351
+#: src/applications/fs/tools/gnunet-insert.c:353
 #, c-format
 msgid "You must NOT specify an URI and a filename.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:357
+#: src/applications/fs/tools/gnunet-insert.c:359
 #, c-format
 msgid "Cannot extract metadata from a URI!\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:412
+#: src/applications/fs/tools/gnunet-insert.c:414
 #, c-format
 msgid "Could not access namespace `%s' (does not exist?).\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:423
-#: src/applications/fs/tools/gnunet-insert.c:431
+#: src/applications/fs/tools/gnunet-insert.c:422
+#, c-format
+msgid "Option `%s' is required when using option `%s'.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:433
+#: src/applications/fs/tools/gnunet-insert.c:441
 #, c-format
 msgid "Option `%s' makes no sense without option `%s'.\n"
 msgstr ""
@@ -2791,12 +2838,12 @@ msgstr ""
 msgid "Number of double-quotes not balanced!\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/helper.c:395
+#: src/applications/fs/ecrs/helper.c:398
 #, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/helper.c:405
+#: src/applications/fs/ecrs/helper.c:408
 #, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr ""
@@ -2826,17 +2873,17 @@ msgstr ""
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/namespace.c:541
+#: src/applications/fs/ecrs/namespace.c:543
 #, c-format
 msgid "File `%s' does not contain a pseudonym, trying to remove.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/namespace.c:554
+#: src/applications/fs/ecrs/namespace.c:556
 #, c-format
 msgid "Format of file `%s' is invalid.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/namespace.c:565
+#: src/applications/fs/ecrs/namespace.c:567
 #, c-format
 msgid "Format of file `%s' is invalid, trying to remove.\n"
 msgstr ""
@@ -2851,8 +2898,8 @@ msgstr ""
 msgid "IO error."
 msgstr ""
 
-#: src/applications/fs/collection/collection.c:550
 #: src/applications/fs/collection/collection.c:553
+#: src/applications/fs/collection/collection.c:556
 #, c-format
 msgid "Revision %u"
 msgstr ""
@@ -2865,7 +2912,7 @@ msgstr ""
 msgid "Failed to create temporary directory."
 msgstr ""
 
-#: src/applications/fs/fsui/deserialize.c:927
+#: src/applications/fs/fsui/deserialize.c:928
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -2894,30 +2941,30 @@ msgstr ""
 msgid "Datastore full.\n"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:815
+#: src/applications/fs/gap/fs.c:836
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:817
+#: src/applications/fs/gap/fs.c:838
 msgid "# gap requests dropped due to load"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:819
+#: src/applications/fs/gap/fs.c:840
 msgid "# gap content total received"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:821
+#: src/applications/fs/gap/fs.c:842
 msgid "# gap total trust awarded"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:849
+#: src/applications/fs/gap/fs.c:870
 #, c-format
 msgid ""
 "`%s' registering client handlers %d %d %d %d %d %d %d %d and P2P handlers %d "
 "%d\n"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:905
+#: src/applications/fs/gap/fs.c:926
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
@@ -2967,43 +3014,43 @@ msgstr ""
 msgid "# gap query bloomfilter resizing updates"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:434
+#: src/applications/fs/gap/migration.c:437
 msgid "# blocks migrated"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:436
+#: src/applications/fs/gap/migration.c:439
 msgid "# blocks injected for migration"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:438
+#: src/applications/fs/gap/migration.c:441
 msgid "# blocks fetched for migration"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:440
+#: src/applications/fs/gap/migration.c:443
 msgid "# on-demand fetches for migration"
 msgstr ""
 
-#: src/applications/fs/gap/gap.c:678
+#: src/applications/fs/gap/gap.c:689
 msgid "# gap queries dropped (table full)"
 msgstr ""
 
-#: src/applications/fs/gap/gap.c:680
+#: src/applications/fs/gap/gap.c:691
 msgid "# gap queries dropped (redundant)"
 msgstr ""
 
-#: src/applications/fs/gap/gap.c:682
+#: src/applications/fs/gap/gap.c:693
 msgid "# gap queries routed"
 msgstr ""
 
-#: src/applications/fs/gap/gap.c:684
+#: src/applications/fs/gap/gap.c:695
 msgid "# gap content found locally"
 msgstr ""
 
-#: src/applications/fs/gap/gap.c:687
+#: src/applications/fs/gap/gap.c:698
 msgid "# gap queries refreshed existing record"
 msgstr ""
 
-#: src/applications/fs/gap/gap.c:688
+#: src/applications/fs/gap/gap.c:699
 msgid "# trust earned"
 msgstr ""
 
@@ -3020,17 +3067,17 @@ msgstr ""
 msgid "scp command is : %s \n"
 msgstr ""
 
-#: src/applications/testing/remote.c:504
+#: src/applications/testing/remote.c:493
 #, c-format
 msgid "Friend list of %s:%d\n"
 msgstr ""
 
-#: src/applications/testing/remote.c:526
+#: src/applications/testing/remote.c:515
 #, c-format
 msgid "scp command for friend file copy is : %s \n"
 msgstr ""
 
-#: src/applications/testing/remote.c:548
+#: src/applications/testing/remote.c:537
 #, c-format
 msgid "connecting peer %s:%d to peer %s:%d\n"
 msgstr ""
@@ -3054,7 +3101,7 @@ msgstr ""
 msgid "Connecting nodes in 2d torus topology: %u rows %u columns\n"
 msgstr ""
 
-#: src/applications/testing/remotetopologies.c:481
+#: src/applications/testing/remotetopologies.c:483
 #, c-format
 msgid "Failed to establish connection with peers.\n"
 msgstr ""
@@ -3072,9 +3119,9 @@ msgstr ""
 #: src/applications/bootstrap_http/http.c:365
 #: src/applications/bootstrap_http/http.c:375
 #: src/applications/bootstrap_http/http.c:385 src/transports/upnp/upnp.c:356
-#: src/transports/upnp/upnp.c:541 src/transports/http.c:1085
-#: src/transports/http.c:1209 src/transports/http.c:1377
-#: src/transports/http.c:1777 src/transports/http.c:1827
+#: src/transports/upnp/upnp.c:541 src/transports/http.c:1083
+#: src/transports/http.c:1207 src/transports/http.c:1375
+#: src/transports/http.c:1775 src/transports/http.c:1825
 #, c-format
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr ""
@@ -3547,19 +3594,19 @@ msgstr ""
 msgid "Failed to update data for module `%s'\n"
 msgstr ""
 
-#: src/server/gnunet-update.c:222 src/server/gnunetd.c:124
+#: src/server/gnunet-update.c:225 src/server/gnunetd.c:124
 msgid "Core initialization failed.\n"
 msgstr ""
 
-#: src/server/gnunet-update.c:267
+#: src/server/gnunet-update.c:270
 msgid "Updates GNUnet datastructures after version change."
 msgstr ""
 
-#: src/server/gnunet-update.c:271 src/server/gnunet-transport-check.c:376
+#: src/server/gnunet-update.c:274 src/server/gnunet-transport-check.c:376
 msgid "run as user LOGIN"
 msgstr ""
 
-#: src/server/gnunet-update.c:275
+#: src/server/gnunet-update.c:278
 msgid "run in client mode (for getting client configuration values)"
 msgstr ""
 
@@ -3800,7 +3847,7 @@ msgstr ""
 msgid "# conn. shutdown: other peer requested it"
 msgstr ""
 
-#: src/server/handler.c:437
+#: src/server/handler.c:442
 #, c-format
 msgid "Received corrupt message from peer `%s' in %s:%d.\n"
 msgstr ""
@@ -3897,17 +3944,17 @@ msgstr ""
 msgid "repeat each test X times"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:446
+#: src/server/gnunet-transport-check.c:449
 #, c-format
 msgid "Testing transport(s) %s\n"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:448
+#: src/server/gnunet-transport-check.c:451
 #, c-format
 msgid "Available transport(s): %s\n"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:496
+#: src/server/gnunet-transport-check.c:499
 #, c-format
 msgid ""
 "\n"
@@ -3968,70 +4015,70 @@ msgstr ""
 msgid "upnp: NAT Returned IP: %s\n"
 msgstr ""
 
-#: src/transports/http.c:2019 src/transports/tcp.c:797
+#: src/transports/http.c:2017 src/transports/tcp.c:797
 #, c-format
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"%s\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2028
+#: src/transports/http.c:2026
 msgid "# bytes received via HTTP"
 msgstr ""
 
-#: src/transports/http.c:2029
+#: src/transports/http.c:2027
 msgid "# bytes sent via HTTP"
 msgstr ""
 
-#: src/transports/http.c:2031
+#: src/transports/http.c:2029
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr ""
 
-#: src/transports/http.c:2032
+#: src/transports/http.c:2030
 msgid "# HTTP GET issued"
 msgstr ""
 
-#: src/transports/http.c:2034
+#: src/transports/http.c:2032
 msgid "# HTTP GET received"
 msgstr ""
 
-#: src/transports/http.c:2035
+#: src/transports/http.c:2033
 msgid "# HTTP PUT issued"
 msgstr ""
 
-#: src/transports/http.c:2037
+#: src/transports/http.c:2035
 msgid "# HTTP PUT received"
 msgstr ""
 
-#: src/transports/http.c:2039
+#: src/transports/http.c:2037
 msgid "# HTTP select calls"
 msgstr ""
 
-#: src/transports/http.c:2041
+#: src/transports/http.c:2039
 msgid "# HTTP send calls"
 msgstr ""
 
-#: src/transports/http.c:2044
+#: src/transports/http.c:2042
 msgid "# HTTP curl send callbacks"
 msgstr ""
 
-#: src/transports/http.c:2046
+#: src/transports/http.c:2044
 msgid "# HTTP curl receive callbacks"
 msgstr ""
 
-#: src/transports/http.c:2048
+#: src/transports/http.c:2046
 msgid "# HTTP mhd access callbacks"
 msgstr ""
 
-#: src/transports/http.c:2050
+#: src/transports/http.c:2048
 msgid "# HTTP mhd read callbacks"
 msgstr ""
 
-#: src/transports/http.c:2052
+#: src/transports/http.c:2050
 msgid "# HTTP mhd close callbacks"
 msgstr ""
 
-#: src/transports/http.c:2054
+#: src/transports/http.c:2052
 msgid "# HTTP connect calls"
 msgstr ""
 
@@ -4102,20 +4149,20 @@ msgstr ""
 msgid "specify host on which gnunetd is running"
 msgstr ""
 
-#: src/include/gnunet_util_error.h:221 src/include/gnunet_util_error.h:226
-#: src/include/gnunet_util_error.h:232 src/include/gnunet_util_error.h:234
+#: src/include/gnunet_util_error.h:219 src/include/gnunet_util_error.h:224
+#: src/include/gnunet_util_error.h:230 src/include/gnunet_util_error.h:232
 #, c-format
 msgid "Internal error: assertion failed at %s:%d.\n"
 msgstr ""
 
-#: src/include/gnunet_util_error.h:244
+#: src/include/gnunet_util_error.h:242
 #, c-format
 msgid ""
 "External protocol violation: assertion failed at %s:%d (no need to panic, we "
 "can handle this).\n"
 msgstr ""
 
-#: src/include/gnunet_util_error.h:272 src/include/gnunet_util_error.h:279
+#: src/include/gnunet_util_error.h:270 src/include/gnunet_util_error.h:277
 #, c-format
 msgid "`%s' failed on file `%s' at %s:%d with error: %s\n"
 msgstr ""
