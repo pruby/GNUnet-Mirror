@@ -4,9 +4,6 @@ Hostlist for network testing (0.8.x network):
 http://vserver1236.vserver-on.de/hostlist-074
 
 
-0.8.0 [6'08] (aka "new protocol"):
-- Windows: gnunet-auto-share
-
 0.8.1 [8'08] (aka "growth"):
 - Publishing:
   * clean up indexing with gnunet-insert (#1107)

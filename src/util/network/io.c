@@ -207,8 +207,7 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
   GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #ifdef CYGWIN
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #elif OSX || FREEBSD
   socket_set_nosigpipe (s, 0 == (nc & GNUNET_NC_IGNORE_INT));
   if (0 == (nc & GNUNET_NC_BLOCKING))
@@ -219,8 +218,7 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
 #elif LINUX
   if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #else
   /* good luck */
 #endif
@@ -291,8 +289,7 @@ GNUNET_socket_recv_from (struct GNUNET_SocketHandle *s,
   GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #ifdef CYGWIN
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #elif OSX || FREEBSD
   socket_set_nosigpipe (s, 0 == (nc & GNUNET_NC_IGNORE_INT));
   if (0 == (nc & GNUNET_NC_BLOCKING))
@@ -303,8 +300,7 @@ GNUNET_socket_recv_from (struct GNUNET_SocketHandle *s,
 #elif LINUX
   if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #else
   /* good luck */
 #endif
@@ -374,13 +370,11 @@ GNUNET_socket_send (struct GNUNET_SocketHandle *s,
   if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif CYGWIN
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #elif LINUX
   if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #else
   /* pray */
 #endif
@@ -451,13 +445,11 @@ GNUNET_socket_send_to (struct GNUNET_SocketHandle *s,
   if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif CYGWIN
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #elif LINUX
   if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & GNUNET_NC_IGNORE_INT))
-    flags |= MSG_NOSIGNAL;
+  flags |= MSG_NOSIGNAL;
 #else
   /* pray */
 #endif

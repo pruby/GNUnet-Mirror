@@ -64,13 +64,13 @@ GNUNET_meta_data_create ()
 void
 GNUNET_meta_data_destroy (MetaData * md)
 {
-  int i, ic;
+  int i;
 
-  ic = md ? md->itemCount : 0;
-  for (i = 0; i < ic; i++)
+  if (md == NULL)
+    return;
+  for (i = 0; i < md->itemCount; i++)
     GNUNET_free (md->items[i].data);
-  if (ic)
-    GNUNET_array_grow (md->items, ic, 0);
+  GNUNET_array_grow (md->items, md->itemCount, 0);
   GNUNET_free (md);
 }
 
@@ -434,6 +434,10 @@ typedef struct
    * The version of the MD serialization.
    * The highest bit is used to indicate
    * compression.
+   *
+   * Version 0 is the current version;
+   * Version is 1 for a NULL pointer.
+   * Other version numbers are not yet defined.
    */
   unsigned int version;
 
@@ -492,7 +496,7 @@ GNUNET_meta_data_serialize (struct GNUNET_GE_Context *ectx,
       while (size % 8 != 0)
         size++;
       hdr = GNUNET_malloc (size);
-      hdr->version = htonl (0);
+      hdr->version = htonl (md == NULL ? 1 : 0);
       hdr->entries = htonl (ic);
       for (i = 0; i < ic; i++)
         ((unsigned int *) &hdr[1])[i] =
@@ -574,7 +578,7 @@ GNUNET_meta_data_get_serialized_size (const MetaData * md, int part)
   while (size % 8 != 0)
     size++;
   hdr = GNUNET_malloc (size);
-  hdr->version = htonl (0);
+  hdr->version = htonl (md == NULL ? 1 : 0);
   hdr->entries = htonl (ic);
   for (i = 0; i < ic; i++)
     ((unsigned int *) &hdr[1])[i] = htonl ((unsigned int) md->items[i].type);
@@ -596,9 +600,7 @@ GNUNET_meta_data_get_serialized_size (const MetaData * md, int part)
     }
   if (pos < size - sizeof (MetaDataHeader))
     size = pos + sizeof (MetaDataHeader);
-
   GNUNET_free (hdr);
-
   return size;
 }
 
@@ -621,12 +623,19 @@ GNUNET_meta_data_deserialize (struct GNUNET_GE_Context *ectx,
   int i;
   unsigned int pos;
   int len;
+  unsigned int version;
 
   if (size < sizeof (MetaDataHeader))
     return NULL;
   hdr = (const MetaDataHeader *) input;
-  if ((ntohl (MAKE_UNALIGNED (hdr->version)) & HEADER_VERSION_MASK) != 0)
-    return NULL;                /* unsupported version */
+  version = ntohl (MAKE_UNALIGNED (hdr->version)) & HEADER_VERSION_MASK;
+  if (version == 1)
+    return NULL; /* null pointer */
+  if (version != 0)
+    {
+      GNUNET_GE_BREAK_OP(NULL, 0); /* unsupported version */
+      return NULL; 
+    }
   ic = ntohl (MAKE_UNALIGNED (hdr->entries));
   compressed =
     (ntohl (MAKE_UNALIGNED (hdr->version)) & HEADER_COMPRESSED) != 0;
