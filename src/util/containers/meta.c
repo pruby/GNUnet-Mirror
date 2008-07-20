@@ -258,7 +258,7 @@ decodeThumbnail (const char *in, unsigned char **out, size_t * outSize)
       return 1;
     }
 
-  buf = malloc (inSize);        /* slightly more than needed ;-) */
+  buf = GNUNET_malloc (inSize);        /* slightly more than needed ;-) */
   *out = buf;
 
   pos = 0;
