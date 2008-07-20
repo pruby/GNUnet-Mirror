@@ -1,3 +1,6 @@
+Sun Jul 20 15:27:11 MDT 2008
+	Releasing 0.8.0a.
+
 Thu Jul 10 00:59:31 MDT 2008
 	Fixed bug where datastore resizing would not 
 	result in bloomfilter update during gnunet-update.

@@ -52,9 +52,9 @@ main (int argc, const char *argv[])
       return 1;
     }
   if (GNUNET_OK !=
-      GNUNET_wait_for_daemon_running (ectx, cfg, 30 * GNUNET_CRON_SECONDS))
+      GNUNET_wait_for_daemon_running (ectx, cfg, 90 * GNUNET_CRON_SECONDS))
     {
-      fprintf (stderr, "Failed to confirm daemon running (after 30s).\n");
+      fprintf (stderr, "Failed to confirm daemon running (after 90s).\n");
       /* try killing anyway, just to be sure */
       GNUNET_daemon_stop (ectx, daemon);
       GNUNET_GC_free (cfg);
