@@ -379,16 +379,15 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                GNUNET_GE_USER |
                                                GNUNET_GE_BULK, "mkstemp",
                                                temp_path);
-                  GNUNET_GC_free (basecfg);
                   GNUNET_free (temp_path);
-                  break;
+		  GNUNET_free (temp_remote_config_path);
+		  break;
                 }
               CLOSE (ret);
               if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
                 {
-                  /* I guess an error would be logged by GNUNET_GC_write_configuration */
-                  GNUNET_GC_free (basecfg);
                   GNUNET_free (temp_path);
+		  GNUNET_free (temp_remote_config_path);
                   break;
                 }
 
