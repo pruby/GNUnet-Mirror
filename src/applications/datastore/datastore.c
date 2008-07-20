@@ -569,7 +569,6 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
       GNUNET_free (lq);
       return;                   /* no change */
     }
-  GNUNET_free_non_null (lq);
   /* ok, need to convert! */
   deleteFilter (uapi->ectx, uapi->cfg);
   initFilters (uapi->ectx, uapi->cfg);
@@ -580,7 +579,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
                _("Starting datastore conversion (this may take a while).\n"));
       pi.start = GNUNET_get_time ();
       pi.pos = 0;
-      pi.total = GNUNET_ntohll (*lq);
+      pi.total = (lq != NULL) ? GNUNET_ntohll (*lq) : 0;
       if (pi.total == 0)
         pi.total = 1;
       sq->iterateAllNow (&filterAddAll, &pi);
@@ -595,6 +594,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
                      _
                      ("Failed to load sqstore service.  Check your configuration!\n"));
     }
+  GNUNET_free_non_null (lq);
   sq = NULL;
   doneFilters ();
   if (state != NULL)
