@@ -92,7 +92,7 @@ g_strdup_printf (const char *fmt, ...)
   va_start (va, fmt);
   size = VSNPRINTF (NULL, 0, fmt, va) + 1;
   va_end (va);
-  buf = malloc (size);
+  buf = GNUNET_malloc (size);
   va_start (va, fmt);
   VSNPRINTF (buf, size, fmt, va);
   va_end (va);
