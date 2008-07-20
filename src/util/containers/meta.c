@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include <extractor.h>
 #include <zlib.h>
 
 #define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
@@ -231,52 +232,6 @@ GNUNET_meta_data_get_first_by_types (const MetaData * md, ...)
   return ret;
 }
 
-
-/**
- * This function can be used to decode the binary data
- * stream produced by the thumbnailextractor.
- *
- * @param in 0-terminated string from the meta-data
- * @return 1 on error, 0 on success
- */
-static int
-decodeThumbnail (const char *in, unsigned char **out, size_t * outSize)
-{
-  unsigned char *buf;
-  size_t pos;
-  size_t wpos;
-  unsigned char marker;
-  size_t i;
-  size_t end;
-  size_t inSize;
-
-  inSize = strlen (in);
-  if (inSize == 0)
-    {
-      *out = NULL;
-      *outSize = 0;
-      return 1;
-    }
-
-  buf = GNUNET_malloc (inSize);        /* slightly more than needed ;-) */
-  *out = buf;
-
-  pos = 0;
-  wpos = 0;
-  while (pos < inSize)
-    {
-      end = pos + 255;          /* 255 here: count the marker! */
-      if (end > inSize)
-        end = inSize;
-      marker = in[pos++];
-      for (i = pos; i < end; i++)
-        buf[wpos++] = (in[i] == marker) ? 0 : in[i];
-      pos = end;
-    }
-  *outSize = wpos;
-  return 0;
-}
-
 /**
  * Get a thumbnail from the meta-data (if present).
  *
@@ -301,12 +256,11 @@ GNUNET_meta_data_get_thumbnail (const struct GNUNET_MetaData * md,
       return 0;                 /* invalid */
     }
   *thumb = NULL;
-  ret = decodeThumbnail (encoded, thumb, &size);
+  ret = EXTRACTOR_binaryDecode (encoded, thumb, &size);
   GNUNET_free (encoded);
-  if (ret == 0)
-    return size;
-  else
+  if (ret != 0)
     return 0;
+  return size;
 }
 
 /**
