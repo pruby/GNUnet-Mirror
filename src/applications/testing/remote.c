@@ -58,8 +58,8 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
     snprintf (NULL, 0, "scp %s%s %s@%s:%s", localConfigPath, configFileName,
               username, hostname, remote_config_path);
   cmd = GNUNET_malloc (length + 1);
-  snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
-            configFileName, username, hostname, remote_config_path);
+  GNUNET_snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
+		   configFileName, username, hostname, remote_config_path);
 
   /* To me this seems like information that will always be appreciated by the user
    * if this is contested by anyone, please mark it here as well as how it should be
@@ -137,10 +137,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   length = 0;
   ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
   if (ipk_dir == NULL)
-    {
-      ipk_dir = GNUNET_malloc (1);
-      strcpy (ipk_dir, "");
-    }
+    ipk_dir = GNUNET_strdup ("");
   length = snprintf (NULL, 0, "%s%s", ipk_dir, "gnunetd.conf.skel");
   data_dir = GNUNET_malloc (length + 1);
   snprintf (data_dir, length + 1, "%s%s", ipk_dir, "gnunetd.conf.skel");
@@ -231,8 +228,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
           length_temp =
             snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j);
           temp_pid_file = GNUNET_malloc (length_temp + 1);
-          snprintf (temp_pid_file, length_temp + 1, "%s%s%d", remote_pid_path,
-                    "pid", j);
+          GNUNET_snprintf (temp_pid_file, length_temp + 1, "%s%s%d", remote_pid_path,
+			   "pid", j);
 
           GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                     "GNUNETD", "PIDFILE",
@@ -292,12 +289,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
             {
               temp_pos =
                 GNUNET_malloc (sizeof (struct GNUNET_REMOTE_host_list));
-              temp_pos->hostname = GNUNET_malloc (strlen (curr_host) + 1);
-              strcpy (temp_pos->hostname, curr_host);
-
-              temp_pos->username = GNUNET_malloc (strlen (ssh_username) + 1);
-              strcpy (temp_pos->username, ssh_username);
-
+              temp_pos->hostname = GNUNET_strdup (curr_host);
+              temp_pos->username = GNUNET_strdup (ssh_username);
               friend_location_length =
                 snprintf (NULL, 0, "%s/friends", temp_remote_config_path);
               temp_pos->remote_friend_file_path =
@@ -404,20 +397,16 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                 {
                   temp_pos =
                     GNUNET_malloc (sizeof (struct GNUNET_REMOTE_host_list));
-                  temp_pos->hostname = GNUNET_malloc (strlen (curr_host));
-                  strcpy (temp_pos->hostname, curr_host);
-
-                  temp_pos->username = GNUNET_malloc (strlen (ssh_username));
-                  strcpy (temp_pos->username, ssh_username);
-
+                  temp_pos->hostname = GNUNET_strdup (curr_host);
+                  temp_pos->username = GNUNET_strdup (ssh_username);
                   friend_location_length =
                     snprintf (NULL, 0, "%s/friends", temp_remote_config_path);
                   temp_pos->remote_friend_file_path =
                     GNUNET_malloc (friend_location_length + 1);
-                  snprintf (temp_pos->remote_friend_file_path,
-                            friend_location_length + 1, "%s/friends",
-                            temp_remote_config_path);
-
+                  GNUNET_snprintf (temp_pos->remote_friend_file_path,
+				   friend_location_length + 1, 
+				   "%s/friends",
+				   temp_remote_config_path);
                   GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
                                               temp, remote_config_path,
                                               curr_host, ssh_username,
