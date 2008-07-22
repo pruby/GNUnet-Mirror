@@ -43,9 +43,9 @@ var ICONS_GROUP
 ; Finish page
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README"
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
-!define MUI_FINISHPAGE_RUN "$INSTDIR\bin\gnunet-setup.exe"
+!define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "GNUnet Setup"
-!define MUI_FINISHPAGE_RUN_PARAMETERS "-d wizard-qt"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchSetup"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -86,6 +86,10 @@ InstType "User"
 InstType "GNUnet Server"
 InstType "GNUnet Client"
 InstType "Everything"
+
+Function LaunchSetup
+  ExecShell "" "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk"
+FunctionEnd
 
 SetOverwrite ifnewer
 
