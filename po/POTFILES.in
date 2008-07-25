@@ -298,8 +298,6 @@ src/setup/lib/tree.h
 src/setup/lib/wizard_util.h
 src/setup/qt/gstring.h
 src/setup/qt/setupWizard.h
-src/setup/qt/ui_gnunet-setup.h
-src/setup/qt/ui_enhanced.h
 src/util/network/network.h
 src/util/crypto/locking_gcrypt.h
 src/util/pseudonym/notification.h
