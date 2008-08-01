@@ -292,7 +292,11 @@ GNUNET_client_connection_ensure_connected (struct
    * a connection issue.
    */
 #define TRIES_PER_AF 2
-#define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
+#ifdef WINDOWS
+  #define DELAY_PER_RETRY (5000 * GNUNET_CRON_MILLISECONDS)
+#else
+  #define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
+#endif
 #define ADVANCE() do { af_index++; tries = TRIES_PER_AF; } while(0)
 #define RETRY() do { tries--; if (tries == 0) { ADVANCE(); } else { GNUNET_thread_sleep(DELAY_PER_RETRY); } } while (0)
   tries = TRIES_PER_AF;
