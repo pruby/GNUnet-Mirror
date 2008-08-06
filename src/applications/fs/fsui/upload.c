@@ -478,10 +478,27 @@ GNUNET_FSUI_uploadThread (void *cls)
              (copied here to allow free later) */
           loc = GNUNET_ECRS_uri_duplicate (utc->uri);
         }
+      if (utc->shared->individualKeywords == GNUNET_YES)
+	{
+	  /* need to convert to URI *before*
+	     removing split/lower from meta */
+	  uri = GNUNET_meta_data_to_uri (utc->meta);
+	}
       while (GNUNET_OK ==
-             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
+	     GNUNET_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
       while (GNUNET_OK ==
-             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE, NULL));
+	     GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE, NULL));
+      if (utc->shared->individualKeywords == GNUNET_YES)
+        {
+          GNUNET_ECRS_publish_under_keyword (ectx,
+                                             utc->shared->ctx->cfg,
+                                             uri,
+                                             utc->shared->anonymityLevel,
+                                             utc->shared->priority,
+                                             utc->shared->expiration, loc,
+                                             utc->meta);
+          GNUNET_ECRS_uri_destroy (uri);
+        }
       if (utc->shared->global_keywords != NULL)
         GNUNET_ECRS_publish_under_keyword (ectx,
                                            utc->shared->ctx->cfg,
@@ -498,18 +515,6 @@ GNUNET_FSUI_uploadThread (void *cls)
                                            utc->shared->priority,
                                            utc->shared->expiration, loc,
                                            utc->meta);
-      if (utc->shared->individualKeywords == GNUNET_YES)
-        {
-          uri = GNUNET_meta_data_to_uri (utc->meta);
-          GNUNET_ECRS_publish_under_keyword (ectx,
-                                             utc->shared->ctx->cfg,
-                                             uri,
-                                             utc->shared->anonymityLevel,
-                                             utc->shared->priority,
-                                             utc->shared->expiration, loc,
-                                             utc->meta);
-          GNUNET_ECRS_uri_destroy (uri);
-        }
       GNUNET_ECRS_uri_destroy (loc);
       loc = NULL;
       fi.meta = utc->meta;
