@@ -735,7 +735,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   dblock = (const GNUNET_EC_DBlock *) &msg[1];
 
   expiration = GNUNET_ntohll (msg->expiration);
-  if ((expiration > GNUNET_GAP_MAX_MIGRATION_EXP) &&
+  if ((expiration > GNUNET_GAP_MAX_MIGRATION_EXP_KSK) &&
       (ntohl (dblock->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD))
     return GNUNET_OK;           /* expired KSK block -- ignore! */
   if (GNUNET_OK !=

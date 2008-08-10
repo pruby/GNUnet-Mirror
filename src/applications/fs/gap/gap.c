@@ -203,7 +203,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
   msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
   msg->header.size = htons (size);
   msg->reserved = htonl (0);
-  msg->expiration = et;
+  msg->expiration = GNUNET_htonll(et);
   memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
   cls->result_count++;
   if (cls->result_count > 2 * (1 + req->value))
