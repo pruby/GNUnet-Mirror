@@ -181,7 +181,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
   et = GNUNET_ntohll (value->expiration_time);
   now = GNUNET_get_time ();
   /* convert to relative expiration time */
-  if (now > et)
+  if (now < et)
     {
       et -= now;
       if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
