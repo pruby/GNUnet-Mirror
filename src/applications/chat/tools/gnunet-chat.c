@@ -426,13 +426,15 @@ do_help (const char *args, const void *xtra)
 {
   int i;
   i = 0;
-  while (commands[i].Action != &do_help)
+  while ((args != NULL) &&
+	 (0 != strlen(args)) &&
+	 (commands[i].Action != &do_help))
     {
-      if (0 == strcasecmp (xtra, commands[i].command))
+      if (0 == strncasecmp (&args[1], &commands[i].command[1], strlen(args)-1))
         {
           fprintf (stdout, "%s\n", gettext (commands[i].helptext));
           return GNUNET_OK;
-        }
+	}        
       i++;
     }
   i = 0;

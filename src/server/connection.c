@@ -4461,9 +4461,6 @@ int
  * @param amount how many bytes should we expect to receive?
  *        (negative amounts can be used to undo a (recent)
  *        reservation request
- * @param timeframe in what time interval should the other
- *        peer be able to transmit the amount?  Use zero
- *        when undoing a reservation
  * @return amount that could actually be reserved
  */
 int
