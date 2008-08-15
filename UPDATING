@@ -8,6 +8,12 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.8.0a to 0.8.0b
+================
+
+Republication of content is recommend (but not strictly required).
+
+
 0.8.0 to 0.8.0a
 ===============
 
