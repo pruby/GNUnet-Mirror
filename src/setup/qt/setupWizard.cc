@@ -436,11 +436,14 @@ void GSetupWizard::nextClicked()
                      "This maybe due to insufficient permissions, please check the console output and your configuration.\n"
                      "Finally, run gnunet-update manually.");
         else
+        {
+          FreeConsole();
           QMessageBox::information(this, tr("Information"), "Setup is complete.\n\n"
               "Next steps: before you can use GNUnet, the background process \"gnunetd\" needs to be started.\n"
               "This can be done on the user interface's \"General\" tab or by using the Windows Service Control Manager "
               "if you decided to launch it on computer startup.\ngnunetd will then connect to the GNUnet network and "
               "the number of connected peers is displayed at the bottom of the user interface.");
+        }
 
         delete [] cmd;
 #endif
