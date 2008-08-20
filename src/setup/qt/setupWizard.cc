@@ -379,16 +379,18 @@ void GSetupWizard::nextClicked()
 
     if (cbGNUpdate->isChecked())
       {
+#if !defined(Q_OS_WIN32)
         QProcess proc;
         QStringList args;
+#endif
         char *bin;
 
-        args << "-L" << "INFO" << "-c" << cfg_fn;
         bin = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
+#if !defined(Q_OS_WIN32)
+        args << "-L" << "INFO" << "-c" << cfg_fn;
         proc.setWorkingDirectory(bin);
         proc.setStandardErrorFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.err");
         proc.setStandardOutputFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.out");
-        GNUNET_free_non_null(bin);
         proc.start("gnunet-update", args);
         proc.waitForFinished(-1);
         if (proc.error() != QProcess::UnknownError || proc.exitCode() != 0)
@@ -403,6 +405,40 @@ void GSetupWizard::nextClicked()
           QFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.err").remove();
           QFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.out").remove();
         }
+#else
+        char *cmd;
+        STARTUPINFOA startup;
+        PROCESS_INFORMATION proc;
+        DWORD exitCode;
+        bool failed;
+
+        // FIXME
+        AllocConsole();
+        printf("Running gnunet-update, this may take a while...\n\n");
+        cmd = new char[strlen(cfg_fn) + 33];
+        memset(&startup, 0, sizeof(startup));
+        sprintf(cmd, "gnunet-update.exe -c \"%s\"", cfg_fn);
+        if (CreateProcessA("gnunet-update.exe", cmd, NULL, NULL, TRUE, 0, NULL, bin, &startup, &proc))
+        {
+          DWORD dwExit;
+
+          WaitForSingleObject(proc.hProcess, INFINITE);
+          failed = !GetExitCodeProcess(proc.hProcess, &dwExit) || dwExit != 0;
+
+          CloseHandle(proc.hProcess);
+          CloseHandle(proc.hThread);
+        }
+        else
+          failed = true;
+
+        if (failed)
+          QMessageBox::critical(this, tr("Error"), "Running gnunet-setup failed.\n"
+                     "This maybe due to insufficient permissions, please check the console output and your configuration.\n"
+                     "Finally, run gnunet-update manually.");
+
+        delete [] cmd;
+#endif
+        GNUNET_free_non_null(bin);
       }
     qApp->quit();
 
