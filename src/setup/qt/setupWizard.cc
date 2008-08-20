@@ -417,7 +417,7 @@ void GSetupWizard::nextClicked()
         printf("Running gnunet-update, this may take a while...\n\n");
         cmd = new char[strlen(cfg_fn) + 33];
         memset(&startup, 0, sizeof(startup));
-        sprintf(cmd, "gnunet-update.exe -c \"%s\"", cfg_fn);
+        sprintf(cmd, "gnunet-update.exe -L INFO -c \"%s\"", cfg_fn);
         if (CreateProcessA("gnunet-update.exe", cmd, NULL, NULL, TRUE, 0, NULL, bin, &startup, &proc))
         {
           DWORD dwExit;
@@ -435,6 +435,12 @@ void GSetupWizard::nextClicked()
           QMessageBox::critical(this, tr("Error"), "Running gnunet-setup failed.\n"
                      "This maybe due to insufficient permissions, please check the console output and your configuration.\n"
                      "Finally, run gnunet-update manually.");
+        else
+          QMessageBox::information(this, tr("Information"), "Setup is complete.\n\n"
+              "Next steps: before you can use GNUnet, the background process \"gnunetd\" needs to be started.\n"
+              "This can be done on the user interface's \"General\" tab or by using the Windows Service Control Manager "
+              "if you decided to launch it on computer startup.\ngnunetd will then connect to the GNUnet network and "
+              "the number of connected peers is displayed at the bottom of the user interface.");
 
         delete [] cmd;
 #endif
