@@ -294,11 +294,17 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
                            &routeList[slash + 1], &result[i].netmask);
           if (ret <= 0)
             {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_ERROR | GNUNET_GE_USER |
-                             GNUNET_GE_IMMEDIATE,
-                             _("Wrong format `%s' for netmask: %s\n"),
-                             &routeList[slash + 1], STRERROR (errno));
+	      if (ret == 0)
+		GNUNET_GE_LOG (ectx,
+			       GNUNET_GE_ERROR | GNUNET_GE_USER |
+			       GNUNET_GE_IMMEDIATE,
+			       _("Wrong format `%s' for netmask\n"),
+			       &routeList[slash + 1]);
+	      else
+		GNUNET_GE_LOG_STRERROR (ectx,
+					GNUNET_GE_ERROR | GNUNET_GE_USER |
+					GNUNET_GE_IMMEDIATE,
+					"inet_pton");
               GNUNET_free (result);
               GNUNET_free (routeList);
               return NULL;
@@ -308,11 +314,17 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
       ret = inet_pton (AF_INET6, &routeList[start], &result[i].network);
       if (ret <= 0)
         {
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_ERROR | GNUNET_GE_USER |
-                         GNUNET_GE_IMMEDIATE,
-                         _("Wrong format `%s' for network: %s\n"),
-                         &routeList[slash + 1], STRERROR (errno));
+	  if (ret == 0)
+	    GNUNET_GE_LOG (ectx,
+			   GNUNET_GE_ERROR | GNUNET_GE_USER |
+			   GNUNET_GE_IMMEDIATE,
+			   _("Wrong format `%s' for network\n"),
+			   &routeList[slash + 1]);
+	  else
+	    GNUNET_GE_LOG_STRERROR (ectx,
+				    GNUNET_GE_ERROR | GNUNET_GE_USER |
+				    GNUNET_GE_IMMEDIATE,
+				    "inet_pton");
           GNUNET_free (result);
           GNUNET_free (routeList);
           return NULL;
