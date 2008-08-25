@@ -996,6 +996,8 @@ The size of the DSTORE QUOTA is specified in MB.")
    (tcp-upnp builder)
    (tcp-blacklist builder)
    (tcp-whitelist builder)
+   (tcp6-blacklist builder)
+   (tcp6-whitelist builder)
  )
  #t
  #f
