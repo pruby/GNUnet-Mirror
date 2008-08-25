@@ -487,6 +487,7 @@ GNUNET_CO_collection_publish_now ()
   char *dirData;
   char this_revision_string[128];
   char next_revision_string[128];
+  const char *tmpdir;
 
   GNUNET_mutex_lock (lock);
   if ((collectionData == NULL) ||
@@ -495,7 +496,15 @@ GNUNET_CO_collection_publish_now ()
       GNUNET_mutex_unlock (lock);
       return;
     }
-  tmpName = GNUNET_strdup ("/tmp/gnunet-collectionXXXXXX");
+
+  tmpdir = getenv ("TMPDIR");
+  tmpdir = tmpdir ? tmpdir : "/tmp";
+
+#define TEMPLATE "/gnunet-collectionXXXXXX"
+  tmpName = GNUNET_malloc (strlen (tmpdir) + sizeof (TEMPLATE) + 1);
+  strcpy (tmpName, tmpdir);
+  strcat (tmpName, TEMPLATE);
+#undef TEMPLATE
   fd = mkstemp (tmpName);
   if (fd == -1)
     {

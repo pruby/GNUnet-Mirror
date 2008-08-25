@@ -129,6 +129,7 @@ db_reset ()
   int fd;
   sqlite3 *dbh;
   char *tmpl;
+  const char *tmpdir;
 
   if (fn != NULL)
     {
@@ -136,13 +137,22 @@ db_reset ()
       GNUNET_free (fn);
     }
   payload = 0;
-  tmpl = "/tmp/dstoreXXXXXX";
+
+  tmpdir = getenv ("TMPDIR");
+  tmpdir = tmpdir ? tmpdir : "/tmp";
+
+#define TEMPLATE "/gnunet-dstoreXXXXXX"
+  tmpl = GNUNET_malloc (strlen (tmpdir) + sizeof (TEMPLATE) + 1);
+  strcpy (tmpl, tmpdir);
+  strcat (tmpl, TEMPLATE);
+#undef TEMPLATE
 
 #ifdef MINGW
   fn = (char *) GNUNET_malloc (MAX_PATH + 1);
   plibc_conv_to_win_path (tmpl, fn);
+  GNUNET_free (tmpl);
 #else
-  fn = GNUNET_strdup (tmpl);
+  fn = tmpl;
 #endif
   fd = mkstemp (fn);
   if (fd == -1)

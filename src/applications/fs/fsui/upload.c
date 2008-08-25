@@ -159,6 +159,7 @@ createDirectoryHelper (struct GNUNET_GE_Context *ectx,
   int handle;
   struct GNUNET_GE_Memory *mem;
   struct GNUNET_GE_Context *ee;
+  const char *tmpdir;
 
   fis = NULL;
   size = 0;
@@ -208,7 +209,15 @@ createDirectoryHelper (struct GNUNET_GE_Context *ectx,
       pos = pos->next;
     }
   GNUNET_GE_memory_reset (mem);
-  tempName = GNUNET_strdup ("/tmp/gnunet-upload-dir.XXXXXX");
+
+  tmpdir = getenv ("TMPDIR");
+  tmpdir = tmpdir ? tmpdir : "/tmp";
+
+#define TEMPLATE "/gnunet-upload-dirXXXXXX"
+  tempName = GNUNET_malloc (strlen (tmpdir) + sizeof (TEMPLATE) + 1);
+  strcpy (tempName, tmpdir);
+  strcat (tempName, TEMPLATE);
+#undef TEMPLATE
   handle = mkstemp (tempName);
   if (handle == -1)
     {
