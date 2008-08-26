@@ -171,7 +171,7 @@ progressModel (void *unused, const GNUNET_FSUI_Event * event)
 
 static int
 directoryIterator (const GNUNET_ECRS_FileInfo * fi,
-                   const GNUNET_HashCode * key, int isRoot, void *cls)
+                   unsigned long long offset, void *cls)
 {
   struct GNUNET_FSUI_Context *ctx = cls;
   struct GNUNET_MetaData *meta;
@@ -350,6 +350,7 @@ main (int argc, char *const *argv)
       count = GNUNET_ECRS_directory_list_contents (ectx,
                                                    data,
                                                    sbuf.st_size,
+                                                   0,
                                                    &meta, &directoryIterator,
                                                    ctx);
       GNUNET_meta_data_destroy (meta);

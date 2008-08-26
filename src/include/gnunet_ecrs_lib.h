@@ -764,6 +764,15 @@ int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                        void *ttClosure);
 
 /**
+ * Directory entry callback
+ *
+ * @param fi URI and metadata of entry
+ * @param offset number of bytes into directory of next entry
+ */
+typedef int (*GNUNET_ECRS_DirectoryEntryCallback)
+  (const GNUNET_ECRS_FileInfo * fi, unsigned long long offset, void *closure);
+
+/**
  * Iterate over all entries in a directory.  Note that directories
  * are structured such that it is possible to iterate over the
  * individual blocks as well as over the entire directory.  Thus
@@ -772,6 +781,7 @@ int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
  *
  * @param data pointer to the beginning of the directory
  * @param len number of bytes in data
+ * @param offset number of bytes into directory to start listing
  * @param md set to the MD for the directory if the first
  *   block is part of data
  * @return number of entries on success, GNUNET_SYSERR if the
@@ -780,9 +790,10 @@ int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
 int GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
                                          const char *data,
                                          unsigned long long len,
+                                         unsigned long long offset,
                                          struct GNUNET_MetaData **md,
-                                         GNUNET_ECRS_SearchResultProcessor
-                                         spcb, void *spcbClosure);
+                                         GNUNET_ECRS_DirectoryEntryCallback
+                                         decb, void *spcbClosure);
 
 /**
  * Create a directory.

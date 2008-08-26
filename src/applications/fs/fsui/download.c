@@ -40,12 +40,10 @@
  */
 static int
 listURIfoundDirectory (const GNUNET_ECRS_FileInfo * fi,
-                       const GNUNET_HashCode * key, int isRoot, void *prnt)
+                       unsigned long long offset, void *prnt)
 {
   GNUNET_FSUI_DownloadList *dl = prnt;
 
-  if (isRoot == GNUNET_YES)
-    return GNUNET_OK;           /* namespace ad, ignore */
   GNUNET_URITRACK_add_state (dl->ctx->ectx,
                              dl->ctx->cfg, fi->uri,
                              GNUNET_URITRACK_DIRECTORY_FOUND);
@@ -78,7 +76,7 @@ static GNUNET_FSUI_DownloadList *startDownload (struct GNUNET_FSUI_Context
  */
 static int
 triggerRecursiveDownload (const GNUNET_ECRS_FileInfo * fi,
-                          const GNUNET_HashCode * key, int isRoot, void *prnt)
+                          unsigned long long offset, void *prnt)
 {
   GNUNET_FSUI_DownloadList *parent = prnt;
   struct GNUNET_GE_Context *ectx;
@@ -89,9 +87,6 @@ triggerRecursiveDownload (const GNUNET_ECRS_FileInfo * fi,
   char *dotdot;
 
   ectx = parent->ctx->ectx;
-  if (isRoot == GNUNET_YES)
-    return GNUNET_OK;           /* namespace ad, ignore */
-
   GNUNET_URITRACK_track (ectx, parent->ctx->cfg, fi);
   for (i = 0; i < parent->completedDownloadsCount; i++)
     if (GNUNET_ECRS_uri_test_equal (parent->completedDownloads[i], fi->uri))
@@ -176,6 +171,7 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
           GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
                                                dirBlock,
                                                totalBytes,
+                                               0,
                                                &md,
                                                &listURIfoundDirectory, dl);
           if (md != NULL)
@@ -189,6 +185,7 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
               n = GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
                                                        dirBlock,
                                                        totalBytes,
+                                                       0,
                                                        &md,
                                                        &triggerRecursiveDownload,
                                                        dl);
