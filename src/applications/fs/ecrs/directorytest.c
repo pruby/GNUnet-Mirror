@@ -41,7 +41,7 @@ struct PCLS
 
 static int
 processor (const GNUNET_ECRS_FileInfo * fi,
-           unsigned long long offset, void *cls)
+           const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   struct PCLS *p = cls;
   int i;
@@ -123,7 +123,7 @@ testDirectory (unsigned int i)
   cls.pos = 0;
   cls.fi = fis;
   if (i !=
-      GNUNET_ECRS_directory_list_contents (NULL, data, dlen, 0, &meta2,
+      GNUNET_ECRS_directory_list_contents (NULL, data, dlen, NULL, &meta2,
                                            &processor, &cls))
     {
       printf ("expected %u\n", i);

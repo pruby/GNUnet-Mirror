@@ -59,7 +59,7 @@ printMeta (const struct GNUNET_MetaData *meta)
 
 static int
 printNode (const GNUNET_ECRS_FileInfo * fi,
-           unsigned long long offset, void *unused)
+           const GNUNET_HashCode * key, int isRoot, void *unused)
 {
   char *string;
 
@@ -108,7 +108,7 @@ printDirectory (const char *filename)
       else
         {
           ret =
-            GNUNET_ECRS_directory_list_contents (ectx, data, len, 0, &md,
+            GNUNET_ECRS_directory_list_contents (ectx, data, len, NULL, &md,
                                                  &printNode, NULL);
           MUNMAP (data, len);
         }

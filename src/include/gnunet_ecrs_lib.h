@@ -581,11 +581,10 @@ int GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
  * The search has found another result.  Callback to notify
  * whoever is controlling the search.
  *
- * @param uri the URI of the datum
+ * @param fi the URI and metadata of the result
  * @param key under which the result was found (GNUNET_hash of keyword),
  *        NULL if no key is known
  * @param isRoot is this a namespace root advertisement?
- * @param md a description for the URI
  * @return GNUNET_OK, GNUNET_SYSERR to abort
  */
 typedef int (*GNUNET_ECRS_SearchResultProcessor)
@@ -764,15 +763,6 @@ int GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                        void *ttClosure);
 
 /**
- * Directory entry callback
- *
- * @param fi URI and metadata of entry
- * @param offset number of bytes into directory of next entry
- */
-typedef int (*GNUNET_ECRS_DirectoryEntryCallback)
-  (const GNUNET_ECRS_FileInfo * fi, unsigned long long offset, void *closure);
-
-/**
  * Iterate over all entries in a directory.  Note that directories
  * are structured such that it is possible to iterate over the
  * individual blocks as well as over the entire directory.  Thus
@@ -781,7 +771,8 @@ typedef int (*GNUNET_ECRS_DirectoryEntryCallback)
  *
  * @param data pointer to the beginning of the directory
  * @param len number of bytes in data
- * @param offset number of bytes into directory to start listing
+ * @param offset stores the number of bytes into directory to start listing
+ *   on input and where the next element begins on output, can be NULL
  * @param md set to the MD for the directory if the first
  *   block is part of data
  * @return number of entries on success, GNUNET_SYSERR if the
@@ -790,10 +781,10 @@ typedef int (*GNUNET_ECRS_DirectoryEntryCallback)
 int GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
                                          const char *data,
                                          unsigned long long len,
-                                         unsigned long long offset,
+                                         unsigned long long *offset,
                                          struct GNUNET_MetaData **md,
-                                         GNUNET_ECRS_DirectoryEntryCallback
-                                         decb, void *spcbClosure);
+                                         GNUNET_ECRS_SearchResultProcessor
+                                         spcb, void *spcbClosure);
 
 /**
  * Create a directory.
