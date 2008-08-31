@@ -366,6 +366,8 @@ resetStatusCalls (void *cls,
   int i;
   int numInterfaces;
   int basic;
+  unsigned long long maxd;
+  unsigned long long maxu;
 
   if (0 != strcmp (sect, "LOAD"))
     return 0;                   /* fast path */
@@ -399,6 +401,26 @@ resetStatusCalls (void *cls,
                      "LOAD", "INTERFACES");
       return GNUNET_SYSERR;
     }
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
+						      "LOAD",
+						      "MAXNETDOWNBPSTOTAL",
+						      0,
+						      (unsigned long long) -1,
+						      50000,
+						      maxd))
+    { 
+      GNUNET_free (interfaces);
+      return GNUNET_SYSERR;
+    }
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "MAXNETUPBPSTOTAL",
+						      0, 
+						      (unsigned long long) -1, 
+						      50000,
+						      maxu))
+    {
+      GNUNET_free (interfaces);
+      return GNUNET_SYSERR;
+    }
   GNUNET_mutex_lock (monitor->statusMutex);
   for (i = 0; i < monitor->ifcsSize; i++)
     GNUNET_free (monitor->ifcs[i].name);
@@ -430,18 +452,10 @@ resetStatusCalls (void *cls,
   monitor->download_info.have_last = GNUNET_NO;
   monitor->download_info.lastCall = 0;
   monitor->download_info.overload = 0;
+  monitor->download_info.max = maxd;
+  monitor->upload_info.max = maxu;
   GNUNET_free (interfaces);
   monitor->useBasicMethod = basic;
-  GNUNET_GC_get_configuration_value_number (cfg,
-                                            "LOAD",
-                                            "MAXNETDOWNBPSTOTAL",
-                                            0,
-                                            (unsigned long long) -1,
-                                            50000,
-                                            &monitor->download_info.max);
-  GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "MAXNETUPBPSTOTAL",
-                                            0, (unsigned long long) -1, 50000,
-                                            &monitor->upload_info.max);
   monitor->last_ifc_update = GNUNET_get_time ();
   updateInterfaceTraffic (monitor);
   GNUNET_mutex_unlock (monitor->statusMutex);
