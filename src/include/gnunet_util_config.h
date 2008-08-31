@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -62,7 +62,7 @@ void GNUNET_GC_set_error_context (struct GNUNET_GC_Configuration *cfg,
 /**
  * Parse a configuration file, add all of the options in the
  * file to the configuration environment.
- * @return 0 on success, -1 on error
+ * @return 0 on success, GNUNET_SYSERR on error
  */
 int GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
                                    const char *filename);
@@ -70,13 +70,13 @@ int GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
 /**
  * Test if there are configuration options that were
  * changed since the last save.
- * @return 0 if clean, 1 if dirty, -1 on error (i.e. last save failed)
+ * @return GNUNET_NO if clean, GNUNET_YES if dirty, GNUNET_SYSERR on error (i.e. last save failed)
  */
 int GNUNET_GC_test_dirty (struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Write configuration file.
- * @return 0 on success, -1 on error
+ * @return 0 on success, GNUNET_SYSERR on error
  */
 int GNUNET_GC_write_configuration (struct GNUNET_GC_Configuration *cfg,
                                    const char *filename);
@@ -86,7 +86,7 @@ int GNUNET_GC_write_configuration (struct GNUNET_GC_Configuration *cfg,
  * @param min minimal legal value
  * @param max maximal legal value
  * @param default default value (use indicated by return value)
- * @return 0 on success, -1 on error, 1 for default
+ * @return GNUNET_NO on success, GNUNET_SYSERR on error, GNUNET_YES for default
  */
 int GNUNET_GC_get_configuration_value_number (struct GNUNET_GC_Configuration
                                               *cfg, const char *section,
@@ -110,7 +110,7 @@ int GNUNET_GC_have_configuration_value (struct GNUNET_GC_Configuration *cfg,
  *        will NOT be aliased, maybe NULL)
  * @param value will be set to a freshly allocated configuration
  *        value, or NULL if option is not specified and no default given
- * @return 0 on success, -1 on error, 1 for default
+ * @return GNUNET_NO on success, GNUNET_SYSERR on error, GNUNET_YES for default
  */
 int GNUNET_GC_get_configuration_value_string (struct GNUNET_GC_Configuration
                                               *cfg, const char *section,
@@ -125,13 +125,24 @@ int GNUNET_GC_get_configuration_value_string (struct GNUNET_GC_Configuration
  *        will NOT be aliased, may NOT be NULL)
  * @param value will be set to a freshly allocated configuration
  *        value, or NULL if option is not specified and no default given
- * @return 0 on success, -1 on error, 1 for default
+ * @return GNUNET_NO on success, GNUNET_SYSERR on error, GNUNET_YES for default
  */
 int GNUNET_GC_get_configuration_value_filename (struct GNUNET_GC_Configuration
                                                 *cfg, const char *section,
                                                 const char *option,
                                                 const char *def,
                                                 char **value);
+
+/**
+ * Iterate over the set of filenames stored in a configuration value.
+ *
+ * @return number of filenames iterated over, -1 on error
+ */
+int GNUNET_GC_iterate_configuration_value_filenames (struct GNUNET_GC_Configuration
+						     *cfg, const char *section,
+						     const char *option,
+						     GNUNET_FileNameCallback cb,
+						     void * cls);
 
 /**
  * Get a configuration value that should be in a set of
@@ -143,7 +154,7 @@ int GNUNET_GC_get_configuration_value_filename (struct GNUNET_GC_Configuration
  *        into set given by choices
  * @param value will be set to an entry in the legal list,
  *        or NULL if option is not specified and no default given
- * @return 0 on success, -1 on error, 1 for default
+ * @return GNUNET_NO on success, GNUNET_SYSERR on error, GNUNET_YES for default
  */
 int GNUNET_GC_get_configuration_value_choice (struct GNUNET_GC_Configuration
                                               *cfg, const char *section,
@@ -177,7 +188,7 @@ char *GNUNET_GC_configuration_expand_dollar (struct GNUNET_GC_Configuration
 
 /**
  * Set a configuration value that should be a number.
- * @return 0 on success, -1 on error (i.e. out of memory,
+ * @return 0 on success, GNUNET_SYSERR on error (i.e. out of memory,
  *   or update refused by registered callback)
  */
 int GNUNET_GC_set_configuration_value_number (struct GNUNET_GC_Configuration
@@ -191,7 +202,7 @@ int GNUNET_GC_set_configuration_value_number (struct GNUNET_GC_Configuration
 /**
  * Set a configuration value that should be a string.
  * @param value
- * @return 0 on success, -1 on error (i.e. out of memory,
+ * @return 0 on success, GNUNET_SYSERR on error (i.e. out of memory,
  *   or update refused by registered callback)
  */
 int GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration
@@ -202,10 +213,42 @@ int GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration
                                               const char *value);
 
 /**
+ * Remove a filename from a configuration value that
+ * represents a list of filenames
+ *
+ * @param value filename to remove
+ * @return GNUNET_OK on success,
+ *         GNUNET_NO if the filename is not in the list,
+ *         GNUNET_SYSERR on error
+ */
+int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuration
+						   *cfg,
+						   struct GNUNET_GE_Context *ectx,
+						   const char *section,
+						   const char *option,
+						   const char *value);
+
+/**
+ * Append a filename to a configuration value that
+ * represents a list of filenames
+ *
+ * @param value filename to append
+ * @return GNUNET_OK on success,
+ *         GNUNET_NO if the filename already in the list
+ *         GNUNET_SYSERR on error
+ */
+int GNUNET_GC_append_configuration_value_filename (struct GNUNET_GC_Configuration
+						   *cfg,
+						   struct GNUNET_GE_Context *ectx,
+						   const char *section,
+						   const char *option,
+						   const char *value);
+
+/**
  * Set a configuration value that should be in a set of
  * predefined strings.
  * @param value
- * @return 0 on success, -1 on error (i.e. out of memory,
+ * @return 0 on success, GNUNET_SYSERR on error (i.e. out of memory,
  *   or update refused by registered callback)
  */
 int GNUNET_GC_set_configuration_value_choice (struct GNUNET_GC_Configuration
@@ -221,7 +264,7 @@ int GNUNET_GC_set_configuration_value_choice (struct GNUNET_GC_Configuration
  * communicated, the client must query it.
  *
  * @param ectx context to log errors to
- * @return 0 if the change is ok, -1 if the change must be
+ * @return 0 if the change is ok, GNUNET_SYSERR if the change must be
  *         refused
  */
 typedef int (*GNUNET_GC_ChangeListener) (void *ctx,
@@ -234,7 +277,7 @@ typedef int (*GNUNET_GC_ChangeListener) (void *ctx,
  * Attach a callback that is notified whenever a
  * configuration option changes.<p>
  *
- * @return 0 on success, -1 on error
+ * @return 0 on success, GNUNET_SYSERR on error
  */
 int GNUNET_GC_attach_change_listener (struct GNUNET_GC_Configuration *cfg,
                                       GNUNET_GC_ChangeListener callback,
@@ -243,7 +286,7 @@ int GNUNET_GC_attach_change_listener (struct GNUNET_GC_Configuration *cfg,
 /**
  * Attach a callback that is notified whenever a
  * configuration option changes.
- * @return 0 on success, -1 on error, 1 for no such handler registered
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error, GNUNET_NO for no such handler registered
  */
 int GNUNET_GC_detach_change_listener (struct GNUNET_GC_Configuration *cfg,
                                       GNUNET_GC_ChangeListener callback,

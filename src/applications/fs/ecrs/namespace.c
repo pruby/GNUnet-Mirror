@@ -514,36 +514,28 @@ struct lNCLS
 };
 
 static int
-processFile_ (const char *name, const char *dirName, void *cls)
+processFile_ (void *cls,
+	      const char * fileName)
 {
   struct lNCLS *c = cls;
   struct GNUNET_RSA_PrivateKey *hk;
-  char *fileName;
   GNUNET_RSA_PrivateKeyEncoded *hke;
   char *dst;
   unsigned long long len;
   GNUNET_HashCode namespace;
   GNUNET_RSA_PublicKey pk;
-  GNUNET_HashCode pid;
-
-  if (GNUNET_OK != GNUNET_enc_to_hash (name, &pid))
-    return GNUNET_OK;           /* ignore */
-  fileName = getPseudonymFileName (c->ectx, c->cfg, &pid);
+  const char * name;
+  
   if (GNUNET_OK !=
       GNUNET_disk_file_size (c->ectx, fileName, &len, GNUNET_YES))
-    {
-      GNUNET_free (fileName);
-      return GNUNET_OK;
-    }
+    return GNUNET_OK;    
   if (len < 2)
     {
       GNUNET_GE_LOG (c->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _
-                     ("File `%s' does not contain a pseudonym, trying to remove.\n"),
+                     _("Format of file `%s' is invalid, trying to remove.\n"),
                      fileName);
       UNLINK (fileName);
-      GNUNET_free (fileName);
       return GNUNET_OK;
     }
   dst = GNUNET_malloc (len);
@@ -553,9 +545,10 @@ processFile_ (const char *name, const char *dirName, void *cls)
     {
       GNUNET_GE_LOG (c->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Format of file `%s' is invalid.\n"), fileName);
+                     _("Format of file `%s' is invalid, trying to remove.\n"), 
+		     fileName);
+      UNLINK (fileName);
       GNUNET_free (hke);
-      GNUNET_free (fileName);
       return GNUNET_OK;
     }
   hk = GNUNET_RSA_decode_key (hke);
@@ -567,16 +560,17 @@ processFile_ (const char *name, const char *dirName, void *cls)
                      _("Format of file `%s' is invalid, trying to remove.\n"),
                      fileName);
       UNLINK (fileName);
-      GNUNET_free (fileName);
       GNUNET_GE_BREAK (c->ectx, 0);
       return GNUNET_SYSERR;
     }
-  GNUNET_free (fileName);
   GNUNET_RSA_get_public_key (hk, &pk);
   GNUNET_RSA_free_key (hk);
   GNUNET_hash (&pk, sizeof (GNUNET_RSA_PublicKey), &namespace);
   if (NULL != c->cb)
     {
+      name = fileName;
+      while (NULL != strstr(name, DIR_SEPARATOR_STR))
+	name = 1 + strstr(name, DIR_SEPARATOR_STR);
       if (GNUNET_OK == c->cb (&namespace, name, c->cls))
         c->cnt++;
       else

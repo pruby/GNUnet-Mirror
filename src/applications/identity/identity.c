@@ -153,7 +153,7 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  * @return filename of the form DIRECTORY/HOSTID.PROTOCOL
  */
 static char *
-getHostFileName (const GNUNET_PeerIdentity * id, unsigned short protocol)
+get_host_filename (const GNUNET_PeerIdentity * id, unsigned short protocol)
 {
   GNUNET_EncName fil;
   char *fn;
@@ -173,7 +173,7 @@ getHostFileName (const GNUNET_PeerIdentity * id, unsigned short protocol)
  * @return NULL if not found
  */
 static HostEntry *
-findHost (const GNUNET_PeerIdentity * id)
+lookup_host_entry (const GNUNET_PeerIdentity * id)
 {
   int i;
 
@@ -192,7 +192,7 @@ findHost (const GNUNET_PeerIdentity * id)
  * @param protocol the protocol for the host
  */
 static void
-addHostToKnown (const GNUNET_PeerIdentity * identity, unsigned short protocol)
+add_host_to_known_hosts (const GNUNET_PeerIdentity * identity, unsigned short protocol)
 {
   HostEntry *entry;
   int i;
@@ -202,7 +202,7 @@ addHostToKnown (const GNUNET_PeerIdentity * identity, unsigned short protocol)
 
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
-  entry = findHost (identity);
+  entry = lookup_host_entry (identity);
   if (entry == NULL)
     {
       entry = GNUNET_malloc (sizeof (HostEntry));
@@ -260,7 +260,7 @@ addHostToKnown (const GNUNET_PeerIdentity * identity, unsigned short protocol)
  * @returns the actual change in trust (positive or negative)
  */
 static int
-changeHostTrust (const GNUNET_PeerIdentity * hostId, int value)
+change_host_trust (const GNUNET_PeerIdentity * hostId, int value)
 {
   HostEntry *host;
 
@@ -268,13 +268,18 @@ changeHostTrust (const GNUNET_PeerIdentity * hostId, int value)
     return 0;
 
   GNUNET_mutex_lock (lock_);
-  host = findHost (hostId);
+  host = lookup_host_entry (hostId);
   if (host == NULL)
     {
-      addHostToKnown (hostId, GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
-      host = findHost (hostId);
+      if (value == 0)
+	{
+	  GNUNET_mutex_unlock (lock_);
+	  return 0;
+	}
+      add_host_to_known_hosts (hostId, GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
+      host = lookup_host_entry (hostId);
       if (host == NULL)
-        {
+        {	 
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_mutex_unlock (lock_);
           return 0;
@@ -295,82 +300,63 @@ changeHostTrust (const GNUNET_PeerIdentity * hostId, int value)
 }
 
 /**
- * Obtain the trust record of a peer.
- *
- * @param hostId the identity of the peer
- * @return the amount of trust we currently have in that peer
+ * Remove a file that should not be there.  LOG
+ * success or failure.
  */
-static unsigned int
-getHostTrust (const GNUNET_PeerIdentity * hostId)
+static void
+remove_garbage(const char *fullname)
 {
-  HostEntry *host;
-  unsigned int trust;
-
-  GNUNET_mutex_lock (lock_);
-  host = findHost (hostId);
-  if (host == NULL)
-    trust = 0;
+  if (0 == UNLINK (fullname))
+    GNUNET_GE_LOG (ectx,
+		   GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+		   GNUNET_GE_BULK,
+		   _
+		   ("File `%s' in directory `%s' does not match naming convention. "
+		    "Removed.\n"), fullname, networkIdDirectory);
   else
-    trust = host->trust & TRUST_ACTUAL_MASK;
-  GNUNET_mutex_unlock (lock_);
-  return trust;
+    GNUNET_GE_LOG_STRERROR_FILE (ectx,
+				 GNUNET_GE_ERROR | GNUNET_GE_USER |
+				 GNUNET_GE_BULK, "unlink", fullname);
 }
 
 
 static int
-cronHelper (const char *filename, const char *dirname, void *unused)
+hosts_directory_scan_callback (void * unused,
+	    const char *fullname)
 {
   GNUNET_PeerIdentity identity;
   GNUNET_EncName id;
   unsigned int protoNumber;
-  char *fullname;
+  const char *filename;
 
+  if (GNUNET_disk_file_test (ectx, fullname) != GNUNET_YES)
+    return GNUNET_OK; /* ignore non-files */
+  if (strlen(fullname) < sizeof(GNUNET_EncName))
+    {
+      remove_garbage(fullname);
+      return GNUNET_OK;
+    }
+  filename = &fullname[strlen(fullname) + 1 - sizeof(GNUNET_EncName)];
+  if (filename[-1] != DIR_SEPARATOR)
+    {
+      remove_garbage(fullname);
+      return GNUNET_OK;
+    }
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EncName) == 104);
-  if (2 == sscanf (filename, "%103c.%u", (char *) &id, &protoNumber))
+  if (2 != sscanf (filename, "%103c.%u", (char *) &id, &protoNumber))
     {
-      id.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
-      if (GNUNET_OK ==
-          GNUNET_enc_to_hash ((char *) &id, &identity.hashPubKey))
-        {
-          addHostToKnown (&identity, (unsigned short) protoNumber);
-          return GNUNET_OK;
-        }
-    }
-
-  fullname =
-    GNUNET_malloc (strlen (filename) + strlen (networkIdDirectory) + 1);
-  strcpy (fullname, networkIdDirectory);
-  strcat (fullname, filename);
-  if (GNUNET_disk_file_test (ectx, fullname) == GNUNET_YES)
+      remove_garbage(fullname);
+      return GNUNET_OK;
+    }    
+  id.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
+  if (GNUNET_OK !=
+      GNUNET_enc_to_hash ((char *) &id, &identity.hashPubKey))
     {
-      if (0 == UNLINK (fullname))
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
-                       GNUNET_GE_BULK,
-                       _
-                       ("File `%s' in directory `%s' does not match naming convention. "
-                        "Removed.\n"), filename, networkIdDirectory);
-      else
-        GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
-                                     GNUNET_GE_BULK, "unlink", fullname);
+      remove_garbage(fullname);
+      return GNUNET_OK;
     }
-  else if (GNUNET_disk_directory_test (ectx, fullname) == GNUNET_YES)
-    {
-      if (0 == RMDIR (fullname))
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
-                       GNUNET_GE_BULK,
-                       _
-                       ("Directory `%s' in directory `%s' does not match naming convention. "
-                        "Removed.\n"), filename, networkIdDirectory);
-      else
-        GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
-                                     GNUNET_GE_BULK, "rmdir", fullname);
-    }
-  GNUNET_free (fullname);
+  add_host_to_known_hosts (&identity, (unsigned short) protoNumber);
   return GNUNET_OK;
 }
 
@@ -391,7 +377,7 @@ cronScanDirectoryDataHosts (void *unused)
                                    once every 5 min */
   lastRun = now;
   count =
-    GNUNET_disk_directory_scan (ectx, networkIdDirectory, &cronHelper, NULL);
+    GNUNET_disk_directory_scan (ectx, networkIdDirectory, &hosts_directory_scan_callback, NULL);
   if (count <= 0)
     {
       retries++;
@@ -417,14 +403,10 @@ getPeerIdentity (const GNUNET_RSA_PublicKey * pubKey,
                  GNUNET_PeerIdentity * result)
 {
   if (pubKey == NULL)
-    {
-      memset (&result, 0, sizeof (GNUNET_PeerIdentity));
-    }
-  else
-    {
-      GNUNET_hash (pubKey, sizeof (GNUNET_RSA_PublicKey),
-                   &result->hashPubKey);
-    }
+    memset (&result, 0, sizeof (GNUNET_PeerIdentity));    
+  else    
+    GNUNET_hash (pubKey, sizeof (GNUNET_RSA_PublicKey),
+		 &result->hashPubKey);
 }
 
 /**
@@ -447,7 +429,7 @@ addHostTemporarily (const GNUNET_MessageHello * tmp)
       return;
     }
   GNUNET_mutex_lock (lock_);
-  entry = findHost (&tmp->senderIdentity);
+  entry = lookup_host_entry (&tmp->senderIdentity);
   if ((entry != NULL) && (entry->helloCount > 0))
     {
       GNUNET_mutex_unlock (lock_);
@@ -525,7 +507,7 @@ delHostFromKnown (const GNUNET_PeerIdentity * identity,
                 }
             }
           /* also remove hello file itself */
-          fn = getHostFileName (identity, protocol);
+          fn = get_host_filename (identity, protocol);
           if (0 != UNLINK (fn))
             GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                          GNUNET_GE_WARNING | GNUNET_GE_USER |
@@ -574,7 +556,7 @@ bindAddress (const GNUNET_MessageHello * msg)
     }
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_GE_ASSERT (ectx, msg != NULL);
-  fn = getHostFileName (&msg->senderIdentity, ntohs (msg->protocol));
+  fn = get_host_filename (&msg->senderIdentity, ntohs (msg->protocol));
   buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
   if (GNUNET_disk_file_test (ectx, fn) == GNUNET_YES)
     {
@@ -599,8 +581,8 @@ bindAddress (const GNUNET_MessageHello * msg)
   GNUNET_free (buffer);
 
   GNUNET_mutex_lock (lock_);
-  addHostToKnown (&msg->senderIdentity, ntohs (msg->protocol));
-  host = findHost (&msg->senderIdentity);
+  add_host_to_known_hosts (&msg->senderIdentity, ntohs (msg->protocol));
+  host = lookup_host_entry (&msg->senderIdentity);
   GNUNET_GE_ASSERT (ectx, host != NULL);
 
   for (i = 0; i < host->helloCount; i++)
@@ -687,7 +669,7 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
         }
     }
 
-  host = findHost (hostId);
+  host = lookup_host_entry (hostId);
   if ((host == NULL) || (host->protocolCount == 0))
     {
       GNUNET_mutex_unlock (lock_);
@@ -712,7 +694,7 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
     }
 
   /* do direct read */
-  fn = getHostFileName (hostId, protocol);
+  fn = get_host_filename (hostId, protocol);
   if (1 != GNUNET_disk_file_test (ectx, fn))
     {
       GNUNET_free (fn);
@@ -840,7 +822,7 @@ blacklistHost (const GNUNET_PeerIdentity * identity,
 
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
-  entry = findHost (identity);
+  entry = lookup_host_entry (identity);
   if (entry == NULL)
     {
       for (i = 0; i < MAX_TEMP_HOSTS; i++)
@@ -912,7 +894,7 @@ isBlacklisted (const GNUNET_PeerIdentity * identity, int strict)
 
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
-  entry = findHost (identity);
+  entry = lookup_host_entry (identity);
   if (entry == NULL)
     {
       GNUNET_mutex_unlock (lock_);
@@ -958,7 +940,7 @@ whitelistHost (const GNUNET_PeerIdentity * identity)
 
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
-  entry = findHost (identity);
+  entry = lookup_host_entry (identity);
   if (entry == NULL)
     {
       for (i = 0; i < MAX_TEMP_HOSTS; i++)
@@ -1140,14 +1122,12 @@ cronFlushTrustBuffer (void *unused)
  * @brief delete expired HELLO entries in data/hosts/
  */
 static int
-discardHostsHelper (const char *filename, const char *dirname, void *now)
+discardHostsHelper (void * now,
+		    const char * fn)
 {
-  char *fn;
   struct stat hostStat;
   int hostFile;
 
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirname) + 2);
-  sprintf (fn, "%s%s%s", dirname, DIR_SEPARATOR_STR, filename);
   hostFile = GNUNET_disk_file_open (ectx, fn, O_WRONLY);
   if (hostFile != -1)
     {
@@ -1161,8 +1141,6 @@ discardHostsHelper (const char *filename, const char *dirname, void *now)
             UNLINK (fn);
         }
     }
-  GNUNET_free (fn);
-
   return GNUNET_OK;
 }
 
@@ -1330,7 +1308,7 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
   reply->header.type = htons (GNUNET_CS_PROTO_IDENTITY_INFO);
   reply->peer = *identity;
   reply->last_message = GNUNET_htonll (last);
-  reply->trust = htonl (getHostTrust (identity));
+  reply->trust = htonl (change_host_trust (identity, 0));
   reply->bpm = htonl (bpm);
   memcpy (&reply[1], address, len);
   GNUNET_free_non_null (address);
@@ -1377,8 +1355,7 @@ provide_module_identity (GNUNET_CoreAPIForPlugins * capi)
   id.blacklistHost = &blacklistHost;
   id.isBlacklisted = &isBlacklisted;
   id.whitelistHost = &whitelistHost;
-  id.changeHostTrust = &changeHostTrust;
-  id.getHostTrust = &getHostTrust;
+  id.changeHostTrust = &change_host_trust;
 
   for (i = 0; i < MAX_TEMP_HOSTS; i++)
     memset (&tempHosts[i], 0, sizeof (HostEntry));

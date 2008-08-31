@@ -77,19 +77,19 @@ runTest ()
   pid = hello->senderIdentity;
   GNUNET_free (hello);
 
-  identity->changeHostTrust (&pid, -identity->getHostTrust (&pid));
+  identity->changeHostTrust (&pid, -identity->changeHostTrust (&pid, 0));
   ASSERT (4 == identity->changeHostTrust (&pid, 4));
   GNUNET_CORE_release_service (identity);
 
   identity = GNUNET_CORE_request_service ("identity");
-  ASSERT (4 == identity->getHostTrust (&pid));
+  ASSERT (4 == identity->changeHostTrust (&pid, 0));
   ASSERT (5 == identity->changeHostTrust (&pid, 5));
   ASSERT (-2 == identity->changeHostTrust (&pid, -2));
-  ASSERT (7 == identity->getHostTrust (&pid));
+  ASSERT (7 == identity->changeHostTrust (&pid, 0));
   ASSERT (-7 == identity->changeHostTrust (&pid, -40));
   pkey = identity->getPublicPrivateKey ();
   identity->getPeerIdentity (pkey, &pid);
-  ASSERT (0 == identity->getHostTrust (&pid));
+  ASSERT (0 == identity->changeHostTrust (&pid, 0));
 
   pkey = identity->getPublicPrivateKey ();
   ASSERT (GNUNET_OK == identity->signData ("TestData", 8, &sig));

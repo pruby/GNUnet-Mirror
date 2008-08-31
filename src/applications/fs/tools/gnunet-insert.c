@@ -125,26 +125,22 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
 }
 
 static int
-listKeywords (const char *fn, const char *dir, void *cls)
+listKeywords (void * cls,
+	      const char *fullName)
 {
   EXTRACTOR_ExtractorList *l = cls;
-  char *fullName;
   struct stat buf;
   EXTRACTOR_KeywordList *list;
+  const char * fn;
 
-  fullName = GNUNET_malloc (strlen (dir) + strlen (fn) + 2);
-  strcpy (fullName, dir);
-  if (dir[strlen (dir) - 1] != DIR_SEPARATOR)
-    strcat (fullName, DIR_SEPARATOR_STR);
-  strcat (fullName, fn);
   printf (_("Keywords for file `%s':\n"), fullName);
   if (0 != STAT (fullName, &buf))
-    {
-      GNUNET_free (fullName);
-      return GNUNET_OK;
-    }
+    return GNUNET_OK;    
   if (S_ISDIR (buf.st_mode))
     {
+      fn = fullName;
+      while (NULL != strstr(fn, DIR_SEPARATOR_STR))
+	fn = 1 + strstr(fn, DIR_SEPARATOR_STR);  
       printf ("%s - %s\n", dgettext ("libextractor", "filename"), fn);
       printf ("%s - %s\n",
               dgettext ("libextractor", "mimetype"),
@@ -160,7 +156,6 @@ listKeywords (const char *fn, const char *dir, void *cls)
       EXTRACTOR_printKeywords (stdout, list);
       EXTRACTOR_freeKeywords (list);
     }
-  GNUNET_free (fullName);
   return GNUNET_OK;
 }
 
@@ -370,7 +365,6 @@ main (int argc, char *const *argv)
       EXTRACTOR_ExtractorList *l;
       char *ex;
       char *dirname;
-      char *fname;
 
       l = EXTRACTOR_loadDefaultLibraries ();
       ex = NULL;
@@ -381,15 +375,7 @@ main (int argc, char *const *argv)
       GNUNET_free (ex);
       dirname = GNUNET_expand_file_name (ectx, filename);
       GNUNET_GE_ASSERT (ectx, dirname != NULL);
-      while ((strlen (dirname) > 0) &&
-             (dirname[strlen (dirname) - 1] == DIR_SEPARATOR))
-        dirname[strlen (dirname) - 1] = '\0';
-      fname = dirname;
-      while (strstr (fname, DIR_SEPARATOR_STR) != NULL)
-        fname = strstr (fname, DIR_SEPARATOR_STR) + 1;
-      GNUNET_GE_ASSERT (ectx, fname != dirname);
-      fname[-1] = '\0';
-      listKeywords (fname, dirname, l);
+      listKeywords (l, dirname);
       GNUNET_free (dirname);
       EXTRACTOR_removeAll (l);
       GNUNET_meta_data_destroy (meta);

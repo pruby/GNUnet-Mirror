@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -107,7 +107,8 @@ typedef struct GNUNET_GC_Configuration
 
   /**
    * Modification indication since last save
-   * 0 if clean, 1 if dirty, -1 on error (i.e. last save failed)
+   * GNUNET_NO if clean, GNUNET_YES if dirty,
+   * GNUNET_SYSERR on error (i.e. last save failed)
    */
   int dirty;
 
@@ -194,7 +195,7 @@ GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
                                    GNUNET_GE_REQUEST, "fopen", fn);
       GNUNET_mutex_unlock (cfg->lock);
       GNUNET_free (fn);
-      return -1;
+      return GNUNET_SYSERR;
     }
   GNUNET_free (fn);
   ret = 0;
@@ -225,7 +226,7 @@ GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
           char *expanded = GNUNET_expand_file_name (cfg->ectx,
                                                     value);
           if (0 != GNUNET_GC_parse_configuration (cfg, expanded))
-            ret = -1;           /* failed to parse included config */
+            ret = GNUNET_SYSERR;           /* failed to parse included config */
         }
       else if (1 == sscanf (line, "[%99[^]]]", value))
         {
@@ -267,7 +268,7 @@ GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
                                                               section,
                                                               tag,
                                                               &value[i])))
-            ret = -1;           /* could not set value */
+            ret = GNUNET_SYSERR;           /* could not set value */
         }
       else if (1 == sscanf (line, " %63[^= ] =[^\n]", tag))
         {
@@ -283,7 +284,7 @@ GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
                                                               cfg->ectx,
                                                               section, tag,
                                                               "")))
-            ret = -1;           /* could not set value */
+            ret = GNUNET_SYSERR;           /* could not set value */
         }
       else
         {
@@ -294,7 +295,7 @@ GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
                          _
                          ("Syntax error in configuration file `%s' at line %d.\n"),
                          filename, nr);
-          ret = -1;
+          ret = GNUNET_SYSERR;
           break;
         }
     }
@@ -305,7 +306,7 @@ GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg,
                                    GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE |
                                    GNUNET_GE_BULK | GNUNET_GE_REQUEST,
                                    "fclose", filename);
-      ret = -1;
+      ret = GNUNET_SYSERR;
     }
   /* restore dirty flag - anything we set in the meantime
      came from disk */
@@ -344,7 +345,7 @@ GNUNET_GC_write_configuration (struct GNUNET_GC_Configuration *data,
                                    GNUNET_GE_ERROR | GNUNET_GE_USER |
                                    GNUNET_GE_IMMEDIATE, "fopen", fn);
       GNUNET_free (fn);
-      return -1;
+      return GNUNET_SYSERR;
     }
   GNUNET_free (fn);
   error = 0;
@@ -406,12 +407,12 @@ GNUNET_GC_write_configuration (struct GNUNET_GC_Configuration *data,
   if (error == 0)
     {
       ret = 0;
-      data->dirty = 0;          /* last write succeeded */
+      data->dirty = GNUNET_NO;          /* last write succeeded */
     }
   else
     {
-      ret = -1;
-      data->dirty = -1;         /* last write failed */
+      ret = GNUNET_SYSERR;
+      data->dirty = GNUNET_SYSERR;         /* last write failed */
     }
   GNUNET_mutex_unlock (data->lock);
   return ret;
@@ -493,7 +494,7 @@ GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration
         {
           /* recursive update to different value -- not allowed! */
           GNUNET_GE_BREAK (ectx, 0);
-          ret = -1;
+          ret = GNUNET_SYSERR;
         }
     }
   else
@@ -524,20 +525,20 @@ GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration
               e = findEntry (data, section, option);    /* side-effects of callback are possible! */
               i++;
             }
-          ret = -1;             /* error -- update refused */
+          ret = GNUNET_SYSERR;             /* error -- update refused */
         }
       else
         {
           /* all confirmed, commit! */
           if ((e->val == NULL) || (0 != strcmp (e->val, e->dirty_val)))
-            data->dirty = 1;
+            data->dirty = GNUNET_YES;
           GNUNET_free_non_null (e->val);
           e->val = e->dirty_val;
           e->dirty_val = NULL;
           ret = 0;
         }
     }
-  if (ret == -1)
+  if (ret == GNUNET_SYSERR)
     GNUNET_GE_LOG (ectx,
                    GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_WARNING,
                    _
@@ -582,7 +583,7 @@ GNUNET_GC_get_configuration_value_number (struct GNUNET_GC_Configuration *cfg,
         {
           if ((*number >= min) && (*number <= max))
             {
-              ret = 0;
+              ret = GNUNET_NO;
             }
           else
             {
@@ -592,7 +593,7 @@ GNUNET_GC_get_configuration_value_number (struct GNUNET_GC_Configuration *cfg,
                              _("Configuration value '%llu' for '%s' "
                                "in section '%s' is out of legal bounds [%llu,%llu]\n"),
                              *number, option, section, min, max);
-              ret = -1;         /* error */
+              ret = GNUNET_SYSERR;
             }
         }
       else
@@ -602,7 +603,7 @@ GNUNET_GC_get_configuration_value_number (struct GNUNET_GC_Configuration *cfg,
                          _("Configuration value '%s' for '%s'"
                            " in section '%s' should be a number\n"),
                          val, option, section, min, max);
-          ret = -1;             /* error */
+          ret = GNUNET_SYSERR;
         }
     }
   else
@@ -611,7 +612,7 @@ GNUNET_GC_get_configuration_value_number (struct GNUNET_GC_Configuration *cfg,
       GNUNET_GC_set_configuration_value_number (cfg,
                                                 cfg->ectx, section, option,
                                                 def);
-      ret = 1;                  /* default */
+      ret = GNUNET_YES;                  /* default */
     }
   GNUNET_mutex_unlock (cfg->lock);
   return ret;
@@ -633,7 +634,7 @@ GNUNET_GC_get_configuration_value_string (struct GNUNET_GC_Configuration *cfg,
     {
       val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
       *value = GNUNET_strdup (val);
-      ret = 0;
+      ret = GNUNET_NO;
     }
   else
     {
@@ -645,13 +646,13 @@ GNUNET_GC_get_configuration_value_string (struct GNUNET_GC_Configuration *cfg,
                          GNUNET_GE_ERROR,
                          "Configuration value for option `%s' in section `%s' required.\n",
                          option, section);
-          return -1;
+          return GNUNET_SYSERR;
         }
       *value = GNUNET_strdup (def);
       GNUNET_GC_set_configuration_value_string (cfg,
                                                 cfg->ectx, section, option,
                                                 def);
-      ret = 1;                  /* default */
+      ret = GNUNET_YES;                  /* default */
     }
   GNUNET_mutex_unlock (cfg->lock);
   return ret;
@@ -688,21 +689,21 @@ GNUNET_GC_get_configuration_value_choice (struct GNUNET_GC_Configuration *cfg,
                          _("Configuration value '%s' for '%s'"
                            " in section '%s' is not in set of legal choices\n"),
                          val, option, section);
-          ret = -1;             /* error */
+          ret = GNUNET_SYSERR;
         }
       else
         {
           *value = choices[i];
-          ret = 0;
+          ret = GNUNET_NO;
         }
     }
   else
     {
       *value = def;
       if (def == NULL)
-        ret = -1;
+        ret = GNUNET_SYSERR;
       else
-        ret = 1;                /* default */
+        ret = GNUNET_YES;                /* default */
     }
   GNUNET_mutex_unlock (cfg->lock);
   return ret;
@@ -862,7 +863,7 @@ GNUNET_GC_attach_change_listener (struct GNUNET_GC_Configuration *cfg,
           if (0 != callback (ctx, cfg, cfg->ectx, s->name, e->key))
             {
               GNUNET_mutex_unlock (cfg->lock);
-              return -1;
+              return GNUNET_SYSERR;
             }
           s = &cfg->sections[i];        /* side-effects of callback are possible! */
         }
@@ -891,11 +892,11 @@ GNUNET_GC_detach_change_listener (struct GNUNET_GC_Configuration *cfg,
           cfg->listeners[i] = cfg->listeners[cfg->lsize - 1];
           GNUNET_array_grow (cfg->listeners, cfg->lsize, cfg->lsize - 1);
           GNUNET_mutex_unlock (cfg->lock);
-          return 0;
+          return GNUNET_OK;
         }
     }
   GNUNET_mutex_unlock (cfg->lock);
-  return -1;
+  return GNUNET_NO;
 }
 
 /**
@@ -942,3 +943,261 @@ GNUNET_GC_get_configuration_value_yesno (struct GNUNET_GC_Configuration *cfg,
     return GNUNET_YES;
   return GNUNET_NO;
 }
+
+
+/**
+ * Iterate over the set of filenames stored in a configuration value.
+ *
+ * @return number of filenames iterated over, -1 on error
+ */
+int GNUNET_GC_iterate_configuration_value_filenames (struct GNUNET_GC_Configuration
+						     *cfg, const char *section,
+						     const char *option,
+						     GNUNET_FileNameCallback cb,
+						     void * cls)
+{
+  char * list;
+  char * pos;
+  char * end;
+  char old;
+  int ret;
+  
+  if (GNUNET_NO ==
+      GNUNET_GC_have_configuration_value(cfg,
+					 section,
+					 option))
+    return 0;
+  GNUNET_GC_get_configuration_value_string(cfg,
+					   section,
+					   option,
+					   NULL,
+					   &list);
+  ret = 0;
+  pos = list;
+  while (1)
+    {
+      while (pos[0] == ' ')
+	pos++;
+      if (strlen(pos) == 0)
+	break;
+      end = pos + 1;
+      while ( (end[0] != ' ') &&
+	      (end[0] != '\0') )
+	{
+	  if (end[0] == '\\')
+	    {
+	      switch (end[1])
+		{
+		case '\\':
+		case ' ':
+		  memmove(end,
+			  &end[1],
+			  strlen(&end[1])+1);
+		case '\0':
+		  /* illegal, but just keep it */
+		  break; 
+		default:
+		  /* illegal, but just ignore that there was a '/' */
+		  break;
+		}
+	    }
+	  end++;
+	}	      
+      old = end[0];
+      end[0] = '\0';
+      if (strlen(pos) > 0) 
+	{
+	  ret++;
+	  if ( (cb != NULL) &&
+	       (GNUNET_OK != cb(cls, pos)) )
+	    {
+	      ret = GNUNET_SYSERR;
+	      break;    
+	    }
+	}
+      if (old == '\0')
+	break;
+      pos = end + 1;     
+    }
+  GNUNET_free(list);
+  return ret;		  
+}
+
+static int
+test_match(void * cls,
+	   const char * fn)
+{
+  const char * of = cls;
+  return (0 == strcmp(of, fn)) ? GNUNET_SYSERR : GNUNET_OK;
+}
+
+/**
+ * Append a filename to a configuration value that
+ * represents a list of filenames
+ *
+ * @param value filename to append
+ * @return GNUNET_OK on success,
+ *         GNUNET_NO if the filename already in the list
+ *         GNUNET_SYSERR on error
+ */
+int GNUNET_GC_append_configuration_value_filename (struct GNUNET_GC_Configuration
+						   *cfg,
+						   struct GNUNET_GE_Context *ectx,
+						   const char *section,
+						   const char *option,
+						   const char *value)
+{
+  char * escaped;
+  char * wpos;
+  char * old;
+  char * nw;
+  const char * rpos;
+  int ret;
+
+  if (GNUNET_SYSERR
+      == GNUNET_GC_iterate_configuration_value_filenames(cfg,
+							 section,
+							 option,
+							 &test_match,
+							 (void*) value))
+    return GNUNET_NO; /* already exists */  
+  if (GNUNET_NO ==
+      GNUNET_GC_have_configuration_value(cfg,
+					 section,
+					 option))
+    old = GNUNET_strdup("");
+  else 
+    GNUNET_GC_get_configuration_value_string(cfg,
+					     section,
+					     option,
+					     NULL,
+					     &old);
+  escaped = GNUNET_malloc(strlen(value)*2 + 1);
+  memset(escaped, 0, strlen(value)*2 + 1);
+  rpos = value;
+  wpos = escaped;
+  while (1)
+    {
+      switch (rpos[0])
+	{
+	case '\0':
+	  break; /* we are done! */
+	case '\\':
+	case ' ':
+	  wpos[0] = '\\';
+	  wpos[1] = rpos[0];
+	  wpos += 2;
+	  break;
+	default:
+	  wpos[0] = rpos[0];
+	  wpos++;
+	}
+      rpos++;
+    }
+  nw = GNUNET_malloc(strlen(old) + strlen(escaped) + 2);
+  strcpy(nw, old);
+  strcat(nw, " ");
+  strcat(nw, escaped);
+  ret = GNUNET_GC_set_configuration_value_string(cfg,
+						 ectx,
+						 section,
+						 option,
+						 nw);
+  GNUNET_free(old);
+  GNUNET_free(nw);    
+  GNUNET_free(escaped);
+  return GNUNET_SYSERR;
+}
+
+
+/**
+ * Remove a filename from a configuration value that
+ * represents a list of filenames
+ *
+ * @param value filename to remove
+ * @return GNUNET_OK on success,
+ *         GNUNET_NO if the filename is not in the list,
+ *         GNUNET_SYSERR on error
+ */
+int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuration
+						   *cfg,
+						   struct GNUNET_GE_Context *ectx,
+						   const char *section,
+						   const char *option,
+						   const char *value)
+{
+  char * list;
+  char * pos;
+  char * end;
+  char old;
+  int ret;
+  
+  if (GNUNET_NO ==
+      GNUNET_GC_have_configuration_value(cfg,
+					 section,
+					 option))
+    return GNUNET_NO;
+  GNUNET_GC_get_configuration_value_string(cfg,
+					   section,
+					   option,
+					   NULL,
+					   &list);
+  ret = 0;
+  pos = list;
+  while (1)
+    {
+      while (pos[0] == ' ')
+	pos++;
+      if (strlen(pos) == 0)
+	break;
+      end = pos + 1;
+      while ( (end[0] != ' ') &&
+	      (end[0] != '\0') )
+	{
+	  if (end[0] == '\\')
+	    {
+	      switch (end[1])
+		{
+		case '\\':
+		case ' ':
+		  memmove(end,
+			  &end[1],
+			  strlen(&end[1])+1);
+		case '\0':
+		  /* illegal, but just keep it */
+		  break; 
+		default:
+		  /* illegal, but just ignore that there was a '/' */
+		  break;
+		}
+	    }
+	  end++;
+	}	      
+      old = end[0];
+      end[0] = '\0';
+      if (strlen(pos) > 0) 
+	{
+	  if (0 == strcmp(pos,
+			  value))
+	    {
+	      memmove(pos,
+		      &end[1],
+		      strlen(&end[1])+1);
+	      ret = GNUNET_GC_set_configuration_value_string(cfg,
+							     ectx,
+							     section,
+							     option,
+							     list);
+	      GNUNET_free(list);	      
+	      return (ret == 0) ? GNUNET_OK : GNUNET_SYSERR;
+	    }
+	}
+      if (old == '\0')
+	break;
+      pos = end + 1;     
+    }
+  GNUNET_free(list);
+  return GNUNET_NO;
+}
+
+/* end of config.c */

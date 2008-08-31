@@ -66,18 +66,14 @@ struct iiC
 };
 
 static int
-iiHelper (const char *fn, const char *dir, void *ptr)
+iiHelper (void * ptr,
+	  const char * fullName)
 {
   struct iiC *cls = ptr;
-  char *fullName;
   char *lnkName;
   unsigned int size;
   int ret;
 
-  fullName = GNUNET_malloc (strlen (dir) + strlen (fn) + 4);
-  strcpy (fullName, dir);
-  strcat (fullName, DIR_SEPARATOR_STR);
-  strcat (fullName, fn);
   size = 256;
   lnkName = GNUNET_malloc (size);
   while (1)
@@ -90,7 +86,6 @@ iiHelper (const char *fn, const char *dir, void *ptr)
               if (size * 2 < size)
                 {
                   GNUNET_free (lnkName);
-                  GNUNET_free (fullName);
                   return GNUNET_OK;     /* error */
                 }
               GNUNET_array_grow (lnkName, size, size * 2);
@@ -104,7 +99,6 @@ iiHelper (const char *fn, const char *dir, void *ptr)
                                            "readlink", fullName);
             }
           GNUNET_free (lnkName);
-          GNUNET_free (fullName);
           return GNUNET_OK;     /* error */
         }
       else
@@ -117,11 +111,9 @@ iiHelper (const char *fn, const char *dir, void *ptr)
   if (GNUNET_OK != cls->iterator (lnkName, cls->closure))
     {
       cls->cnt = GNUNET_SYSERR;
-      GNUNET_free (fullName);
       GNUNET_free (lnkName);
       return GNUNET_SYSERR;
     }
-  GNUNET_free (fullName);
   GNUNET_free (lnkName);
   return GNUNET_OK;
 }

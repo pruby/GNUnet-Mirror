@@ -454,27 +454,20 @@ find_entry (struct DirectoryRecord *dr, const char *filename)
 }
 
 static int
-test_run (const char *filename, const char *dirName, void *cls)
+test_run (void * cls,
+	  const char *fn)
 {
   struct DirectoryRecord *dr = cls;
   GNUNET_HashCode hc;
   struct FileRecord *rec;
   struct stat buf;
-  char *fn;
 
-  if (filename[0] == '.')
-    return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
-  strcpy (fn, dirName);
-  strcat (fn, DIR_SEPARATOR_STR);
-  strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
       fprintf (myout, _("Could not access `%s': %s\n"), fn, strerror (errno));
       fflush (myout);
-      GNUNET_free (fn);
       return GNUNET_OK;
     }
   rec = find_entry (dr, fn);
@@ -493,7 +486,6 @@ test_run (const char *filename, const char *dirName, void *cls)
       if (GNUNET_NO == GNUNET_FS_test_indexed (sock, &rec->hc))
         {
           dr->run = 1;
-          GNUNET_free (fn);
           /* keep iterating to mark all other files in this tree! */
           return GNUNET_OK;
         }
@@ -513,7 +505,6 @@ test_run (const char *filename, const char *dirName, void *cls)
     }
   if (S_ISDIR (buf.st_mode))
     GNUNET_disk_directory_scan (ectx, fn, &test_run, dr);
-  GNUNET_free (fn);
   return GNUNET_OK;
 }
 
@@ -570,39 +561,33 @@ add_meta_data (void *cls,
 }
 
 static int
-probe_directory (const char *filename, const char *dirName, void *cls)
+probe_directory (void * cls,
+		 const char *fn)
 {
   struct DirectoryRecord *dr = cls;
   struct stat buf;
   struct AddMetadataClosure amc;
   struct GNUNET_ECRS_URI *kuri;
-  char *fn;
   char *keys;
+  const char * filename;
 
   if (GNUNET_shutdown_test ())
     return GNUNET_SYSERR;       /* aborted */
-  if (filename[0] == '.')
-    return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
-  strcpy (fn, dirName);
-  strcat (fn, DIR_SEPARATOR_STR);
-  strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
       fprintf (myout, "Could not stat `%s': %s\n", fn, STRERROR (errno));
       fflush (myout);
-      GNUNET_free (fn);
       return GNUNET_OK;
     }
   dr->run = 0;
-  test_run (filename, dirName, dr);
+  test_run (dr, fn);
   if (0 == dr->run)
-    {
-      GNUNET_free (fn);
-      return GNUNET_OK;
-    }
+    return GNUNET_OK;    
+  filename = fn;
+  while (NULL != strstr(filename, DIR_SEPARATOR_STR))
+    filename = 1 + strstr(filename, DIR_SEPARATOR_STR);  
   amc.meta = GNUNET_meta_data_create ();
   amc.filename = filename;
   /* attaching a listener will prompt iteration
@@ -627,7 +612,6 @@ probe_directory (const char *filename, const char *dirName, void *cls)
   if (kuri != NULL)
     GNUNET_ECRS_uri_destroy (kuri);
   GNUNET_meta_data_destroy (amc.meta);
-  GNUNET_free (fn);
   return GNUNET_SYSERR;
 }
 

@@ -166,14 +166,14 @@ printHostInfo (const GNUNET_PeerIdentity * id,
         printf ("%s\n", (char *) &enc);
       else
         printf (_("Peer `%s' with trust %8u\n"),
-                (char *) &enc, identity->getHostTrust (id));
+                (char *) &enc, identity->changeHostTrust (id, 0));
       return GNUNET_OK;
     }
   if (be_quiet)
     printf ("%s\n", (char *) &enc);
   else
     printf (_("Peer `%s' with trust %8u and address `%s'\n"),
-            (char *) &enc, identity->getHostTrust (id), info);
+            (char *) &enc, identity->changeHostTrust (id, 0), info);
   GNUNET_free (info);
   return GNUNET_OK;
 }

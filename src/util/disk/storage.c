@@ -520,20 +520,29 @@ GNUNET_disk_file_write (struct GNUNET_GE_Context *ectx,
 int
 GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
                             const char *dirName,
-                            GNUNET_DirectoryEntryCallback callback,
+                            GNUNET_FileNameCallback callback,
                             void *data)
 {
   DIR *dinfo;
   struct dirent *finfo;
   struct stat istat;
   int count = 0;
+  char * name;
+  char * dname;
+  unsigned int name_len;
+  unsigned int n_size;
 
   GNUNET_GE_ASSERT (ectx, dirName != NULL);
-  if (0 != STAT (dirName, &istat))
+  dname = GNUNET_expand_file_name(ectx, dirName);
+  while ( (strlen(dname) > 0) &&
+	  (dname[strlen(dname)-1] == DIR_SEPARATOR) )
+    dname[strlen(dname)-1] = '\0';
+  if (0 != STAT (dname, &istat))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                   GNUNET_GE_BULK, "stat", dirName);
+                                   GNUNET_GE_BULK, "stat", dname);
+      GNUNET_free(dname);
       return GNUNET_SYSERR;
     }
   if (!S_ISDIR (istat.st_mode))
@@ -541,19 +550,24 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                      _("Expected `%s' to be a directory!\n"), dirName);
+      GNUNET_free(dname);
       return GNUNET_SYSERR;
     }
   errno = 0;
-  dinfo = OPENDIR (dirName);
+  dinfo = OPENDIR (dname);
   if ((errno == EACCES) || (dinfo == NULL))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                   GNUNET_GE_BULK, "opendir", dirName);
+                                   GNUNET_GE_BULK, "opendir", dname);
       if (dinfo != NULL)
         closedir (dinfo);
+      GNUNET_free(dname);
       return GNUNET_SYSERR;
     }
+  name_len = 256;
+  n_size = strlen(dname) + name_len + 2;
+  name = GNUNET_malloc(n_size);
   while ((finfo = readdir (dinfo)) != NULL)
     {
       if ((0 == strcmp (finfo->d_name, ".")) ||
@@ -561,38 +575,36 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
         continue;
       if (callback != NULL)
         {
-          if (GNUNET_OK != callback (finfo->d_name, dirName, data))
+	  if (name_len < strlen(finfo->d_name))
+	    {
+	      GNUNET_free(name);
+	      name_len = strlen(finfo->d_name);
+	      n_size = strlen(dname) + name_len + 2;
+	      name = GNUNET_malloc(n_size);
+	    }
+	  /* dname can end in "/" only if dname == "/";
+	     if dname does not end in "/", we need to add
+	     a "/" (otherwise, we must not!) */
+	  GNUNET_snprintf(name,
+			  n_size,
+			  "%s%s%s",
+			  dname,
+			  (strcmp(dname, DIR_SEPARATOR_STR) == 0) ? "" : DIR_SEPARATOR_STR,
+			  finfo->d_name);
+          if (GNUNET_OK != callback (name, data))
             {
               closedir (dinfo);
+	      GNUNET_free(name);
+	      GNUNET_free(dname);
               return GNUNET_SYSERR;
             }
         }
       count++;
     }
   closedir (dinfo);
+  GNUNET_free(name);
+  GNUNET_free(dname);
   return count;
-}
-
-/**
- * Callback for GNUNET_disk_directory_remove
- */
-static int
-rmHelper (const char *fil, const char *dir, void *ctx)
-{
-  struct GNUNET_GE_Context *ectx = ctx;
-  char *fn;
-  size_t n;
-
-  n = strlen (dir) + strlen (fil) + 2;
-  fn = GNUNET_malloc (n);
-  GNUNET_snprintf (fn, n, "%s/%s", dir, fil);
-  if (GNUNET_SYSERR == GNUNET_disk_directory_remove (ectx, fn))
-    {
-      GNUNET_free (fn);
-      return GNUNET_SYSERR;
-    }
-  GNUNET_free (fn);
-  return GNUNET_OK;
 }
 
 /**
@@ -626,7 +638,10 @@ GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx,
       return GNUNET_SYSERR;
     }
   if (GNUNET_SYSERR ==
-      GNUNET_disk_directory_scan (ectx, fileName, &rmHelper, ectx))
+      GNUNET_disk_directory_scan (ectx,
+				  fileName, 
+				  (GNUNET_FileNameCallback)&GNUNET_disk_directory_remove,
+				  ectx))
     return GNUNET_SYSERR;
   if (0 != RMDIR (fileName))
     {

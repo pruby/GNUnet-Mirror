@@ -120,15 +120,6 @@ int GNUNET_disk_file_copy (struct GNUNET_GE_Context *ectx,
                            const char *src, const char *dst);
 
 /**
- * Function called on each file in a directory.
- * @return GNUNET_OK to continue to iterate,
- *  GNUNET_SYSERR to abort iteration with error!
- */
-typedef int (*GNUNET_DirectoryEntryCallback) (const char *filename,
-                                              const char *dirName,
-                                              void *data);
-
-/**
  * Scan a directory for files. The name of the directory
  * must be expanded first (!).
  *
@@ -139,7 +130,7 @@ typedef int (*GNUNET_DirectoryEntryCallback) (const char *filename,
  */
 int GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
                                 const char *dirName,
-                                GNUNET_DirectoryEntryCallback callback,
+                                GNUNET_FileNameCallback callback,
                                 void *data);
 
 

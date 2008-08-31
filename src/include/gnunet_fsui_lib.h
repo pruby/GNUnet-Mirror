@@ -1039,7 +1039,7 @@ int GNUNET_FSUI_download_stop (struct GNUNET_FSUI_DownloadList *dl);    /* downl
  */
 typedef int (*GNUNET_FSUI_DirectoryScanCallback) (void *data,
                                                   const char *filename,
-                                                  GNUNET_DirectoryEntryCallback
+                                                  GNUNET_FileNameCallback
                                                   dec, void *decClosure);
 
 /**

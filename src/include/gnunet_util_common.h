@@ -39,6 +39,18 @@
 #define GNUNET_YES     1
 #define GNUNET_NO      0
 
+/**
+ * Function called with a filename.
+ *
+ * @param filename complete filename (absolute path)
+ * @param data user-defined context
+ * @return GNUNET_OK to continue to iterate,
+ *  GNUNET_SYSERR to abort iteration with error!
+ */
+typedef int (*GNUNET_FileNameCallback) (void *data,
+					const char *filename);
+
+
 #if __STDC_VERSION__ < 199901L
 # if __GNUC__ >= 2
 #  define __func__ __FUNCTION__

@@ -639,21 +639,15 @@ static struct GNUNET_FSUI_UploadList *addUploads (struct
                                                   *parent);
 
 static int
-addChildUpload (const char *name, const char *dirName, void *data)
+addChildUpload (void * data,
+		const char * filename)
 {
   struct GNUNET_FSUI_UploadList *parent = data;
-  char *filename;
   struct GNUNET_FSUI_UploadList *child;
   struct GNUNET_MetaData *md_tmp;
 
-  filename = GNUNET_malloc (strlen (dirName) + strlen (name) + 2);
-  strcpy (filename, dirName);
-  if (dirName[strlen (dirName) - 1] != DIR_SEPARATOR)
-    strcat (filename, DIR_SEPARATOR_STR);
-  strcat (filename, name);
   md_tmp = GNUNET_meta_data_create ();
   child = addUploads (parent->shared, filename, NULL, md_tmp, parent);
-  GNUNET_free (filename);
   GNUNET_meta_data_destroy (md_tmp);
   if (child == NULL)
     return GNUNET_SYSERR;
