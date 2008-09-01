@@ -73,7 +73,7 @@ typedef struct
 } GetFileSizeData;
 
 static int
-getSizeRec (const char *filename, const char *dirname, void *ptr)
+getSizeRec (void * ptr, const char * fn)
 {
   GetFileSizeData *gfsd = ptr;
 #ifdef HAVE_STAT64
@@ -81,31 +81,6 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
 #else
   struct stat buf;
 #endif
-  char *fn;
-
-  GNUNET_GE_ASSERT (gfsd->ectx, filename != NULL);
-  if ((dirname != NULL) && (strlen (dirname) > 0))
-    {
-      fn = GNUNET_malloc (strlen (filename) + strlen (dirname) + 3);
-      if (strlen (dirname) > 0)
-        {
-          strcpy (fn, dirname);
-          if (dirname[strlen (dirname) - 1] != DIR_SEPARATOR)
-            strcat (fn, DIR_SEPARATOR_STR);     /* add tailing / if needed */
-        }
-      /* Windows paths don't start with / */
-#ifndef MINGW
-      else
-        strcpy (fn, DIR_SEPARATOR_STR);
-#endif
-      if (filename[0] == DIR_SEPARATOR)
-        /* if filename starts with a "/", don't copy it */
-        strcat (fn, &filename[1]);
-      else
-        strcat (fn, filename);
-    }
-  else
-    fn = GNUNET_strdup (filename);
 
 #ifdef HAVE_STAT64
   if (0 != STAT64 (fn, &buf))
@@ -113,7 +88,6 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
       GNUNET_GE_LOG_STRERROR_FILE (gfsd->ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
                                    GNUNET_GE_REQUEST, "stat64", fn);
-      GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
 #else
@@ -122,7 +96,6 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
       GNUNET_GE_LOG_STRERROR_FILE (gfsd->ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
                                    GNUNET_GE_REQUEST, "stat", fn);
-      GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
 #endif
@@ -134,12 +107,8 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
     {
       if (GNUNET_SYSERR ==
           GNUNET_disk_directory_scan (gfsd->ectx, fn, &getSizeRec, gfsd))
-        {
-          GNUNET_free (fn);
-          return GNUNET_SYSERR;
-        }
+	return GNUNET_SYSERR;        
     }
-  GNUNET_free (fn);
   return GNUNET_OK;
 }
 
@@ -161,7 +130,7 @@ GNUNET_disk_file_size (struct GNUNET_GE_Context *ectx,
   gfsd.ectx = ectx;
   gfsd.total = 0;
   gfsd.include_sym_links = includeSymLinks;
-  ret = getSizeRec (filename, "", &gfsd);
+  ret = getSizeRec (&gfsd, filename);
   *size = gfsd.total;
   return ret;
 }
@@ -591,7 +560,7 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
 			  dname,
 			  (strcmp(dname, DIR_SEPARATOR_STR) == 0) ? "" : DIR_SEPARATOR_STR,
 			  finfo->d_name);
-          if (GNUNET_OK != callback (name, data))
+          if (GNUNET_OK != callback (data, name))
             {
               closedir (dinfo);
 	      GNUNET_free(name);
