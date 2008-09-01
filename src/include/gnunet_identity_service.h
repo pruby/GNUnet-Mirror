@@ -209,6 +209,14 @@ typedef struct
    */
   int (*changeHostTrust) (const GNUNET_PeerIdentity * hostId, int value);
 
+  /**
+   * Get the amount of trust we have in a host.
+   *
+   * @param hostId is the identity of the host
+   * @returns trust we have in the host (-1 on error)
+   */
+  int (*getHostTrust) (const GNUNET_PeerIdentity * hostId);
+
 } GNUNET_Identity_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */

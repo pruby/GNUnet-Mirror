@@ -263,28 +263,22 @@ static int
 change_host_trust (const GNUNET_PeerIdentity * hostId, int value)
 {
   HostEntry *host;
-
+  
   if (value == 0)
     return 0;
-
   GNUNET_mutex_lock (lock_);
   host = lookup_host_entry (hostId);
   if (host == NULL)
     {
-      if (value == 0)
-	{
-	  GNUNET_mutex_unlock (lock_);
-	  return 0;
-	}
       add_host_to_known_hosts (hostId, GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
       host = lookup_host_entry (hostId);
-      if (host == NULL)
-        {	 
-          GNUNET_GE_BREAK (ectx, 0);
-          GNUNET_mutex_unlock (lock_);
-          return 0;
-        }
     }
+  if (host == NULL)
+    {	 
+      GNUNET_GE_BREAK (ectx, 0);
+      GNUNET_mutex_unlock (lock_);
+      return 0;
+    }    
   if (((int) (host->trust & TRUST_ACTUAL_MASK)) + value < 0)
     {
       value = -(host->trust & TRUST_ACTUAL_MASK);
@@ -295,6 +289,30 @@ change_host_trust (const GNUNET_PeerIdentity * hostId, int value)
       host->trust = ((host->trust & TRUST_ACTUAL_MASK) + value)
         | TRUST_REFRESH_MASK;
     }
+  GNUNET_mutex_unlock (lock_);
+  return value;
+}
+
+/**
+ * Get the amount of trust we have in a host.
+ *
+ * @param hostId is the identity of the host
+ * @returns trust we have in the host (-1 on error)
+ */
+static int
+get_host_trust (const GNUNET_PeerIdentity * hostId)
+{
+  HostEntry *host;
+  int value;
+  
+  GNUNET_mutex_lock (lock_);
+  host = lookup_host_entry (hostId);
+  if (host == NULL)
+    {
+      GNUNET_mutex_unlock (lock_);
+      return 0;
+    }
+  value = ((int) (host->trust & TRUST_ACTUAL_MASK));
   GNUNET_mutex_unlock (lock_);
   return value;
 }
