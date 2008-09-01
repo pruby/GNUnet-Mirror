@@ -1377,6 +1377,7 @@ provide_module_identity (GNUNET_CoreAPIForPlugins * capi)
   id.isBlacklisted = &isBlacklisted;
   id.whitelistHost = &whitelistHost;
   id.changeHostTrust = &change_host_trust;
+  id.getHostTrust = &get_host_trust;
 
   for (i = 0; i < MAX_TEMP_HOSTS; i++)
     memset (&tempHosts[i], 0, sizeof (HostEntry));
