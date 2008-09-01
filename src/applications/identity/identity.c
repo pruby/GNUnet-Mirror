@@ -337,7 +337,10 @@ hosts_directory_scan_callback (void * unused,
       return GNUNET_OK;
     }
   filename = &fullname[strlen(fullname) + 1 - sizeof(GNUNET_EncName)];
-  if (filename[-1] != DIR_SEPARATOR)
+  while ( (filename[-1] != DIR_SEPARATOR) &&
+	  (filename > fullname) )
+    filename--;
+  if (filename[-1] != DIR_SEPARATOR) 
     {
       remove_garbage(fullname);
       return GNUNET_OK;
