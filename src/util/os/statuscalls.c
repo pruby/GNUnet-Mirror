@@ -407,7 +407,7 @@ resetStatusCalls (void *cls,
 						      0,
 						      (unsigned long long) -1,
 						      50000,
-						      maxd))
+						      &maxd))
     { 
       GNUNET_free (interfaces);
       return GNUNET_SYSERR;
@@ -416,7 +416,7 @@ resetStatusCalls (void *cls,
 						      0, 
 						      (unsigned long long) -1, 
 						      50000,
-						      maxu))
+						      &maxu))
     {
       GNUNET_free (interfaces);
       return GNUNET_SYSERR;
