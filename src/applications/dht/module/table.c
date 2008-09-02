@@ -69,7 +69,7 @@
 #define MAINTAIN_CHANCE (10 + 100 * total_peers)
 
 /**
- * How long can a peer be inactive before we tiem it out?
+ * How long can a peer be inactive before we time it out?
  */
 #define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4
 
