@@ -409,82 +409,6 @@ estimateSaturation ()
   return saturation;
 }
 
-static int
-is_friend (const GNUNET_PeerIdentity * peer)
-{
-  unsigned int i;
-
-  for (i = 0; i < friendCount; i++)
-    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity)))
-      return 1;
-  return 0;
-}
-
-static void
-friend_counter (const GNUNET_PeerIdentity * peer, void *cls)
-{
-  unsigned int *cnt = cls;
-
-  if (is_friend (peer))
-    (*cnt)++;
-}
-
-static unsigned int
-count_connected_friends (GNUNET_ConnectionIterator connectionIterator,
-                         void *cls)
-{
-  unsigned int i;
-
-  i = 0;
-  connectionIterator (&friend_counter, &i, cls);
-  return i;
-}
-
-static int
-core_wrapper (GNUNET_NodeIteratorCallback callback,
-              void *cb_arg, void *unused)
-{
-  return coreAPI->p2p_connections_iterate (callback, cb_arg);
-}
-
-static int
-allowConnection (const GNUNET_PeerIdentity * peer)
-{
-  if ((coreAPI->my_identity != NULL) &&
-      (0 ==
-       memcmp (coreAPI->my_identity, peer, sizeof (GNUNET_PeerIdentity))))
-    return GNUNET_SYSERR;       /* disallow connections to self */
-  if (is_friend (peer))
-    return GNUNET_OK;
-  if (friends_only)
-    return GNUNET_SYSERR;
-  if (count_connected_friends (&core_wrapper, NULL) >= minimum_friend_count)
-    return GNUNET_OK;
-  return GNUNET_SYSERR;
-}
-
-/**
- * Would it be ok to drop the connection to this
- * peer?
- */
-static int
-isConnectionGuarded (const GNUNET_PeerIdentity * peer,
-                     GNUNET_ConnectionIterator connectionIterator, void *cls)
-{
-  if (!is_friend (peer))
-    return GNUNET_NO;
-  if (count_connected_friends (connectionIterator, cls) <=
-      minimum_friend_count)
-    return GNUNET_YES;
-  return GNUNET_NO;
-}
-
-static unsigned int
-countGuardedConnections ()
-{
-  return minimum_friend_count;
-}
-
 /**
  * @return 0 on success.
  */
@@ -615,6 +539,85 @@ rereadConfiguration (void *ctx,
   return 0;
 }
 
+static int
+is_friend (const GNUNET_PeerIdentity * peer)
+{
+  unsigned int i;
+  char *section;
+  int temp_size = snprintf(NULL,0,"F2f") + 1;
+  section = malloc(temp_size);
+  snprintf(section,temp_size,"F2f");
+  rereadConfiguration(NULL,coreAPI->cfg,coreAPI->ectx,section,NULL);
+  for (i = 0; i < friendCount; i++)
+    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity)))
+      return 1;
+  return 0;
+}
+
+static void
+friend_counter (const GNUNET_PeerIdentity * peer, void *cls)
+{
+  unsigned int *cnt = cls;
+
+  if (is_friend (peer))
+    (*cnt)++;
+}
+
+static unsigned int
+count_connected_friends (GNUNET_ConnectionIterator connectionIterator,
+                         void *cls)
+{
+  unsigned int i;
+
+  i = 0;
+  connectionIterator (&friend_counter, &i, cls);
+  return i;
+}
+
+static int
+core_wrapper (GNUNET_NodeIteratorCallback callback,
+              void *cb_arg, void *unused)
+{
+  return coreAPI->p2p_connections_iterate (callback, cb_arg);
+}
+
+static int
+allowConnection (const GNUNET_PeerIdentity * peer)
+{
+  if ((coreAPI->my_identity != NULL) &&
+      (0 ==
+       memcmp (coreAPI->my_identity, peer, sizeof (GNUNET_PeerIdentity))))
+    return GNUNET_SYSERR;       /* disallow connections to self */
+  if (is_friend (peer))
+    return GNUNET_OK;
+  if (friends_only)
+    return GNUNET_SYSERR;
+  if (count_connected_friends (&core_wrapper, NULL) >= minimum_friend_count)
+    return GNUNET_OK;
+  return GNUNET_SYSERR;
+}
+
+/**
+ * Would it be ok to drop the connection to this
+ * peer?
+ */
+static int
+isConnectionGuarded (const GNUNET_PeerIdentity * peer,
+                     GNUNET_ConnectionIterator connectionIterator, void *cls)
+{
+  if (!is_friend (peer))
+    return GNUNET_NO;
+  if (count_connected_friends (connectionIterator, cls) <=
+      minimum_friend_count)
+    return GNUNET_YES;
+  return GNUNET_NO;
+}
+
+static unsigned int
+countGuardedConnections ()
+{
+  return minimum_friend_count;
+}
 
 GNUNET_Topology_ServiceAPI *
 provide_module_topology_default (GNUNET_CoreAPIForPlugins * capi)
