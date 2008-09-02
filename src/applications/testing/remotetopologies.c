@@ -25,6 +25,8 @@
  */
 #include "remote.h"
 
+#define DEBUG GNUNET_YES
+
 static int
 printInfo (void *data,
            const GNUNET_PeerIdentity *
@@ -340,16 +342,23 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
   GNUNET_snprintf (host, 128, "%s:%u", hostname1, port1);
   GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
                                             host);
-
+  if(DEBUG == GNUNET_YES)
+  {
+    fprintf(stderr,"Setting config 1 to host %s\n",host);
+  }
   GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
   GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
-                                            host);
+  
+  if(DEBUG == GNUNET_YES)
+  {
+    fprintf(stderr,"Setting config 2 to host %s\n",host);
+  }                                          
 
   if ((GNUNET_OK ==
-       GNUNET_wait_for_daemon_running (NULL, cfg1, 300 * GNUNET_CRON_SECONDS))
+       GNUNET_wait_for_daemon_running (NULL, cfg1, 30 * GNUNET_CRON_SECONDS))
       && (GNUNET_OK ==
           GNUNET_wait_for_daemon_running (NULL, cfg2,
-                                          300 * GNUNET_CRON_SECONDS)))
+                                          30 * GNUNET_CRON_SECONDS)))
     {
       sock1 = GNUNET_client_connection_create (NULL, cfg1);
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
@@ -447,10 +456,10 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
                                             host);
 
   if ((GNUNET_OK ==
-       GNUNET_wait_for_daemon_running (NULL, cfg1, 300 * GNUNET_CRON_SECONDS))
+       GNUNET_wait_for_daemon_running (NULL, cfg1, 30 * GNUNET_CRON_SECONDS))
       && (GNUNET_OK ==
           GNUNET_wait_for_daemon_running (NULL, cfg2,
-                                          300 * GNUNET_CRON_SECONDS)))
+                                          30 * GNUNET_CRON_SECONDS)))
     {
       sock1 = GNUNET_client_connection_create (NULL, cfg1);
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
