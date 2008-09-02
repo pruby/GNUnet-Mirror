@@ -49,7 +49,9 @@ testingtest_loop_LDADD = \
 
 
 pkgdata_DATA = \
- gnunet-testing.conf
+ gnunet-testing.conf \
+ gnunet-lab-testing.conf \
+ gnunetd.conf.skel
 
 EXTRA_DIST = \
  $(pkgdata_DATA) remotetopologies.c

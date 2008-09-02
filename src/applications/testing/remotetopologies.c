@@ -347,7 +347,7 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
     fprintf(stderr,"Setting config 1 to host %s\n",host);
   }
   GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
-  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
+  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",host);
   
   if(DEBUG == GNUNET_YES)
   {
