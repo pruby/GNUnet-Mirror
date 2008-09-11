@@ -256,6 +256,7 @@ main (int argc, char *argv[])
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
 
+  GNUNET_disable_entropy_gathering ();
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
