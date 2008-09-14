@@ -31,6 +31,9 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
+/**
+ * Change our user/group id and adjust process priority.
+ */
 int GNUNET_CORE_startup_change_user (struct GNUNET_GE_Context *ectx,
                                      struct GNUNET_GC_Configuration *cfg);
 

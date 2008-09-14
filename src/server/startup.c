@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -21,10 +21,6 @@
 /**
  * @file server/startup.c
  * @brief insignificant gnunetd helper methods
- *
- * Helper methods for the startup of gnunetd:
- * - PID file handling
- *
  * @author Christian Grothoff
  */
 
@@ -133,7 +129,15 @@ GNUNET_CORE_startup_change_user (struct GNUNET_GE_Context *ectx,
                                  struct GNUNET_GC_Configuration *cfg)
 {
   char *user;
+  char *prio;
 
+  if (0 == GNUNET_GC_get_configuration_value_string (cfg,
+                                                     "LOAD",
+                                                     "PRIORITY",
+                                                     "IDLE", &prio)
+      && strlen (prio))
+    GNUNET_set_process_priority(ectx, prio);     
+  GNUNET_free (prio);
   user = NULL;
   if (0 == GNUNET_GC_get_configuration_value_string (cfg,
                                                      "GNUNETD",

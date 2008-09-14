@@ -1392,6 +1392,20 @@ The size of the DSTORE QUOTA is specified in MB.")
  (cons 0 999999999)
  'rare))
 
+
+(define (load-priority builder)
+ (builder
+ "LOAD"
+ "PRIORITY"
+ (_ "What priority should gnunetd use to run?")
+ (_ "You can specify priorities like NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE or a numerical integer value (man nice).  The default is IDLE, which should result in gnunetd only using resources that would otherwise be idle.")
+ '()
+ #t
+ "IDLE"
+ '()
+ 'always))
+
+
 (define (load-padding builder)
  (builder
  "GNUNETD-EXPERIMENTAL"
@@ -1442,6 +1456,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
   (_ "Load management")
   (nohelp)
   (list 
+    (load-priority builder)
     (load-maxdown builder)
     (load-maxup builder)
     (load-hard-up-limit builder)
