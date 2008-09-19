@@ -42,19 +42,124 @@ testConfig ()
   if (0 != strcmp ("b", c))
     {
       GNUNET_free (c);
-      return 1;
+      return 2;
     }
   GNUNET_free (c);
   if (0 != GNUNET_GC_get_configuration_value_number (cfg,
                                                      "test", "five", 0, 10, 9,
                                                      &l))
-    return 1;
+    return 3;
   if (5 != l)
-    return 1;
+    return 4;
   GNUNET_GC_set_configuration_value_string (cfg, NULL, "more", "c", "YES");
   if (GNUNET_NO ==
       GNUNET_GC_get_configuration_value_yesno (cfg, "more", "c", GNUNET_NO))
-    return 1;
+    return 5;
+  return 0;
+}
+
+static const char * want[] = {
+  "/Hello",
+  "/File Name",
+  "/World",
+  NULL,
+  NULL,
+};
+
+static int
+check(void * data,
+      const char * fn)
+{
+  int * idx = data;
+
+  if (0 == strcmp(want[*idx], fn))
+    {
+      (*idx)++;    
+      return GNUNET_OK;
+    }
+  return GNUNET_SYSERR;
+}
+
+static int
+testConfigFilenames ()
+{
+  int idx;
+
+  idx = 0;
+  if (3 != GNUNET_GC_iterate_configuration_value_filenames (cfg, 
+							    "FILENAMES",
+							    "test",
+							    &check,
+							    &idx))
+    return 8;
+  if (idx != 3)
+    return 16;
+  if (GNUNET_OK !=
+      GNUNET_GC_remove_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "/File Name"))
+    return 24;
+
+  if (GNUNET_NO !=
+      GNUNET_GC_remove_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "/File Name"))
+    return 32;
+  if (GNUNET_NO !=
+      GNUNET_GC_remove_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "Stuff"))
+    return 40;
+
+  if (GNUNET_NO !=
+      GNUNET_GC_append_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "/Hello"))
+    return 48;
+  if (GNUNET_NO !=
+      GNUNET_GC_append_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "/World"))
+    return 56;
+  
+  if (GNUNET_YES !=
+      GNUNET_GC_append_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "/File 1"))
+    return 64;
+
+  if (GNUNET_YES !=
+      GNUNET_GC_append_configuration_value_filename(cfg,
+						    NULL,
+						    "FILENAMES",
+						    "test",
+						    "/File 2"))
+    return 72;
+
+  idx = 0;
+  want[1] = "/World";
+  want[2] = "/File 1";
+  want[3] = "/File 2";
+  if (4 != GNUNET_GC_iterate_configuration_value_filenames (cfg, 
+							    "FILENAMES",
+							    "test",
+							    &check,
+							    &idx))
+    return 80;
+  if (idx != 4)
+    return 88;
   return 0;
 }
 
@@ -81,8 +186,14 @@ main (int argc, char *argv[])
   GNUNET_GE_ASSERT (ectx, cfg != NULL);
   GNUNET_os_init (ectx);
   failureCount += testConfig ();
+  failureCount += testConfigFilenames ();
 
   if (failureCount != 0)
-    return 1;
+    {
+      fprintf(stderr,
+	      "Test failed: %u\n",
+	      failureCount);
+      return 1;
+    }
   return 0;
 }

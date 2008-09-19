@@ -541,7 +541,6 @@ GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration
   if (ret == GNUNET_SYSERR)
     GNUNET_GE_LOG (ectx,
                    GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_WARNING,
-                   _
                    ("Setting option `%s' in section `%s' to value `%s' was refused.\n"),
                    option, section, value);
   GNUNET_mutex_unlock (data->lock);
@@ -1023,6 +1022,36 @@ int GNUNET_GC_iterate_configuration_value_filenames (struct GNUNET_GC_Configurat
   return ret;		  
 }
 
+static char *
+escape_name (const char * value)
+{
+  char * escaped;
+  const char * rpos;
+  char * wpos;
+
+  escaped = GNUNET_malloc(strlen(value)*2 + 1);
+  memset(escaped, 0, strlen(value)*2 + 1);
+  rpos = value;
+  wpos = escaped;
+  while (rpos[0] != '\0')
+    {
+      switch (rpos[0])
+	{
+	case '\\':
+	case ' ':
+	  wpos[0] = '\\';
+	  wpos[1] = rpos[0];
+	  wpos += 2;
+	  break;
+	default:
+	  wpos[0] = rpos[0];
+	  wpos++;
+	}
+      rpos++;
+    }
+  return escaped;
+}
+
 static int
 test_match(void * cls,
 	   const char * fn)
@@ -1048,10 +1077,8 @@ int GNUNET_GC_append_configuration_value_filename (struct GNUNET_GC_Configuratio
 						   const char *value)
 {
   char * escaped;
-  char * wpos;
   char * old;
   char * nw;
-  const char * rpos;
   int ret;
 
   if (GNUNET_SYSERR
@@ -1072,28 +1099,7 @@ int GNUNET_GC_append_configuration_value_filename (struct GNUNET_GC_Configuratio
 					     option,
 					     NULL,
 					     &old);
-  escaped = GNUNET_malloc(strlen(value)*2 + 1);
-  memset(escaped, 0, strlen(value)*2 + 1);
-  rpos = value;
-  wpos = escaped;
-  while (1)
-    {
-      switch (rpos[0])
-	{
-	case '\0':
-	  break; /* we are done! */
-	case '\\':
-	case ' ':
-	  wpos[0] = '\\';
-	  wpos[1] = rpos[0];
-	  wpos += 2;
-	  break;
-	default:
-	  wpos[0] = rpos[0];
-	  wpos++;
-	}
-      rpos++;
-    }
+  escaped = escape_name(value);
   nw = GNUNET_malloc(strlen(old) + strlen(escaped) + 2);
   strcpy(nw, old);
   strcat(nw, " ");
@@ -1106,7 +1112,7 @@ int GNUNET_GC_append_configuration_value_filename (struct GNUNET_GC_Configuratio
   GNUNET_free(old);
   GNUNET_free(nw);    
   GNUNET_free(escaped);
-  return GNUNET_SYSERR;
+  return (ret == 0) ? GNUNET_OK : GNUNET_SYSERR;
 }
 
 
@@ -1129,6 +1135,7 @@ int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuratio
   char * list;
   char * pos;
   char * end;
+  char * match;
   char old;
   int ret;
   
@@ -1142,6 +1149,7 @@ int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuratio
 					   option,
 					   NULL,
 					   &list);
+  match = escape_name (value);
   ret = 0;
   pos = list;
   while (1)
@@ -1160,9 +1168,8 @@ int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuratio
 		{
 		case '\\':
 		case ' ':
-		  memmove(end,
-			  &end[1],
-			  strlen(&end[1])+1);
+		  end++;
+		  break;
 		case '\0':
 		  /* illegal, but just keep it */
 		  break; 
@@ -1178,17 +1185,21 @@ int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuratio
       if (strlen(pos) > 0) 
 	{
 	  if (0 == strcmp(pos,
-			  value))
+			  match))
 	    {
 	      memmove(pos,
 		      &end[1],
 		      strlen(&end[1])+1);
+	      
+	      if (pos != list)
+		pos[-1] = ' '; /* previously changed to "\0" */
 	      ret = GNUNET_GC_set_configuration_value_string(cfg,
 							     ectx,
 							     section,
 							     option,
 							     list);
 	      GNUNET_free(list);	      
+	      GNUNET_free(match);
 	      return (ret == 0) ? GNUNET_OK : GNUNET_SYSERR;
 	    }
 	}
@@ -1197,6 +1208,7 @@ int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuratio
       pos = end + 1;     
     }
   GNUNET_free(list);
+  GNUNET_free(match);
   return GNUNET_NO;
 }
 
