@@ -359,7 +359,10 @@ GNUNET_disk_directory_create (struct GNUNET_GE_Context *ectx, const char *dir)
  * a file.
  *
  * @param filename name of a file in the directory
- * @returns GNUNET_OK on success, GNUNET_SYSERR on failure
+ * @returns GNUNET_OK on success, 
+ *          GNUNET_SYSERR on failure,
+ *          GNUNET_NO if the directory
+ *          exists but is not writeable for us
  */
 int
 GNUNET_disk_directory_create_for_file (struct GNUNET_GE_Context *ectx,
@@ -377,6 +380,9 @@ GNUNET_disk_directory_create_for_file (struct GNUNET_GE_Context *ectx,
     len--;
   rdir[len] = '\0';
   ret = GNUNET_disk_directory_create (ectx, rdir);
+  if ( (ret == GNUNET_OK) &&
+       (0 != ACCESS (rdir, W_OK) ) )
+    ret = GNUNET_NO;
   GNUNET_free (rdir);
   return ret;
 }

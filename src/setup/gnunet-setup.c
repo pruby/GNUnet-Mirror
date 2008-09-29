@@ -221,6 +221,7 @@ main (int argc, char *const *argv)
   char *value;
   char *option;
   int i;
+  struct stat buf;
 
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
                                           GNUNET_GE_WARNING | GNUNET_GE_ERROR
@@ -300,6 +301,16 @@ main (int argc, char *const *argv)
                                  GNUNET_GE_FATAL | GNUNET_GE_USER |
                                  GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                                  "access", dirname);
+  if ( (0 == STAT(cfgFilename, &buf)) &&
+       (S_ISDIR(buf.st_mode)) )
+    {
+      fprintf (stderr, _("Configuration file `%s' must be a filename (but is a directory).\n"),
+	       cfgFilename);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
+      GNUNET_free (dirname);
+      return 1;
+    }
   GNUNET_free (dirname);
 
   if (0 == ACCESS (cfgFilename, F_OK))

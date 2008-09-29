@@ -139,7 +139,8 @@ int GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
  * a file.
  *
  * @param filename name of a file in the directory
- * @returns GNUNET_OK on success, GNUNET_SYSERR on failure
+ * @returns GNUNET_OK on success, GNUNET_SYSERR on failure,
+ *          GNUNET_NO if directory exists but is not writeable
  */
 int GNUNET_disk_directory_create_for_file (struct GNUNET_GE_Context *ectx,
                                            const char *filename);
