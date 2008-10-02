@@ -547,9 +547,17 @@ int
 GNUNET_bloomfilter_get_raw_data (struct GNUNET_BloomFilter *bf,
                                  char *data, unsigned int size)
 {
-  if (bf->bitArraySize != size)
+  if (NULL == bf)
     return GNUNET_SYSERR;
+  GNUNET_mutex_lock (bf->lock);
+
+  if (bf->bitArraySize != size)
+    {
+      GNUNET_mutex_unlock (bf->lock);
+      return GNUNET_SYSERR;
+    }
   memcpy (data, bf->bitArray, size);
+  GNUNET_mutex_unlock (bf->lock);
   return GNUNET_OK;
 }
 
@@ -644,12 +652,19 @@ GNUNET_bloomfilter_or (struct GNUNET_BloomFilter *bf,
 {
   unsigned int i;
 
+  if (NULL == bf)
+    return GNUNET_YES;
+  GNUNET_mutex_lock (bf->lock);
   if (bf->bitArraySize != size)
-    return GNUNET_SYSERR;
+    {
+      GNUNET_mutex_unlock (bf->lock);
+      return GNUNET_SYSERR;
+    }
   /* FIXME: we could do this 4-8x faster by
      going over int/long arrays */
   for (i = 0; i < size; i++)
     bf->bitArray[i] |= data[i];
+  GNUNET_mutex_unlock (bf->lock);
   return GNUNET_OK;
 }
 
