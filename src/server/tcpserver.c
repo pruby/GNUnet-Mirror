@@ -380,21 +380,7 @@ startTCPServer ()
     {
       memset (&serverAddr6, 0, sizeof (serverAddr6));
       serverAddr6.sin6_family = AF_INET6;
-      ch = NULL;
-      GNUNET_GC_get_configuration_value_string (cfg,
-						"NETWORK",
-						"TRUSTED6",
-						"::1;", 
-						&ch);
-      if (0 == strcmp(ch, "::1;"))
-	{
-	  serverAddr6.sin6_addr = in6addr_loopback;
-	}
-      else
-	{
-	  serverAddr6.sin6_addr = in6addr_any;
-	}
-      GNUNET_free(ch);
+      serverAddr6.sin6_addr = in6addr_any;
       serverAddr6.sin6_port = htons (listenerPort);
 
 
