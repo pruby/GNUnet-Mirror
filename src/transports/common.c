@@ -258,7 +258,7 @@ reload_configuration (void *ctx,
   GNUNET_free_non_null (allowedNetworksIPv4);
   ch = NULL;
   GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
-                                            "BLACKLISTV4", "", &ch);
+                                            "BLACKLISTV4", "127.0.0.1;", &ch);
   filteredNetworksIPv4 = GNUNET_parse_ipv4_network_specification (ectx, ch);
   GNUNET_free (ch);
   ch = NULL;
@@ -277,7 +277,7 @@ reload_configuration (void *ctx,
       GNUNET_free_non_null (filteredNetworksIPv6);
       GNUNET_free_non_null (allowedNetworksIPv6);
       GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
-                                                "BLACKLISTV6", "", &ch);
+                                                "BLACKLISTV6", "::1;", &ch);
       filteredNetworksIPv6 =
         GNUNET_parse_ipv6_network_specification (ectx, ch);
       GNUNET_free (ch);

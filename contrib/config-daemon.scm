@@ -939,19 +939,19 @@ The size of the DSTORE QUOTA is specified in MB.")
 (define (tcp-blacklist builder)
  (builder
  "TCP"
- "BLACKLIST"
+ "BLACKLISTV4"
  (_ "Which IP(v4)s are not allowed to connect?")
  (nohelp)
  '()
  #t
- ""
+ "127.0.0.1;"
  '()
  'advanced))
 
 (define (tcp-whitelist builder)
  (builder
  "TCP"
- "WHITELIST"
+ "WHITELISTV4"
  (_ "Which IP(v4)s are allowed to connect? Leave empty to use the IP of your primary network interface.")
  (nohelp)
  '()
@@ -1194,19 +1194,19 @@ The size of the DSTORE QUOTA is specified in MB.")
 (define (udp-blacklist builder)
  (builder
  "UDP"
- "BLACKLIST"
+ "BLACKLISTV4"
  (_ "Which IPs are not allowed to connect?")
  (nohelp)
  '()
  #t
- ""
+ "127.0.0.1;"
  '()
  'advanced))
 
 (define (udp-whitelist builder)
  (builder
  "UDP"
- "WHITELIST"
+ "WHITELISTV4"
  (_ "Which IPs are allowed to connect? Leave empty to allow connections from any IP.")
  (nohelp)
  '()

@@ -536,6 +536,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
 #if TCP_SYNCNT
   static int zero = 0;
 #endif
+  static struct in6_addr zero6;
   const HostAddress *haddr;
   int sock;
   struct sockaddr_in soaddr4;
@@ -576,6 +577,11 @@ tcp_connect (const GNUNET_MessageHello * hello,
     }
   haddr = (const HostAddress *) &hello[1];
   available = ntohs (haddr->availability) & available_protocols;
+  if ( (0 != (available & VERSION_AVAILABLE_IPV6)) &&
+       (0 == memcmp(&zero6,
+		    &haddr->ipv6,
+		    sizeof(zero6))) )
+    available -= VERSION_AVAILABLE_IPV6; /* invalid */    
   if (available == (VERSION_AVAILABLE_IPV4 | VERSION_AVAILABLE_IPV6))
     {
       if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2) == 0)
