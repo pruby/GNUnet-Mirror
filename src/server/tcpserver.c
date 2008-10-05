@@ -334,6 +334,7 @@ startTCPServer ()
   struct sockaddr *serverAddr;
   socklen_t socklen;
   const int on = 1;
+  char * ch;
 
   listenerPort = getGNUnetPort ();
   if (listenerPort == 0)
@@ -354,7 +355,23 @@ startTCPServer ()
         }
       memset (&serverAddr4, 0, sizeof (serverAddr4));
       serverAddr4.sin_family = AF_INET;
-      serverAddr4.sin_addr.s_addr = htonl (INADDR_ANY);
+      ch = NULL;
+      GNUNET_GC_get_configuration_value_string (cfg,
+						"NETWORK",
+						"TRUSTED",
+						"127.0.0.0/8;", 
+						&ch);
+      if ( (0 == strcmp(ch, "127.0.0.0/8;")) ||
+	   (0 == strcmp(ch, "localhost;")) ||
+	   (0 == strcmp(ch, "127.0.0.1;")) )
+	{
+	  serverAddr4.sin_addr.s_addr = htonl (INADDR_LOOPBACK); 
+	}
+      else
+	{
+	  serverAddr4.sin_addr.s_addr = htonl (INADDR_ANY);
+	}
+      GNUNET_free(ch);
       serverAddr4.sin_port = htons (listenerPort);
       socklen = sizeof (serverAddr4);
       serverAddr = (struct sockaddr *) &serverAddr4;
@@ -363,7 +380,24 @@ startTCPServer ()
     {
       memset (&serverAddr6, 0, sizeof (serverAddr6));
       serverAddr6.sin6_family = AF_INET6;
+      ch = NULL;
+      GNUNET_GC_get_configuration_value_string (cfg,
+						"NETWORK",
+						"TRUSTED6",
+						"::1;", 
+						&ch);
+      if (0 == strcmp(ch, "::1;"))
+	{
+	  serverAddr6.sin6_addr = in6addr_loopback;
+	}
+      else
+	{
+	  serverAddr6.sin6_addr = in6addr_any;
+	}
+      GNUNET_free(ch);
       serverAddr6.sin6_port = htons (listenerPort);
+
+
       socklen = sizeof (serverAddr6);
       serverAddr = (struct sockaddr *) &serverAddr6;
     }

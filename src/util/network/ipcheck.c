@@ -399,20 +399,20 @@ GNUNET_check_ipv6_listed (const CIDR6Network * list,
   unsigned int j;
   struct in6_addr zero;
 
-  i = 0;
   if (list == NULL)
     return GNUNET_NO;
 
   memset (&zero, 0, sizeof (struct in6_addr));
-  while ((memcmp (&zero, &list[i].network, sizeof (struct in6_addr)) != 0) ||
-         (memcmp (&zero, &list[i].netmask, sizeof (struct in6_addr)) != 0))
+  i = 0;
+ NEXT:
+  while (memcmp (&zero, &list[i].network, sizeof (struct in6_addr)) != 0) 
     {
       for (j = 0; j < sizeof (struct in6_addr) / sizeof (int); j++)
         if (((((int *) ip)[j] & ((int *) &list[i].netmask)[j])) !=
             (((int *) &list[i].network)[j] & ((int *) &list[i].netmask)[j]))
           {
             i++;
-            continue;
+            goto NEXT;
           }
       return GNUNET_YES;
     }

@@ -95,10 +95,20 @@ getGNUnetPort (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                      _
-                     ("Could not find valid value for HOST in section NETWORK."));
+                     ("Could not find valid value for HOST in section NETWORK.\n"));
       return 2087;
     }
-  pos = strstr (res, ":");
+  if (res[0] == '[')
+    {
+      /* IPv6 */
+      pos = strstr (res, "]");
+      if (pos != NULL)
+	pos = strstr (pos, ":");	
+    }
+  else
+    {
+      pos = strstr (res, ":");
+    }
   if (pos == NULL)
     {
       GNUNET_free (res);
@@ -110,7 +120,7 @@ getGNUnetPort (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                      _
-                     ("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
+                     ("Syntax error in configuration entry HOST in section NETWORK: `%s'\n"),
                      pos);
       GNUNET_free (res);
       return 2087;
@@ -141,12 +151,28 @@ getGNUnetdHost (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                      _
-                     ("Could not find valid value for HOST in section NETWORK."));
+                     ("Could not find valid value for HOST in section NETWORK.\n"));
       return NULL;
     }
-  pos = strstr (res, ":");
-  if (pos != NULL)
-    *pos = '\0';
+  if (res[0] == '[')
+    {
+      /* IPv6 */
+      pos = strstr (res, "]");
+      if (pos != NULL)
+	{
+	  pos[0] = '\0';
+	  memmove(res,
+		  &res[1],
+		  strlen(&res[1]));
+	  pos[-1] = '\0';
+	}
+    }
+  else
+    { 
+      pos = strstr (res, ":");
+      if (pos != NULL)
+	*pos = '\0';
+    }
   return res;
 }
 
