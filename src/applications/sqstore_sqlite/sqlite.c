@@ -124,7 +124,10 @@ static GNUNET_Stats_ServiceAPI *stats;
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static unsigned int stat_size;
+
+#if DEBUG_SQLITE
 static unsigned int stat_mem;
+#endif
 
 static struct GNUNET_GE_Context *ectx;
 
@@ -1462,7 +1465,9 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
   if (stats)
     {
       stat_size = stats->create (gettext_noop ("# bytes in datastore"));
+#if DEBUG_SQLITE
       stat_mem = stats->create (gettext_noop ("# bytes allocated by SQLite"));
+#endif
     }
 
   api.getSize = &getSize;
