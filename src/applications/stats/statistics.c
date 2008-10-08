@@ -48,6 +48,8 @@
  */
 #define HAVE_SQSTATS GNUNET_NO
 
+#define HAVE_MEMSTATS GNUNET_NO
+
 /* *************** service *************** */
 
 /**
@@ -78,6 +80,10 @@ static struct GNUNET_Mutex *statLock;
  * The core API.
  */
 static GNUNET_CoreAPIForPlugins *coreAPI;
+
+#if HAVE_MEMSTATS
+extern volatile int GNUNET_memory_usage;
+#endif
 
 /**
  * Get a handle to a statistical entity.
@@ -213,6 +219,9 @@ static int stat_connected;
 #ifdef MINGW
 static int stat_handles;
 #endif
+#if HAVE_MEMSTATS
+static int stat_mem;
+#endif
 static GNUNET_Stats_ServiceAPI *stats;
 static GNUNET_CoreAPIForPlugins *myCoreAPI;
 
@@ -240,6 +249,9 @@ initializeStats ()
     = statHandle (gettext_noop ("# bytes of noise received"));
 #ifdef MINGW
   stat_handles = statHandle (gettext_noop ("# plibc handles"));
+#endif
+#if HAVE_MEMSTATS
+  stat_mem = statHandle ("# bytes dynamically allocated");
 #endif
 }
 
@@ -273,6 +285,9 @@ immediateUpdates ()
   statSet (stat_connected, coreAPI->p2p_connections_iterate (NULL, NULL));
 #ifdef MINGW
   statSet (stat_handles, plibc_get_handle_count ());
+#endif
+#if HAVE_MEMSTATS
+  statSet (stat_mem, GNUNET_memory_usage);
 #endif
 }
 

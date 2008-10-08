@@ -32,6 +32,12 @@
 #define INT_MAX 0x7FFFFFFF
 #endif
 
+#define RECORD_USAGE 0
+
+#if RECORD_USAGE
+volatile int GNUNET_memory_usage = 0;
+#endif
+
 /**
  * Allocate memory. Checks the return value, aborts if no more
  * memory is available.
@@ -61,12 +67,25 @@ GNUNET_xmalloc_unchecked_ (size_t size, const char *filename, int linenumber)
   void *result;
 
   GNUNET_GE_ASSERT_FL (NULL, size < INT_MAX, filename, linenumber);
+
+#if RECORD_USAGE
+  size += sizeof (size_t);
+#endif
+
   result = malloc (size);
   if (result == NULL)
     GNUNET_GE_DIE_STRERROR_FL (NULL,
                                GNUNET_GE_IMMEDIATE | GNUNET_GE_USER |
                                GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
                                "malloc", filename, linenumber);
+
+#if RECORD_USAGE
+  size -= sizeof (size_t);
+  *((size_t *) result) = size;
+  result += sizeof (size_t);
+  GNUNET_memory_usage += size;
+#endif
+
   memset (result, 0, size);     /* client code should not rely on this, though... */
   return result;
 }
@@ -87,6 +106,13 @@ void *
 GNUNET_xrealloc_ (void *ptr,
                   const size_t n, const char *filename, int linenumber)
 {
+#if RECORD_USAGE
+  ptr -= sizeof (size_t);
+  GNUNET_memory_usage = GNUNET_memory_usage - (*((size_t *) ptr)) + n;
+  *((size_t *) ptr) = n;
+  (*((size_t *) & n)) += sizeof (size_t);
+#endif
+
   ptr = realloc (ptr, n);
 
   if (!ptr)
@@ -94,6 +120,11 @@ GNUNET_xrealloc_ (void *ptr,
                                GNUNET_GE_IMMEDIATE | GNUNET_GE_USER |
                                GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
                                "realloc", filename, linenumber);
+
+#if RECORD_USAGE
+  ptr += sizeof (size_t);
+#endif
+
   return ptr;
 }
 
@@ -109,6 +140,12 @@ void
 GNUNET_xfree_ (void *ptr, const char *filename, int linenumber)
 {
   GNUNET_GE_ASSERT_FL (NULL, ptr != NULL, filename, linenumber);
+
+#if RECORD_USAGE
+  ptr -= sizeof (size_t);
+  GNUNET_memory_usage -= *((size_t *) ptr);
+#endif
+
   free (ptr);
 }
 
