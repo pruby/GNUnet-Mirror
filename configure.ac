@@ -71,7 +71,7 @@ case "$host_os" in
 *darwin* | *rhapsody* | *macosx*)
      AC_DEFINE_UNQUOTED(OSX,1,[This is an OS X system])
      CFLAGS="-no-cpp-precomp $CFLAGS"
-     LDFLAGS="-flat_namespace -undefined suppress $LDFLAGS"
+     LDFLAGS="-fno-common $LDFLAGS"
      AC_MSG_WARN([The VPN application cannot be compiled on your OS])
      build_target="macosx"
      DEFAULT_INTERFACE="\"en0\""
