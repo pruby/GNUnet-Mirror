@@ -283,7 +283,7 @@ build_package()
 		CC="${ARCH_CC}"
 		CXX="${ARCH_CXX}"
 		CPPFLAGS="${ARCH_CPPFLAGS}"
-		CFLAGS="${OPT_FLAGS} -no-cpp-precomp ${ARCH_CFLAGS}"
+		CFLAGS="${OPT_FLAGS} -no-cpp-precomp -fno-common ${ARCH_CFLAGS}"
 		CXXFLAGS="${CFLAGS}"
 		LDFLAGS="${ARCH_LDFLAGS}"
 		if ! ( cd "$1" && ./configure CC="${CC}"		\
