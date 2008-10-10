@@ -60,9 +60,9 @@ fetch_package()
 	if [ ! -e "$1.tar.bz2" ] && [ ! -e "$1.tar.gz" ]
 	then
 		echo "fetching $1..."
-		if ! ( curl -O --url "$2/$1.tar.bz2" )
+		if ! ( curl -f -L -O --url "$2/$1.tar.bz2" )
 		then
-			if ! ( curl -O --url "$2/$1.tar.gz" )
+			if ! ( curl -f -L -O --url "$2/$1.tar.gz" )
 			then
 				echo "error fetching $1"
 				exit 1
@@ -119,7 +119,7 @@ build_toolchain_package()
 			$2 &&						\
 		make install )
 	then
-		echo "error building $1 for ${ARCH_NAME}"
+		echo "error building $1 for toolchain"
 		build_retval=1
 	fi
 	unset CPPFLAGS
