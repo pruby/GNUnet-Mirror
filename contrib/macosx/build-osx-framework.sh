@@ -298,8 +298,9 @@ build_package()
 		then
 			echo "error building $1 for ${ARCH_NAME}"
 			build_retval=1
-			exit 1
 		fi
+		cp -v "$1/config.log" "${BUILD_DIR}/config.log-$1-${ARCH_NAME}"
+		cp -v "$1/config.h" "${BUILD_DIR}/config.h-$1-${ARCH_NAME}"
 		rm -rf "$1"
 		rm -v `find "${SDK_PATH}" -name "*.la"`
 		unset CC
@@ -419,6 +420,8 @@ build_gnunet()
 		then
 			build_retval=1
 		fi
+		cp -v config.log "${BUILD_DIR}/config.log-GNUnet-${ARCH_NAME}"
+		cp -v config.h "${BUILD_DIR}/config.h-GNUnet-${ARCH_NAME}"
 		unset CPPFLAGS
 		unset CFLAGS
 		unset CXXFLAGS
