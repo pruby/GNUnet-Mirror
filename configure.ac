@@ -870,6 +870,7 @@ AC_SUBST(EXT_LIB_PATH)
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
 contrib/Makefile
+contrib/macosx/Info.plist
 doc/Makefile
 doc/man/Makefile
 src/Makefile
