@@ -568,6 +568,19 @@ copy_file_to_framework()
 	fi
 }
 
+fill_framework_revision()
+{
+	local dst_file="${FINAL_FW_DIR}/$1"
+	if [ -e "$dst_file" ]
+	then
+		if ! ( sed -e "s/@FRAMEWORK_REVISION@/${FW_VERSION_REV}/g" -i "" "$dst_file" )
+		then
+			echo "sed error"
+			exit 1
+		fi
+	fi
+}
+
 make_framework_link()
 {
 	local link_target="$1"
@@ -602,6 +615,13 @@ FW_DIR="${FW_BASE_DIR}/${FW_VERSION_DIR}"
 FINAL_FW_DIR="${FINAL_FW_BASE_DIR}/${FW_VERSION_DIR}"
 ORIG_DIR=$(pwd)
 old_umask=$(umask)
+
+if [ ! -n "$1" ]
+then
+  FW_VERSION_REV="1"
+else
+  FW_VERSION_REV="$1"
+fi  
 
 # prepare build env
 fetch_all_packages
@@ -683,8 +703,9 @@ do
 	install_file_to_framework "$tfn"
 done
 cd "${ORIG_DIR}"
-#copy_file_to_framework "./contrib/macosx/Info.plist" "Resources/Info.plist"
-#copy_file_to_framework "./contrib/macosx/English.lproj/InfoPlist.strings" "Resources/English.lproj/InfoPlist.strings"
+copy_file_to_framework "./contrib/macosx/Info.plist" "Resources/Info.plist"
+fill_framework_revision "Resources/Info.plist"
+copy_file_to_framework "./contrib/macosx/English.lproj/InfoPlist.strings" "Resources/English.lproj/InfoPlist.strings"
 make_framework_link "lib/libgnunetutil.dylib" "GNUnet"
 make_framework_link "lib" "Libraries"
 make_framework_link "lib/GNUnet" "PlugIns"
