@@ -362,6 +362,7 @@ build_dependencies()
 			ac_cv_lib_readline_readline=no	\
 			ac_cv_sys_restartable_syscalls=yes	\
 			guile_cv_pthread_attr_getstack_works=no	\
+			guile_cv_localtime_cache=no		\
 			--prefix="${FW_DIR}"		\
 			--disable-shared		\
 			--enable-static"
@@ -390,6 +391,10 @@ build_gnunet()
 			LDFLAGS="${LDFLAGS}"			\
 			"${ARCH_HOSTSETTING}"			\
 			gt_cv_func_gnugettext1_libintl=yes	\
+			ac_cv_func_memcmp_working=yes		\
+			ac_cv_func_stat_empty_string_bug=no	\
+			ac_cv_func_chown_works=yes		\
+			ac_cv_func_closedir_void=no		\
 			--prefix="${FW_DIR}"			\
 			--enable-shared				\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
