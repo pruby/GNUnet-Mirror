@@ -10,10 +10,19 @@ dnl the same distribution terms as the rest of that program.
 # Note that the program intentionally causes a SIGBUS (so you may
 # see some message along those lines on the console).
 AC_DEFUN([AC_UNALIGNED_64_ACCESS],
-[AC_RUN_IFELSE(AC_LANG_PROGRAM([[struct S { int a,b,c;};]],
+[AC_CACHE_CHECK([whether unaligned 64-bit access works],
+ ac_cv_unaligned_64_access, 
+ [
+ AC_RUN_IFELSE(AC_LANG_PROGRAM([[struct S { int a,b,c;};]],
                                [[struct S s = {0,0,0}; long long * p = &s.b; 
                                  long long x = *p; return (int) x*x;]]),
- AC_DEFINE([HAVE_UNALIGNED_64_ACCESS], 1, [We can access-64 bit values that are only 32-bit aligned]),
- AC_DEFINE([HAVE_UNALIGNED_64_ACCESS], 0),
- AC_DEFINE([HAVE_UNALIGNED_64_ACCESS], 0))
+ ac_cv_unaligned_64_access=yes,
+ ac_cv_unaligned_64_access=no,
+ ac_cv_unaligned_64_access=no)
+ ])
+ case "$ac_cv_unaligned_64_access" in
+  *yes) value=1;;
+  *) value=0;;
+ esac
+ AC_DEFINE_UNQUOTED([HAVE_UNALIGNED_64_ACCESS], $value, [We can access-64 bit values that are only 32-bit aligned])
 ])
