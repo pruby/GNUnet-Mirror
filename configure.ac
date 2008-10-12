@@ -829,7 +829,8 @@ AC_ARG_WITH(guile,
       yes)
         AC_CHECK_HEADERS(libguile.h,
           AC_CHECK_LIB([guile], [scm_c_define_gsubr],
-            guile=1))
+            guile=1, [],
+            -lgmp $LIBLTDL))
         ;;
       *)
         LDFLAGS="-L$with_guile/lib $LDFLAGS"
@@ -837,19 +838,20 @@ AC_ARG_WITH(guile,
         AC_CHECK_HEADERS(libguile.h,
           AC_CHECK_LIB([guile], [scm_c_define_gsubr],
             EXT_LIB_PATH="-L$with_guile/lib $EXT_LIB_PATH"
-            guile=1))
+            guile=1, [],
+            -lgmp $LIBLTDL))
         ;;
     esac
    ],
    [AC_MSG_RESULT([--with-guile not specified])
     AC_CHECK_HEADERS(libguile.h,
      AC_CHECK_LIB([guile], [scm_c_define_gsubr],
-      guile=1))])
+      guile=1, [], -lgmp $LIBLTDL))])
 
 if test "$guile" = 1
 then
  AC_CHECK_LIB([guile], [scm_init_guile], [],
-    	AC_MSG_ERROR([Guile doesn't provide scm_init_guile(). Please report to bug-gnunet@gnu.org]))
+    	AC_MSG_ERROR([Guile doesn't provide scm_init_guile(). Please report to bug-gnunet@gnu.org]), -lgmp $LIBLTDL)
  AC_DEFINE_UNQUOTED([HAVE_GUILE], 1, [We have GUILE])
 else
  AC_DEFINE_UNQUOTED([HAVE_GUILE], 0, [We do NOT have GUILE])
