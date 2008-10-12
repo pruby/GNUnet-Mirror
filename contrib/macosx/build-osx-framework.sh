@@ -370,7 +370,7 @@ build_dependencies()
 }
 
 #
-# build libextractor
+# build GNUnet
 #
 build_gnunet()
 {
@@ -599,7 +599,7 @@ make_framework_version_links()
 		ln -sf "${FW_VERSION}" "Current" && \
 		cd "${FINAL_FW_BASE_DIR}" && \
 		ln -sf "Versions/Current/Headers" "Headers" && \
-		ln -sf "Versions/Current/Extractor" "Extractor" && \
+		ln -sf "Versions/Current/GNUnet" "GNUnet" && \
 		ln -sf "Versions/Current/PlugIns" "PlugIns" && \
 		ln -sf "Versions/Current/Resources" "Resources" )
 	then
@@ -608,8 +608,7 @@ make_framework_version_links()
 	fi
 }
 
-FW_VERSION=999 
-#`grep "LIB_VERSION_CURRENT=[0123456789]*" ./configure | cut -d= -f2`
+FW_VERSION=`grep "PACKAGE_VERSION=[0123456789\.]*" ./configure | cut -d= -f2 | sed "s/\'//g"`
 FW_VERSION_DIR="Versions/${FW_VERSION}"
 FW_DIR="${FW_BASE_DIR}/${FW_VERSION_DIR}"
 FINAL_FW_DIR="${FINAL_FW_BASE_DIR}/${FW_VERSION_DIR}"
@@ -629,7 +628,7 @@ umask 022
 prepare_sdk
 build_toolchain
 
-# build deps and libextractor for all archs
+# build deps and GNUnet for all archs
 for arch in $BUILD_ARCHS_LIST
 do
 	ARCH_NAME=$arch
@@ -710,7 +709,7 @@ make_framework_link "lib/libgnunetutil.dylib" "GNUnet"
 make_framework_link "lib" "Libraries"
 make_framework_link "lib/GNUnet" "PlugIns"
 make_framework_link "include" "Headers"
-#make_framework_version_links
+make_framework_version_links
 
 umask ${old_umask}
 echo "done."
