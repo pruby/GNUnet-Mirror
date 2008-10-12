@@ -395,6 +395,7 @@ build_gnunet()
 			ac_cv_func_stat_empty_string_bug=no	\
 			ac_cv_func_chown_works=yes		\
 			ac_cv_func_closedir_void=no		\
+			ac_cv_unaligned_64_access=yes		\
 			--prefix="${FW_DIR}"			\
 			--enable-shared				\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
@@ -698,6 +699,18 @@ do
 	install_file_to_framework "$tfn"
 done
 for tfn in $(find ./share/locale -name 'GNUnet*')
+do
+	install_file_to_framework "$tfn"
+done
+for tfn in share/guile/1.8/ice-9/*.scm
+do
+	install_file_to_framework "$tfn"
+done
+for tfn in share/guile/1.8/ice-9/debugger/*.scm
+do
+	install_file_to_framework "$tfn"
+done
+for tfn in share/guile/1.8/ice-9/debugging/*.scm
 do
 	install_file_to_framework "$tfn"
 done
