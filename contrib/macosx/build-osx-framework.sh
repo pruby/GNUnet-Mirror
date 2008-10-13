@@ -77,6 +77,7 @@ fetch_package()
 fetch_all_packages()
 {
 #	fetch_package "${GNUMAKE_NAME}" "${GNUMAKE_URL}"
+	fetch_package "${ADNS_NAME}" "${ADNS_URL}"
 	fetch_package "${GETTEXT_NAME}" "${GETTEXT_URL}"
 	fetch_package "${GMP_NAME}" "${GMP_URL}"
 	fetch_package "${LIBGPG_ERROR_NAME}" "${LIBGPG_ERROR_URL}"
