@@ -737,7 +737,7 @@ copy_file_to_framework "./contrib/macosx/English.lproj/InfoPlist.strings" "Resou
 make_framework_link "lib/libgnunetutil.dylib" "GNUnet"
 make_framework_link "lib" "Libraries"
 make_framework_link "lib/GNUnet" "PlugIns"
-make_framework_link "include" "Headers"
+make_framework_link "include/GNUnet" "Headers"
 make_framework_version_links
 
 umask ${old_umask}
