@@ -43,6 +43,8 @@ LIBGCRYPT_URL=ftp://ftp.gnupg.org/gcrypt/libgcrypt
 LIBGCRYPT_NAME=libgcrypt-1.4.3
 GUILE_URL=ftp://ftp.gnu.org/pub/gnu/guile
 GUILE_NAME=guile-1.8.5
+LIBMICROHTTPD_URL=ftp://ftp.cs.tu-berlin.de/pub/gnu/libmicrohttpd
+LIBMICROHTTPD_NAME=libmicrohttpd-0.3.1
 
 export PATH=${BUILD_DIR}/toolchain/bin:/usr/local/bin:/bin:/sbin:/usr/bin:/usr/sbin
 
@@ -83,6 +85,7 @@ fetch_all_packages()
 	fetch_package "${LIBGPG_ERROR_NAME}" "${LIBGPG_ERROR_URL}"
 	fetch_package "${LIBGCRYPT_NAME}" "${LIBGCRYPT_URL}"
 	fetch_package "${GUILE_NAME}" "${GUILE_URL}"
+	fetch_package "${LIBMICROHTTPD_NAME}" "${LIBMICROHTTPD_URL}"
 }
 
 # $1 = package name
@@ -376,6 +379,12 @@ build_dependencies()
 			--disable-shared		\
 			--enable-static"
 
+	prepare_package "${LIBMICROHTTPD_NAME}"
+	build_package "${LIBMICROHTTPD_NAME}"		\
+			"${ARCH_HOSTSETTING}		\
+			--prefix="${FW_DIR}"		\
+			--disable-shared		\
+			--enable-static"
 }
 
 #
