@@ -756,7 +756,7 @@ fi
 AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
 
 # check for gettext
-AM_GNU_GETTEXT_VERSION([0.13.1])
+AM_GNU_GETTEXT_VERSION([0.16.1])
 AM_GNU_GETTEXT([external])
 
 # check for iconv
