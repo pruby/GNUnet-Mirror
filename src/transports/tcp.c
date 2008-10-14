@@ -633,9 +633,20 @@ tcp_connect (const GNUNET_MessageHello * hello,
   i = CONNECT (sock, soaddr, soaddrlen);
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
+      char buf[INET6_ADDRSTRLEN];
       GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
                               GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
                               GNUNET_GE_USER | GNUNET_GE_BULK, "connect");
+
+      GNUNET_GE_LOG (coreAPI->ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
+		     GNUNET_GE_USER | GNUNET_GE_BULK, 
+		     "IP address used was `%s'\n",
+		     inet_ntop(soaddr->sa_family,
+			       soaddr,
+			       buf,
+			       sizeof(buf)));
+
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
