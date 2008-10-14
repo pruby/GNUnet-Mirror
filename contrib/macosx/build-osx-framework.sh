@@ -45,6 +45,8 @@ GUILE_URL=ftp://ftp.gnu.org/pub/gnu/guile
 GUILE_NAME=guile-1.8.5
 LIBMICROHTTPD_URL=ftp://ftp.cs.tu-berlin.de/pub/gnu/libmicrohttpd
 LIBMICROHTTPD_NAME=libmicrohttpd-0.3.1
+MYSQL_URL=http://mysql.mirrors.webname.dk/Downloads/MySQL-5.0
+MYSQL_NAME=mysql-5.0.67
 
 export PATH=${BUILD_DIR}/toolchain/bin:/usr/local/bin:/bin:/sbin:/usr/bin:/usr/sbin
 
@@ -86,6 +88,7 @@ fetch_all_packages()
 	fetch_package "${LIBGCRYPT_NAME}" "${LIBGCRYPT_URL}"
 	fetch_package "${GUILE_NAME}" "${GUILE_URL}"
 	fetch_package "${LIBMICROHTTPD_NAME}" "${LIBMICROHTTPD_URL}"
+	fetch_package "${MYSQL_NAME}" "${MYSQL_URL}"
 }
 
 # $1 = package name
@@ -385,6 +388,20 @@ build_dependencies()
 			--prefix="${FW_DIR}"		\
 			--disable-shared		\
 			--enable-static"
+
+	prepare_package "${MYSQL_NAME}"
+	build_package "${MYSQL_NAME}"			\
+			"${ARCH_HOSTSETTING}		\
+			ac_cv_sys_restartable_syscalls=yes	\
+			ac_cv_conv_longlong_to_float=yes	\
+			--prefix="${FW_DIR}"		\
+			--with-extra-charsets=complex	\
+			--enable-thread-safe-client	\
+			--enable-local-infile		\
+			--without-server		\
+			--with-pic			\
+			--disable-shared		\
+			--enable-static"
 }
 
 #
@@ -418,6 +435,8 @@ build_gnunet()
 			--enable-shared				\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
 			--with-libgcrypt-prefix=${SDK_PATH}/${FW_DIR}	\
+			--with-mysql=${SDK_PATH}/${FW_DIR}	\
+			--disable-mysql-version-check		\
 			--with-libiconv-prefix=${SDK_PATH}/usr )
 		then
 			build_retval=1
