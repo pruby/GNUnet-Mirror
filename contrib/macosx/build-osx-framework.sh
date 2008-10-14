@@ -158,12 +158,12 @@ build_toolchain()
 	fi
 	if [ ! -e "${BUILD_DIR}/toolchain/lib/libgmp.dylib" ]
 	then
-		build_toolchain_package "${GMP_NAME}"	\
+		build_toolchain_package "${GMP_NAME}"		\
 			"ABI=32 --enable-shared"
 	fi
 	if [ ! -e "${BUILD_DIR}/toolchain/bin/guile" ]
 	then
-		build_toolchain_package "${GUILE_NAME}"	\
+		build_toolchain_package "${GUILE_NAME}"		\
 			"ac_cv_lib_readline_readline=no"
 	fi
 }
@@ -401,19 +401,19 @@ build_gnunet()
 		CPPFLAGS="${ARCH_CPPFLAGS}"
 		CXXFLAGS="${CFLAGS}"
 		LDFLAGS="${ARCH_LDFLAGS}"
-		if ! ( make clean && ./configure CC="${ARCH_CC}"	\
+		if ! ( CC="${ARCH_CC}"				\
 			CXX="${ARCH_CXX}"			\
 			CPPFLAGS="${CPPFLAGS}"			\
 			CFLAGS="${CFLAGS}"			\
 			CXXFLAGS="${CXXFLAGS}"			\
 			LDFLAGS="${LDFLAGS}"			\
-			"${ARCH_HOSTSETTING}"			\
 			gt_cv_func_gnugettext1_libintl=yes	\
 			ac_cv_func_memcmp_working=yes		\
 			ac_cv_func_stat_empty_string_bug=no	\
 			ac_cv_func_chown_works=yes		\
 			ac_cv_func_closedir_void=no		\
 			ac_cv_unaligned_64_access=yes		\
+			./configure "${ARCH_HOSTSETTING}"	\
 			--prefix="${FW_DIR}"			\
 			--enable-shared				\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
@@ -430,7 +430,7 @@ build_gnunet()
 		# add linking to libiconv where libintl is used
 		find ./ -type f -name "Makefile" |	\
 			xargs perl -pi -w -e "s#-lintl#-lintl -liconv#g;"
-		if ! ( test $build_retval = 0 &&			\
+		if ! ( test $build_retval = 0 && make clean &&		\
 			make DESTDIR="${SDK_PATH}" install &&		\
 			touch "${BUILD_DIR}/built-GNUnet-${ARCH_NAME}" )
 		then
@@ -625,7 +625,7 @@ make_framework_version_links()
 	fi
 }
 
-FW_VERSION=`grep "PACKAGE_VERSION=[0123456789\.]*" ./configure | cut -d= -f2 | sed "s/\'//g"`
+FW_VERSION=`grep "PACKAGE_VERSION=[0123456789]*" ./configure | cut -d= -f2 | sed "s/\'//g"`
 FW_VERSION_DIR="Versions/${FW_VERSION}"
 FW_DIR="${FW_BASE_DIR}/${FW_VERSION_DIR}"
 FINAL_FW_DIR="${FINAL_FW_BASE_DIR}/${FW_VERSION_DIR}"
