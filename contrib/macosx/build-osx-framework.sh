@@ -394,6 +394,11 @@ build_dependencies()
 			"${ARCH_HOSTSETTING}		\
 			ac_cv_sys_restartable_syscalls=yes	\
 			ac_cv_conv_longlong_to_float=yes	\
+			ac_cv_c_stack_direction=-1		\
+			ac_cv_func_utime_null=yes		\
+			ac_cv_in_addr_t=yes			\
+			ac_cv_sizeof_off_t=8			\
+			ac_cv_uint=yes			\
 			--prefix="${FW_DIR}"		\
 			--with-extra-charsets=complex	\
 			--enable-thread-safe-client	\
