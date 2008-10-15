@@ -246,7 +246,7 @@ AC_CHECK_LIB([kstat],[kstat_open])
 extractor=0
 AC_MSG_CHECKING(for libextractor)
 AC_ARG_WITH(extractor,
-   [  --with-extractor=PFX    Base of libextractor installation],
+   [  --with-extractor=PFX    base of libextractor installation],
    [AC_MSG_RESULT([$with_extractor])
     case $with_extractor in
       no)
@@ -281,7 +281,7 @@ LIBS=$SAVE_LIBS
 gmp=0
 AC_MSG_CHECKING(for libgmp)
 AC_ARG_WITH(gmp,
-   [  --with-gmp=PFX    Base of libgmp installation],
+   [  --with-gmp=PFX          base of libgmp installation],
    [AC_MSG_RESULT([$with_gmp])
     case $with_gmp in
       no)
@@ -317,7 +317,7 @@ SAVE_CPPFLAGS=$CPPFLAGS
 sqlite=false
 AC_MSG_CHECKING(for SQLite)
 AC_ARG_WITH(sqlite,
-  [  --with-sqlite=PFX   Base of SQLite installation],
+  [  --with-sqlite=PFX       base of SQLite installation],
   [AC_MSG_RESULT("$with_sqlite")
    case $with_sqlite in
    no)
@@ -371,7 +371,7 @@ SAVE_LDFLAGS=$LDFLAGS
 SAVE_CPPFLAGS=$CPPFLAGS
 AC_MSG_CHECKING(for mysql)
 AC_ARG_WITH(mysql,
-  [  --with-mysql=PFX   Base of mysql installation],
+  [  --with-mysql=PFX        base of MySQL installation],
   [AC_MSG_RESULT("$with_mysql")
    if test "$with_mysql" != "no"
    then
@@ -402,7 +402,7 @@ AC_SUBST(MYSQL_LDFLAGS)
 AC_SUBST(MYSQL_CPPFLAGS)
 
 # additional version check for mysql
-AC_ARG_ENABLE(mysql-version-check, [  --disable-mysql-version-check   do not check mysql version],, enable_mysql_version_check=yes)
+AC_ARG_ENABLE(mysql-version-check, [  --disable-mysql-version-check  do not check MySQL version],, enable_mysql_version_check=yes)
 if test "$mysql" = "true" -a "x$enable_mysql_version_check" = "xyes"
 then
   AC_MSG_CHECKING(mysql version)
@@ -441,7 +441,7 @@ LIBS="-lm $LIBS"
 AC_CHECK_LIB([ncursesw],[wmove])
 AC_MSG_CHECKING([for dialog 1.0-20051207])
 AC_ARG_WITH(dialog,
-   [  --with-dialog=PFX    Base of dialog installation],
+   [  --with-dialog=PFX       base of dialog installation],
    [AC_MSG_RESULT([$with_dialog])
     case $with_dialog in
       no)
@@ -471,7 +471,7 @@ AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 
 cdialog=0
 AC_ARG_WITH(cdialog,
-   [  --with-cdialog=PFX    Base of cdialog installation],
+   [  --with-cdialog=PFX      base of cdialog installation],
    [AC_MSG_RESULT([$with_cdialog])
     case $with_cdialog in
       no)
@@ -508,7 +508,7 @@ AC_LANG_PUSH([C++])
 qt=0
 AC_MSG_CHECKING(for Qt)
 AC_ARG_WITH(qt,
-   [  --with-qt=PFX    Base of Qt installation],
+   [  --with-qt=PFX           base of Qt installation],
    [AC_MSG_RESULT([$with_qt])
     case $with_qt in
       no)
@@ -633,7 +633,7 @@ CPPFLAGS=$SAVE_CPPFLAGS
 lmhd=0
 AC_MSG_CHECKING([for libmicrohttpd])
 AC_ARG_WITH(microhttpd,
-   [  --with-microhttpd=PFX    Base of libmicrohttpd installation],
+   [  --with-microhttpd=PFX   base of libmicrohttpd installation],
    [AC_MSG_RESULT([$with_microhttpd])
     case $with_microhttpd in
       no)
@@ -672,7 +672,7 @@ LIBS=$SAVE_LIBS
 esmtp=0
 AC_MSG_CHECKING([for libesmtp])
 AC_ARG_WITH(esmtp,
-   [  --with-esmtp=PFX    Base of libesmtp installation],
+   [  --with-esmtp=PFX        base of libesmtp installation],
    [AC_MSG_RESULT([$with_esmtp])
     case $with_esmtp in
       no)
@@ -705,7 +705,7 @@ LIBS=$SAVE_LIBS
 c_ares=0
 AC_MSG_CHECKING([for c-ares])
 AC_ARG_WITH(c-ares,
-   [  --with-c-ares=PFX    Base of c-ares installation],
+   [  --with-c-ares=PFX       base of c-ares installation],
    [AC_MSG_RESULT([$with_c_ares])
     case $with_c_ares in
       no)
@@ -739,7 +739,7 @@ LIBS=$SAVE_LIBS
 adns=0
 AC_MSG_CHECKING([for GNU adns])
 AC_ARG_WITH(adns,
-   [  --with-adns=PFX    Base of GNU adns installation],
+   [  --with-adns=PFX         base of GNU adns installation],
    [AC_MSG_RESULT([$with_adns])
     case $with_adns in
       no)
@@ -854,7 +854,7 @@ AC_SUBST(EXT_LIBS)
 guile=0
 AC_MSG_CHECKING(for guile 1.8)
 AC_ARG_WITH(guile,
-   [  --with-guile=PFX    Base of guile installation],
+   [  --with-guile=PFX        base of guile installation],
    [AC_MSG_RESULT([$with_guile])
     case $with_guile in
       no)
