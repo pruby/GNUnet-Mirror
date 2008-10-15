@@ -68,7 +68,7 @@ static struct GNUNET_CommandLineOption gnunetpeerinfoOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
-#if HAVE_ADNS
+#if HAVE_ADNS | HAVE_C_ARES
 /**
  * Prepass just to resolve DNS entries.
  */
@@ -231,7 +231,7 @@ main (int argc, char *const *argv)
     {
       if (no_resolve != GNUNET_YES)
         {
-#if HAVE_ADNS
+#if HAVE_ADNS | HAVE_C_ARES
           identity->forEachHost (0,     /* no timeout */
                                  &resolveHostInfo, NULL);
           /* give GNU ADNS time to resolve... */
