@@ -701,10 +701,42 @@ AC_DEFINE_UNQUOTED([HAVE_ESMTP], $esmtp, [We have libesmtp])
 # restore LIBS
 LIBS=$SAVE_LIBS
 
+# c-ares (asynch dns)
+c_ares=0
+AC_MSG_CHECKING([for c-ares])
+AC_ARG_WITH(c-ares,
+   [  --with-c-ares=PFX    Base of c-ares installation],
+   [AC_MSG_RESULT([$with_c_ares])
+    case $with_c_ares in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(ares.h,
+          AC_CHECK_LIB([cares], [ares_process_fd],
+            c_ares=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_c_ares/lib $LDFLAGS"
+        CPPFLAGS="-I$with_c_ares/include $CPPFLAGS"
+        AC_CHECK_HEADERS(ares.h,
+          AC_CHECK_LIB([cares], [ares_process_fd],
+            EXT_LIB_PATH="-L$with_c_ares/lib $EXT_LIB_PATH"
+              c_ares=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-c-ares not specified])
+    AC_CHECK_HEADERS(ares.h,
+      AC_CHECK_LIB([cares], [ares_process_fd],
+          c_ares=1))])
+
+AM_CONDITIONAL(HAVE_C_ARES, test x$c_ares = x1)
+AC_DEFINE_UNQUOTED([HAVE_C_ARES], $c_ares, [We have c-ares])
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # GNU adns
 adns=0
-AC_CHECK_LIB([adns],[adns_init])
 AC_MSG_CHECKING([for GNU adns])
 AC_ARG_WITH(adns,
    [  --with-adns=PFX    Base of GNU adns installation],
@@ -998,9 +1030,9 @@ then
  AC_MSG_NOTICE([WARNING: Guile not found, gnunet-setup will not be installed.])
 fi
 
-if test "$adns" != 1
+if test "$adns" != 1 -a "$c_ares" != 1
 then
- AC_MSG_NOTICE([WARNING: GNU adns not found, will use synchronous DNS resolution.])
+ AC_MSG_NOTICE([WARNING: Asynchronous resolver (adns or c-ares) not found, will use synchronous DNS resolution.])
 fi
 
 AC_MSG_NOTICE([********************************************

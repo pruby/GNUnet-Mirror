@@ -28,7 +28,9 @@
 #include "platform.h"
 #include "gnunet_util_network.h"
 
-#if HAVE_ADNS
+#if HAVE_C_ARES
+#include <ares.h>
+#elif HAVE_ADNS
 #include <adns.h>
 #endif
 
@@ -41,7 +43,9 @@ struct IPCache
   GNUNET_CronTime last_refresh;
   GNUNET_CronTime last_request;
   unsigned int salen;
-#if HAVE_ADNS
+#if HAVE_C_ARES
+  int posted;
+#elif HAVE_ADNS
   int posted;
   adns_query query;
 #endif
@@ -51,13 +55,95 @@ static struct IPCache *head;
 
 static struct GNUNET_Mutex *lock;
 
-#if HAVE_ADNS
+#if HAVE_C_ARES
+static int ar_init;
+
+static ares_channel ar_channel;
+#elif HAVE_ADNS
 static int a_init;
 
 static adns_state a_state;
 #endif
 
-#if HAVE_ADNS
+#if HAVE_C_ARES
+static void ar_callback(void *arg, int status, int timeouts, 
+  struct hostent *ent)
+{
+  struct IPCache *cache = (struct IPCache *)arg;
+
+  if (cache == NULL)
+    return;
+
+  if (status == ARES_SUCCESS && ent != NULL)
+    cache->addr = GNUNET_strdup (ent->h_name);
+
+  cache->posted = GNUNET_NO;
+}
+
+static void
+ar_resolve (struct IPCache *cache)
+{
+  int socks[ARES_GETSOCK_MAXNUM];
+  int sockmask;
+  int i;
+  int c;
+
+  if (ar_init == 0)
+    {
+      ar_init = 1;
+      ares_init (&ar_channel);
+    }
+
+  if (cache->posted == GNUNET_NO)
+    {
+      switch (cache->sa->sa_family)
+        {
+        case AF_INET:
+          ares_gethostbyaddr (ar_channel, 
+                              &((struct sockaddr_in *) cache->sa)->sin_addr,
+                              sizeof (struct in_addr), AF_INET,
+                              ar_callback, cache);
+          cache->posted = GNUNET_YES;
+          break;
+        case AF_INET6:
+          ares_gethostbyaddr (ar_channel,
+                              &((struct sockaddr_in6 *) cache->sa)->sin6_addr,
+                              sizeof (struct in6_addr), AF_INET6,
+                              ar_callback, cache);
+          cache->posted = GNUNET_YES;
+          break;
+        default:
+          break;
+        }
+    }
+
+  sockmask = ares_getsock(ar_channel, socks, ARES_GETSOCK_MAXNUM);
+  c = 0;
+  for(i = 0; i < ARES_GETSOCK_MAXNUM; i++)
+    {
+      int r, w;
+
+      r = w = 0;
+      if(ARES_GETSOCK_READABLE(sockmask, i))
+        r = 1; 
+      if(ARES_GETSOCK_WRITABLE(sockmask, i)) 
+        w = 1;
+      if(r != 0 || w != 0)
+        {
+          ares_process_fd(ar_channel,
+                          r != 0 ? socks[i] : ARES_SOCKET_BAD,
+                          w != 0 ? socks[i] : ARES_SOCKET_BAD);
+          c++;
+        }
+      else
+        break;
+    }
+
+  /* if ares_process_fd wasn't called above, call here to process time-outs */
+  if (c == 0)
+    ares_process_fd(ar_channel, ARES_SOCKET_BAD,ARES_SOCKET_BAD);
+}
+#elif HAVE_ADNS
 static void
 adns_resolve (struct IPCache *cache)
 {
@@ -137,7 +223,13 @@ gethostbyaddr_resolve (struct IPCache *cache)
 static void
 cache_resolve (struct IPCache *cache)
 {
-#if HAVE_ADNS
+#if HAVE_C_ARES
+  if (cache->sa->sa_family == AF_INET || cache->sa->sa_family == AF_INET6)
+    {
+      ar_resolve (cache);
+      return;
+    }
+#elif HAVE_ADNS
   if (cache->sa->sa_family == AF_INET)
     {
       adns_resolve (cache);
@@ -160,7 +252,7 @@ resolve (const struct sockaddr *sa, unsigned int salen)
   struct IPCache *ret;
 
   ret = GNUNET_malloc (sizeof (struct IPCache));
-#if HAVE_ADNS
+#if HAVE_ADNS | HAVE_C_ARES
   ret->posted = GNUNET_NO;
 #endif
   ret->next = head;
@@ -239,7 +331,10 @@ GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
     {
       if (cache->last_request + 60 * GNUNET_CRON_MINUTES < now)
         {
-#if HAVE_ADNS
+#if HAVE_C_ARES
+          if (cache->posted == GNUNET_YES) /* ares can't cancel single reqs */
+            continue;
+#elif HAVE_ADNS
           if (cache->posted == GNUNET_YES)
             {
               adns_cancel (cache->query);
@@ -277,7 +372,7 @@ GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
           cache->salen = 0;
           cache_resolve (cache);
         }
-#if HAVE_ADNS
+#if HAVE_ADNS | HAVE_C_ARES
       if (cache->posted == GNUNET_YES)
         {
           cache_resolve (cache);
@@ -578,10 +673,18 @@ void __attribute__ ((constructor)) GNUNET_dns_ltdl_init ()
 void __attribute__ ((destructor)) GNUNET_dns_ltdl_fini ()
 {
   struct IPCache *pos;
+
+#if HAVE_C_ARES
+  if (ar_init != 0)
+    {
+      ar_init = 0;
+      ares_destroy (ar_channel);
+    }
+#endif
   while (head != NULL)
     {
       pos = head->next;
-#if HAVE_ADNS
+#if HAVE_ADNS & !HAVE_C_ARES
       if (head->posted == GNUNET_YES)
         {
           adns_cancel (head->query);
@@ -593,7 +696,7 @@ void __attribute__ ((destructor)) GNUNET_dns_ltdl_fini ()
       GNUNET_free (head);
       head = pos;
     }
-#if HAVE_ADNS
+#if HAVE_ADNS & !HAVE_C_ARES
   if (a_init != 0)
     {
       a_init = 0;
