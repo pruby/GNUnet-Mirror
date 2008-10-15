@@ -333,7 +333,11 @@ GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
         {
 #if HAVE_C_ARES
           if (cache->posted == GNUNET_YES) /* ares can't cancel single reqs */
-            continue;
+            {
+              prev = cache;
+              cache = cache->next;
+              continue;
+            }
 #elif HAVE_ADNS
           if (cache->posted == GNUNET_YES)
             {
