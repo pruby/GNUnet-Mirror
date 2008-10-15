@@ -124,7 +124,7 @@ shutdownHandler (struct GNUNET_ClientHandle *client,
     }
   GNUNET_GE_LOG (NULL,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-                 "shutdown request accepted from client\n");
+                 "Shutdown request from client accepted.\n");
   ret = GNUNET_CORE_cs_send_result_to_client (client, GNUNET_OK);
   GNUNET_CORE_shutdown (cfg, 0);
   return ret;
@@ -191,7 +191,7 @@ select_accept_handler (void *ah_cls,
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                         "Rejected connection from untrusted client");
+                         "Rejected connection from untrusted client\n");
           return NULL;
         }
     }
@@ -200,7 +200,12 @@ select_accept_handler (void *ah_cls,
       a4 = (struct sockaddr_in *) addr;
       memcpy (&ip4, &a4->sin_addr, sizeof (struct in_addr));
       if (!isWhitelisted4 (&ip4))
-        return NULL;
+	{
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                         "Rejected connection from untrusted client\n");
+	  return NULL;
+	}
     }
   else
     {
