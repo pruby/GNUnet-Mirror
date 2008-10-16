@@ -33,6 +33,8 @@ GNUMAKE_URL=http://ftp.gnu.org/pub/gnu/make
 GNUMAKE_NAME=make-3.81
 ADNS_URL=ftp://ftp.chiark.greenend.org.uk/users/ian/adns/
 ADNS_NAME=adns-1.4
+C_ARES_URL=http://daniel.haxx.se/projects/c-ares
+C_ARES_NAME=c-ares-1.5.3
 GETTEXT_URL=ftp://ftp.gnu.org/gnu/gettext
 GETTEXT_NAME=gettext-0.16.1
 GMP_URL=ftp://ftp.gmplib.org/pub
@@ -82,6 +84,7 @@ fetch_all_packages()
 {
 #	fetch_package "${GNUMAKE_NAME}" "${GNUMAKE_URL}"
 	fetch_package "${ADNS_NAME}" "${ADNS_URL}"
+	fetch_package "${C_ARES_NAME}" "${C_ARES_URL}"
 	fetch_package "${GETTEXT_NAME}" "${GETTEXT_URL}"
 	fetch_package "${GMP_NAME}" "${GMP_URL}"
 	fetch_package "${LIBGPG_ERROR_NAME}" "${LIBGPG_ERROR_URL}"
@@ -331,11 +334,19 @@ build_package()
 #
 build_dependencies()
 {
-	prepare_package "${ADNS_NAME}"
-	build_package "${ADNS_NAME}"			\
+#	prepare_package "${ADNS_NAME}"
+#	build_package "${ADNS_NAME}"			\
+#			"${ARCH_HOSTSETTING}		\
+#			--prefix="${FW_DIR}"		\
+#			--disable-dynamic"
+
+	prepare_package "${C_ARES_NAME}"
+	build_package "${C_ARES_NAME}"			\
 			"${ARCH_HOSTSETTING}		\
 			--prefix="${FW_DIR}"		\
-			--disable-dynamic"
+			--disable-shared		\
+			--enable-static			\
+			--with-random=/dev/urandom"
 
 	prepare_package "${GETTEXT_NAME}"
 	build_package "${GETTEXT_NAME}"			\
