@@ -331,6 +331,42 @@ struct GNUNET_MetaData *GNUNET_meta_data_deserialize (struct
  */
 int GNUNET_meta_data_test_for_directory (const struct GNUNET_MetaData *md);
 
+
+/* ******************************* HashMap **************************** */
+
+struct GNUNET_MultiHashMap;
+
+enum GNUNET_MultiHashMapOption {
+  GNUNET_MultiHashMapOption_REPLACE,
+  GNUNET_MultiHashMapOption_MULTIPLE,
+  GNUNET_MultiHashMapOption_UNIQUE_ONLY
+};
+
+struct GNUNET_MultiHashMap *
+GNUNET_multi_hash_map_create(unsigned int len);
+
+void GNUNET_multi_hash_map_destroy(struct GNUNET_MultiHashMap* map);
+
+void * GNUNET_multi_hash_map_get(struct GNUNET_MultiHashMap* map,
+				 const GNUNET_HashCode * key);
+
+int GNUNET_multi_hash_map_remove(struct GNUNET_MultiHashMap* map,
+				 const GNUNET_HashCode * key,
+				 void * value);
+
+int GNUNET_multi_hash_map_remove_all(struct GNUNET_MultiHashMap* map,
+				     const GNUNET_HashCode * key);
+
+int GNUNET_multi_hash_map_contains(struct GNUNET_MultiHashMap* map,
+				   const GNUNET_HashCode * key);
+
+int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
+			      const GNUNET_HashCode * key,
+			      void * value,
+			      enum GNUNET_MultiHashMapOptions opt);
+
+
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif

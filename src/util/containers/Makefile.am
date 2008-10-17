@@ -6,7 +6,8 @@ noinst_LTLIBRARIES = libcontainers.la
 
 libcontainers_la_SOURCES = \
  bloomfilter.c \
- meta.c 
+ meta.c \
+ multihashmap.c 
 
 libcontainers_la_LIBADD = \
  -lz \

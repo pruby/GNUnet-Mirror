@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -33,7 +33,7 @@
 
 #define DEBUG_BOOTSTRAP GNUNET_NO
 
-#define hello_HELPER_TABLE_START_SIZE 64
+#define HELLO_HELPER_TABLE_START_SIZE 64
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
@@ -56,8 +56,7 @@ static HelloListClosure hlc;
 static int
 testTerminate (void *cls)
 {
-  HelloListClosure *c = cls;
-  return !c->do_shutdown;
+  return !hlc.do_shutdown;
 }
 
 static void
@@ -123,16 +122,15 @@ processhellos (HelloListClosure * hcq)
 static void
 downloadHostlistCallback (const GNUNET_MessageHello * hello, void *c)
 {
-  HelloListClosure *cls = c;
-  if (cls->hellosCount >= cls->hellosLen)
+  if (hlc.hellosCount >= hlc.hellosLen)
     {
-      GNUNET_array_grow (cls->hellos,
-                         cls->hellosLen,
-                         cls->hellosLen + hello_HELPER_TABLE_START_SIZE);
+      GNUNET_array_grow (hlc.hellos,
+                         hlc.hellosLen,
+                         hlc.hellosLen + HELLO_HELPER_TABLE_START_SIZE);
     }
-  cls->hellos[cls->hellosCount++] =
+  hlc.hellos[hlc.hellosCount++] =
     GNUNET_malloc (ntohs (hello->header.size));
-  memcpy (cls->hellos[cls->hellosCount - 1], hello,
+  memcpy (hlc.hellos[hlc.hellosCount - 1], hello,
           ntohs (hello->header.size));
 }
 
@@ -211,7 +209,7 @@ processThread (void *unused)
       hlc.hellosLen = 0;
       hlc.hellosCount = 0;
       bootstrap->bootstrap (&downloadHostlistCallback,
-                            &hlc, &testTerminate, &hlc);
+                            NULL, &testTerminate, NULL);
       GNUNET_array_grow (hlc.hellos, hlc.hellosLen, hlc.hellosCount);
       processhellos (&hlc);
     }
