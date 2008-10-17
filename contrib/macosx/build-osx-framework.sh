@@ -24,7 +24,7 @@ FW_BASE_DIR=/Library/Frameworks/${FW_NAME}
 BUILD_DIR=/tmp/GNUnet-build
 FINAL_FW_BASE_DIR="${BUILD_DIR}/${FW_NAME}"
 SDK_PATH="${BUILD_DIR}/${SDK}"
-OPT_FLAGS="-O2 -g"
+OPT_FLAGS="-O2 -force_cpusubtype_ALL"
 
 BUILD_ARCHS_LIST="ppc i386"
 export MACOSX_DEPLOYMENT_TARGET=10.4
@@ -295,7 +295,7 @@ build_package()
 		CC="${ARCH_CC}"
 		CXX="${ARCH_CXX}"
 		CPPFLAGS="${ARCH_CPPFLAGS}"
-		CFLAGS="${OPT_FLAGS} -no-cpp-precomp -fno-common ${ARCH_CFLAGS}"
+		CFLAGS="${OPT_FLAGS} -no-cpp-precomp -fno-common -fPIC ${ARCH_CFLAGS}"
 		CXXFLAGS="${CFLAGS}"
 		LDFLAGS="${ARCH_LDFLAGS}"
 		if ! ( cd "$1" && CC="${CC}"				\
@@ -344,14 +344,17 @@ build_dependencies()
 	build_package "${C_ARES_NAME}"			\
 			"${ARCH_HOSTSETTING}		\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
 			--enable-static			\
+			--disable-debug			\
 			--with-random=/dev/urandom"
 
 	prepare_package "${GETTEXT_NAME}"
 	build_package "${GETTEXT_NAME}"			\
 			"${ARCH_HOSTSETTING}		\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
 			--enable-static			\
 			--disable-java			\
@@ -363,6 +366,7 @@ build_dependencies()
 	build_package "${GMP_NAME}"			\
 			"--host=none-apple-darwin	\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
 			--enable-static"
 #	rm -v `find "${SDK_PATH}" -name "libgmp*.dylib"`
@@ -371,13 +375,16 @@ build_dependencies()
 	build_package "${LIBGPG_ERROR_NAME}"		\
 			"${ARCH_HOSTSETTING}		\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
-			--enable-static"
+			--enable-static			\
+			--disable-nls"
 
 	prepare_package "${LIBGCRYPT_NAME}"
 	build_package "${LIBGCRYPT_NAME}"		\
 			"${ARCH_HOSTSETTING}		\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
 			--enable-static			\
 			--with-gpg-error-prefix=${SDK_PATH}/${FW_DIR}"
@@ -390,13 +397,16 @@ build_dependencies()
 			guile_cv_pthread_attr_getstack_works=no	\
 			guile_cv_localtime_cache=no		\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
-			--enable-static"
+			--enable-static			\
+			--disable-nls"
 
 	prepare_package "${LIBMICROHTTPD_NAME}"
 	build_package "${LIBMICROHTTPD_NAME}"		\
 			"${ARCH_HOSTSETTING}		\
 			--prefix="${FW_DIR}"		\
+			--with-pic			\
 			--disable-shared		\
 			--enable-static"
 
@@ -415,6 +425,7 @@ build_dependencies()
 			--enable-thread-safe-client	\
 			--enable-local-infile		\
 			--without-server		\
+			--without-debug			\
 			--with-pic			\
 			--disable-shared		\
 			--enable-static"
@@ -430,7 +441,7 @@ build_gnunet()
 	then
 		echo "building GNUnet for ${ARCH_NAME}..."
 		ARCH_LDFLAGS="-arch ${ARCH_NAME} -isysroot ${SDK_PATH} -Wl,-syslibroot,${SDK_PATH} -L${FW_DIR}/lib"
-		CFLAGS="${OPT_FLAGS} -no-cpp-precomp -fPIC ${ARCH_CFLAGS}"
+		CFLAGS="${OPT_FLAGS} -no-cpp-precomp ${ARCH_CFLAGS}"
 		CPPFLAGS="${ARCH_CPPFLAGS}"
 		CXXFLAGS="${CFLAGS}"
 		LDFLAGS="${ARCH_LDFLAGS}"
