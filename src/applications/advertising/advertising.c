@@ -203,7 +203,6 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _
                      ("HELLO message has expiration too far in the future. Dropping.\n"));
-      GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;
     }
   if (GNUNET_SYSERR == transport->hello_verify (msg))

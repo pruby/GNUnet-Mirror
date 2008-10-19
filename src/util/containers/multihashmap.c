@@ -89,7 +89,7 @@ GNUNET_multi_hash_map_get(struct GNUNET_MultiHashMap* map,
   e = map->map[idx_of(map, key)];
   while (e != NULL)
     {
-      if (0 == memcmp(key, e->key, sizeof(GNUNET_HashCode)))
+      if (0 == memcmp(key, &e->key, sizeof(GNUNET_HashCode)))
 	return e->value;
       e = e->next;
     }
@@ -109,7 +109,7 @@ int GNUNET_multi_hash_map_remove(struct GNUNET_MultiHashMap* map,
   e = map->map[i];
   while (e != NULL)
     {
-      if ( (0 == memcmp(key, e->key, sizeof(GNUNET_HashCode))) &&
+      if ( (0 == memcmp(key, &e->key, sizeof(GNUNET_HashCode))) &&
 	   (value == e->value) )
 	{
 	  if (p == NULL)
@@ -140,7 +140,7 @@ int GNUNET_multi_hash_map_remove_all(struct GNUNET_MultiHashMap* map,
   e = map->map[i];
   while (e != NULL)
     {
-      if (0 == memcmp(key, e->key, sizeof(GNUNET_HashCode)))
+      if (0 == memcmp(key, &e->key, sizeof(GNUNET_HashCode)))
 	{
 	  if (p == NULL)
 	    map->map[i] = e->next;
@@ -173,8 +173,7 @@ int GNUNET_multi_hash_map_contains(struct GNUNET_MultiHashMap* map,
   e = map->map[i];
   while (e != NULL)
     {
-      if ( (0 == memcmp(key, e->key, sizeof(GNUNET_HashCode))) &&
-	   (value == e->value) )
+      if (0 == memcmp(key, &e->key, sizeof(GNUNET_HashCode)))
 	return GNUNET_YES;
       e = e->next;
     }
@@ -199,8 +198,8 @@ grow(struct GNUNET_MultiHashMap * map)
       while (NULL != (e = old[i]))
 	{	  
 	  old[i] = e->next;
-	  e->next = map->map[idx_of(e->key)];
-	  map->map[idx_of(e->key)] = e;
+	  e->next = map->map[idx_of(map, &e->key)];
+	  map->map[idx_of(map, &e->key)] = e;
 	}
     }
   GNUNET_free(old);
@@ -209,7 +208,7 @@ grow(struct GNUNET_MultiHashMap * map)
 int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
 			      const GNUNET_HashCode * key,
 			      void * value,
-			      enum GNUNET_MultiHashMapOptions opt) 
+			      enum GNUNET_MultiHashMapOption opt) 
 {
   struct MapEntry* e;
   unsigned int i;
@@ -220,10 +219,10 @@ int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
       e = map->map[i];
       while (e != NULL)
 	{
-	  if ( (0 == memcmp(key, e->key, sizeof(GNUNET_HashCode))) &&
+	  if ( (0 == memcmp(key, &e->key, sizeof(GNUNET_HashCode))) &&
 	       (value == e->value) )
 	    {
-	      if (opt == GNUNET_MultiHashMapOption_UNIQUE)
+	      if (opt == GNUNET_MultiHashMapOption_UNIQUE_ONLY)
 		return GNUNET_SYSERR;
 	      e->value = value;
 	      return GNUNET_NO;

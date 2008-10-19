@@ -363,7 +363,7 @@ int GNUNET_multi_hash_map_contains(struct GNUNET_MultiHashMap* map,
 int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
 			      const GNUNET_HashCode * key,
 			      void * value,
-			      enum GNUNET_MultiHashMapOptions opt);
+			      enum GNUNET_MultiHashMapOption opt);
 
 
 
