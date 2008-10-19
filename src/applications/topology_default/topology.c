@@ -543,13 +543,16 @@ static int
 is_friend (const GNUNET_PeerIdentity * peer)
 {
   unsigned int i;
-  char *section;
-  int temp_size = snprintf(NULL,0,"F2f") + 1;
-  section = malloc(temp_size);
-  snprintf(section,temp_size,"F2f");
-  rereadConfiguration(NULL,coreAPI->cfg,coreAPI->ectx,section,NULL);
+
+  rereadConfiguration(NULL, 
+		      coreAPI->cfg, 
+		      coreAPI->ectx,
+		      "F2F",
+		      NULL);
   for (i = 0; i < friendCount; i++)
-    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity)))
+    if (0 == memcmp (&friends[i], 
+		     peer, 
+		     sizeof (GNUNET_PeerIdentity)))
       return 1;
   return 0;
 }
