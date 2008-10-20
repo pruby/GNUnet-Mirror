@@ -261,7 +261,7 @@ main (int argc, const char **argv)
         printf (".");
       fflush (stdout);
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-      if (peer2count < 10)
+      if (peer1count < 10)
         break;
     }
   CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer1,
