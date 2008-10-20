@@ -274,6 +274,9 @@ main (int argc, char *const *argv)
           GNUNET_free (hello);
           transport->server_stop ();
           GNUNET_plugin_unload (plugin);
+	  done = GNUNET_plugin_resolve_function (plugin, "donetransport_", GNUNET_NO);
+	  if (done != NULL)
+	    done ();
           goto cleanup;
         }
       GNUNET_free (hello);
