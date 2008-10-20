@@ -51,7 +51,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     unsigned int type,
                                     struct GNUNET_ClientHandle *client,
                                     const GNUNET_PeerIdentity * target,
-                                    const struct ResponseList *seen,
+                                    const struct GNUNET_MultiHashMap *seen,
                                     int have_more);
 
 /**

@@ -453,16 +453,18 @@ main (int argc, char *const *argv)
   if (!ping)
     {
       /* disable blacklists (loopback is often blacklisted)... */
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLIST",
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLISTV4",
                                                 "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP6",
-                                                "BLACKLIST", "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLIST",
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLISTV6",
                                                 "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP6",
-                                                "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLISTV4",
+                                                "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLISTV6",
+                                                "");
       GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP",
-                                                "BLACKLIST", "");
+                                                "BLACKLISTV4", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP",
+                                                "BLACKLISTV6", "");
     }
   cron = GNUNET_cron_create (ectx);
   if (GNUNET_OK != GNUNET_CORE_init (ectx, cfg, cron, NULL))

@@ -73,16 +73,21 @@ void GNUNET_multi_hash_map_destroy(struct GNUNET_MultiHashMap* map)
 }
 
 static unsigned int 
-idx_of(struct GNUNET_MultiHashMap * m,
+idx_of(const struct GNUNET_MultiHashMap * m,
        const GNUNET_HashCode * key) 
 {
   return (*(unsigned int *) key) % m->map_length;
 }
 
+unsigned int
+GNUNET_multi_hash_map_size(const struct GNUNET_MultiHashMap* map) 
+{
+  return map->size;
+}
 
 void * 
-GNUNET_multi_hash_map_get(struct GNUNET_MultiHashMap* map,
-				 const GNUNET_HashCode * key) 
+GNUNET_multi_hash_map_get(const struct GNUNET_MultiHashMap* map,
+			  const GNUNET_HashCode * key) 
 {
   struct MapEntry* e;
 
@@ -94,6 +99,32 @@ GNUNET_multi_hash_map_get(struct GNUNET_MultiHashMap* map,
       e = e->next;
     }
   return NULL;
+}
+
+int
+GNUNET_multi_hash_map_iterate(const struct GNUNET_MultiHashMap* map,
+			      GNUNET_HashCodeIterator it,
+			      void * cls) 
+{
+  int count;
+  unsigned int i;
+  struct MapEntry* e;
+
+  count = 0;
+  for (i=0;i<map->map_length;i++)
+    {
+      e = map->map[i];
+      while (e != NULL)
+	{
+	  if (GNUNET_OK !=
+	      it(&e->key,
+		 cls))
+	    return GNUNET_SYSERR;
+	  count++;
+	  e = e->next;
+	}
+    }
+  return count;
 }
 
 int GNUNET_multi_hash_map_remove(struct GNUNET_MultiHashMap* map,
@@ -163,7 +194,7 @@ int GNUNET_multi_hash_map_remove_all(struct GNUNET_MultiHashMap* map,
   return ret;
 }
 
-int GNUNET_multi_hash_map_contains(struct GNUNET_MultiHashMap* map,
+int GNUNET_multi_hash_map_contains(const struct GNUNET_MultiHashMap* map,
 				   const GNUNET_HashCode * key) 
 {
   struct MapEntry* e;
@@ -214,7 +245,8 @@ int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
   unsigned int i;
   
   i = idx_of(map, key);
-  if (opt != GNUNET_MultiHashMapOption_MULTIPLE)
+  if ( (opt != GNUNET_MultiHashMapOption_MULTIPLE) ||
+       (opt != GNUNET_MultiHashMapOption_UNIQUE_FAST) )
     {
       e = map->map[i];
       while (e != NULL)

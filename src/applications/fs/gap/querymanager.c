@@ -138,12 +138,11 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     unsigned int type,
                                     struct GNUNET_ClientHandle *client,
                                     const GNUNET_PeerIdentity * target,
-                                    const struct ResponseList *seen,
+                                    const struct GNUNET_MultiHashMap *seen,
                                     int have_more)
 {
   struct ClientDataList *cl;
   struct RequestList *request;
-  const struct ResponseList *pos;
 
   GNUNET_GE_ASSERT (NULL, key_count > 0);
   if (stats != NULL)
@@ -166,12 +165,8 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
   if (seen != NULL)
     {
-      pos = seen;
-      while (pos != NULL)
-        {
-          request->bloomfilter_entry_count++;
-          pos = pos->next;
-        }
+      request->bloomfilter_entry_count
+	= GNUNET_multi_hash_map_size(seen);
       request->bloomfilter_size =
         compute_bloomfilter_size (request->bloomfilter_entry_count);
       request->bloomfilter_mutator =
@@ -181,12 +176,10 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                  GNUNET_GAP_BLOOMFILTER_K);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
-      pos = seen;
-      while (pos != NULL)
-        {
-          GNUNET_FS_SHARED_mark_response_seen (request, &pos->hash);
-          pos = pos->next;
-        }
+
+      GNUNET_multi_hash_map_iterate(seen,
+				    (GNUNET_HashCodeIterator) &GNUNET_FS_SHARED_mark_response_seen,
+				    request);
     }
   GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
@@ -291,12 +284,12 @@ GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
 
 struct IteratorClosure
 {
-  struct ResponseList *pos;
+  struct GNUNET_BloomFilter * filter;
   int mingle_number;
 };
 
 /**
- * Iterator over response list.
+ * Iterator over Map hash codes.
  *
  * @param arg pointer to a location where we
  *        have our current index into the linked list.
@@ -307,12 +300,11 @@ static int
 response_bf_iterator (GNUNET_HashCode * next, void *arg)
 {
   struct IteratorClosure *cls = arg;
-  struct ResponseList *r = cls->pos;
+  GNUNET_HashCode n;
 
-  if (NULL == r)
-    return GNUNET_NO;
-  GNUNET_FS_HELPER_mingle_hash (&r->hash, cls->mingle_number, next);
-  cls->pos = r->next;
+  GNUNET_FS_HELPER_mingle_hash (next, cls->mingle_number, &n);
+  GNUNET_bloomfilter_add(cls->filter,
+			 &n);
   return GNUNET_YES;
 }
 
@@ -396,15 +388,21 @@ handle_response (PID_INDEX sender,
     {
       rl->bloomfilter_mutator
         = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
-      ic.pos = rl->responses;
+      GNUNET_bloomfilter_free(rl->bloomfilter);
+      rl->bloomfilter =
+	GNUNET_bloomfilter_init(NULL,
+				NULL,
+				bf_size,
+				GNUNET_GAP_BLOOMFILTER_K);
+      ic.filter = rl->bloomfilter;
       ic.mingle_number = rl->bloomfilter_mutator;
-      GNUNET_bloomfilter_resize (rl->bloomfilter,
-                                 &response_bf_iterator,
-                                 &ic, bf_size, GNUNET_GAP_BLOOMFILTER_K);
+      GNUNET_multi_hash_map_iterate(rl->responses,
+				    &response_bf_iterator,
+				    &ic);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
     }
-  GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
+  GNUNET_FS_SHARED_mark_response_seen (&hc, rl);
 
   /* we want more */
   return GNUNET_NO;
@@ -555,7 +553,7 @@ have_more_processor (const GNUNET_HashCode * key,
       cls->have_more = GNUNET_YES;
       return ret;               /* NO: delete, SYSERR: abort */
     }
-  GNUNET_FS_SHARED_mark_response_seen (cls->request, &hc);
+  GNUNET_FS_SHARED_mark_response_seen (&hc, cls->request);
   cls->processed++;
   if (cls->processed > GNUNET_GAP_MAX_ASYNC_PROCESSED)
     {

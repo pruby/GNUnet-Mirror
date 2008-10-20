@@ -28,6 +28,7 @@
 #define GNUNET_PSEUDONYM_LIB_H
 
 #include "gnunet_util_crypto.h"
+#include "gnunet_util_containers.h"
 
 #ifdef __cplusplus
 extern "C"

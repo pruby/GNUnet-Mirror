@@ -38,14 +38,12 @@
 void
 GNUNET_FS_SHARED_free_request_list (struct RequestList *rl)
 {
-  struct ResponseList *repl;
   struct QueryPlanEntry *planl;
 
-  while (rl->responses != NULL)
+  if (rl->responses != NULL)
     {
-      repl = rl->responses;
-      rl->responses = repl->next;
-      GNUNET_free (repl);
+      GNUNET_multi_hash_map_destroy(rl->responses);
+      rl->responses = NULL;
     }
   while (rl->plan_entries != NULL)
     {
@@ -87,7 +85,6 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
                                           const GNUNET_EC_DBlock * data,
                                           GNUNET_HashCode * hc)
 {
-  struct ResponseList *seen;
   GNUNET_HashCode m;
   int ret;
 
@@ -115,13 +112,10 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
     return GNUNET_NO;           /* not useful */
   /* bloomfilter should cover these already */
-  seen = rl->responses;
-  while (seen != NULL)
-    {
-      if (0 == memcmp (hc, &seen->hash, sizeof (GNUNET_HashCode)))
-        return GNUNET_NO;
-      seen = seen->next;
-    }
+  if ( (rl->responses != NULL) &&
+       (GNUNET_YES == GNUNET_multi_hash_map_contains(rl->responses,
+						     hc)) )
+    return GNUNET_NO; /* not useful */
   return GNUNET_OK;
 }
 
@@ -131,10 +125,9 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
  * hash code as seen (update linked list and bloom filter).
  */
 void
-GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
-                                     const GNUNET_HashCode * hc)
+GNUNET_FS_SHARED_mark_response_seen (const GNUNET_HashCode * hc,
+				     struct RequestList *rl)                                  
 {
-  struct ResponseList *seen;
   GNUNET_HashCode m;
 
   if (rl->bloomfilter != NULL)
@@ -143,10 +136,12 @@ GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
       GNUNET_bloomfilter_add (rl->bloomfilter, &m);
     }
   /* update seen list */
-  seen = GNUNET_malloc (sizeof (struct ResponseList));
-  seen->hash = *hc;
-  seen->next = rl->responses;
-  rl->responses = seen;
+  if (rl->responses == NULL)
+    rl->responses = GNUNET_multi_hash_map_create(8);
+  GNUNET_multi_hash_map_put(rl->responses,
+			    hc,
+			    NULL,
+			    GNUNET_MultiHashMapOption_UNIQUE_FAST);
 }
 
 

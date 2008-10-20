@@ -339,7 +339,8 @@ struct GNUNET_MultiHashMap;
 enum GNUNET_MultiHashMapOption {
   GNUNET_MultiHashMapOption_REPLACE,
   GNUNET_MultiHashMapOption_MULTIPLE,
-  GNUNET_MultiHashMapOption_UNIQUE_ONLY
+  GNUNET_MultiHashMapOption_UNIQUE_ONLY,
+  GNUNET_MultiHashMapOption_UNIQUE_FAST
 };
 
 struct GNUNET_MultiHashMap *
@@ -347,7 +348,7 @@ GNUNET_multi_hash_map_create(unsigned int len);
 
 void GNUNET_multi_hash_map_destroy(struct GNUNET_MultiHashMap* map);
 
-void * GNUNET_multi_hash_map_get(struct GNUNET_MultiHashMap* map,
+void * GNUNET_multi_hash_map_get(const struct GNUNET_MultiHashMap* map,
 				 const GNUNET_HashCode * key);
 
 int GNUNET_multi_hash_map_remove(struct GNUNET_MultiHashMap* map,
@@ -357,7 +358,7 @@ int GNUNET_multi_hash_map_remove(struct GNUNET_MultiHashMap* map,
 int GNUNET_multi_hash_map_remove_all(struct GNUNET_MultiHashMap* map,
 				     const GNUNET_HashCode * key);
 
-int GNUNET_multi_hash_map_contains(struct GNUNET_MultiHashMap* map,
+int GNUNET_multi_hash_map_contains(const struct GNUNET_MultiHashMap* map,
 				   const GNUNET_HashCode * key);
 
 int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
@@ -365,6 +366,11 @@ int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
 			      void * value,
 			      enum GNUNET_MultiHashMapOption opt);
 
+unsigned int GNUNET_multi_hash_map_size(const struct GNUNET_MultiHashMap* map);
+
+int GNUNET_multi_hash_map_iterate(const struct GNUNET_MultiHashMap* map,
+				  GNUNET_HashCodeIterator iterator,
+				  void * cls);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

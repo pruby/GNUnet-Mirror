@@ -170,18 +170,19 @@ GNUNET_FS_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query)
 {
   struct ActiveRequestRecords *record;
   GNUNET_CronTime now;
-  struct GNUNET_DHT_GetHandle * h;
 
   if (dht == NULL)
     return;
-  h = dht->get_start (type, query, &response_callback, record);
-  if (h == NULL)
-    return; /* failed in DHT */
   now = GNUNET_get_time ();
   record = GNUNET_malloc (sizeof (struct ActiveRequestRecords));
   record->end_time = now + GNUNET_GAP_MAX_DHT_DELAY;
-  record->handle = h;
   record->type = type;
+  record->handle = dht->get_start (type, query, &response_callback, record);
+  if (record->handle == NULL)
+    {
+      GNUNET_free(record);
+      return; /* failed in DHT */
+    }
   GNUNET_mutex_lock (GNUNET_FS_lock);
   record->next = records;
   records = record;

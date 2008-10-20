@@ -33,27 +33,6 @@
 #include "gap.h"
 
 /**
- * Linked list of responses that we have gotten for
- * this request.  Used to avoid forwarding the same
- * response to the client multiple times and to
- * construct the bloom filter to block duplicates.
- */
-struct ResponseList
-{
-
-  /**
-   * This is a linked list.
-   */
-  struct ResponseList *next;
-
-  /**
-   * Hash of the dblocks of the responses.
-   */
-  GNUNET_HashCode hash;
-
-};
-
-/**
  * Linked list with the active requests of a client.
  */
 struct RequestList
@@ -68,7 +47,7 @@ struct RequestList
    * Linked list of responses that we have
    * already received for this request.
    */
-  struct ResponseList *responses;
+  struct GNUNET_MultiHashMap *responses;
 
   /**
    * Linked list of query plan entries that this
@@ -322,8 +301,8 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
  * hash code as seen (update linked list and bloom filter).
  */
 void
-GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
-                                     const GNUNET_HashCode * hc);
+GNUNET_FS_SHARED_mark_response_seen (const GNUNET_HashCode * hc,
+				     struct RequestList *rl);
 
 /**
  * If the data portion and type of the value match our value in the
