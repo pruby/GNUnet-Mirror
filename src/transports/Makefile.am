@@ -10,6 +10,7 @@ endif
 
 if HAVE_MHD
   httptransport = libgnunettransport_http.la
+  httptest = test_http testrepeat_http
 endif
 
 if !MINGW
@@ -23,13 +24,11 @@ SUBDIRS = . $(build_upnp)
 lib_LTLIBRARIES = \
   libgnunetip.la
 
-check_PROGRAMS = \
+check_PROGRAMS = $(httptest) \
   test_udp \
   test_tcp \
-  test_http \
   testrepeat_udp \
-  testrepeat_tcp \
-  testrepeat_http 
+  testrepeat_tcp 
 
 TESTS = $(check_PROGRAMS)
 

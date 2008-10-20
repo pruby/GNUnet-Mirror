@@ -203,19 +203,21 @@ main (int argc, char *const *argv)
     strstr (trans, ".")[0] = '\0';
   /* disable blacklists (loopback is often blacklisted)... */
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP",
-                                            "BLACKLIST", "");
+                                            "BLACKLISTV4", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "UPNP",
                                             "NO");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6",
-                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP",
+                                            "BLACKLISTV6", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP",
-                                            "BLACKLIST", "");
+                                            "BLACKLISTV4", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "UPNP",
                                             "NO");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6",
-                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP",
+                                            "BLACKLISTV6", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP",
-                                            "BLACKLIST", "");
+                                            "BLACKLISTV4", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP",
+                                            "BLACKLISTV6", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "UPNP",
                                             "NO");
 

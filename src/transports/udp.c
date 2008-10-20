@@ -32,7 +32,7 @@
 #include "gnunet_upnp_service.h"
 #include "ip.h"
 
-#define DEBUG_UDP GNUNET_NO
+#define DEBUG_UDP GNUNET_YES
 
 /**
  * The default maximum size of each outbound UDP message,
