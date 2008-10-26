@@ -342,7 +342,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
       rl = rl->next;
     }
 
-  if ((total >= MAX_ENTRIES_PER_SLOT) && (minTTL > newTTL))
+  if ((total >= MAX_ENTRIES_PER_SLOT) && (minTTL >= newTTL))
     {
       /* do not process */
       GNUNET_FS_PT_change_rc (peer, -1);
