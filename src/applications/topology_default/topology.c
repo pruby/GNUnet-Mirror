@@ -105,6 +105,10 @@ static unsigned int minimum_friend_count;
  */
 static int friends_only;
 
+/**
+ * Last modification of friends file
+ */
+static time_t friends_mtime;
 
 
 /**
@@ -420,11 +424,11 @@ rereadConfiguration (void *ctx,
 {
   char *fn;
   char *data;
-  unsigned long long size;
   size_t pos;
   GNUNET_EncName enc;
   GNUNET_HashCode hc;
   unsigned long long opt;
+  struct stat frstat;
 
   if (0 != strcmp (section, "F2F"))
     return 0;
@@ -452,8 +456,7 @@ rereadConfiguration (void *ctx,
     {
       GNUNET_disk_file_write (ectx, fn, NULL, 0, "600");
     }
-  if ((0 == GNUNET_disk_file_test (ectx, fn))
-      || (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
+  if ((0 == GNUNET_disk_file_test (ectx, fn)) || (0 != STAT (fn, &frstat)))
     {
       GNUNET_free (fn);
       fn = NULL;
@@ -466,10 +469,15 @@ rereadConfiguration (void *ctx,
           return GNUNET_SYSERR;
         }
     }
-  if ((fn != NULL) && (size > 0))
+  if (frstat.st_mtime != friends_mtime)
+    friends_mtime = frstat.st_mtime;
+  else
+    return 0;
+  if ((fn != NULL) && (frstat.st_size > 0))
     {
-      data = GNUNET_malloc (size);
-      if (size != GNUNET_disk_file_read (ectx, fn, size, data))
+      data = GNUNET_malloc (frstat.st_size);
+      if (frstat.st_size !=
+          GNUNET_disk_file_read (ectx, fn, frstat.st_size, data))
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
@@ -481,10 +489,10 @@ rereadConfiguration (void *ctx,
       GNUNET_free (fn);
       fn = NULL;
       pos = 0;
-      while ((pos < size) && isspace (data[pos]))
+      while ((pos < frstat.st_size) && isspace (data[pos]))
         pos++;
-      while ((size >= sizeof (GNUNET_EncName)) &&
-             (pos <= size - sizeof (GNUNET_EncName)))
+      while ((frstat.st_size >= sizeof (GNUNET_EncName)) &&
+             (pos <= frstat.st_size - sizeof (GNUNET_EncName)))
         {
           memcpy (&enc, &data[pos], sizeof (GNUNET_EncName));
           if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
@@ -495,7 +503,7 @@ rereadConfiguration (void *ctx,
                              _
                              ("Syntax error in topology specification, skipping bytes.\n"));
               pos++;
-              while ((pos < size) && (!isspace (data[pos])))
+              while ((pos < frstat.st_size) && (!isspace (data[pos])))
                 pos++;
               continue;
             }
@@ -515,7 +523,7 @@ rereadConfiguration (void *ctx,
                              &enc);
             }
           pos = pos + sizeof (GNUNET_EncName);
-          while ((pos < size) && isspace (data[pos]))
+          while ((pos < frstat.st_size) && isspace (data[pos]))
             pos++;
         }
       if ((minimum_friend_count > friendCount) && (friends_only == GNUNET_NO))
