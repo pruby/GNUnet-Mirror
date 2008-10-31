@@ -124,6 +124,16 @@ compute_bloomfilter_size (unsigned int entry_count)
   return size;
 }
 
+static int
+mark_response_seen(const GNUNET_HashCode * key,
+		   void * value,
+		   void * cls)
+{
+  GNUNET_FS_SHARED_mark_response_seen(key,
+				      cls);
+  return GNUNET_OK;
+}
+
 /**
  * A client is asking us to run a query.  The query should be issued
  * until either a unique response has been obtained or until the
@@ -178,7 +188,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
         stats->change (stat_gap_client_bf_updates, 1);
 
       GNUNET_multi_hash_map_iterate(seen,
-				    (GNUNET_HashCodeIterator) &GNUNET_FS_SHARED_mark_response_seen,
+				    &mark_response_seen,
 				    request);
     }
   GNUNET_mutex_lock (GNUNET_FS_lock);
@@ -297,12 +307,14 @@ struct IteratorClosure
  *         GNUNET_NO if this is the last entry
  */
 static int
-response_bf_iterator (GNUNET_HashCode * next, void *arg)
+response_bf_iterator (const GNUNET_HashCode * key,
+		      void * value,
+		      void *arg)
 {
   struct IteratorClosure *cls = arg;
   GNUNET_HashCode n;
 
-  GNUNET_FS_HELPER_mingle_hash (next, cls->mingle_number, &n);
+  GNUNET_FS_HELPER_mingle_hash (key, cls->mingle_number, &n);
   GNUNET_bloomfilter_add(cls->filter,
 			 &n);
   return GNUNET_YES;
@@ -396,9 +408,10 @@ handle_response (PID_INDEX sender,
 				GNUNET_GAP_BLOOMFILTER_K);
       ic.filter = rl->bloomfilter;
       ic.mingle_number = rl->bloomfilter_mutator;
-      GNUNET_multi_hash_map_iterate(rl->responses,
-				    &response_bf_iterator,
-				    &ic);
+      if (rl->responses != NULL)
+	GNUNET_multi_hash_map_iterate(rl->responses,
+				      &response_bf_iterator,
+				      &ic);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
     }

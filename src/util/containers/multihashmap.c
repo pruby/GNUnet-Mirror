@@ -103,7 +103,7 @@ GNUNET_multi_hash_map_get(const struct GNUNET_MultiHashMap* map,
 
 int
 GNUNET_multi_hash_map_iterate(const struct GNUNET_MultiHashMap* map,
-			      GNUNET_HashCodeIterator it,
+			      GNUNET_HashMapIterator it,
 			      void * cls) 
 {
   int count;
@@ -118,6 +118,7 @@ GNUNET_multi_hash_map_iterate(const struct GNUNET_MultiHashMap* map,
 	{
 	  if (GNUNET_OK !=
 	      it(&e->key,
+		 e->value,
 		 cls))
 	    return GNUNET_SYSERR;
 	  count++;
@@ -272,5 +273,30 @@ int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
   map->size++;
   return GNUNET_OK;
 }
+
+int
+GNUNET_multi_hash_map_get_multiple(const struct GNUNET_MultiHashMap* map,
+				   const GNUNET_HashCode * key,
+				   GNUNET_HashMapIterator it,
+				   void * cls) 
+{
+  int count;
+  struct MapEntry* e;
+
+  count = 0;
+  e = map->map[idx_of(map, key)];
+  while (e != NULL)
+    {
+      if (GNUNET_OK !=
+	  it(&e->key,
+	     e->value,
+	     cls))
+	return GNUNET_SYSERR;
+      count++;
+      e = e->next;
+    }
+  return count;
+}
+
 
 /* end of multihashmap.c */

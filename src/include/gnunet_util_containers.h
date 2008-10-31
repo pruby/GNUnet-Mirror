@@ -343,6 +343,18 @@ enum GNUNET_MultiHashMapOption {
   GNUNET_MultiHashMapOption_UNIQUE_FAST
 };
 
+/**
+ * Iterator over HashCodes.
+ *
+ * @return GNUNET_YES if we should continue to
+ *         iterate,
+ *         GNUNET_NO if not.
+ */
+typedef int (*GNUNET_HashMapIterator) (const GNUNET_HashCode * key,
+				       void * value,
+				       void * cls);
+
+
 struct GNUNET_MultiHashMap *
 GNUNET_multi_hash_map_create(unsigned int len);
 
@@ -369,8 +381,13 @@ int GNUNET_multi_hash_map_put(struct GNUNET_MultiHashMap* map,
 unsigned int GNUNET_multi_hash_map_size(const struct GNUNET_MultiHashMap* map);
 
 int GNUNET_multi_hash_map_iterate(const struct GNUNET_MultiHashMap* map,
-				  GNUNET_HashCodeIterator iterator,
+				  GNUNET_HashMapIterator iterator,
 				  void * cls);
+
+int GNUNET_multi_hash_map_get_multiple(const struct GNUNET_MultiHashMap* map,
+				       const GNUNET_HashCode * key,
+				       GNUNET_HashMapIterator iterator,
+				       void * cls);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

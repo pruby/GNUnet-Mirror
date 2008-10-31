@@ -244,55 +244,50 @@ write_search_record_list (struct GNUNET_GE_Context *ectx,
   WRITEINT (wb, -1);
 }
 
-/**
- * Write all of the results received so far
- * for this search.
- *
- * @param search_count length of search_list
- * @param search_list list of ECRS search requests
- * @param pos results to write
- */
-void
-write_result_list (struct GNUNET_GE_Context *ectx,
-                   WriteBuffer * wb,
-                   struct SearchRecordList *search_list,
-                   struct SearchResultList *pos)
+struct WriteResultContext {
+  struct GNUNET_GE_Context * ectx;
+  WriteBuffer * wb;
+  struct SearchRecordList * search_list;
+};
+
+static int
+write_result_entry (const GNUNET_HashCode * key,
+		    void * value,
+		    void * ctx) 
 {
+  struct WriteResultContext * wrc = ctx;
+  struct SearchResultList *pos = value;
   unsigned int i;
   unsigned int idx;
   struct SearchRecordList *spos;
 
-  while (pos != NULL)
+  WRITEINT (wrc->wb, pos->matchingSearchCount);
+  WRITEINT (wrc->wb, pos->mandatoryMatchesRemaining);
+  WRITEINT (wrc->wb, pos->probeSuccess);
+  WRITEINT (wrc->wb, pos->probeFailure);
+  writeFileInfo (wrc->ectx, wrc->wb, &pos->fi);
+  i = pos->matchingSearchCount;
+  while (i-- > 0)
     {
-      WRITEINT (wb, pos->matchingSearchCount);
-      WRITEINT (wb, pos->mandatoryMatchesRemaining);
-      WRITEINT (wb, pos->probeSuccess);
-      WRITEINT (wb, pos->probeFailure);
-      writeFileInfo (ectx, wb, &pos->fi);
-      i = pos->matchingSearchCount;
-      while (i-- > 0)
-        {
-          idx = 1;
-          spos = search_list;
-          while ((spos != NULL) && (spos != pos->matchingSearches[i]))
-            {
-              idx++;
-              spos = spos->next;
-            }
-          if (spos == NULL)
-            idx = 0;
-          WRITEINT (wb, idx);
-        }
-      pos = pos->next;
+      idx = 1;
+      spos = wrc->search_list;
+      while ((spos != NULL) && (spos != pos->matchingSearches[i]))
+	{
+	  idx++;
+	  spos = spos->next;
+	}
+      if (spos == NULL)
+	idx = 0;
+      WRITEINT (wrc->wb, idx);
     }
-  WRITEINT (wb, -1);
+  return GNUNET_OK;
 }
-
 
 static void
 writeSearches (WriteBuffer * wb, struct GNUNET_FSUI_Context *ctx)
 {
   GNUNET_FSUI_SearchList *spos;
+  struct WriteResultContext wrc;
 
   spos = ctx->activeSearches;
   while (spos != NULL)
@@ -308,8 +303,13 @@ writeSearches (WriteBuffer * wb, struct GNUNET_FSUI_Context *ctx)
       WRITEINT (wb, spos->mandatory_keyword_count);
       writeURI (wb, spos->uri);
       write_search_record_list (ctx->ectx, wb, spos->searches);
-      write_result_list (ctx->ectx,
-                         wb, spos->searches, spos->resultsReceived);
+      wrc.ectx = ctx->ectx;
+      wrc.wb = wb;
+      wrc.search_list = spos->searches;
+      GNUNET_multi_hash_map_iterate(spos->resultsReceived,
+				    &write_result_entry,
+				    &wrc);
+      WRITEINT (wb, -1); /* result list terminator */
       spos = spos->next;
     }
   WRITEINT (wb, 0);

@@ -75,8 +75,6 @@
 struct SearchResultList
 {
 
-  struct SearchResultList *next;
-
   /**
    * Test download (if any).
    */
@@ -140,7 +138,7 @@ struct SearchRecordList
   struct SearchRecordList *next;
 
   /**
-   * Handles to the ECRS SearchContexts.
+   * Handle to the ECRS SearchContext.
    */
   struct GNUNET_ECRS_SearchContext *search;
 
@@ -179,7 +177,7 @@ typedef struct GNUNET_FSUI_SearchList
   /**
    * Searches are kept in a simple linked list.
    */
-  struct GNUNET_FSUI_SearchList *next;
+  struct GNUNET_FSUI_SearchList * next;
 
   /**
    * Context for this search
@@ -188,12 +186,12 @@ typedef struct GNUNET_FSUI_SearchList
 
   /**
    * Context used for availability probes and the
-   * ECRS searches
+   * ECRS searches.
    */
   struct GNUNET_FS_SearchContext *probe_context;
 
   /**
-   * Handles to the ECRS SearchContexts.
+   * Handles to the Search records (one for each keyword).
    */
   struct SearchRecordList *searches;
 
@@ -208,9 +206,9 @@ typedef struct GNUNET_FSUI_SearchList
   struct GNUNET_FSUI_DownloadList **my_downloads;
 
   /**
-   * List of all results found so far.
+   * HashMap (using query of URI as key) of all results found so far.
    */
-  struct SearchResultList *resultsReceived;
+  struct GNUNET_MultiHashMap *resultsReceived;
 
   /**
    * Client context for the search.

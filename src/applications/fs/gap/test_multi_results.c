@@ -150,7 +150,9 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 int
 main (int argc, char **argv)
 {
+#if START_PEERS
   struct GNUNET_TESTING_DaemonContext *peers;
+#endif
   int ret;
   int i;
   char buf[128];
@@ -179,7 +181,9 @@ main (int argc, char **argv)
       if (GNUNET_OK != GNUNET_TESTING_connect_daemons (2077 + (10 * i),
                                                        2087 + (10 * i)))
         {
+#if START_PEERS
           GNUNET_TESTING_stop_daemons (peers);
+#endif
           fprintf (stderr, "Failed to connect the peers!\n");
           GNUNET_GC_free (cfg);
           return -1;

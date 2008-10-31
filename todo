@@ -1,6 +1,14 @@
 This is just the current plan, plans change.
 
 0.8.1 [8'08] (aka "growth"):
+- test & document multihashmap
+- finish & document new ECRS URI hash function
+  => test complexity of #search results in new FSUI/gap code!
+- make GUIs handle namespace advertisement events
+  => enable publishing of namespace ads in FSUI
+  => test
+
+
 - Publishing:
   * clean up indexing with gnunet-insert (#1107)
   * power insert (#854)

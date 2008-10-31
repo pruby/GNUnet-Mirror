@@ -487,6 +487,7 @@ GNUNET_FSUI_uploadThread (void *cls)
              (copied here to allow free later) */
           loc = GNUNET_ECRS_uri_duplicate (utc->uri);
         }
+      uri = NULL;
       if (utc->shared->individualKeywords == GNUNET_YES)
 	{
 	  /* need to convert to URI *before*

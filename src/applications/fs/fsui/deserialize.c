@@ -492,7 +492,7 @@ read_search_record_list (struct GNUNET_GE_Context *ectx, ReadBuffer * rb)
  * @param search_count length of search_list
  * @param search_list list of ECRS search requests
  */
-struct SearchResultList *
+struct GNUNET_MultiHashMap *
 read_result_list (struct GNUNET_GE_Context *ectx,
                   ReadBuffer * rb,
                   unsigned int search_count,
@@ -502,15 +502,13 @@ read_result_list (struct GNUNET_GE_Context *ectx,
   unsigned int remaining;
   unsigned int probeSucc;
   unsigned int probeFail;
+  struct GNUNET_MultiHashMap * map;
   struct SearchResultList *ret;
-  struct SearchResultList *head;
-  struct SearchResultList *tail;
+  GNUNET_HashCode urik;
   unsigned int i;
   unsigned int idx;
 
-  ret = NULL;
-  head = NULL;
-  tail = NULL;
+  map = GNUNET_multi_hash_map_create(4);
   while (1)
     {
       if (GNUNET_OK != read_uint (rb, &matching))
@@ -527,6 +525,8 @@ read_result_list (struct GNUNET_GE_Context *ectx,
           GNUNET_free (ret);
           break;
         }
+      GNUNET_ECRS_uri_to_key(ret->fi.uri,
+			     &urik);
       ret->matchingSearchCount = matching;
       ret->mandatoryMatchesRemaining = remaining;
       ret->probeSuccess = probeSucc;
@@ -541,7 +541,6 @@ read_result_list (struct GNUNET_GE_Context *ectx,
           ret->probeFailure = 0;
         }
       ret->test_download = NULL;
-      ret->next = NULL;
       ret->matchingSearches = NULL;
       i = 0;
       GNUNET_array_grow (ret->matchingSearches, i, ret->matchingSearchCount);
@@ -553,7 +552,7 @@ read_result_list (struct GNUNET_GE_Context *ectx,
               GNUNET_array_grow (ret->matchingSearches,
                                  ret->matchingSearchCount, 0);
               GNUNET_free (ret);
-              return head;
+              return map;
             }
           if (idx == 0)
             {
@@ -566,13 +565,21 @@ read_result_list (struct GNUNET_GE_Context *ectx,
               ret->matchingSearches[i] = search_list[idx - 1];
             }
         }
-      if (head == NULL)
-        head = ret;
-      if (tail != NULL)
-        tail->next = ret;
-      tail = ret;
+      GNUNET_multi_hash_map_put(map,
+				&urik,
+				ret,
+				GNUNET_MultiHashMapOption_MULTIPLE);
     }
-  return head;
+  return map;
+}
+
+static int
+free_entry(const GNUNET_HashCode * key,
+	   void * value,
+	   void * cls)
+{
+  GNUNET_free(value);
+  return GNUNET_OK;
 }
 
 /**
@@ -585,7 +592,6 @@ readSearches (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
   int big;
   GNUNET_FSUI_SearchList *list;
   GNUNET_FSUI_SearchList *last;
-  struct SearchResultList *srp;
   struct SearchRecordList *srl;
   struct SearchRecordList **srla;
   char *buf;
@@ -673,12 +679,11 @@ readSearches (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
     }                           /* end OUTER: 'while(1)' */
 ERR:
   /* error - deallocate 'list' */
-  while (list->resultsReceived != NULL)
-    {
-      srp = list->resultsReceived;
-      list->resultsReceived = srp->next;
-      GNUNET_free (srp);
-    }
+  GNUNET_multi_hash_map_iterate(list->resultsReceived,
+				&free_entry,
+				NULL);
+  GNUNET_multi_hash_map_destroy(list->resultsReceived);
+
   while (list->searches != NULL)
     {
       srl = list->searches;
