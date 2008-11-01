@@ -32,6 +32,7 @@
 #define GNUNET_MYSQL_H
 
 #include "gnunet_util.h"
+#include <mysql/mysql.h>
 
 struct GNUNET_MysqlStatementHandle;
 
@@ -104,12 +105,12 @@ typedef int (*GNUNET_MysqlDataProcessor)(void * cls,
  *         the number of successfully affected (or queried) rows
  */
 int
-GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
-				    unsigned int result_size,
-				    MYSQL_BIND * results,
-				    GNUNET_MysqlDataProcessor processor,
-				    void * processor_cls,
-				    ...);
+GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * s,
+					   unsigned int result_size,
+					   MYSQL_BIND * results,
+					   GNUNET_MysqlDataProcessor processor,
+					   void * processor_cls,
+					   ...);
 
 
 /**

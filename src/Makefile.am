@@ -1,3 +1,1 @@
-INCLUDES = -I$(top_srcdir)/src/include
-
-SUBDIRS	= include util setup server transports applications 
+SUBDIRS	= include util libs setup server transports applications 

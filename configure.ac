@@ -951,6 +951,8 @@ src/applications/tracekit/Makefile
 src/applications/traffic/Makefile
 src/applications/transport/Makefile
 src/applications/vpn/Makefile
+src/libs/Makefile
+src/libs/mysql/Makefile
 src/setup/Makefile
 src/setup/lib/Makefile
 src/setup/gtk/Makefile
