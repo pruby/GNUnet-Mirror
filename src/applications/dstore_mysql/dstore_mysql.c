@@ -104,34 +104,33 @@ iopen ()
 {
   if (db != NULL)
     return GNUNET_OK;
-  db = GNUNET_MYSQL_database_open(coreAPI->ectx,
-				  coreAPI->cfg);
+  db = GNUNET_MYSQL_database_open (coreAPI->ectx, coreAPI->cfg);
   if (db == NULL)
     return GNUNET_SYSERR;
 #define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_run_statement (db, a) )
 #define PINIT(a,b) (NULL == (a = GNUNET_MYSQL_prepared_statement_create(db, b)))
-  if (MRUNS("CREATE TEMPORARY TABLE gn080dstore ("
-	    "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	    "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	    "  puttime BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	    "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	    "  hash BINARY(64) NOT NULL DEFAULT '',"
-	    "  vhash BINARY(64) NOT NULL DEFAULT '',"
-	    "  value BLOB NOT NULL DEFAULT '',"
-	    "  INDEX hashidx (hash(64),type,expire),"
-	    "  INDEX allidx (hash(64),vhash(64),type,size),"
-	    "  INDEX expireidx (puttime)" ") ENGINE=InnoDB") ||
-      MRUNS("SET AUTOCOMMIT = 1") ||
+  if (MRUNS ("CREATE TEMPORARY TABLE gn080dstore ("
+             "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+             "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+             "  puttime BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+             "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+             "  hash BINARY(64) NOT NULL DEFAULT '',"
+             "  vhash BINARY(64) NOT NULL DEFAULT '',"
+             "  value BLOB NOT NULL DEFAULT '',"
+             "  INDEX hashidx (hash(64),type,expire),"
+             "  INDEX allidx (hash(64),vhash(64),type,size),"
+             "  INDEX expireidx (puttime)" ") ENGINE=InnoDB") ||
+      MRUNS ("SET AUTOCOMMIT = 1") ||
       PINIT (select_value, SELECT_VALUE_STMT) ||
       PINIT (count_value, COUNT_VALUE_STMT) ||
       PINIT (select_old_value, SELECT_OLD_VALUE_STMT) ||
       PINIT (delete_value, DELETE_VALUE_STMT) ||
       PINIT (insert_value, INSERT_VALUE_STMT) ||
-      PINIT (update_value, UPDATE_VALUE_STMT) )
+      PINIT (update_value, UPDATE_VALUE_STMT))
     {
-      GNUNET_MYSQL_database_close(db);
+      GNUNET_MYSQL_database_close (db);
       db = NULL;
-      return GNUNET_SYSERR; 
+      return GNUNET_SYSERR;
     }
 #undef PINIT
 #undef MRUNS
@@ -139,9 +138,7 @@ iopen ()
 }
 
 static int
-return_ok(void * cls,
-	  unsigned int num_values,
-	  MYSQL_BIND * values)
+return_ok (void *cls, unsigned int num_values, MYSQL_BIND * values)
 {
   return GNUNET_OK;
 }
@@ -194,35 +191,35 @@ checkQuota ()
   rbind[4].buffer_length = GNUNET_MAX_BUFFER_SIZE;
   rbind[4].length = &v_length;
   rbind[4].buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
-  if ( (GNUNET_OK !=
-	GNUNET_MYSQL_prepared_statement_run_select(select_old_value,
-						   5,
-						   rbind,
-						   return_ok,
-						   NULL,
-						   -1)) ||
-       (GNUNET_OK !=
-	GNUNET_MYSQL_prepared_statement_run(delete_value,
-					    NULL,
-					    MYSQL_TYPE_BLOB,
-					    &v_key,
-					    sizeof(GNUNET_HashCode),
-					    &k_length,
-					    MYSQL_TYPE_BLOB,
-					    &vhash,
-					    sizeof(GNUNET_HashCode),
-					    &h_length,
-					    MYSQL_TYPE_LONG,
-					    &v_type,
-					    GNUNET_YES,
-					    MYSQL_TYPE_LONG,
-					    &v_size,
-					    GNUNET_YES,
-					    MYSQL_TYPE_BLOB,
-					    rbind[4].buffer,
-					    (unsigned long) GNUNET_MAX_BUFFER_SIZE,
-					    &v_length,
-					    -1)) )
+  if ((GNUNET_OK !=
+       GNUNET_MYSQL_prepared_statement_run_select (select_old_value,
+                                                   5,
+                                                   rbind,
+                                                   return_ok,
+                                                   NULL,
+                                                   -1)) ||
+      (GNUNET_OK !=
+       GNUNET_MYSQL_prepared_statement_run (delete_value,
+                                            NULL,
+                                            MYSQL_TYPE_BLOB,
+                                            &v_key,
+                                            sizeof (GNUNET_HashCode),
+                                            &k_length,
+                                            MYSQL_TYPE_BLOB,
+                                            &vhash,
+                                            sizeof (GNUNET_HashCode),
+                                            &h_length,
+                                            MYSQL_TYPE_LONG,
+                                            &v_type,
+                                            GNUNET_YES,
+                                            MYSQL_TYPE_LONG,
+                                            &v_size,
+                                            GNUNET_YES,
+                                            MYSQL_TYPE_BLOB,
+                                            rbind[4].buffer,
+                                            (unsigned long)
+                                            GNUNET_MAX_BUFFER_SIZE, &v_length,
+                                            -1)))
     {
       GNUNET_free (rbind[4].buffer);
       return GNUNET_SYSERR;
@@ -264,63 +261,60 @@ d_put (const GNUNET_HashCode * key,
   k_length = sizeof (GNUNET_HashCode);
   v_length = size;
   if (GNUNET_OK ==
-      GNUNET_MYSQL_prepared_statement_run(update_value,
-					  NULL,
-					  MYSQL_TYPE_LONGLONG,
-					  &now,
-					  GNUNET_YES,
-					  MYSQL_TYPE_LONGLONG,
-					  &discard_time,
-					  GNUNET_YES,
-					  MYSQL_TYPE_BLOB,
-					  key,
-					  sizeof(GNUNET_HashCode),
-					  &k_length,
-					  MYSQL_TYPE_BLOB,
-					  &vhash,
-					  sizeof(GNUNET_HashCode),
-					  &h_length,
-					  MYSQL_TYPE_LONG,
-					  &type,
-					  GNUNET_YES,
-					  MYSQL_TYPE_LONG,
-					  &size,
-					  GNUNET_YES,
-					  -1))
-    return GNUNET_OK;    
+      GNUNET_MYSQL_prepared_statement_run (update_value,
+                                           NULL,
+                                           MYSQL_TYPE_LONGLONG,
+                                           &now,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_LONGLONG,
+                                           &discard_time,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_BLOB,
+                                           key,
+                                           sizeof (GNUNET_HashCode),
+                                           &k_length,
+                                           MYSQL_TYPE_BLOB,
+                                           &vhash,
+                                           sizeof (GNUNET_HashCode),
+                                           &h_length,
+                                           MYSQL_TYPE_LONG,
+                                           &type,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_LONG,
+                                           &size, GNUNET_YES, -1))
+    return GNUNET_OK;
 
   /* now try INSERT */
   h_length = sizeof (GNUNET_HashCode);
   k_length = sizeof (GNUNET_HashCode);
   v_length = size;
   if (GNUNET_OK !=
-      GNUNET_MYSQL_prepared_statement_run(insert_value,
-					  NULL,
-					  MYSQL_TYPE_LONG,
-					  &size,
-					  GNUNET_YES,
-					  MYSQL_TYPE_LONG,
-					  &type,
-					  GNUNET_YES,
-					  MYSQL_TYPE_LONGLONG,
-					  &now,
-					  GNUNET_YES,
-					  MYSQL_TYPE_LONGLONG,
-					  &discard_time,
-					  GNUNET_YES,
-					  MYSQL_TYPE_BLOB,
-					  key,
-					  sizeof(GNUNET_HashCode),
-					  &k_length,
-					  MYSQL_TYPE_BLOB,
-					  &vhash,
-					  sizeof(GNUNET_HashCode),
-					  &h_length,
-					  MYSQL_TYPE_BLOB,
-					  data,
-					  (unsigned long) size,
-					  &v_length,
-					  -1))
+      GNUNET_MYSQL_prepared_statement_run (insert_value,
+                                           NULL,
+                                           MYSQL_TYPE_LONG,
+                                           &size,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_LONG,
+                                           &type,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_LONGLONG,
+                                           &now,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_LONGLONG,
+                                           &discard_time,
+                                           GNUNET_YES,
+                                           MYSQL_TYPE_BLOB,
+                                           key,
+                                           sizeof (GNUNET_HashCode),
+                                           &k_length,
+                                           MYSQL_TYPE_BLOB,
+                                           &vhash,
+                                           sizeof (GNUNET_HashCode),
+                                           &h_length,
+                                           MYSQL_TYPE_BLOB,
+                                           data,
+                                           (unsigned long) size,
+                                           &v_length, -1))
     return GNUNET_SYSERR;
   if (bloom != NULL)
     GNUNET_bloomfilter_add (bloom, key);
@@ -357,7 +351,7 @@ d_get (const GNUNET_HashCode * key,
   unsigned int off;
 
   if ((bloom != NULL) && (GNUNET_NO == GNUNET_bloomfilter_test (bloom, key)))
-    return 0;    
+    return 0;
   now = GNUNET_get_time ();
   h_length = sizeof (GNUNET_HashCode);
   v_length = GNUNET_MAX_BUFFER_SIZE;
@@ -366,27 +360,26 @@ d_get (const GNUNET_HashCode * key,
   rbind[0].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[0].buffer = &total;
   rbind[0].is_unsigned = GNUNET_YES;
-  if ( (GNUNET_OK !=
-	GNUNET_MYSQL_prepared_statement_run_select(count_value,
-						 1,
-						   rbind,
-						   return_ok,
-						   NULL,						 
-						   MYSQL_TYPE_BLOB,
-						   key,
-						   sizeof(GNUNET_HashCode),
-						   &h_length,
-						   MYSQL_TYPE_LONG,
-						   &type,
-						   GNUNET_YES,
-						   MYSQL_TYPE_LONGLONG,
-						   &now,
-						   GNUNET_YES,
-						   -1)) ||
-       (-1 == total) )
-    return GNUNET_SYSERR;    
+  if ((GNUNET_OK !=
+       GNUNET_MYSQL_prepared_statement_run_select (count_value,
+                                                   1,
+                                                   rbind,
+                                                   return_ok,
+                                                   NULL,
+                                                   MYSQL_TYPE_BLOB,
+                                                   key,
+                                                   sizeof (GNUNET_HashCode),
+                                                   &h_length,
+                                                   MYSQL_TYPE_LONG,
+                                                   &type,
+                                                   GNUNET_YES,
+                                                   MYSQL_TYPE_LONGLONG,
+                                                   &now,
+                                                   GNUNET_YES,
+                                                   -1)) || (-1 == total))
+    return GNUNET_SYSERR;
   if ((handler == NULL) || (total == 0))
-    return (int) total;    
+    return (int) total;
 
   off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total);
   memset (rbind, 0, sizeof (rbind));
@@ -401,32 +394,29 @@ d_get (const GNUNET_HashCode * key,
   while (cnt < total)
     {
       off = (off + 1) % total;
-      if ( (GNUNET_OK !=
-	    GNUNET_MYSQL_prepared_statement_run_select(select_value,
-						       2,
-						       rbind,
-						       return_ok,
-						       NULL,						 
-						       MYSQL_TYPE_BLOB,
-						       key,
-						       sizeof(GNUNET_HashCode),
-						       &h_length,
-						       MYSQL_TYPE_LONG,
-						       &type,
-						       GNUNET_YES,
-						       MYSQL_TYPE_LONGLONG,
-						       &now,
-						       GNUNET_YES,
-						       MYSQL_TYPE_LONG,
-						       &off,
-						       GNUNET_YES,
-						       -1)) ||
-	   (v_length != v_size) )
-	{
+      if ((GNUNET_OK !=
+           GNUNET_MYSQL_prepared_statement_run_select (select_value,
+                                                       2,
+                                                       rbind,
+                                                       return_ok,
+                                                       NULL,
+                                                       MYSQL_TYPE_BLOB,
+                                                       key,
+                                                       sizeof
+                                                       (GNUNET_HashCode),
+                                                       &h_length,
+                                                       MYSQL_TYPE_LONG, &type,
+                                                       GNUNET_YES,
+                                                       MYSQL_TYPE_LONGLONG,
+                                                       &now, GNUNET_YES,
+                                                       MYSQL_TYPE_LONG, &off,
+                                                       GNUNET_YES, -1))
+          || (v_length != v_size))
+        {
           GNUNET_GE_BREAK (NULL, v_length == v_size);
           GNUNET_free (rbind[1].buffer);
-	  return GNUNET_SYSERR;    
-	}
+          return GNUNET_SYSERR;
+        }
       cnt++;
       if (GNUNET_OK != handler (key, type, v_size, rbind[1].buffer, closure))
         break;
@@ -508,8 +498,8 @@ release_module_dstore_mysql ()
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "MySQL Dstore: database shutdown\n");
 #endif
-  GNUNET_MYSQL_database_close(db);
-  db = NULL;   
+  GNUNET_MYSQL_database_close (db);
+  db = NULL;
   GNUNET_mutex_destroy (lock);
   coreAPI = NULL;
 }

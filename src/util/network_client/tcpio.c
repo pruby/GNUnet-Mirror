@@ -103,7 +103,7 @@ getGNUnetPort (struct GNUNET_GE_Context *ectx,
       /* IPv6 */
       pos = strstr (res, "]");
       if (pos != NULL)
-	pos = strstr (pos, ":");	
+        pos = strstr (pos, ":");
     }
   else
     {
@@ -159,19 +159,17 @@ getGNUnetdHost (struct GNUNET_GE_Context *ectx,
       /* IPv6 */
       pos = strstr (res, "]");
       if (pos != NULL)
-	{
-	  pos[0] = '\0';
-	  memmove(res,
-		  &res[1],
-		  strlen(&res[1]));
-	  pos[-1] = '\0';
-	}
+        {
+          pos[0] = '\0';
+          memmove (res, &res[1], strlen (&res[1]));
+          pos[-1] = '\0';
+        }
     }
   else
-    { 
+    {
       pos = strstr (res, ":");
       if (pos != NULL)
-	*pos = '\0';
+        *pos = '\0';
     }
   return res;
 }
@@ -319,9 +317,9 @@ GNUNET_client_connection_ensure_connected (struct
    */
 #define TRIES_PER_AF 2
 #ifdef WINDOWS
-  #define DELAY_PER_RETRY (5000 * GNUNET_CRON_MILLISECONDS)
+#define DELAY_PER_RETRY (5000 * GNUNET_CRON_MILLISECONDS)
 #else
-  #define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
+#define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
 #endif
 #define ADVANCE() do { af_index++; tries = TRIES_PER_AF; } while(0)
 #define RETRY() do { tries--; if (tries == 0) { ADVANCE(); } else { GNUNET_thread_sleep(DELAY_PER_RETRY); } } while (0)
@@ -333,7 +331,9 @@ GNUNET_client_connection_ensure_connected (struct
         {
           GNUNET_GE_LOG (sock->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                         _("Error connecting to %s:%u. Is the daemon running?\n"), host, port);
+                         _
+                         ("Error connecting to %s:%u. Is the daemon running?\n"),
+                         host, port);
           return GNUNET_SYSERR;
         }
       soaddr = NULL;

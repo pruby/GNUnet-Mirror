@@ -307,7 +307,7 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
       GNUNET_free (ret);
       return NULL;
     }
-  ret->lastProgressTime = GNUNET_get_time();
+  ret->lastProgressTime = GNUNET_get_time ();
   ret->progressBits = 1;
   fixState (&ret->state);
   ret->filename = GNUNET_malloc (big + 1);
@@ -502,13 +502,13 @@ read_result_list (struct GNUNET_GE_Context *ectx,
   unsigned int remaining;
   unsigned int probeSucc;
   unsigned int probeFail;
-  struct GNUNET_MultiHashMap * map;
+  struct GNUNET_MultiHashMap *map;
   struct SearchResultList *ret;
   GNUNET_HashCode urik;
   unsigned int i;
   unsigned int idx;
 
-  map = GNUNET_multi_hash_map_create(4);
+  map = GNUNET_multi_hash_map_create (4);
   while (1)
     {
       if (GNUNET_OK != read_uint (rb, &matching))
@@ -525,8 +525,7 @@ read_result_list (struct GNUNET_GE_Context *ectx,
           GNUNET_free (ret);
           break;
         }
-      GNUNET_ECRS_uri_to_key(ret->fi.uri,
-			     &urik);
+      GNUNET_ECRS_uri_to_key (ret->fi.uri, &urik);
       ret->matchingSearchCount = matching;
       ret->mandatoryMatchesRemaining = remaining;
       ret->probeSuccess = probeSucc;
@@ -565,20 +564,17 @@ read_result_list (struct GNUNET_GE_Context *ectx,
               ret->matchingSearches[i] = search_list[idx - 1];
             }
         }
-      GNUNET_multi_hash_map_put(map,
-				&urik,
-				ret,
-				GNUNET_MultiHashMapOption_MULTIPLE);
+      GNUNET_multi_hash_map_put (map,
+                                 &urik,
+                                 ret, GNUNET_MultiHashMapOption_MULTIPLE);
     }
   return map;
 }
 
 static int
-free_entry(const GNUNET_HashCode * key,
-	   void * value,
-	   void * cls)
+free_entry (const GNUNET_HashCode * key, void *value, void *cls)
 {
-  GNUNET_free(value);
+  GNUNET_free (value);
   return GNUNET_OK;
 }
 
@@ -679,10 +675,8 @@ readSearches (ReadBuffer * rb, struct GNUNET_FSUI_Context *ctx)
     }                           /* end OUTER: 'while(1)' */
 ERR:
   /* error - deallocate 'list' */
-  GNUNET_multi_hash_map_iterate(list->resultsReceived,
-				&free_entry,
-				NULL);
-  GNUNET_multi_hash_map_destroy(list->resultsReceived);
+  GNUNET_multi_hash_map_iterate (list->resultsReceived, &free_entry, NULL);
+  GNUNET_multi_hash_map_destroy (list->resultsReceived);
 
   while (list->searches != NULL)
     {

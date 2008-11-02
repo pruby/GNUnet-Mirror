@@ -138,11 +138,13 @@ int GNUNET_GC_get_configuration_value_filename (struct GNUNET_GC_Configuration
  *
  * @return number of filenames iterated over, -1 on error
  */
-int GNUNET_GC_iterate_configuration_value_filenames (struct GNUNET_GC_Configuration
-						     *cfg, const char *section,
-						     const char *option,
-						     GNUNET_FileNameCallback cb,
-						     void * cls);
+int GNUNET_GC_iterate_configuration_value_filenames (struct
+                                                     GNUNET_GC_Configuration
+                                                     *cfg,
+                                                     const char *section,
+                                                     const char *option,
+                                                     GNUNET_FileNameCallback
+                                                     cb, void *cls);
 
 /**
  * Get a configuration value that should be in a set of
@@ -221,12 +223,13 @@ int GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration
  *         GNUNET_NO if the filename is not in the list,
  *         GNUNET_SYSERR on error
  */
-int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuration
-						   *cfg,
-						   struct GNUNET_GE_Context *ectx,
-						   const char *section,
-						   const char *option,
-						   const char *value);
+int GNUNET_GC_remove_configuration_value_filename (struct
+                                                   GNUNET_GC_Configuration
+                                                   *cfg,
+                                                   struct GNUNET_GE_Context
+                                                   *ectx, const char *section,
+                                                   const char *option,
+                                                   const char *value);
 
 /**
  * Append a filename to a configuration value that
@@ -237,12 +240,13 @@ int GNUNET_GC_remove_configuration_value_filename (struct GNUNET_GC_Configuratio
  *         GNUNET_NO if the filename already in the list
  *         GNUNET_SYSERR on error
  */
-int GNUNET_GC_append_configuration_value_filename (struct GNUNET_GC_Configuration
-						   *cfg,
-						   struct GNUNET_GE_Context *ectx,
-						   const char *section,
-						   const char *option,
-						   const char *value);
+int GNUNET_GC_append_configuration_value_filename (struct
+                                                   GNUNET_GC_Configuration
+                                                   *cfg,
+                                                   struct GNUNET_GE_Context
+                                                   *ectx, const char *section,
+                                                   const char *option,
+                                                   const char *value);
 
 /**
  * Set a configuration value that should be in a set of

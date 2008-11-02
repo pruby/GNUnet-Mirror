@@ -489,15 +489,15 @@ GNUNET_FSUI_uploadThread (void *cls)
         }
       uri = NULL;
       if (utc->shared->individualKeywords == GNUNET_YES)
-	{
-	  /* need to convert to URI *before*
-	     removing split/lower from meta */
-	  uri = GNUNET_meta_data_to_uri (utc->meta);
-	}
+        {
+          /* need to convert to URI *before*
+             removing split/lower from meta */
+          uri = GNUNET_meta_data_to_uri (utc->meta);
+        }
       while (GNUNET_OK ==
-	     GNUNET_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
       while (GNUNET_OK ==
-	     GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE, NULL));
+             GNUNET_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE, NULL));
       if (utc->shared->individualKeywords == GNUNET_YES)
         {
           GNUNET_ECRS_publish_under_keyword (ectx,
@@ -640,8 +640,7 @@ static struct GNUNET_FSUI_UploadList *addUploads (struct
                                                   *parent);
 
 static int
-addChildUpload (void * data,
-		const char * filename)
+addChildUpload (void *data, const char *filename)
 {
   struct GNUNET_FSUI_UploadList *parent = data;
   struct GNUNET_FSUI_UploadList *child;

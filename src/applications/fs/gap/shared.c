@@ -42,7 +42,7 @@ GNUNET_FS_SHARED_free_request_list (struct RequestList *rl)
 
   if (rl->responses != NULL)
     {
-      GNUNET_multi_hash_map_destroy(rl->responses);
+      GNUNET_multi_hash_map_destroy (rl->responses);
       rl->responses = NULL;
     }
   while (rl->plan_entries != NULL)
@@ -112,10 +112,9 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
     return GNUNET_NO;           /* not useful */
   /* bloomfilter should cover these already */
-  if ( (rl->responses != NULL) &&
-       (GNUNET_YES == GNUNET_multi_hash_map_contains(rl->responses,
-						     hc)) )
-    return GNUNET_NO; /* not useful */
+  if ((rl->responses != NULL) &&
+      (GNUNET_YES == GNUNET_multi_hash_map_contains (rl->responses, hc)))
+    return GNUNET_NO;           /* not useful */
   return GNUNET_OK;
 }
 
@@ -126,7 +125,7 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
  */
 void
 GNUNET_FS_SHARED_mark_response_seen (const GNUNET_HashCode * hc,
-				     struct RequestList *rl)                                  
+                                     struct RequestList *rl)
 {
   GNUNET_HashCode m;
 
@@ -137,11 +136,9 @@ GNUNET_FS_SHARED_mark_response_seen (const GNUNET_HashCode * hc,
     }
   /* update seen list */
   if (rl->responses == NULL)
-    rl->responses = GNUNET_multi_hash_map_create(8);
-  GNUNET_multi_hash_map_put(rl->responses,
-			    hc,
-			    NULL,
-			    GNUNET_MultiHashMapOption_UNIQUE_FAST);
+    rl->responses = GNUNET_multi_hash_map_create (8);
+  GNUNET_multi_hash_map_put (rl->responses,
+                             hc, NULL, GNUNET_MultiHashMapOption_UNIQUE_FAST);
 }
 
 

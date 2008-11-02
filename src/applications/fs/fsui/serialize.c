@@ -244,18 +244,17 @@ write_search_record_list (struct GNUNET_GE_Context *ectx,
   WRITEINT (wb, -1);
 }
 
-struct WriteResultContext {
-  struct GNUNET_GE_Context * ectx;
-  WriteBuffer * wb;
-  struct SearchRecordList * search_list;
+struct WriteResultContext
+{
+  struct GNUNET_GE_Context *ectx;
+  WriteBuffer *wb;
+  struct SearchRecordList *search_list;
 };
 
 static int
-write_result_entry (const GNUNET_HashCode * key,
-		    void * value,
-		    void * ctx) 
+write_result_entry (const GNUNET_HashCode * key, void *value, void *ctx)
 {
-  struct WriteResultContext * wrc = ctx;
+  struct WriteResultContext *wrc = ctx;
   struct SearchResultList *pos = value;
   unsigned int i;
   unsigned int idx;
@@ -272,12 +271,12 @@ write_result_entry (const GNUNET_HashCode * key,
       idx = 1;
       spos = wrc->search_list;
       while ((spos != NULL) && (spos != pos->matchingSearches[i]))
-	{
-	  idx++;
-	  spos = spos->next;
-	}
+        {
+          idx++;
+          spos = spos->next;
+        }
       if (spos == NULL)
-	idx = 0;
+        idx = 0;
       WRITEINT (wrc->wb, idx);
     }
   return GNUNET_OK;
@@ -306,10 +305,9 @@ writeSearches (WriteBuffer * wb, struct GNUNET_FSUI_Context *ctx)
       wrc.ectx = ctx->ectx;
       wrc.wb = wb;
       wrc.search_list = spos->searches;
-      GNUNET_multi_hash_map_iterate(spos->resultsReceived,
-				    &write_result_entry,
-				    &wrc);
-      WRITEINT (wb, -1); /* result list terminator */
+      GNUNET_multi_hash_map_iterate (spos->resultsReceived,
+                                     &write_result_entry, &wrc);
+      WRITEINT (wb, -1);        /* result list terminator */
       spos = spos->next;
     }
   WRITEINT (wb, 0);

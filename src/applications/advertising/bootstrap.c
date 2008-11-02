@@ -128,10 +128,8 @@ downloadHostlistCallback (const GNUNET_MessageHello * hello, void *c)
                          hlc.hellosLen,
                          hlc.hellosLen + HELLO_HELPER_TABLE_START_SIZE);
     }
-  hlc.hellos[hlc.hellosCount++] =
-    GNUNET_malloc (ntohs (hello->header.size));
-  memcpy (hlc.hellos[hlc.hellosCount - 1], hello,
-          ntohs (hello->header.size));
+  hlc.hellos[hlc.hellosCount++] = GNUNET_malloc (ntohs (hello->header.size));
+  memcpy (hlc.hellos[hlc.hellosCount - 1], hello, ntohs (hello->header.size));
 }
 
 #define BOOTSTRAP_INFO "bootstrap-info"

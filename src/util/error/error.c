@@ -131,10 +131,9 @@ flush_bulk (struct GNUNET_GE_Context *ctx, const char *datestr)
   GNUNET_CronTime now;
   int rev;
   char *last;
-  
-  if ( (ctx == NULL) ||
-       (ctx->last_bulk_time == 0) || 
-       (ctx->last_bulk_repeat == 0) )
+
+  if ((ctx == NULL) ||
+      (ctx->last_bulk_time == 0) || (ctx->last_bulk_repeat == 0))
     return;
   now = GNUNET_get_time ();
   rev = 0;
@@ -201,8 +200,7 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
   tmptr = localtime (&timetmp);
   strftime (date, DATE_STR_SIZE, "%b %d %H:%M:%S", tmptr);
   now = GNUNET_get_time ();
-  if ((ctx != NULL) &&
-      ((kind & GNUNET_GE_BULK) != 0))
+  if ((ctx != NULL) && ((kind & GNUNET_GE_BULK) != 0))
     {
       if ((ctx->last_bulk_time != 0) &&
           (0 == strncmp (buf, ctx->last_bulk, sizeof (ctx->last_bulk))))
@@ -211,7 +209,7 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
           if ((now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
               (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD))
             flush_bulk (ctx, date);
-	  free (buf);
+          free (buf);
           return;
         }
       else
@@ -224,9 +222,9 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
           ctx->last_bulk_kind = kind;
         }
     }
-  if ( (ctx != NULL) &&
-       ((now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
-	(ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD)) )
+  if ((ctx != NULL) &&
+      ((now - ctx->last_bulk_time > BULK_DELAY_THRESHOLD) ||
+       (ctx->last_bulk_repeat > BULK_REPEAT_THRESHOLD)))
     {
       flush_bulk (ctx, date);
       ctx->last_bulk_time = 0;

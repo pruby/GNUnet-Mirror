@@ -66,10 +66,10 @@ static adns_state a_state;
 #endif
 
 #if HAVE_C_ARES
-static void ar_callback(void *arg, int status, int timeouts, 
-  struct hostent *ent)
+static void
+ar_callback (void *arg, int status, int timeouts, struct hostent *ent)
 {
-  struct IPCache *cache = (struct IPCache *)arg;
+  struct IPCache *cache = (struct IPCache *) arg;
 
   if (cache == NULL)
     return;
@@ -99,7 +99,7 @@ ar_resolve (struct IPCache *cache)
       switch (cache->sa->sa_family)
         {
         case AF_INET:
-          ares_gethostbyaddr (ar_channel, 
+          ares_gethostbyaddr (ar_channel,
                               &((struct sockaddr_in *) cache->sa)->sin_addr,
                               sizeof (struct in_addr), AF_INET,
                               ar_callback, cache);
@@ -117,22 +117,22 @@ ar_resolve (struct IPCache *cache)
         }
     }
 
-  sockmask = ares_getsock(ar_channel, socks, ARES_GETSOCK_MAXNUM);
+  sockmask = ares_getsock (ar_channel, socks, ARES_GETSOCK_MAXNUM);
   c = 0;
-  for(i = 0; i < ARES_GETSOCK_MAXNUM; i++)
+  for (i = 0; i < ARES_GETSOCK_MAXNUM; i++)
     {
       int r, w;
 
       r = w = 0;
-      if(ARES_GETSOCK_READABLE(sockmask, i))
-        r = 1; 
-      if(ARES_GETSOCK_WRITABLE(sockmask, i)) 
+      if (ARES_GETSOCK_READABLE (sockmask, i))
+        r = 1;
+      if (ARES_GETSOCK_WRITABLE (sockmask, i))
         w = 1;
-      if(r != 0 || w != 0)
+      if (r != 0 || w != 0)
         {
-          ares_process_fd(ar_channel,
-                          r != 0 ? socks[i] : ARES_SOCKET_BAD,
-                          w != 0 ? socks[i] : ARES_SOCKET_BAD);
+          ares_process_fd (ar_channel,
+                           r != 0 ? socks[i] : ARES_SOCKET_BAD,
+                           w != 0 ? socks[i] : ARES_SOCKET_BAD);
           c++;
         }
       else
@@ -141,7 +141,7 @@ ar_resolve (struct IPCache *cache)
 
   /* if ares_process_fd wasn't called above, call here to process time-outs */
   if (c == 0)
-    ares_process_fd(ar_channel, ARES_SOCKET_BAD,ARES_SOCKET_BAD);
+    ares_process_fd (ar_channel, ARES_SOCKET_BAD, ARES_SOCKET_BAD);
 }
 #elif HAVE_ADNS
 static void
@@ -332,7 +332,7 @@ GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
       if (cache->last_request + 60 * GNUNET_CRON_MINUTES < now)
         {
 #if HAVE_C_ARES
-          if (cache->posted == GNUNET_YES) /* ares can't cancel single reqs */
+          if (cache->posted == GNUNET_YES)      /* ares can't cancel single reqs */
             {
               prev = cache;
               cache = cache->next;

@@ -125,22 +125,21 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
 }
 
 static int
-listKeywords (void * cls,
-	      const char *fullName)
+listKeywords (void *cls, const char *fullName)
 {
   EXTRACTOR_ExtractorList *l = cls;
   struct stat buf;
   EXTRACTOR_KeywordList *list;
-  const char * fn;
+  const char *fn;
 
   printf (_("Keywords for file `%s':\n"), fullName);
   if (0 != STAT (fullName, &buf))
-    return GNUNET_OK;    
+    return GNUNET_OK;
   if (S_ISDIR (buf.st_mode))
     {
       fn = fullName;
-      while (NULL != strstr(fn, DIR_SEPARATOR_STR))
-	fn = 1 + strstr(fn, DIR_SEPARATOR_STR);  
+      while (NULL != strstr (fn, DIR_SEPARATOR_STR))
+        fn = 1 + strstr (fn, DIR_SEPARATOR_STR);
       printf ("%s - %s\n", dgettext ("libextractor", "filename"), fn);
       printf ("%s - %s\n",
               dgettext ("libextractor", "mimetype"),

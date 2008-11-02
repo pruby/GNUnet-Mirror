@@ -123,8 +123,7 @@ get_date_format ()
  * Remove file if it is an old log
  */
 static int
-remove_old_log (void * ptr,
-		const char *fullname)
+remove_old_log (void *ptr, const char *fullname)
 {
   const FileContext *ctx = ptr;
   struct tm t;
@@ -139,13 +138,13 @@ remove_old_log (void * ptr,
   lcltime = *localtime (&curtime);
   def = ctx->basename;
   if (0 != strncmp (def, fullname, strlen (def)))
-    return GNUNET_OK;    
+    return GNUNET_OK;
   logdate = &fullname[strlen (def) + 1];
   datefmt = get_date_format ();
   ret = strptime (logdate, datefmt, &t);
   GNUNET_free (datefmt);
   if ((ret == NULL) || (ret[0] != '\0'))
-    return GNUNET_OK;         /* not a logfile */    
+    return GNUNET_OK;           /* not a logfile */
   if (ctx->logrotate
       + t.tm_year * 365 + t.tm_yday
       - lcltime.tm_year * 365 - lcltime.tm_yday <= 0)
@@ -206,7 +205,8 @@ purge_old_logs (FileContext * fctx, const char *logfilename)
 }
 
 static void
-file_log_callback (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
+file_log_callback (void *cls, GNUNET_GE_KIND kind, const char *date,
+                   const char *msg)
 {
   FileContext *fctx = cls;
   char *name;
@@ -347,32 +347,31 @@ GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
   purge_old_logs (fctx, name);
   return GNUNET_GE_create_context_callback (mask,
-                                            &file_log_callback, fctx, 
-					    &file_logger_close_callback,
+                                            &file_log_callback, fctx,
+                                            &file_logger_close_callback,
                                             NULL);
 }
 
 /**
- * Create a logger that writes events to the 
+ * Create a logger that writes events to the
  * given file (but does not delete or close it
  * and does no logrotation).
  *
  * @param mask which events should be logged?
  */
 static struct GNUNET_GE_Context *
-create_log_context_fd (int logDate,
-		       GNUNET_GE_KIND mask,
-		       FILE * fd)
+create_log_context_fd (int logDate, GNUNET_GE_KIND mask, FILE * fd)
 {
   FileContext *fctx;
 
   fctx = GNUNET_malloc (sizeof (FileContext));
-  memset(fctx, 0, sizeof(FileContext));
+  memset (fctx, 0, sizeof (FileContext));
   fctx->logdate = logDate;
   fctx->handle = fd;
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
   return GNUNET_GE_create_context_callback (mask,
-                                            &file_log_callback, fctx, &file_logger_close_callback,
+                                            &file_log_callback, fctx,
+                                            &file_logger_close_callback,
                                             NULL);
 }
 
@@ -385,7 +384,7 @@ create_log_context_fd (int logDate,
 struct GNUNET_GE_Context *
 GNUNET_GE_create_context_stderr (int logDate, GNUNET_GE_KIND mask)
 {
-  return create_log_context_fd(logDate, mask, stderr);
+  return create_log_context_fd (logDate, mask, stderr);
 }
 
 /**
@@ -396,7 +395,7 @@ GNUNET_GE_create_context_stderr (int logDate, GNUNET_GE_KIND mask)
 struct GNUNET_GE_Context *
 GNUNET_GE_create_context_stdout (int logDate, GNUNET_GE_KIND mask)
 {
-  return create_log_context_fd(logDate, mask, stdout);
+  return create_log_context_fd (logDate, mask, stdout);
 }
 
 /* end of file.c */

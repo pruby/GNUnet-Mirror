@@ -130,8 +130,7 @@ int GNUNET_disk_file_copy (struct GNUNET_GE_Context *ectx,
  */
 int GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
                                 const char *dirName,
-                                GNUNET_FileNameCallback callback,
-                                void *data);
+                                GNUNET_FileNameCallback callback, void *data);
 
 
 /**

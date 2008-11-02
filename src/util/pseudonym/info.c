@@ -174,19 +174,18 @@ struct ListPseudonymClosure
 };
 
 static int
-list_pseudonym_helper (void * cls,
-		       const char *fullname)
+list_pseudonym_helper (void *cls, const char *fullname)
 {
   struct ListPseudonymClosure *c = cls;
   int ret;
   GNUNET_HashCode id;
   int rating;
   struct GNUNET_MetaData *meta;
-  const char * fn;
+  const char *fn;
 
-  if (strlen(fullname) < sizeof(GNUNET_EncName))
+  if (strlen (fullname) < sizeof (GNUNET_EncName))
     return GNUNET_OK;
-  fn = &fullname[strlen(fullname) + 1 - sizeof(GNUNET_EncName)];
+  fn = &fullname[strlen (fullname) + 1 - sizeof (GNUNET_EncName)];
   if (fn[-1] != DIR_SEPARATOR)
     return GNUNET_OK;
   ret = GNUNET_OK;

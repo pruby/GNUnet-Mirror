@@ -166,7 +166,7 @@ write_namespace_key (struct GNUNET_GC_Configuration *cfg,
  * @param rootURI set to the URI of the namespace, NULL if
  *        no advertisement was created
  *
- * @return URI on success, NULL on error 
+ * @return URI on success, NULL on error
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
@@ -309,8 +309,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
                                                           sizeof (unsigned
                                                                   int),
                                                           &ksb->sblock,
-                                                          &ksb->kblock.
-                                                          signature));
+                                                          &ksb->
+                                                          kblock.signature));
           /* extra check: verify sig */
           GNUNET_RSA_free_key (pk);
           if (GNUNET_OK != GNUNET_FS_insert (sock, knvalue))
@@ -514,8 +514,7 @@ struct lNCLS
 };
 
 static int
-processFile_ (void *cls,
-	      const char * fileName)
+processFile_ (void *cls, const char *fileName)
 {
   struct lNCLS *c = cls;
   struct GNUNET_RSA_PrivateKey *hk;
@@ -524,11 +523,11 @@ processFile_ (void *cls,
   unsigned long long len;
   GNUNET_HashCode namespace;
   GNUNET_RSA_PublicKey pk;
-  const char * name;
-  
+  const char *name;
+
   if (GNUNET_OK !=
       GNUNET_disk_file_size (c->ectx, fileName, &len, GNUNET_YES))
-    return GNUNET_OK;    
+    return GNUNET_OK;
   if (len < 2)
     {
       GNUNET_GE_LOG (c->ectx,
@@ -545,8 +544,8 @@ processFile_ (void *cls,
     {
       GNUNET_GE_LOG (c->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Format of file `%s' is invalid, trying to remove.\n"), 
-		     fileName);
+                     _("Format of file `%s' is invalid, trying to remove.\n"),
+                     fileName);
       UNLINK (fileName);
       GNUNET_free (hke);
       return GNUNET_OK;
@@ -569,8 +568,8 @@ processFile_ (void *cls,
   if (NULL != c->cb)
     {
       name = fileName;
-      while (NULL != strstr(name, DIR_SEPARATOR_STR))
-	name = 1 + strstr(name, DIR_SEPARATOR_STR);
+      while (NULL != strstr (name, DIR_SEPARATOR_STR))
+        name = 1 + strstr (name, DIR_SEPARATOR_STR);
       if (GNUNET_OK == c->cb (&namespace, name, c->cls))
         c->cnt++;
       else

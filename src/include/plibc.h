@@ -15,9 +15,8 @@
 	   You should have received a copy of the GNU Lesser General Public
 	   License along with this library; if not, write to the Free Software
 	   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/ 
-  
-  
+*/
+ 
 /**
  * @file include/plibc.h
  * @brief PlibC header
@@ -31,17 +30,17 @@
   
 #ifndef SIGALRM
 #define SIGALRM 14
-#endif  /*  */
+#endif /*  */
   
 #ifdef __cplusplus
 extern "C"
 {
   
-#endif  /*  */
+#endif                          /*  */
   
 #ifdef Q_OS_WIN32
 #define WINDOWS 1
-#endif  /*  */
+#endif                          /*  */
   
 #define HAVE_PLIBC_FD 0
   
@@ -49,7 +48,7 @@ extern "C"
   
 #if ENABLE_NLS
 #include "langinfo.h"
-#endif  /*  */
+#endif                          /*  */
   
 #include <windows.h>
 #include <Ws2tcpip.h>
@@ -92,21 +91,21 @@ extern "C"
   
 #ifndef pid_t
 #define pid_t int
-#endif  /*  */
+#endif /*  */
     
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(status) (((status) & 0xff00) >> 8)
-#endif  /*  */
+#endif /*  */
     
 /* Thanks to the Cygwin project */ 
 #define ENOCSI 43	/* No CSI structure available */
 #define EL2HLT 44	/* Level 2 halted */
 #ifndef  EDEADLK
 #define EDEADLK 45	/* Deadlock condition */
-#endif  /*  */
+#endif /*  */
 #ifndef  ENOLCK
 #define ENOLCK 46	/* No record locks available */
-#endif  /*  */
+#endif /*  */
 #define EBADE 50	/* Invalid exchange */
 #define EBADR 51	/* Invalid request descriptor */
 #define EXFULL 52	/* Exchange full */
@@ -115,7 +114,7 @@ extern "C"
 #define EBADSLT 55	/* Invalid slot */
 #ifndef  EDEADLOCK
 #define EDEADLOCK EDEADLK	/* File locking deadlock error */
-#endif  /*  */
+#endif /*  */
 #define EBFONT 57	/* Bad font file fmt */
 #define ENOSTR 60	/* Device not a stream */
 #define ENODATA 61	/* No data (for no delay io) */
@@ -143,14 +142,14 @@ extern "C"
 #define ELIBEXEC 87	/* Attempting to exec a shared library */
 #ifndef  ENOSYS
 #define ENOSYS 88	/* Function not implemented */
-#endif  /*  */
+#endif /*  */
 #define ENMFILE 89      /* No more files */
 #ifndef  ENOTEMPTY
 #define ENOTEMPTY 90	/* Directory not empty */
-#endif  /*  */
+#endif /*  */
 #ifndef  ENAMETOOLONG
 #define ENAMETOOLONG 91	/* File or path name too long */
-#endif  /*  */
+#endif /*  */
 #define ELOOP 92	/* Too many symbolic links */
 #define EOPNOTSUPP 95	/* Operation not supported on transport endpoint */
 #define EPFNOSUPPORT 96 /* Protocol family not supported */
@@ -168,7 +167,7 @@ extern "C"
 #define ENETDOWN 115		/* Network interface is not configured */
 #ifndef  ETIMEDOUT
 #define ETIMEDOUT 116		/* Connection timed out */
-#endif  /*  */
+#endif /*  */
 #define EHOSTDOWN 117		/* Host is down */
 #define EHOSTUNREACH 118	/* Host is unreachable */
 #define EINPROGRESS 119		/* Connection already in progress */
@@ -188,7 +187,7 @@ extern "C"
 #define ESTALE 133          /* Unknown error */
 #ifndef  ENOTSUP
 #define ENOTSUP 134		    /* Not supported */
-#endif  /*  */
+#endif /*  */
 #define ENOMEDIUM 135       /* No medium (in tape drive) */
 #define ENOSHARE 136        /* No such host or network path */
 #define ECASECLASH 137      /* Filename exists with different case */
@@ -231,12 +230,12 @@ extern "C"
     enum SYSTEM_INFORMATION_CLASS 
   { SystemBasicInformation = 0, Unknown1, SystemPerformanceInformation =
       2, SystemTimeOfDayInformation = 3, /* was SystemTimeInformation */ 
-    Unknown4, SystemProcessInformation =
+      Unknown4, SystemProcessInformation =
       5, Unknown6, Unknown7, SystemProcessorPerformanceInformation =
       8, Unknown9, Unknown10, SystemDriverInformation, Unknown12,
-      Unknown13, Unknown14, Unknown15, SystemHandleList, Unknown17,
-      Unknown18, Unknown19, Unknown20, SystemCacheInformation,
-      Unknown22, SystemInterruptInformation =
+    Unknown13, Unknown14, Unknown15, SystemHandleList, Unknown17,
+    Unknown18, Unknown19, Unknown20, SystemCacheInformation,
+    Unknown22, SystemInterruptInformation =
       23, SystemExceptionInformation =
       33, SystemRegistryQuotaInformation =
       37, SystemLookasideInformation = 45 
@@ -314,7 +313,7 @@ extern "C"
 #if USE_IPV6
   int inet_pton6 (const char *src, u_char * dst);
   
-#endif  /*  */
+#endif /*  */
   int truncate (const char *fname, int distance);
   int statfs (const char *path, struct statfs *buf);
   const char *hstrerror (int err);
@@ -340,7 +339,7 @@ extern "C"
 #ifdef ENABLE_NLS
   char *_win_bindtextdomain (const char *domainname, const char *dirname);
   
-#endif  /*  */
+#endif /*  */
   int _win_chdir (const char *path);
   int _win_close (int fd);
   int _win_creat (const char *path, mode_t mode);
@@ -416,11 +415,11 @@ extern "C"
 #if !HAVE_STRNDUP
   char *strndup (const char *s, size_t n);
   
-#endif  /*  */
+#endif /*  */
 #if !HAVE_STRNLEN
   size_t strnlen (const char *str, size_t maxlen);
   
-#endif  /*  */
+#endif /*  */
     
 #define strcasecmp(a, b) stricmp(a, b)
 #define strncasecmp(a, b, c) strnicmp(a, b, c)
@@ -436,7 +435,7 @@ extern "C"
     
 #ifdef ENABLE_NLS
 #define BINDTEXTDOMAIN(d, n) bindtextdomain(d, n)
-#endif  /*  */
+#endif /*  */
 #define CREAT(p, m) creat(p, m)
 #undef FOPEN
 #define FOPEN(f, m) fopen(f, m)
@@ -501,7 +500,7 @@ extern "C"
 #define SOCKET(a, t, p) socket(a, t, p)
 #define GETHOSTBYADDR(a, l, t) gethostbyname(a, l, t)
 #define GETHOSTBYNAME(n) gethostbyname(n)
-#else   /*  */
+#else /*  */
 #define DIR_SEPARATOR '\\'
 #define DIR_SEPARATOR_STR "\\"
 #define PATH_SEPARATOR ':'
@@ -510,7 +509,7 @@ extern "C"
     
 #ifdef ENABLE_NLS
 #define BINDTEXTDOMAIN(d, n) _win_bindtextdomain(d, n)
-#endif  /*  */
+#endif /*  */
 #define CREAT(p, m) _win_creat(p, m)
 #define FOPEN(f, m) _win_fopen(f, m)
 #define FTRUNCATE(f, l) _win_ftruncate(f, l)
@@ -574,11 +573,11 @@ extern "C"
 #define SOCKET(a, t, p) _win_socket(a, t, p)
 #define GETHOSTBYADDR(a, l, t) _win_gethostbyname(a, l, t)
 #define GETHOSTBYNAME(n) _win_gethostbyname(n)
-#endif  /*  */
+#endif /*  */
     
 #ifdef __cplusplus
 } 
-#endif  /*  */
+#endif /*  */
   
 #endif //_PLIBC_H_
   

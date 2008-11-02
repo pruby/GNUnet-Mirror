@@ -292,8 +292,7 @@ setup_tunnel (int n, const GNUNET_PeerIdentity * them)
   if (fd < 0)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Cannot open tunnel device: %s"),
-                     strerror (fd));
+                     _("Cannot open tunnel device: %s"), strerror (fd));
       GNUNET_GE_DIE_STRERROR (ectx,
                               GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
                               GNUNET_GE_BULK, "open");

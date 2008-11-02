@@ -62,9 +62,7 @@ test_download_progress (unsigned long long totalBytes,
 }
 
 static int
-process_probes(const GNUNET_HashCode * key,
-	       void * value,
-	       void * cls)
+process_probes (const GNUNET_HashCode * key, void *value, void *cls)
 {
   struct GNUNET_FSUI_SearchList *sl = cls;
   struct SearchResultList *srl = value;
@@ -77,97 +75,96 @@ process_probes(const GNUNET_HashCode * key,
   if (srl->test_download != NULL)
     {
       if (srl->test_download_start_time == 0)
-	{
-	  /* probe was successful, kill */
-	  GNUNET_ECRS_file_download_partial_stop (srl->test_download);
-	  srl->test_download = NULL;
-	  srl->probeSuccess++;
-	  event.type = GNUNET_FSUI_search_update;
-	  event.data.SearchUpdate.sc.pos = sl;
-	  event.data.SearchUpdate.sc.cctx = sl->cctx;
-	  event.data.SearchUpdate.fi = srl->fi;
-	  event.data.SearchUpdate.searchURI = sl->uri;
-	  event.data.SearchUpdate.availability_rank =
-	    srl->probeSuccess - srl->probeFailure;
-	  event.data.SearchUpdate.availability_certainty =
-	    srl->probeSuccess + srl->probeFailure;
-	  event.data.SearchUpdate.applicability_rank =
-	    srl->matchingSearchCount;
-	  sl->ctx->ecb (sl->ctx->ecbClosure, &event);
-	  sl->ctx->active_probes--;
-	  srl->last_probe_time = now;
-	}
+        {
+          /* probe was successful, kill */
+          GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+          srl->test_download = NULL;
+          srl->probeSuccess++;
+          event.type = GNUNET_FSUI_search_update;
+          event.data.SearchUpdate.sc.pos = sl;
+          event.data.SearchUpdate.sc.cctx = sl->cctx;
+          event.data.SearchUpdate.fi = srl->fi;
+          event.data.SearchUpdate.searchURI = sl->uri;
+          event.data.SearchUpdate.availability_rank =
+            srl->probeSuccess - srl->probeFailure;
+          event.data.SearchUpdate.availability_certainty =
+            srl->probeSuccess + srl->probeFailure;
+          event.data.SearchUpdate.applicability_rank =
+            srl->matchingSearchCount;
+          sl->ctx->ecb (sl->ctx->ecbClosure, &event);
+          sl->ctx->active_probes--;
+          srl->last_probe_time = now;
+        }
       else
-	{
-	  /* consider stopping */
-	  if ((now - srl->test_download_start_time)
-	      >
-	      SQUARE (srl->probeSuccess + srl->probeFailure +
-		      1) * GNUNET_FSUI_PROBE_TIME_FACTOR)
-	    {
-	      /* timeout hit! */
-	      GNUNET_ECRS_file_download_partial_stop
-		(srl->test_download);
-	      srl->test_download = NULL;
-	      srl->probeFailure++;
-	      event.type = GNUNET_FSUI_search_update;
-	      event.data.SearchUpdate.sc.pos = sl;
-	      event.data.SearchUpdate.sc.cctx = sl->cctx;
-	      event.data.SearchUpdate.fi = srl->fi;
-	      event.data.SearchUpdate.searchURI = sl->uri;
-	      event.data.SearchUpdate.availability_rank =
-		srl->probeSuccess - srl->probeFailure;
-	      event.data.SearchUpdate.availability_certainty =
-		srl->probeSuccess + srl->probeFailure;
-	      event.data.SearchUpdate.applicability_rank =
-		srl->matchingSearchCount;
-	      sl->ctx->ecb (sl->ctx->ecbClosure, &event);
-	      sl->ctx->active_probes--;
-	      srl->last_probe_time = now;
-	    }
-	}
+        {
+          /* consider stopping */
+          if ((now - srl->test_download_start_time)
+              >
+              SQUARE (srl->probeSuccess + srl->probeFailure +
+                      1) * GNUNET_FSUI_PROBE_TIME_FACTOR)
+            {
+              /* timeout hit! */
+              GNUNET_ECRS_file_download_partial_stop (srl->test_download);
+              srl->test_download = NULL;
+              srl->probeFailure++;
+              event.type = GNUNET_FSUI_search_update;
+              event.data.SearchUpdate.sc.pos = sl;
+              event.data.SearchUpdate.sc.cctx = sl->cctx;
+              event.data.SearchUpdate.fi = srl->fi;
+              event.data.SearchUpdate.searchURI = sl->uri;
+              event.data.SearchUpdate.availability_rank =
+                srl->probeSuccess - srl->probeFailure;
+              event.data.SearchUpdate.availability_certainty =
+                srl->probeSuccess + srl->probeFailure;
+              event.data.SearchUpdate.applicability_rank =
+                srl->matchingSearchCount;
+              sl->ctx->ecb (sl->ctx->ecbClosure, &event);
+              sl->ctx->active_probes--;
+              srl->last_probe_time = now;
+            }
+        }
     }
   else
     {
       len = GNUNET_ECRS_uri_get_file_size (srl->fi.uri);
       if (len == 0)
-	srl->probeSuccess = -1; /* MAX */
+        srl->probeSuccess = -1; /* MAX */
       /* consider starting */
       if (((srl->probeSuccess + srl->probeFailure) <
-	   GNUNET_FSUI_MAX_PROBES)
-	  &&
-	  ((srl->last_probe_time <
-	    now +
-	    GNUNET_FSUI_PROBE_DELAY * SQUARE (sl->ctx->active_probes) +
-	    GNUNET_random_u64 (GNUNET_RANDOM_QUALITY_WEAK,
-			       GNUNET_FSUI_PROBE_DELAY)))
-	  && (sl->ctx->active_probes < GNUNET_FSUI_HARD_PROBE_LIMIT))
-	{
-	  off = len / GNUNET_ECRS_DBLOCK_SIZE;
-	  if (off > 0)
-	    off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, off);
-	  off *= GNUNET_ECRS_DBLOCK_SIZE;
-	  if (len - off < GNUNET_ECRS_DBLOCK_SIZE)
-	    len = len - off;
-	  else
-	    len = GNUNET_ECRS_DBLOCK_SIZE;
-	  srl->test_download
-	    = GNUNET_ECRS_file_download_partial_start (sl->ctx->ectx,
-						       sl->ctx->cfg,
-						       sl->probe_context,
-						       srl->fi.uri,
-						       NULL, off, len,
-						       1, GNUNET_YES,
-						       &test_download_progress,
-						       srl);
-	  if (srl->test_download != NULL)
-	    {
-	      srl->test_download_start_time = now;
-	      sl->ctx->active_probes++;
-	    }
-	}
+           GNUNET_FSUI_MAX_PROBES)
+          &&
+          ((srl->last_probe_time <
+            now +
+            GNUNET_FSUI_PROBE_DELAY * SQUARE (sl->ctx->active_probes) +
+            GNUNET_random_u64 (GNUNET_RANDOM_QUALITY_WEAK,
+                               GNUNET_FSUI_PROBE_DELAY)))
+          && (sl->ctx->active_probes < GNUNET_FSUI_HARD_PROBE_LIMIT))
+        {
+          off = len / GNUNET_ECRS_DBLOCK_SIZE;
+          if (off > 0)
+            off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, off);
+          off *= GNUNET_ECRS_DBLOCK_SIZE;
+          if (len - off < GNUNET_ECRS_DBLOCK_SIZE)
+            len = len - off;
+          else
+            len = GNUNET_ECRS_DBLOCK_SIZE;
+          srl->test_download
+            = GNUNET_ECRS_file_download_partial_start (sl->ctx->ectx,
+                                                       sl->ctx->cfg,
+                                                       sl->probe_context,
+                                                       srl->fi.uri,
+                                                       NULL, off, len,
+                                                       1, GNUNET_YES,
+                                                       &test_download_progress,
+                                                       srl);
+          if (srl->test_download != NULL)
+            {
+              srl->test_download_start_time = now;
+              sl->ctx->active_probes++;
+            }
+        }
     }
-  return GNUNET_OK;  
+  return GNUNET_OK;
 }
 
 /**
@@ -198,9 +195,8 @@ updateDownloadThreads (void *c)
   sl = ctx->activeSearches;
   while (sl != NULL)
     {
-      GNUNET_multi_hash_map_iterate(sl->resultsReceived,
-				    &process_probes,
-				    sl);
+      GNUNET_multi_hash_map_iterate (sl->resultsReceived,
+                                     &process_probes, sl);
       sl = sl->next;
     }
   GNUNET_mutex_unlock (ctx->lock);
@@ -324,11 +320,9 @@ doResumeUploads (struct GNUNET_FSUI_UploadList *ret,
 }
 
 static int
-count_mandatory_zero(const GNUNET_HashCode * key,
-		     void * value,
-		     void * cls) 
+count_mandatory_zero (const GNUNET_HashCode * key, void *value, void *cls)
 {
-  unsigned int * count = cls;
+  unsigned int *count = cls;
   struct SearchResultList *pos = value;
 
   if (pos->mandatoryMatchesRemaining == 0)
@@ -337,23 +331,27 @@ count_mandatory_zero(const GNUNET_HashCode * key,
 }
 
 static int
-process_mandatory_zero(const GNUNET_HashCode * key,
-		       void * value,
-		       void * cls) 
+process_mandatory_zero (const GNUNET_HashCode * key, void *value, void *cls)
 {
-  GNUNET_FSUI_Event * event = cls;
+  GNUNET_FSUI_Event *event = cls;
   struct SearchResultList *pos = value;
 
   if (pos->mandatoryMatchesRemaining == 0)
     {
-      ((GNUNET_ECRS_FileInfo*)event->data.SearchResumed.fis)[event->data.SearchResumed.fisSize]
-	= pos->fi;
-      event->data.SearchResumed.availability_rank[event->data.SearchResumed.fisSize]
-	= pos->probeSuccess - pos->probeFailure;
-      event->data.SearchResumed.availability_certainty[event->data.SearchResumed.fisSize]
-	= pos->probeSuccess + pos->probeFailure;
-      event->data.SearchResumed.applicability_rank [event->data.SearchResumed.fisSize]
-	= pos->matchingSearchCount;
+      ((GNUNET_ECRS_FileInfo *) event->data.SearchResumed.fis)[event->data.
+                                                               SearchResumed.
+                                                               fisSize] =
+        pos->fi;
+      event->data.SearchResumed.availability_rank[event->data.SearchResumed.
+                                                  fisSize] =
+        pos->probeSuccess - pos->probeFailure;
+      event->data.SearchResumed.availability_certainty[event->data.
+                                                       SearchResumed.
+                                                       fisSize] =
+        pos->probeSuccess + pos->probeFailure;
+      event->data.SearchResumed.applicability_rank[event->data.SearchResumed.
+                                                   fisSize] =
+        pos->matchingSearchCount;
       event->data.SearchResumed.fisSize++;
     }
   return GNUNET_OK;
@@ -431,33 +429,31 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   while (list != NULL)
     {
       valid = 0;
-      GNUNET_multi_hash_map_iterate(list->resultsReceived,
-				    &count_mandatory_zero,
-				    &valid);
-      memset(&event, 0, sizeof(GNUNET_FSUI_Event));
+      GNUNET_multi_hash_map_iterate (list->resultsReceived,
+                                     &count_mandatory_zero, &valid);
+      memset (&event, 0, sizeof (GNUNET_FSUI_Event));
       if (valid > 0)
         {
-	  event.data.SearchResumed.fis
-	    = GNUNET_malloc (sizeof (GNUNET_ECRS_FileInfo) * valid);
-	  event.data.SearchResumed.availability_rank 
-	    = GNUNET_malloc (sizeof (int) * valid);
-	  event.data.SearchResumed.availability_certainty
-	    = GNUNET_malloc (sizeof (unsigned int) * valid);
-	  event.data.SearchResumed.applicability_rank 
-	    = GNUNET_malloc (sizeof (unsigned int) * valid);
-	  GNUNET_multi_hash_map_iterate(list->resultsReceived,
-					&process_mandatory_zero,
-					&event);
-	}
+          event.data.SearchResumed.fis
+            = GNUNET_malloc (sizeof (GNUNET_ECRS_FileInfo) * valid);
+          event.data.SearchResumed.availability_rank
+            = GNUNET_malloc (sizeof (int) * valid);
+          event.data.SearchResumed.availability_certainty
+            = GNUNET_malloc (sizeof (unsigned int) * valid);
+          event.data.SearchResumed.applicability_rank
+            = GNUNET_malloc (sizeof (unsigned int) * valid);
+          GNUNET_multi_hash_map_iterate (list->resultsReceived,
+                                         &process_mandatory_zero, &event);
+        }
       event.type = GNUNET_FSUI_search_resumed;
       event.data.SearchResumed.sc.pos = list;
       event.data.SearchResumed.sc.cctx = NULL;
-      GNUNET_GE_ASSERT(NULL, event.data.SearchResumed.fisSize == valid);
+      GNUNET_GE_ASSERT (NULL, event.data.SearchResumed.fisSize == valid);
       event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
       event.data.SearchResumed.searchURI = list->uri;
       event.data.SearchResumed.state = list->state;
       list->cctx = cb (closure, &event);
-      GNUNET_free_non_null ((void*)event.data.SearchResumed.fis);
+      GNUNET_free_non_null ((void *) event.data.SearchResumed.fis);
       GNUNET_free_non_null (event.data.SearchResumed.availability_rank);
       GNUNET_free_non_null (event.data.SearchResumed.availability_certainty);
       GNUNET_free_non_null (event.data.SearchResumed.applicability_rank);
@@ -685,13 +681,11 @@ suspend_active_upload (struct GNUNET_FSUI_UploadList *ul)
 }
 
 static int
-stop_download_probe(const GNUNET_HashCode * key,
-		    void * value,
-		    void * cls) 
+stop_download_probe (const GNUNET_HashCode * key, void *value, void *cls)
 {
   struct SearchResultList *res = value;
-  struct GNUNET_FSUI_Context * ctx = cls;
-  
+  struct GNUNET_FSUI_Context *ctx = cls;
+
   if (res->test_download != NULL)
     {
       GNUNET_ECRS_file_download_partial_stop (res->test_download);
@@ -702,12 +696,10 @@ stop_download_probe(const GNUNET_HashCode * key,
 }
 
 static int
-free_result_data(const GNUNET_HashCode * key,
-		 void * value,
-		 void * cls) 
+free_result_data (const GNUNET_HashCode * key, void *value, void *cls)
 {
   struct SearchResultList *res = value;
-  
+
   GNUNET_meta_data_destroy (res->fi.meta);
   GNUNET_ECRS_uri_destroy (res->fi.uri);
   GNUNET_free (res->matchingSearches);
@@ -769,9 +761,8 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
               rec->search = NULL;
               rec = rec->next;
             }
-	  GNUNET_multi_hash_map_iterate(spos->resultsReceived,
-					&stop_download_probe,
-					ctx);
+          GNUNET_multi_hash_map_iterate (spos->resultsReceived,
+                                         &stop_download_probe, ctx);
 
           if (spos->state != GNUNET_FSUI_PENDING)
             spos->state++;      /* _JOINED */
@@ -865,10 +856,9 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
           GNUNET_ECRS_uri_destroy (rec->uri);
           GNUNET_free (rec);
         }
-      GNUNET_multi_hash_map_iterate(spos->resultsReceived,
-				    &free_result_data,
-				    NULL);
-      GNUNET_multi_hash_map_destroy(spos->resultsReceived);
+      GNUNET_multi_hash_map_iterate (spos->resultsReceived,
+                                     &free_result_data, NULL);
+      GNUNET_multi_hash_map_destroy (spos->resultsReceived);
       GNUNET_free (spos);
     }
   /* 4b) free unindex memory */

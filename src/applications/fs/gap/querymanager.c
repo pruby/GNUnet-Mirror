@@ -125,12 +125,9 @@ compute_bloomfilter_size (unsigned int entry_count)
 }
 
 static int
-mark_response_seen(const GNUNET_HashCode * key,
-		   void * value,
-		   void * cls)
+mark_response_seen (const GNUNET_HashCode * key, void *value, void *cls)
 {
-  GNUNET_FS_SHARED_mark_response_seen(key,
-				      cls);
+  GNUNET_FS_SHARED_mark_response_seen (key, cls);
   return GNUNET_OK;
 }
 
@@ -175,8 +172,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
   if (seen != NULL)
     {
-      request->bloomfilter_entry_count
-	= GNUNET_multi_hash_map_size(seen);
+      request->bloomfilter_entry_count = GNUNET_multi_hash_map_size (seen);
       request->bloomfilter_size =
         compute_bloomfilter_size (request->bloomfilter_entry_count);
       request->bloomfilter_mutator =
@@ -187,9 +183,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
 
-      GNUNET_multi_hash_map_iterate(seen,
-				    &mark_response_seen,
-				    request);
+      GNUNET_multi_hash_map_iterate (seen, &mark_response_seen, request);
     }
   GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
@@ -294,7 +288,7 @@ GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
 
 struct IteratorClosure
 {
-  struct GNUNET_BloomFilter * filter;
+  struct GNUNET_BloomFilter *filter;
   int mingle_number;
 };
 
@@ -307,16 +301,13 @@ struct IteratorClosure
  *         GNUNET_NO if this is the last entry
  */
 static int
-response_bf_iterator (const GNUNET_HashCode * key,
-		      void * value,
-		      void *arg)
+response_bf_iterator (const GNUNET_HashCode * key, void *value, void *arg)
 {
   struct IteratorClosure *cls = arg;
   GNUNET_HashCode n;
 
   GNUNET_FS_HELPER_mingle_hash (key, cls->mingle_number, &n);
-  GNUNET_bloomfilter_add(cls->filter,
-			 &n);
+  GNUNET_bloomfilter_add (cls->filter, &n);
   return GNUNET_YES;
 }
 
@@ -400,18 +391,15 @@ handle_response (PID_INDEX sender,
     {
       rl->bloomfilter_mutator
         = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
-      GNUNET_bloomfilter_free(rl->bloomfilter);
+      GNUNET_bloomfilter_free (rl->bloomfilter);
       rl->bloomfilter =
-	GNUNET_bloomfilter_init(NULL,
-				NULL,
-				bf_size,
-				GNUNET_GAP_BLOOMFILTER_K);
+        GNUNET_bloomfilter_init (NULL,
+                                 NULL, bf_size, GNUNET_GAP_BLOOMFILTER_K);
       ic.filter = rl->bloomfilter;
       ic.mingle_number = rl->bloomfilter_mutator;
       if (rl->responses != NULL)
-	GNUNET_multi_hash_map_iterate(rl->responses,
-				      &response_bf_iterator,
-				      &ic);
+        GNUNET_multi_hash_map_iterate (rl->responses,
+                                       &response_bf_iterator, &ic);
       if (stats != NULL)
         stats->change (stat_gap_client_bf_updates, 1);
     }

@@ -44,23 +44,25 @@ struct GNUNET_MysqlDatabaseHandle;
  *
  * @return NULL on error
  */
-struct GNUNET_MysqlDatabaseHandle *
-GNUNET_MYSQL_database_open(struct GNUNET_GE_Context * ectx,
-			   struct GNUNET_GC_Configuration * gc);
-			   
+struct GNUNET_MysqlDatabaseHandle *GNUNET_MYSQL_database_open (struct
+                                                               GNUNET_GE_Context
+                                                               *ectx,
+                                                               struct
+                                                               GNUNET_GC_Configuration
+                                                               *gc);
+
 /**
  * Close the database connection.
  */
-void
-GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh);
+void GNUNET_MYSQL_database_close (struct GNUNET_MysqlDatabaseHandle *dbh);
 
 /**
- * Run the given MySQL statement.  
+ * Run the given MySQL statement.
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
-			   const char * statement);
+GNUNET_MYSQL_run_statement (struct GNUNET_MysqlDatabaseHandle *dbh,
+                            const char *statement);
 
 
 /**
@@ -69,9 +71,8 @@ GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
  *
  * @return result on success, NULL on error
  */
-char *
-GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
-				  const char * statement);
+char *GNUNET_MYSQL_run_statement_select (struct GNUNET_MysqlDatabaseHandle
+                                         *dbh, const char *statement);
 
 
 /**
@@ -79,28 +80,29 @@ GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
  *
  * @return NULL on error
  */
-struct GNUNET_MysqlStatementHandle *
-GNUNET_MYSQL_prepared_statement_create(struct GNUNET_MysqlDatabaseHandle * dbh,
-				       const char * statement);
+struct GNUNET_MysqlStatementHandle
+  *GNUNET_MYSQL_prepared_statement_create (struct GNUNET_MysqlDatabaseHandle
+                                           *dbh, const char *statement);
 
 /**
  * Free a prepared statement.
  */
 void
-GNUNET_MYSQL_prepared_statement_destroy(struct GNUNET_MysqlStatementHandle * s);
+GNUNET_MYSQL_prepared_statement_destroy (struct GNUNET_MysqlStatementHandle
+                                         *s);
 
 /**
  * Type of a callback that will be called for each
  * data set returned from MySQL.
- * 
+ *
  * @param cls user-defined argument
  * @param num_values number of elements in values
  * @param values values returned by MySQL
  * @return GNUNET_OK to continue iterating, GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_MysqlDataProcessor)(void * cls,
-					 unsigned int num_values,
-					 MYSQL_BIND * values);
+typedef int (*GNUNET_MysqlDataProcessor) (void *cls,
+                                          unsigned int num_values,
+                                          MYSQL_BIND * values);
 
 /**
  * Run a prepared SELECT statement.
@@ -117,12 +119,12 @@ typedef int (*GNUNET_MysqlDataProcessor)(void * cls,
  *         the number of successfully affected (or queried) rows
  */
 int
-GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * s,
-					   unsigned int result_size,
-					   MYSQL_BIND * results,
-					   GNUNET_MysqlDataProcessor processor,
-					   void * processor_cls,
-					   ...);
+GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
+                                            *s, unsigned int result_size,
+                                            MYSQL_BIND * results,
+                                            GNUNET_MysqlDataProcessor
+                                            processor, void *processor_cls,
+                                            ...);
 
 
 /**
@@ -137,9 +139,8 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
  *         the number of successfully affected rows
  */
 int
-GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
-				    unsigned long long * insert_id,
-				    ...);
+GNUNET_MYSQL_prepared_statement_run (struct GNUNET_MysqlStatementHandle *s,
+                                     unsigned long long *insert_id, ...);
 
 
 

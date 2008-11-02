@@ -108,8 +108,8 @@ struct GNUNET_ECRS_URI;
  * Get a unique key from a URI.  This is for putting URIs
  * into HashMaps.  The key may change between ECRS implementations.
  */
-void GNUNET_ECRS_uri_to_key(const struct GNUNET_ECRS_URI * uri,
-			    GNUNET_HashCode * key);
+void GNUNET_ECRS_uri_to_key (const struct GNUNET_ECRS_URI *uri,
+                             GNUNET_HashCode * key);
 
 /**
  * Convert a URI to a UTF-8 String.

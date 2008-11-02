@@ -577,11 +577,9 @@ tcp_connect (const GNUNET_MessageHello * hello,
     }
   haddr = (const HostAddress *) &hello[1];
   available = ntohs (haddr->availability) & available_protocols;
-  if ( (0 != (available & VERSION_AVAILABLE_IPV6)) &&
-       (0 == memcmp(&zero6,
-		    &haddr->ipv6,
-		    sizeof(zero6))) )
-    available -= VERSION_AVAILABLE_IPV6; /* invalid */    
+  if ((0 != (available & VERSION_AVAILABLE_IPV6)) &&
+      (0 == memcmp (&zero6, &haddr->ipv6, sizeof (zero6))))
+    available -= VERSION_AVAILABLE_IPV6;        /* invalid */
   if (available == (VERSION_AVAILABLE_IPV4 | VERSION_AVAILABLE_IPV6))
     {
       if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2) == 0)
@@ -639,13 +637,11 @@ tcp_connect (const GNUNET_MessageHello * hello,
                               GNUNET_GE_USER | GNUNET_GE_BULK, "connect");
 
       GNUNET_GE_LOG (coreAPI->ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
-		     GNUNET_GE_USER | GNUNET_GE_BULK, 
-		     "IP address used was `%s'\n",
-		     inet_ntop(soaddr->sa_family,
-			       soaddr,
-			       buf,
-			       sizeof(buf)));
+                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
+                     GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "IP address used was `%s'\n",
+                     inet_ntop (soaddr->sa_family,
+                                soaddr, buf, sizeof (buf)));
 
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;

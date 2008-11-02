@@ -437,11 +437,10 @@ fast_path_processor (const GNUNET_HashCode * key,
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) || (ret != GNUNET_OK))
     return GNUNET_SYSERR;       /* unique response or client can take no more */
   if (cls->seen == NULL)
-    cls->seen = GNUNET_multi_hash_map_create(8);
-  GNUNET_multi_hash_map_put(cls->seen,
-			    &hc,
-			    NULL,
-			    GNUNET_MultiHashMapOption_UNIQUE_FAST);
+    cls->seen = GNUNET_multi_hash_map_create (8);
+  GNUNET_multi_hash_map_put (cls->seen,
+                             &hc,
+                             NULL, GNUNET_MultiHashMapOption_UNIQUE_FAST);
   return GNUNET_OK;
 }
 
@@ -516,7 +515,7 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
                                       fpp.seen, fpp.have_more);
 CLEANUP:
   if (fpp.seen != NULL)
-    GNUNET_multi_hash_map_destroy(fpp.seen);
+    GNUNET_multi_hash_map_destroy (fpp.seen);
   return GNUNET_OK;
 }
 

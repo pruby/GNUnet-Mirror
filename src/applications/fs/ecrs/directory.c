@@ -153,8 +153,8 @@ GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
       if (offset != NULL)
         *offset = pos;
       if ((spcb != NULL) &&
-           (GNUNET_SYSERR == spcb (&fi, NULL, GNUNET_NO, spcbClosure)))
-        pos = len; /* break out of loop */
+          (GNUNET_SYSERR == spcb (&fi, NULL, GNUNET_NO, spcbClosure)))
+        pos = len;              /* break out of loop */
       GNUNET_meta_data_destroy (fi.meta);
       GNUNET_ECRS_uri_destroy (fi.uri);
     }

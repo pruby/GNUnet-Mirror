@@ -402,21 +402,20 @@ resetStatusCalls (void *cls,
       return GNUNET_SYSERR;
     }
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-						      "LOAD",
-						      "MAXNETDOWNBPSTOTAL",
-						      0,
-						      (unsigned long long) -1,
-						      50000,
-						      &maxd))
-    { 
+                                                      "LOAD",
+                                                      "MAXNETDOWNBPSTOTAL",
+                                                      0,
+                                                      (unsigned long long) -1,
+                                                      50000, &maxd))
+    {
       GNUNET_free (interfaces);
       return GNUNET_SYSERR;
     }
-  if (-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "MAXNETUPBPSTOTAL",
-						      0, 
-						      (unsigned long long) -1, 
-						      50000,
-						      &maxu))
+  if (-1 ==
+      GNUNET_GC_get_configuration_value_number (cfg, "LOAD",
+                                                "MAXNETUPBPSTOTAL", 0,
+                                                (unsigned long long) -1,
+                                                50000, &maxu))
     {
       GNUNET_free (interfaces);
       return GNUNET_SYSERR;

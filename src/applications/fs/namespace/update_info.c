@@ -206,8 +206,7 @@ struct ListNamespaceContentsClosure
 };
 
 static int
-list_namespace_contents_helper (void * ptr,
-				const char *fullname)
+list_namespace_contents_helper (void *ptr, const char *fullname)
 {
   struct ListNamespaceContentsClosure *cls = ptr;
   GNUNET_ECRS_FileInfo fi;
@@ -215,11 +214,11 @@ list_namespace_contents_helper (void * ptr,
   char *lastId;
   char *nextId;
   int ret;
-  const char * fil;
+  const char *fil;
 
-  if (strlen(fullname) < sizeof(GNUNET_EncName))
+  if (strlen (fullname) < sizeof (GNUNET_EncName))
     return GNUNET_OK;
-  fil = &fullname[strlen(fullname) + 1 - sizeof(GNUNET_EncName)];
+  fil = &fullname[strlen (fullname) + 1 - sizeof (GNUNET_EncName)];
   if (fil[-1] != DIR_SEPARATOR)
     {
       GNUNET_GE_BREAK (cls->ectx, 0);

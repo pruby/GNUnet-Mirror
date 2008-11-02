@@ -200,12 +200,12 @@ select_accept_handler (void *ah_cls,
       a4 = (struct sockaddr_in *) addr;
       memcpy (&ip4, &a4->sin_addr, sizeof (struct in_addr));
       if (!isWhitelisted4 (&ip4))
-	{
+        {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                          "Rejected connection from untrusted client\n");
-	  return NULL;
-	}
+          return NULL;
+        }
     }
   else
     {
@@ -339,7 +339,7 @@ startTCPServer ()
   struct sockaddr *serverAddr;
   socklen_t socklen;
   const int on = 1;
-  char * ch;
+  char *ch;
 
   listenerPort = getGNUnetPort ();
   if (listenerPort == 0)
@@ -362,21 +362,20 @@ startTCPServer ()
       serverAddr4.sin_family = AF_INET;
       ch = NULL;
       GNUNET_GC_get_configuration_value_string (cfg,
-						"NETWORK",
-						"TRUSTED",
-						"127.0.0.0/8;", 
-						&ch);
-      if ( (0 == strcmp(ch, "127.0.0.0/8;")) ||
-	   (0 == strcmp(ch, "localhost;")) ||
-	   (0 == strcmp(ch, "127.0.0.1;")) )
-	{
-	  serverAddr4.sin_addr.s_addr = htonl (INADDR_LOOPBACK); 
-	}
+                                                "NETWORK",
+                                                "TRUSTED",
+                                                "127.0.0.0/8;", &ch);
+      if ((0 == strcmp (ch, "127.0.0.0/8;")) ||
+          (0 == strcmp (ch, "localhost;")) ||
+          (0 == strcmp (ch, "127.0.0.1;")))
+        {
+          serverAddr4.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+        }
       else
-	{
-	  serverAddr4.sin_addr.s_addr = htonl (INADDR_ANY);
-	}
-      GNUNET_free(ch);
+        {
+          serverAddr4.sin_addr.s_addr = htonl (INADDR_ANY);
+        }
+      GNUNET_free (ch);
       serverAddr4.sin_port = htons (listenerPort);
       socklen = sizeof (serverAddr4);
       serverAddr = (struct sockaddr *) &serverAddr4;

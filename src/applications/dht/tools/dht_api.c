@@ -22,7 +22,7 @@
  * @file dht/tools/dht_api.c
  * @brief DHT-module's core API's implementation.
  * @author Tomi Tukiainen, Christian Grothoff, Nathan Evans
- * 
+ *
  * TODO:
  * - track active requests
  * - automatically re-issue all requests if connection with gnunetd

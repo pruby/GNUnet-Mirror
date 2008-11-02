@@ -136,7 +136,7 @@ GNUNET_CORE_startup_change_user (struct GNUNET_GE_Context *ectx,
                                                      "PRIORITY",
                                                      "IDLE", &prio)
       && strlen (prio))
-    GNUNET_set_process_priority(ectx, prio);     
+    GNUNET_set_process_priority (ectx, prio);
   GNUNET_free (prio);
   user = NULL;
   if (0 == GNUNET_GC_get_configuration_value_string (cfg,

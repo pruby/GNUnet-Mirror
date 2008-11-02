@@ -66,8 +66,7 @@ struct iiC
 };
 
 static int
-iiHelper (void * ptr,
-	  const char * fullName)
+iiHelper (void *ptr, const char *fullName)
 {
   struct iiC *cls = ptr;
   char *lnkName;

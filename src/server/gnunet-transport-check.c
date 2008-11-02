@@ -453,14 +453,14 @@ main (int argc, char *const *argv)
   if (!ping)
     {
       /* disable blacklists (loopback is often blacklisted)... */
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLISTV4",
-                                                "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLISTV6",
-                                                "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLISTV4",
-                                                "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLISTV6",
-                                                "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP",
+                                                "BLACKLISTV4", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP",
+                                                "BLACKLISTV6", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP",
+                                                "BLACKLISTV4", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP",
+                                                "BLACKLISTV6", "");
       GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP",
                                                 "BLACKLISTV4", "");
       GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP",

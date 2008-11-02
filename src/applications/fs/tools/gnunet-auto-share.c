@@ -454,8 +454,7 @@ find_entry (struct DirectoryRecord *dr, const char *filename)
 }
 
 static int
-test_run (void * cls,
-	  const char *fn)
+test_run (void *cls, const char *fn)
 {
   struct DirectoryRecord *dr = cls;
   GNUNET_HashCode hc;
@@ -561,15 +560,14 @@ add_meta_data (void *cls,
 }
 
 static int
-probe_directory (void * cls,
-		 const char *fn)
+probe_directory (void *cls, const char *fn)
 {
   struct DirectoryRecord *dr = cls;
   struct stat buf;
   struct AddMetadataClosure amc;
   struct GNUNET_ECRS_URI *kuri;
   char *keys;
-  const char * filename;
+  const char *filename;
 
   if (GNUNET_shutdown_test ())
     return GNUNET_SYSERR;       /* aborted */
@@ -584,10 +582,10 @@ probe_directory (void * cls,
   dr->run = 0;
   test_run (dr, fn);
   if (0 == dr->run)
-    return GNUNET_OK;    
+    return GNUNET_OK;
   filename = fn;
-  while (NULL != strstr(filename, DIR_SEPARATOR_STR))
-    filename = 1 + strstr(filename, DIR_SEPARATOR_STR);  
+  while (NULL != strstr (filename, DIR_SEPARATOR_STR))
+    filename = 1 + strstr (filename, DIR_SEPARATOR_STR);
   amc.meta = GNUNET_meta_data_create ();
   amc.filename = filename;
   /* attaching a listener will prompt iteration
@@ -616,11 +614,10 @@ probe_directory (void * cls,
 }
 
 static int
-dir_entry_cb(void * cls,
-	     const char * dirname)
+dir_entry_cb (void *cls, const char *dirname)
 {
-  struct DirectoryRecord ** res = cls;
-  struct DirectoryRecord * pos;
+  struct DirectoryRecord **res = cls;
+  struct DirectoryRecord *pos;
 
   pos = GNUNET_malloc (sizeof (struct DirectoryRecord));
   pos->dirname = GNUNET_expand_file_name (ectx, dirname);
@@ -700,10 +697,9 @@ auto_share_main ()
 
   head = NULL;
   GNUNET_GC_iterate_configuration_value_filenames (cfg,
-						   "GNUNET-AUTO-SHARE",
-						   "DIRS", 
-						   &dir_entry_cb,
-						   &head);
+                                                   "GNUNET-AUTO-SHARE",
+                                                   "DIRS",
+                                                   &dir_entry_cb, &head);
   /* first insert all of the top-level files or directories */
   delay = 5 * GNUNET_CRON_SECONDS;
   while (GNUNET_NO == GNUNET_shutdown_test ())
@@ -902,33 +898,34 @@ main (int argc, char *const *argv)
     {
       fullname = GNUNET_expand_file_name (ectx, argv[i]);
       if (0 != STAT (fullname, &stbuf))
-	{
-	  FPRINTF (myout,
-		   _("Could not access `%s': %s\n"),
-		   fullname, STRERROR (errno));
-	  errorCode = 1;
-	  GNUNET_free (fullname);
-	  goto end;
-	}
-      switch (GNUNET_GC_append_configuration_value_filename(cfg,
-							    NULL,
-							    "GNUNET-AUTO-SHARE",
-							    "DIRS", 
-							    fullname)) {
-      case GNUNET_NO:
-	FPRINTF (myout,
-		 _
-		 ("Directory `%s' is already on the list of shared directories.\n"),
-		 fullname);
-	break;
-      case GNUNET_YES:
-	added = 1;
-	break;
-      default:
-	errorCode = 2;
-	GNUNET_free(fullname);
-	goto end;
-      }
+        {
+          FPRINTF (myout,
+                   _("Could not access `%s': %s\n"),
+                   fullname, STRERROR (errno));
+          errorCode = 1;
+          GNUNET_free (fullname);
+          goto end;
+        }
+      switch (GNUNET_GC_append_configuration_value_filename (cfg,
+                                                             NULL,
+                                                             "GNUNET-AUTO-SHARE",
+                                                             "DIRS",
+                                                             fullname))
+        {
+        case GNUNET_NO:
+          FPRINTF (myout,
+                   _
+                   ("Directory `%s' is already on the list of shared directories.\n"),
+                   fullname);
+          break;
+        case GNUNET_YES:
+          added = 1;
+          break;
+        default:
+          errorCode = 2;
+          GNUNET_free (fullname);
+          goto end;
+        }
       GNUNET_free (fullname);
       i++;
     }
@@ -936,11 +933,11 @@ main (int argc, char *const *argv)
     {
       if (GNUNET_GC_write_configuration (cfg, cfgFilename) != GNUNET_SYSERR)
         {
-	  FPRINTF (myout,
-		   "%s",
-		   _
-		   ("The specified directories were added to the list of "
-		    "shared directories.\n"));	
+          FPRINTF (myout,
+                   "%s",
+                   _
+                   ("The specified directories were added to the list of "
+                    "shared directories.\n"));
         }
       else
         {

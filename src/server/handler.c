@@ -449,8 +449,8 @@ GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
           return;
         }
 
-      if ((((long) &msg[pos]) & (ALIGN_REQUIRED-1)) != 0)
-	{
+      if ((((long) &msg[pos]) & (ALIGN_REQUIRED - 1)) != 0)
+        {
           /* correct misalignment; we allow messages to _not_ be a
              multiple of 4-bytes (if absolutely necessary; it should be
              avoided where the cost for doing so is not prohibitive);
@@ -463,8 +463,8 @@ GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
         }
       else
         {
-          part = (const GNUNET_MessageHeader *) &msg[pos];        
-	}
+          part = (const GNUNET_MessageHeader *) &msg[pos];
+        }
       pos += plen;
 
       ptyp = htons (part->type);

@@ -301,11 +301,12 @@ main (int argc, char *const *argv)
                                  GNUNET_GE_FATAL | GNUNET_GE_USER |
                                  GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                                  "access", dirname);
-  if ( (0 == STAT(cfgFilename, &buf)) &&
-       (S_ISDIR(buf.st_mode)) )
+  if ((0 == STAT (cfgFilename, &buf)) && (S_ISDIR (buf.st_mode)))
     {
-      fprintf (stderr, _("Configuration file `%s' must be a filename (but is a directory).\n"),
-	       cfgFilename);
+      fprintf (stderr,
+               _
+               ("Configuration file `%s' must be a filename (but is a directory).\n"),
+               cfgFilename);
       GNUNET_GC_free (cfg);
       GNUNET_GE_free_context (ectx);
       GNUNET_free (dirname);

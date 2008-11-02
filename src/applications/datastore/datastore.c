@@ -131,7 +131,7 @@ get (const GNUNET_HashCode * query,
         stats->change (stat_filtered, 1);
 
 #if 0
-      /* this is just an extra check to validate that 
+      /* this is just an extra check to validate that
          the bloomfilter was corret; doing this check
          is very costly -- do not do in production! */
       ret = sq->get (query, NULL, type, iter, closure);
@@ -326,12 +326,12 @@ freeSpaceExpired (const GNUNET_HashCode * key,
                   const GNUNET_DatastoreValue * value, void *closure,
                   unsigned long long uid)
 {
-  GNUNET_CronTime * start = closure;
+  GNUNET_CronTime *start = closure;
   GNUNET_CronTime now;
 
-  now = GNUNET_get_time();
-  if ( (now - *start > MAINTENANCE_FREQUENCY / 2) ||
-       (GNUNET_get_time () < GNUNET_ntohll (value->expiration_time)) )
+  now = GNUNET_get_time ();
+  if ((now - *start > MAINTENANCE_FREQUENCY / 2) ||
+      (GNUNET_get_time () < GNUNET_ntohll (value->expiration_time)))
     return GNUNET_SYSERR;       /* not expired */
   available += ntohl (value->size);
   minPriority = 0;
@@ -360,7 +360,7 @@ freeSpaceLow (const GNUNET_HashCode * key,
 static void
 cronMaintenance (void *unused)
 {
-  GNUNET_CronTime now = GNUNET_get_time();
+  GNUNET_CronTime now = GNUNET_get_time ();
 
   available = quota - sq->getSize ();
   sq->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
@@ -402,9 +402,9 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
       stat_filter_failed =
         stats->create (gettext_noop ("# bloom filter false positives"));
 
-      stats->set (stats->
-                  create (gettext_noop ("# bytes allowed in datastore")),
-                  quota);
+      stats->
+        set (stats->create (gettext_noop ("# bytes allowed in datastore")),
+             quota);
     }
   state = capi->service_request ("state");
   if (state != NULL)
@@ -463,9 +463,8 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
   available = quota - sq->getSize ();
   cron = GNUNET_cron_create (capi->ectx);
   GNUNET_cron_add_job (cron,
-                       &cronMaintenance, 
-		       MAINTENANCE_FREQUENCY,
-                       MAINTENANCE_FREQUENCY, NULL);
+                       &cronMaintenance,
+                       MAINTENANCE_FREQUENCY, MAINTENANCE_FREQUENCY, NULL);
   GNUNET_cron_start (cron);
   api.getSize = &getSize;
   api.fast_get = &testAvailable;
@@ -484,9 +483,7 @@ void
 release_module_datastore ()
 {
   GNUNET_cron_stop (cron);
-  GNUNET_cron_del_job (cron, &cronMaintenance, 
-		       MAINTENANCE_FREQUENCY,
-                       NULL);
+  GNUNET_cron_del_job (cron, &cronMaintenance, MAINTENANCE_FREQUENCY, NULL);
   GNUNET_cron_destroy (cron);
   cron = NULL;
   donePrefetch ();

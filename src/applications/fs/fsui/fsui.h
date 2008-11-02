@@ -54,7 +54,7 @@
  * can support concurrently, after how much
  * runtime of a download (without progress)
  * should we consider pausing it to give others
- * a chance?  Specified as a bit-mask where 
+ * a chance?  Specified as a bit-mask where
  * each bit represents a minute of time.
  * (0xFF == 8 minutes, 0x7FFF == 15 minutes).
  * Note that all legal values correspond to
@@ -177,7 +177,7 @@ typedef struct GNUNET_FSUI_SearchList
   /**
    * Searches are kept in a simple linked list.
    */
-  struct GNUNET_FSUI_SearchList * next;
+  struct GNUNET_FSUI_SearchList *next;
 
   /**
    * Context for this search

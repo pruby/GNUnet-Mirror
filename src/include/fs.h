@@ -318,7 +318,7 @@ typedef struct
 
   /**
    * When does this result expire?  The given time
-   * is relative (and in big-endian).  
+   * is relative (and in big-endian).
    */
   unsigned long long expiration;
 

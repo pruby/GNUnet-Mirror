@@ -211,15 +211,14 @@ download_recursive (GNUNET_FSUI_DownloadList * dl)
  * Update the progress bits (shifting).
  */
 static void
-update_progress_bits(GNUNET_CronTime now,
-		     GNUNET_FSUI_DownloadList * dl)
+update_progress_bits (GNUNET_CronTime now, GNUNET_FSUI_DownloadList * dl)
 {
   GNUNET_CronTime delta;
   unsigned int minutes;
 
   if (now < dl->lastProgressTime)
     {
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return;
     }
   delta = now - dl->lastProgressTime;
@@ -257,7 +256,7 @@ downloadProgressCallback (unsigned long long totalBytes,
   GNUNET_CronTime run_time;
 
   now = GNUNET_get_time ();
-  update_progress_bits(now, dl);
+  update_progress_bits (now, dl);
   dl->progressBits |= 1;
   if (dl->total + 1 == totalBytes)
     {
@@ -374,7 +373,7 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
   dl->total = GNUNET_ECRS_uri_get_file_size (uri);
   dl->child = NULL;
   dl->cctx = NULL;
-  dl->lastProgressTime = GNUNET_get_time();
+  dl->lastProgressTime = GNUNET_get_time ();
   dl->progressBits = 1;
   /* signal start! */
   event.type = GNUNET_FSUI_download_started;
@@ -463,18 +462,18 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
                  list->ctx->activeDownloadThreads, list->ctx->threadPoolSize);
 #endif
   ret = GNUNET_NO;
-  now = GNUNET_get_time();
+  now = GNUNET_get_time ();
   /* should this one be started? */
   if ((list->ctx->threadPoolSize
        > list->ctx->activeDownloadThreads) &&
       (list->state == GNUNET_FSUI_PENDING) &&
-      ( (list->block_resume == 0) ||
-	(list->block_resume == list->ctx->min_block_resume) ||
-	(list->ctx->threadPoolSize > list->ctx->activeDownloadThreads + 1) ) &&
+      ((list->block_resume == 0) ||
+       (list->block_resume == list->ctx->min_block_resume) ||
+       (list->ctx->threadPoolSize > list->ctx->activeDownloadThreads + 1)) &&
       ((list->total > list->completed) || (list->total == 0)))
     {
       if (list->block_resume == list->ctx->min_block_resume)
-	list->ctx->min_block_resume = -1;	
+        list->ctx->min_block_resume = -1;
       list->block_resume = 0;
 #if DEBUG_DTM
       GNUNET_GE_LOG (ectx,
@@ -504,19 +503,19 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
         list->state = GNUNET_FSUI_ERROR_JOINED;
     }
   if (list->state == GNUNET_FSUI_ACTIVE)
-    update_progress_bits(now, list);
+    update_progress_bits (now, list);
   /* should this one be stopped? */
-  if ( (list->state == GNUNET_FSUI_ACTIVE) &&
-       ( (list->ctx->threadPoolSize
-	  < list->ctx->activeDownloadThreads) ||
-	 ( (list->ctx->threadPoolSize == list->ctx->activeDownloadThreads) &&
-	   (0 == (list->progressBits & GNUNET_FSUI_DL_KILL_TIME_MASK)) ) ) )
+  if ((list->state == GNUNET_FSUI_ACTIVE) &&
+      ((list->ctx->threadPoolSize
+        < list->ctx->activeDownloadThreads) ||
+       ((list->ctx->threadPoolSize == list->ctx->activeDownloadThreads) &&
+        (0 == (list->progressBits & GNUNET_FSUI_DL_KILL_TIME_MASK)))))
     {
-      if ( (list->ctx->threadPoolSize == list->ctx->activeDownloadThreads) &&
-	   (0 == (list->progressBits & GNUNET_FSUI_DL_KILL_TIME_MASK)) )
-	list->block_resume = now;
+      if ((list->ctx->threadPoolSize == list->ctx->activeDownloadThreads) &&
+          (0 == (list->progressBits & GNUNET_FSUI_DL_KILL_TIME_MASK)))
+        list->block_resume = now;
       else
-	list->block_resume = 0;
+        list->block_resume = 0;
 #if DEBUG_DTM
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -593,9 +592,9 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
         ret = GNUNET_YES;
       dpos = dpos->next;
     }
-  if ( (list->block_resume != 0) &&
-       (list->state == GNUNET_FSUI_PENDING) &&
-       (list->block_resume < list->ctx->next_min_block_resume) )
+  if ((list->block_resume != 0) &&
+      (list->state == GNUNET_FSUI_PENDING) &&
+      (list->block_resume < list->ctx->next_min_block_resume))
     list->ctx->next_min_block_resume = list->block_resume;
   return ret;
 }
@@ -641,7 +640,7 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
       GNUNET_ECRS_file_download_partial_stop (dl->handle);
       dl->handle = NULL;
       dl->ctx->activeDownloadThreads--;
-      dl->runTime = GNUNET_get_time() - dl->startTime;
+      dl->runTime = GNUNET_get_time () - dl->startTime;
       event.type = GNUNET_FSUI_download_aborted;
       event.data.DownloadAborted.dc.pos = dl;
       event.data.DownloadAborted.dc.cctx = dl->cctx;
@@ -662,17 +661,17 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_DownloadList *dl)
   if (0 != UNLINK (dl->filename))
     {
       if (errno == EISDIR)
-	{
-	  if ( (0 != RMDIR(dl->filename)) &&
-	       (errno != ENOTEMPTY) ) 
-	    GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
-					 GNUNET_GE_WARNING | GNUNET_GE_USER |
-					 GNUNET_GE_BULK, "rmdir", dl->filename);
-	}
+        {
+          if ((0 != RMDIR (dl->filename)) && (errno != ENOTEMPTY))
+            GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
+                                         GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                         GNUNET_GE_BULK, "rmdir",
+                                         dl->filename);
+        }
       else if (errno != ENOENT)
-	GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
-				     GNUNET_GE_WARNING | GNUNET_GE_USER |
-				     GNUNET_GE_BULK, "unlink", dl->filename);
+        GNUNET_GE_LOG_STRERROR_FILE (dl->ctx->ectx,
+                                     GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                     GNUNET_GE_BULK, "unlink", dl->filename);
     }
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
@@ -722,7 +721,7 @@ GNUNET_FSUI_download_stop (struct GNUNET_FSUI_DownloadList *dl)
       GNUNET_GE_ASSERT (ctx->ectx, dl->handle != NULL);
       GNUNET_ECRS_file_download_partial_stop (dl->handle);
       dl->handle = NULL;
-      dl->runTime = GNUNET_get_time() - dl->startTime;
+      dl->runTime = GNUNET_get_time () - dl->startTime;
       GNUNET_mutex_lock (ctx->lock);
       dl->ctx->activeDownloadThreads--;
       GNUNET_mutex_unlock (ctx->lock);

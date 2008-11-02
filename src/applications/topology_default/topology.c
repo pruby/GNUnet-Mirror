@@ -552,15 +552,9 @@ is_friend (const GNUNET_PeerIdentity * peer)
 {
   unsigned int i;
 
-  rereadConfiguration(NULL, 
-		      coreAPI->cfg, 
-		      coreAPI->ectx,
-		      "F2F",
-		      NULL);
+  rereadConfiguration (NULL, coreAPI->cfg, coreAPI->ectx, "F2F", NULL);
   for (i = 0; i < friendCount; i++)
-    if (0 == memcmp (&friends[i], 
-		     peer, 
-		     sizeof (GNUNET_PeerIdentity)))
+    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity)))
       return 1;
   return 0;
 }

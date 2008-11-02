@@ -47,8 +47,7 @@
  * @return GNUNET_OK to continue to iterate,
  *  GNUNET_SYSERR to abort iteration with error!
  */
-typedef int (*GNUNET_FileNameCallback) (void *data,
-					const char *filename);
+typedef int (*GNUNET_FileNameCallback) (void *data, const char *filename);
 
 
 #if __STDC_VERSION__ < 199901L

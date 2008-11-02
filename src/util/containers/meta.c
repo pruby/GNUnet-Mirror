@@ -584,11 +584,11 @@ GNUNET_meta_data_deserialize (struct GNUNET_GE_Context *ectx,
   hdr = (const MetaDataHeader *) input;
   version = ntohl (MAKE_UNALIGNED (hdr->version)) & HEADER_VERSION_MASK;
   if (version == 1)
-    return NULL; /* null pointer */
+    return NULL;                /* null pointer */
   if (version != 0)
     {
-      GNUNET_GE_BREAK_OP(NULL, 0); /* unsupported version */
-      return NULL; 
+      GNUNET_GE_BREAK_OP (NULL, 0);     /* unsupported version */
+      return NULL;
     }
   ic = ntohl (MAKE_UNALIGNED (hdr->entries));
   compressed =

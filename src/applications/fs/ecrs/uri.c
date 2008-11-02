@@ -84,31 +84,29 @@
 #include "gnunet_protocols.h"
 #include "gnunet_ecrs_lib.h"
 
-void 
-GNUNET_ECRS_uri_to_key(const struct GNUNET_ECRS_URI * uri,
-		       GNUNET_HashCode * key)
+void
+GNUNET_ECRS_uri_to_key (const struct GNUNET_ECRS_URI *uri,
+                        GNUNET_HashCode * key)
 {
-  memset(key, 0, sizeof(GNUNET_HashCode));
+  memset (key, 0, sizeof (GNUNET_HashCode));
   switch (uri->type)
     {
     case chk:
       *key = uri->data.fi.chk.query;
       return;
     case sks:
-      GNUNET_hash(uri->data.sks.identifier,
-		  strlen(uri->data.sks.identifier),
-		  key);
+      GNUNET_hash (uri->data.sks.identifier,
+                   strlen (uri->data.sks.identifier), key);
       break;
     case ksk:
       if (uri->data.ksk.keywordCount > 0)
-	GNUNET_hash(uri->data.ksk.keywords[0],
-		    strlen(uri->data.ksk.keywords[0]),
-		    key);
+        GNUNET_hash (uri->data.ksk.keywords[0],
+                     strlen (uri->data.ksk.keywords[0]), key);
       break;
     case loc:
-      GNUNET_hash(&uri->data.loc.fi,
-		  sizeof(GNUNET_EC_FileIdentifier) + sizeof(GNUNET_RSA_PublicKey),
-		  key);
+      GNUNET_hash (&uri->data.loc.fi,
+                   sizeof (GNUNET_EC_FileIdentifier) +
+                   sizeof (GNUNET_RSA_PublicKey), key);
       break;
     }
 }

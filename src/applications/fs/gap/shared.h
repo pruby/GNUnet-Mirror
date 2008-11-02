@@ -302,7 +302,7 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
  */
 void
 GNUNET_FS_SHARED_mark_response_seen (const GNUNET_HashCode * hc,
-				     struct RequestList *rl);
+                                     struct RequestList *rl);
 
 /**
  * If the data portion and type of the value match our value in the

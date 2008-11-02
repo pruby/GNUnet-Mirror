@@ -342,17 +342,18 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
   GNUNET_snprintf (host, 128, "%s:%u", hostname1, port1);
   GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
                                             host);
-  if(DEBUG == GNUNET_YES)
-  {
-    fprintf(stderr,"Setting config 1 to host %s\n",host);
-  }
+  if (DEBUG == GNUNET_YES)
+    {
+      fprintf (stderr, "Setting config 1 to host %s\n", host);
+    }
   GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
-  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",host);
-  
-  if(DEBUG == GNUNET_YES)
-  {
-    fprintf(stderr,"Setting config 2 to host %s\n",host);
-  }                                          
+  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
+                                            host);
+
+  if (DEBUG == GNUNET_YES)
+    {
+      fprintf (stderr, "Setting config 2 to host %s\n", host);
+    }
 
   if ((GNUNET_OK ==
        GNUNET_wait_for_daemon_running (NULL, cfg1, 30 * GNUNET_CRON_SECONDS))
@@ -379,15 +380,13 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
             {
               fprintf (stderr, ".");
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock1,
-                                                                 &h2->
-                                                                 senderIdentity))
+                                                                 &h2->senderIdentity))
                 {
                   ret = GNUNET_OK;
                   break;
                 }
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock2,
-                                                                 &h1->
-                                                                 senderIdentity))
+                                                                 &h1->senderIdentity))
                 {
                   ret = GNUNET_OK;
                   break;

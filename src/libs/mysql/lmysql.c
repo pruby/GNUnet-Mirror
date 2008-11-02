@@ -86,7 +86,7 @@
  *   1) by running mysqlcheck -A, or
  *   2) by executing (inside of mysql using the GNUnet database):
  *   mysql> SHOW TABLES;
- *   mysql> REPAIR TABLE gnXXX;  
+ *   mysql> REPAIR TABLE gnXXX;
  *
  * Make sure to replace XXX with the actual names of all tables.
  *
@@ -125,16 +125,16 @@
 
 struct GNUNET_MysqlStatementHandle
 {
-  struct GNUNET_MysqlStatementHandle * next;
+  struct GNUNET_MysqlStatementHandle *next;
 
-  struct GNUNET_MysqlDatabaseHandle * db;
-  
-  char * query;
+  struct GNUNET_MysqlDatabaseHandle *db;
 
-  MYSQL_STMT * statement;
+  char *query;
+
+  MYSQL_STMT *statement;
 
   int valid;
-  
+
 };
 
 /**
@@ -142,17 +142,17 @@ struct GNUNET_MysqlStatementHandle
  */
 struct GNUNET_MysqlDatabaseHandle
 {
-  struct GNUNET_MysqlDatabaseHandle * next;
+  struct GNUNET_MysqlDatabaseHandle *next;
 
   MYSQL *dbf;
 
   char *cnffile;
 
-  struct GNUNET_GE_Context * ectx;
+  struct GNUNET_GE_Context *ectx;
 
-  struct GNUNET_GC_Configuration * cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  struct GNUNET_MysqlStatementHandle * statements;
+  struct GNUNET_MysqlStatementHandle *statements;
 
   int valid;
 
@@ -166,15 +166,15 @@ static struct GNUNET_Mutex *lock;
 /**
  * Linked list of users of the DB right now.
  */
-static struct GNUNET_MysqlDatabaseHandle * dbs;
+static struct GNUNET_MysqlDatabaseHandle *dbs;
 
 /**
  * Obtain the location of ".my.cnf".
  * @return NULL on error
  */
 static char *
-get_my_cnf_path(struct GNUNET_GE_Context * ectx,
-		struct GNUNET_GC_Configuration * cfg)
+get_my_cnf_path (struct GNUNET_GE_Context *ectx,
+                 struct GNUNET_GC_Configuration *cfg)
 {
   char *cnffile;
   char *home_dir;
@@ -208,15 +208,12 @@ get_my_cnf_path(struct GNUNET_GE_Context * ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("Trying to use file `%s' for MySQL configuration.\n"),
                  cnffile);
-  if ( (0 != STAT(cnffile, &st)) ||
-       (0 != ACCESS(cnffile, R_OK)) ||
-       (! S_ISREG(st.st_mode)) )
+  if ((0 != STAT (cnffile, &st)) ||
+      (0 != ACCESS (cnffile, R_OK)) || (!S_ISREG (st.st_mode)))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
-		     GNUNET_GE_BULK, 
-		     "Could not access file `%s'\n",
-		     cnffile);
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                     GNUNET_GE_BULK, "Could not access file `%s'\n", cnffile);
       GNUNET_free (cnffile);
       return NULL;
     }
@@ -231,26 +228,26 @@ get_my_cnf_path(struct GNUNET_GE_Context * ectx,
 static int
 iclose ()
 {
-  struct GNUNET_MysqlDatabaseHandle * dpos;
-  struct GNUNET_MysqlStatementHandle * spos;
+  struct GNUNET_MysqlDatabaseHandle *dpos;
+  struct GNUNET_MysqlStatementHandle *spos;
 
   dpos = dbs;
   while (dpos != NULL)
     {
       spos = dpos->statements;
       while (spos != NULL)
-	{
-	  if (spos->statement != NULL) 
-	    { 
-	      mysql_stmt_close(spos->statement); 
-	      spos->statement = NULL;
-	    }
-	  spos->valid = GNUNET_NO;	  
-	  spos = spos->next;
-	}
+        {
+          if (spos->statement != NULL)
+            {
+              mysql_stmt_close (spos->statement);
+              spos->statement = NULL;
+            }
+          spos->valid = GNUNET_NO;
+          spos = spos->next;
+        }
       mysql_close (dpos->dbf);
       dpos->dbf = NULL;
-      dpos->valid = GNUNET_NO;      
+      dpos->valid = GNUNET_NO;
       dpos = dpos->next;
     }
   return GNUNET_OK;
@@ -263,7 +260,7 @@ iclose ()
  * @return GNUNET_OK on success
  */
 static int
-iopen(struct GNUNET_MysqlDatabaseHandle * ret)
+iopen (struct GNUNET_MysqlDatabaseHandle *ret)
 {
   char *dbname;
   my_bool reconnect = 0;
@@ -290,7 +287,7 @@ iopen(struct GNUNET_MysqlDatabaseHandle * ret)
     {
       LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                  "mysql_real_connect", ret);
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   ret->valid = GNUNET_YES;
@@ -304,33 +301,32 @@ iopen(struct GNUNET_MysqlDatabaseHandle * ret)
  * @return NULL on error
  */
 struct GNUNET_MysqlDatabaseHandle *
-GNUNET_MYSQL_database_open(struct GNUNET_GE_Context * ectx,
-			   struct GNUNET_GC_Configuration * cfg)
+GNUNET_MYSQL_database_open (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg)
 {
-  struct GNUNET_MysqlDatabaseHandle * ret;
-  
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
-  ret = GNUNET_malloc(sizeof(struct GNUNET_MysqlDatabaseHandle));
-  memset(ret, 0, sizeof(struct GNUNET_MysqlDatabaseHandle));
+  struct GNUNET_MysqlDatabaseHandle *ret;
+
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
+  ret = GNUNET_malloc (sizeof (struct GNUNET_MysqlDatabaseHandle));
+  memset (ret, 0, sizeof (struct GNUNET_MysqlDatabaseHandle));
   ret->ectx = ectx;
   ret->cfg = cfg;
-  ret->cnffile = get_my_cnf_path(ectx, cfg);
-  if ( (ret->cnffile == NULL) ||
-       (GNUNET_OK != iopen(ret)) )
+  ret->cnffile = get_my_cnf_path (ectx, cfg);
+  if ((ret->cnffile == NULL) || (GNUNET_OK != iopen (ret)))
     {
       if (ret->dbf != NULL)
-	mysql_close (ret->dbf);
-      GNUNET_free_non_null(ret->cnffile);
-      GNUNET_free(ret);
-      iclose();
-      GNUNET_mutex_unlock(lock);
+        mysql_close (ret->dbf);
+      GNUNET_free_non_null (ret->cnffile);
+      GNUNET_free (ret);
+      iclose ();
+      GNUNET_mutex_unlock (lock);
       return NULL;
     }
   ret->next = dbs;
   dbs = ret;
   mysql_thread_end ();
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return ret;
 }
 
@@ -339,21 +335,20 @@ GNUNET_MYSQL_database_open(struct GNUNET_GE_Context * ectx,
  * Close the database connection.
  */
 void
-GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh)
+GNUNET_MYSQL_database_close (struct GNUNET_MysqlDatabaseHandle *dbh)
 {
-  struct GNUNET_MysqlDatabaseHandle * prev;
-  
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
+  struct GNUNET_MysqlDatabaseHandle *prev;
+
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
   while (dbh->statements != NULL)
-    GNUNET_MYSQL_prepared_statement_destroy(dbh->statements);
+    GNUNET_MYSQL_prepared_statement_destroy (dbh->statements);
   if (dbs != dbh)
     {
       prev = dbs;
-      while ( (prev != NULL) &&
-	      (prev->next != dbh) )
-	prev = prev->next;
-      GNUNET_GE_ASSERT(NULL, prev != NULL);
+      while ((prev != NULL) && (prev->next != dbh))
+        prev = prev->next;
+      GNUNET_GE_ASSERT (NULL, prev != NULL);
       prev->next = dbh->next;
     }
   else
@@ -363,40 +358,38 @@ GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh)
   GNUNET_free (dbh->cnffile);
   GNUNET_free (dbh);
   mysql_thread_end ();
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
  * Run the given MySQL statement.
- *  
+ *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
-			   const char * statement)
+GNUNET_MYSQL_run_statement (struct GNUNET_MysqlDatabaseHandle *dbh,
+                            const char *statement)
 {
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
-  if ( (! dbh->valid) &&
-       (GNUNET_OK != iopen(dbh)) )
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
+  if ((!dbh->valid) && (GNUNET_OK != iopen (dbh)))
     {
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  mysql_query (dbh->dbf,
-               statement); 
+  mysql_query (dbh->dbf, statement);
   if (mysql_error (dbh->dbf)[0])
     {
       LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                  "mysql_query", dbh);
       iclose ();
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   mysql_thread_end ();
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
@@ -408,20 +401,19 @@ GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
  * @return result on success, NULL on error
  */
 char *
-GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
-				  const char * statement)
+GNUNET_MYSQL_run_statement_select (struct GNUNET_MysqlDatabaseHandle *dbh,
+                                   const char *statement)
 {
   MYSQL_RES *sql_res;
   MYSQL_ROW sql_row;
-  char * ret;
+  char *ret;
 
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
-  if ( (! dbh->valid) &&
-       (GNUNET_OK != iopen(dbh)) )
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
+  if ((!dbh->valid) && (GNUNET_OK != iopen (dbh)))
     {
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return NULL;
     }
   mysql_query (dbh->dbf, statement);
@@ -430,22 +422,21 @@ GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
       (!(sql_row = mysql_fetch_row (sql_res))))
     {
       LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-		 "mysql_query", dbh);
+                 "mysql_query", dbh);
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return NULL;
     }
-  if ( (mysql_num_fields (sql_res) != 1) || 
-       (sql_row[0] == NULL) )
+  if ((mysql_num_fields (sql_res) != 1) || (sql_row[0] == NULL))
     {
       GNUNET_GE_BREAK (dbh->ectx, 0);
       if (sql_res != NULL)
         mysql_free_result (sql_res);
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return NULL;
     }
-  ret = GNUNET_strdup(sql_row[0]);
+  ret = GNUNET_strdup (sql_row[0]);
   mysql_free_result (sql_res);
   return ret;
 }
@@ -456,25 +447,24 @@ GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
  * @return NULL on error
  */
 struct GNUNET_MysqlStatementHandle *
-GNUNET_MYSQL_prepared_statement_create(struct GNUNET_MysqlDatabaseHandle * dbh,
-				       const char * statement)
+GNUNET_MYSQL_prepared_statement_create (struct GNUNET_MysqlDatabaseHandle
+                                        *dbh, const char *statement)
 {
-  struct GNUNET_MysqlStatementHandle * ret;
+  struct GNUNET_MysqlStatementHandle *ret;
 
-  GNUNET_mutex_lock(lock);
-  if ( (! dbh->valid) &&
-       (GNUNET_OK != iopen(dbh)) )
+  GNUNET_mutex_lock (lock);
+  if ((!dbh->valid) && (GNUNET_OK != iopen (dbh)))
     {
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return NULL;
     }
-  ret = GNUNET_malloc(sizeof(struct GNUNET_MysqlStatementHandle));
-  memset(ret, 0, sizeof(struct GNUNET_MysqlStatementHandle));
+  ret = GNUNET_malloc (sizeof (struct GNUNET_MysqlStatementHandle));
+  memset (ret, 0, sizeof (struct GNUNET_MysqlStatementHandle));
   ret->db = dbh;
-  ret->query = GNUNET_strdup(statement);
+  ret->query = GNUNET_strdup (statement);
   ret->next = dbh->statements;
   dbh->statements = ret;
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return ret;
 }
 
@@ -484,33 +474,30 @@ GNUNET_MYSQL_prepared_statement_create(struct GNUNET_MysqlDatabaseHandle * dbh,
  * @return GNUNET_OK on success
  */
 static int
-prepare_statement(struct GNUNET_MysqlStatementHandle * ret)
+prepare_statement (struct GNUNET_MysqlStatementHandle *ret)
 {
   if (GNUNET_YES == ret->valid)
     return GNUNET_OK;
-  if ( (! ret->db->valid) &&
-       (GNUNET_OK != iopen(ret->db)) )
+  if ((!ret->db->valid) && (GNUNET_OK != iopen (ret->db)))
     return GNUNET_SYSERR;
-   ret->statement = mysql_stmt_init(ret->db->dbf);
-  if (ret->statement == NULL) {
-    iclose();
-    return GNUNET_SYSERR;
-  }
-  if (mysql_stmt_prepare (ret->statement, 
-			  ret->query,
-			  strlen(ret->query)))
-    {								
-      GNUNET_GE_LOG (ret->db->ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER, 
-		     _("`%s' failed at %s:%d with error: %s"), 
-		     "mysql_stmt_prepare",
-		     __FILE__, __LINE__, 
-		     mysql_stmt_error (ret->statement));
-      mysql_stmt_close(ret->statement);
-      ret->statement = NULL;
-      iclose();  
+  ret->statement = mysql_stmt_init (ret->db->dbf);
+  if (ret->statement == NULL)
+    {
+      iclose ();
       return GNUNET_SYSERR;
-    } 
+    }
+  if (mysql_stmt_prepare (ret->statement, ret->query, strlen (ret->query)))
+    {
+      GNUNET_GE_LOG (ret->db->ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s"),
+                     "mysql_stmt_prepare",
+                     __FILE__, __LINE__, mysql_stmt_error (ret->statement));
+      mysql_stmt_close (ret->statement);
+      ret->statement = NULL;
+      iclose ();
+      return GNUNET_SYSERR;
+    }
   ret->valid = GNUNET_YES;
   return GNUNET_OK;
 }
@@ -519,30 +506,30 @@ prepare_statement(struct GNUNET_MysqlStatementHandle * ret)
  * Free a prepared statement.
  */
 void
-GNUNET_MYSQL_prepared_statement_destroy(struct GNUNET_MysqlStatementHandle * s)
+GNUNET_MYSQL_prepared_statement_destroy (struct GNUNET_MysqlStatementHandle
+                                         *s)
 {
-  struct GNUNET_MysqlStatementHandle * prev;
+  struct GNUNET_MysqlStatementHandle *prev;
 
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
   prev = NULL;
   if (s != s->db->statements)
     {
       prev = s->db->statements;
-      while ( (prev != NULL) &&
-	      (prev->next != s) )
-	prev = prev->next;
-      GNUNET_GE_ASSERT(NULL, prev != NULL);
+      while ((prev != NULL) && (prev->next != s))
+        prev = prev->next;
+      GNUNET_GE_ASSERT (NULL, prev != NULL);
       prev->next = s->next;
     }
   else
     s->db->statements = s->next;
   if (s->valid)
-    mysql_stmt_close(s->statement);
-  GNUNET_free(s->query);
-  GNUNET_free(s);
+    mysql_stmt_close (s->statement);
+  GNUNET_free (s->query);
+  GNUNET_free (s);
   mysql_thread_end ();
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
@@ -554,8 +541,7 @@ GNUNET_MYSQL_prepared_statement_destroy(struct GNUNET_MysqlStatementHandle * s)
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
-init_params(struct GNUNET_MysqlStatementHandle * s,
-	    va_list ap)
+init_params (struct GNUNET_MysqlStatementHandle *s, va_list ap)
 {
   MYSQL_BIND qbind[MAX_PARAM];
   unsigned int pc;
@@ -566,54 +552,50 @@ init_params(struct GNUNET_MysqlStatementHandle * s,
   if (pc > MAX_PARAM)
     {
       /* increase internal constant! */
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  memset(qbind, 0, sizeof(qbind));
+  memset (qbind, 0, sizeof (qbind));
   off = 0;
   ft = 0;
-  while ( (pc > 0) &&    
-	  (-1 != (ft = va_arg (ap, enum enum_field_types))) )
+  while ((pc > 0) && (-1 != (ft = va_arg (ap, enum enum_field_types))))
     {
       qbind[off].buffer_type = ft;
       switch (ft)
         {
-	case MYSQL_TYPE_LONGLONG:
-	  qbind[off].buffer = va_arg(ap, unsigned long long*);
-	  qbind[off].is_unsigned = va_arg(ap, int);
-	  break;
-	case MYSQL_TYPE_LONG:
-	  qbind[off].buffer = va_arg(ap, unsigned int*);
-	  qbind[off].is_unsigned = va_arg(ap, int);
-	  break;
-	case MYSQL_TYPE_BLOB:
-	  qbind[off].buffer = va_arg(ap, void*);
-	  qbind[off].buffer_length = va_arg(ap, unsigned long);
-	  qbind[off].length = va_arg(ap, unsigned long*);
-	  break;
-	default:
-	  /* unsupported type */
-	  GNUNET_GE_BREAK(NULL, 0);
-	  return GNUNET_SYSERR;    	  
-	}
+        case MYSQL_TYPE_LONGLONG:
+          qbind[off].buffer = va_arg (ap, unsigned long long *);
+          qbind[off].is_unsigned = va_arg (ap, int);
+          break;
+        case MYSQL_TYPE_LONG:
+          qbind[off].buffer = va_arg (ap, unsigned int *);
+          qbind[off].is_unsigned = va_arg (ap, int);
+          break;
+        case MYSQL_TYPE_BLOB:
+          qbind[off].buffer = va_arg (ap, void *);
+          qbind[off].buffer_length = va_arg (ap, unsigned long);
+          qbind[off].length = va_arg (ap, unsigned long *);
+          break;
+        default:
+          /* unsupported type */
+          GNUNET_GE_BREAK (NULL, 0);
+          return GNUNET_SYSERR;
+        }
       pc--;
       off++;
     }
-  if (! ((pc == 0) && 
-	 (ft != -1) &&
-	 (va_arg(ap, int) == -1)) )
+  if (!((pc == 0) && (ft != -1) && (va_arg (ap, int) == -1)))
     {
-      GNUNET_GE_BREAK(NULL, 0);
-      return GNUNET_SYSERR;    
-    }		  
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;
+    }
   if (mysql_stmt_bind_param (s->statement, qbind))
     {
       GNUNET_GE_LOG (s->db->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("`%s' failed at %s:%d with error: %s\n"),
                      "mysql_stmt_bind_param",
-                     __FILE__, __LINE__,
-                     mysql_stmt_error (s->statement));
+                     __FILE__, __LINE__, mysql_stmt_error (s->statement));
       iclose ();
       return GNUNET_SYSERR;
     }
@@ -623,11 +605,10 @@ init_params(struct GNUNET_MysqlStatementHandle * s,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("`%s' failed at %s:%d with error: %s\n"),
                      "mysql_stmt_execute",
-                     __FILE__, __LINE__,
-                     mysql_stmt_error (s->statement));
+                     __FILE__, __LINE__, mysql_stmt_error (s->statement));
       iclose ();
       return GNUNET_SYSERR;
-    }  
+    }
   return GNUNET_OK;
 }
 
@@ -646,51 +627,50 @@ init_params(struct GNUNET_MysqlStatementHandle * s,
  *         the number of successfully affected (or queried) rows
  */
 int
-GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * s,
-					   unsigned int result_size,
-					   MYSQL_BIND * results,
-					   GNUNET_MysqlDataProcessor processor,
-					   void * processor_cls,
-					   ...)
+GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
+                                            *s, unsigned int result_size,
+                                            MYSQL_BIND * results,
+                                            GNUNET_MysqlDataProcessor
+                                            processor, void *processor_cls,
+                                            ...)
 {
   va_list ap;
   int ret;
   unsigned int rsize;
   int total;
 
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
-  if (GNUNET_OK != prepare_statement(s))
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
+  if (GNUNET_OK != prepare_statement (s))
     {
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       mysql_thread_end ();
       return GNUNET_SYSERR;
     }
   va_start (ap, processor_cls);
-  if (GNUNET_OK != init_params(s, ap))
+  if (GNUNET_OK != init_params (s, ap))
     {
-      va_end (ap); 
+      va_end (ap);
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
-      return GNUNET_SYSERR;    
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
   va_end (ap);
   rsize = mysql_stmt_field_count (s->statement);
   if (rsize > result_size)
     {
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
-      return GNUNET_SYSERR;    
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
   if (mysql_stmt_bind_result (s->statement, results))
     {
       GNUNET_GE_LOG (s->db->ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("`%s' failed at %s:%d with error: %s\n"),
-		     "mysql_stmt_bind_result",
-		     __FILE__, __LINE__,
-		     mysql_stmt_error (s->statement));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_bind_result",
+                     __FILE__, __LINE__, mysql_stmt_error (s->statement));
       iclose ();
       mysql_thread_end ();
       GNUNET_mutex_unlock (lock);
@@ -701,31 +681,27 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
     {
       ret = mysql_stmt_fetch (s->statement);
       if (ret == MYSQL_NO_DATA)
-	break;
+        break;
       if (ret != 0)
-	{
-	  GNUNET_GE_LOG (s->db->ectx,
-			 GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-			 _("`%s' failed at %s:%d with error: %s\n"),
-			 "mysql_stmt_fetch",
-			 __FILE__, __LINE__,
-			 mysql_stmt_error (s->statement));
-	  iclose ();
-	  mysql_thread_end ();
-	  GNUNET_mutex_unlock (lock);
-	  return GNUNET_SYSERR;
-	}
+        {
+          GNUNET_GE_LOG (s->db->ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("`%s' failed at %s:%d with error: %s\n"),
+                         "mysql_stmt_fetch",
+                         __FILE__, __LINE__, mysql_stmt_error (s->statement));
+          iclose ();
+          mysql_thread_end ();
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_SYSERR;
+        }
       if (processor != NULL)
-	if (GNUNET_OK != 
-	    processor(processor_cls,
-		      rsize,
-		      results))
-	  break;
+        if (GNUNET_OK != processor (processor_cls, rsize, results))
+          break;
       total++;
     }
   mysql_stmt_reset (s->statement);
   mysql_thread_end ();
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return total;
 }
 
@@ -742,28 +718,27 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
  *         the number of successfully affected rows
  */
 int
-GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
-				    unsigned long long * insert_id,
-				    ...)
+GNUNET_MYSQL_prepared_statement_run (struct GNUNET_MysqlStatementHandle *s,
+                                     unsigned long long *insert_id, ...)
 {
   va_list ap;
   int affected;
 
-  GNUNET_mutex_lock(lock);
-  mysql_thread_init (); 
-  if (GNUNET_OK != prepare_statement(s))
+  GNUNET_mutex_lock (lock);
+  mysql_thread_init ();
+  if (GNUNET_OK != prepare_statement (s))
     {
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   va_start (ap, insert_id);
-  if (GNUNET_OK != init_params(s, ap))
+  if (GNUNET_OK != init_params (s, ap))
     {
-      va_end (ap); 
+      va_end (ap);
       mysql_thread_end ();
-      GNUNET_mutex_unlock(lock);
-      return GNUNET_SYSERR;    
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
   va_end (ap);
   affected = mysql_stmt_affected_rows (s->statement);
@@ -771,7 +746,7 @@ GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
     *insert_id = (unsigned long long) mysql_stmt_insert_id (s->statement);
   mysql_stmt_reset (s->statement);
   mysql_thread_end ();
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return affected;
 }
 

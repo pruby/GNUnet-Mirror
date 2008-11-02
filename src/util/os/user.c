@@ -98,16 +98,15 @@ GNUNET_configure_user_account (int testCapability,
         {
           sprintf (cmd, "/usr/sbin/addgroup --quiet --system %s", group_name);
           ret = system (cmd);
-	  if (ret == -1)
-	    GNUNET_GE_LOG_STRERROR(NULL,
-				   GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-				   "system");
-	  else if (WEXITSTATUS(ret) != 0)
-	    GNUNET_GE_LOG(NULL,
-			  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			  _("`%s' returned with error code %u"),
-			  "addgroup",
-			  WEXITSTATUS(ret));	    
+          if (ret == -1)
+            GNUNET_GE_LOG_STRERROR (NULL,
+                                    GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                    GNUNET_GE_ADMIN, "system");
+          else if (WEXITSTATUS (ret) != 0)
+            GNUNET_GE_LOG (NULL,
+                           GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                           _("`%s' returned with error code %u"),
+                           "addgroup", WEXITSTATUS (ret));
         }
 
       sprintf (cmd,
@@ -117,15 +116,14 @@ GNUNET_configure_user_account (int testCapability,
                haveGroup ? group_name : "", user_name);
       ret = system (cmd);
       if (ret == -1)
-	GNUNET_GE_LOG_STRERROR(NULL,
-			       GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			       "system");     
-      else if (WEXITSTATUS(ret) != 0)
-	GNUNET_GE_LOG(NULL,
-		      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-		      _("`%s' returned with error code %u"),
-		      "adduser",
-		      WEXITSTATUS(ret));
+        GNUNET_GE_LOG_STRERROR (NULL,
+                                GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                GNUNET_GE_ADMIN, "system");
+      else if (WEXITSTATUS (ret) != 0)
+        GNUNET_GE_LOG (NULL,
+                       GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                       _("`%s' returned with error code %u"),
+                       "adduser", WEXITSTATUS (ret));
       GNUNET_free (cmd);
       return GNUNET_OK;
     }

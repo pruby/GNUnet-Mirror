@@ -192,7 +192,8 @@ lookup_host_entry (const GNUNET_PeerIdentity * id)
  * @param protocol the protocol for the host
  */
 static void
-add_host_to_known_hosts (const GNUNET_PeerIdentity * identity, unsigned short protocol)
+add_host_to_known_hosts (const GNUNET_PeerIdentity * identity,
+                         unsigned short protocol)
 {
   HostEntry *entry;
   int i;
@@ -263,7 +264,7 @@ static int
 change_host_trust (const GNUNET_PeerIdentity * hostId, int value)
 {
   HostEntry *host;
-  
+
   if (value == 0)
     return 0;
   GNUNET_mutex_lock (lock_);
@@ -274,11 +275,11 @@ change_host_trust (const GNUNET_PeerIdentity * hostId, int value)
       host = lookup_host_entry (hostId);
     }
   if (host == NULL)
-    {	 
+    {
       GNUNET_GE_BREAK (ectx, 0);
       GNUNET_mutex_unlock (lock_);
       return 0;
-    }    
+    }
   if (((int) (host->trust & TRUST_ACTUAL_MASK)) + value < 0)
     {
       value = -(host->trust & TRUST_ACTUAL_MASK);
@@ -304,7 +305,7 @@ get_host_trust (const GNUNET_PeerIdentity * hostId)
 {
   HostEntry *host;
   int value;
-  
+
   GNUNET_mutex_lock (lock_);
   host = lookup_host_entry (hostId);
   if (host == NULL)
@@ -322,25 +323,24 @@ get_host_trust (const GNUNET_PeerIdentity * hostId)
  * success or failure.
  */
 static void
-remove_garbage(const char *fullname)
+remove_garbage (const char *fullname)
 {
   if (0 == UNLINK (fullname))
     GNUNET_GE_LOG (ectx,
-		   GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
-		   GNUNET_GE_BULK,
-		   _
-		   ("File `%s' in directory `%s' does not match naming convention. "
-		    "Removed.\n"), fullname, networkIdDirectory);
+                   GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                   GNUNET_GE_BULK,
+                   _
+                   ("File `%s' in directory `%s' does not match naming convention. "
+                    "Removed.\n"), fullname, networkIdDirectory);
   else
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-				 GNUNET_GE_ERROR | GNUNET_GE_USER |
-				 GNUNET_GE_BULK, "unlink", fullname);
+                                 GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                 GNUNET_GE_BULK, "unlink", fullname);
 }
 
 
 static int
-hosts_directory_scan_callback (void * unused,
-	    const char *fullname)
+hosts_directory_scan_callback (void *unused, const char *fullname)
 {
   GNUNET_PeerIdentity identity;
   GNUNET_EncName id;
@@ -348,33 +348,31 @@ hosts_directory_scan_callback (void * unused,
   const char *filename;
 
   if (GNUNET_disk_file_test (ectx, fullname) != GNUNET_YES)
-    return GNUNET_OK; /* ignore non-files */
-  if (strlen(fullname) < sizeof(GNUNET_EncName))
+    return GNUNET_OK;           /* ignore non-files */
+  if (strlen (fullname) < sizeof (GNUNET_EncName))
     {
-      remove_garbage(fullname);
+      remove_garbage (fullname);
       return GNUNET_OK;
     }
-  filename = &fullname[strlen(fullname) + 1 - sizeof(GNUNET_EncName)];
-  while ( (filename[-1] != DIR_SEPARATOR) &&
-	  (filename > fullname) )
+  filename = &fullname[strlen (fullname) + 1 - sizeof (GNUNET_EncName)];
+  while ((filename[-1] != DIR_SEPARATOR) && (filename > fullname))
     filename--;
-  if (filename[-1] != DIR_SEPARATOR) 
+  if (filename[-1] != DIR_SEPARATOR)
     {
-      remove_garbage(fullname);
+      remove_garbage (fullname);
       return GNUNET_OK;
     }
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EncName) == 104);
   if (2 != sscanf (filename, "%103c.%u", (char *) &id, &protoNumber))
     {
-      remove_garbage(fullname);
+      remove_garbage (fullname);
       return GNUNET_OK;
-    }    
+    }
   id.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
-  if (GNUNET_OK !=
-      GNUNET_enc_to_hash ((char *) &id, &identity.hashPubKey))
+  if (GNUNET_OK != GNUNET_enc_to_hash ((char *) &id, &identity.hashPubKey))
     {
-      remove_garbage(fullname);
+      remove_garbage (fullname);
       return GNUNET_OK;
     }
   add_host_to_known_hosts (&identity, (unsigned short) protoNumber);
@@ -398,7 +396,8 @@ cronScanDirectoryDataHosts (void *unused)
                                    once every 5 min */
   lastRun = now;
   count =
-    GNUNET_disk_directory_scan (ectx, networkIdDirectory, &hosts_directory_scan_callback, NULL);
+    GNUNET_disk_directory_scan (ectx, networkIdDirectory,
+                                &hosts_directory_scan_callback, NULL);
   if (count <= 0)
     {
       retries++;
@@ -424,10 +423,9 @@ getPeerIdentity (const GNUNET_RSA_PublicKey * pubKey,
                  GNUNET_PeerIdentity * result)
 {
   if (pubKey == NULL)
-    memset (&result, 0, sizeof (GNUNET_PeerIdentity));    
-  else    
-    GNUNET_hash (pubKey, sizeof (GNUNET_RSA_PublicKey),
-		 &result->hashPubKey);
+    memset (&result, 0, sizeof (GNUNET_PeerIdentity));
+  else
+    GNUNET_hash (pubKey, sizeof (GNUNET_RSA_PublicKey), &result->hashPubKey);
 }
 
 /**
@@ -1143,8 +1141,7 @@ cronFlushTrustBuffer (void *unused)
  * @brief delete expired HELLO entries in data/hosts/
  */
 static int
-discardHostsHelper (void * now,
-		    const char * fn)
+discardHostsHelper (void *now, const char *fn)
 {
   struct stat hostStat;
   int hostFile;
