@@ -110,25 +110,24 @@ iopen ()
     return GNUNET_SYSERR;
 #define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_run_statement (db, a) )
 #define PINIT(a,b) (NULL == (a = GNUNET_MYSQL_prepared_statement_create(db, b)))
-  MRUNS("DROP TABLE gn080dstore");
-  if ( MRUNS("CREATE TEMPORARY TABLE gn080dstore ("
-	     "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	     "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	     "  puttime BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	     "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	     "  hash BINARY(64) NOT NULL DEFAULT '',"
-	     "  vhash BINARY(64) NOT NULL DEFAULT '',"
-	     "  value BLOB NOT NULL DEFAULT '',"
-	     "  INDEX hashidx (hash(64),type,expire),"
-	     "  INDEX allidx (hash(64),vhash(64),type,size),"
-	     "  INDEX expireidx (puttime)" ") ENGINE=InnoDB") ||
-       MRUNS("SET AUTOCOMMIT = 1") ||
-       PINIT (select_value, SELECT_VALUE_STMT) ||
-       PINIT (count_value, COUNT_VALUE_STMT) ||
-       PINIT (select_old_value, SELECT_OLD_VALUE_STMT) ||
-       PINIT (delete_value, DELETE_VALUE_STMT) ||
-       PINIT (insert_value, INSERT_VALUE_STMT) ||
-       PINIT (update_value, UPDATE_VALUE_STMT) )
+  if (MRUNS("CREATE TEMPORARY TABLE gn080dstore ("
+	    "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+	    "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+	    "  puttime BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+	    "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+	    "  hash BINARY(64) NOT NULL DEFAULT '',"
+	    "  vhash BINARY(64) NOT NULL DEFAULT '',"
+	    "  value BLOB NOT NULL DEFAULT '',"
+	    "  INDEX hashidx (hash(64),type,expire),"
+	    "  INDEX allidx (hash(64),vhash(64),type,size),"
+	    "  INDEX expireidx (puttime)" ") ENGINE=InnoDB") ||
+      MRUNS("SET AUTOCOMMIT = 1") ||
+      PINIT (select_value, SELECT_VALUE_STMT) ||
+      PINIT (count_value, COUNT_VALUE_STMT) ||
+      PINIT (select_old_value, SELECT_OLD_VALUE_STMT) ||
+      PINIT (delete_value, DELETE_VALUE_STMT) ||
+      PINIT (insert_value, INSERT_VALUE_STMT) ||
+      PINIT (update_value, UPDATE_VALUE_STMT) )
     {
       GNUNET_MYSQL_database_close(db);
       db = NULL;
@@ -221,7 +220,7 @@ checkQuota ()
 					    GNUNET_YES,
 					    MYSQL_TYPE_BLOB,
 					    rbind[4].buffer,
-					    (unsigned long long) GNUNET_MAX_BUFFER_SIZE,
+					    (unsigned long) GNUNET_MAX_BUFFER_SIZE,
 					    &v_length,
 					    -1)) )
     {
@@ -295,7 +294,7 @@ d_put (const GNUNET_HashCode * key,
   k_length = sizeof (GNUNET_HashCode);
   v_length = size;
   if (GNUNET_OK !=
-      GNUNET_MYSQL_prepared_statement_run(update_value,
+      GNUNET_MYSQL_prepared_statement_run(insert_value,
 					  NULL,
 					  MYSQL_TYPE_LONG,
 					  &size,
@@ -357,12 +356,8 @@ d_get (const GNUNET_HashCode * key,
   unsigned long long total;
   unsigned int off;
 
-  GNUNET_mutex_lock (lock);
   if ((bloom != NULL) && (GNUNET_NO == GNUNET_bloomfilter_test (bloom, key)))
-    {
-      GNUNET_mutex_unlock (lock);
-      return 0;
-    }
+    return 0;    
   now = GNUNET_get_time ();
   h_length = sizeof (GNUNET_HashCode);
   v_length = GNUNET_MAX_BUFFER_SIZE;
