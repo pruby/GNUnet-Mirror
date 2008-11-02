@@ -62,6 +62,18 @@ int
 GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
 			   const char * statement);
 
+
+/**
+ * Run the given MySQL SELECT statement.  The statement
+ * must have only a single result (one column, one row).
+ *
+ * @return result on success, NULL on error
+ */
+char *
+GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
+				  const char * statement);
+
+
 /**
  * Create a prepared statement.
  *
