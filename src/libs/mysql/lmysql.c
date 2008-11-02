@@ -107,6 +107,8 @@
 
 #define DEBUG_TIME_MYSQL GNUNET_NO
 
+#define MAX_PARAM 16
+
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' with the message given
@@ -119,7 +121,7 @@
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_MYSQL(level, cmd, dbh) do { GNUNET_GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
+#define LOG_MYSQL(level, cmd, dbh) do { GNUNET_GE_LOG((dbh)->ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
 struct GNUNET_MysqlStatementHandle
 {
@@ -254,6 +256,41 @@ iclose ()
   return GNUNET_OK;
 }
 
+static int
+iopen(struct GNUNET_MysqlDatabaseHandle * ret)
+{
+  char *dbname;
+  my_bool reconnect = 0;
+  unsigned int timeout = 60;    /* in seconds */
+
+  ret->dbf = mysql_init (NULL);
+  if (ret->dbf == NULL)
+    return GNUNET_SYSERR;
+  mysql_options (ret->dbf, MYSQL_READ_DEFAULT_FILE, ret->cnffile);
+  mysql_options (ret->dbf, MYSQL_READ_DEFAULT_GROUP, "client");
+  mysql_options (ret->dbf, MYSQL_OPT_RECONNECT, &reconnect);
+  mysql_options (ret->dbf,
+                 MYSQL_OPT_CONNECT_TIMEOUT, (const void *) &timeout);
+  mysql_options (ret->dbf, MYSQL_OPT_READ_TIMEOUT, (const void *) &timeout);
+  mysql_options (ret->dbf, MYSQL_OPT_WRITE_TIMEOUT, (const void *) &timeout);
+  dbname = NULL;
+  GNUNET_GC_get_configuration_value_string (ret->cfg,
+                                            "MYSQL", "DATABASE", "gnunet",
+                                            &dbname);
+  GNUNET_GE_ASSERT (ret->ectx, dbname != NULL);
+  mysql_real_connect (ret->dbf, NULL, NULL, NULL, dbname, 0, NULL, 0);
+  GNUNET_free (dbname);
+  if (mysql_error (ret->dbf)[0])
+    {
+      LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                 "mysql_real_connect", ret);
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  ret->valid = GNUNET_YES;
+  return GNUNET_OK;
+}
+
 /**
  * Open a connection with MySQL (the connection maybe
  * internally be shared between clients of this library).
@@ -265,52 +302,21 @@ GNUNET_MYSQL_database_open(struct GNUNET_GE_Context * ectx,
 			   struct GNUNET_GC_Configuration * cfg)
 {
   struct GNUNET_MysqlDatabaseHandle * ret;
-  char *dbname;
-  my_bool reconnect = 0;
-  unsigned int timeout = 60;    /* in seconds */
   
   GNUNET_mutex_lock(lock);
   ret = GNUNET_malloc(sizeof(struct GNUNET_MysqlDatabaseHandle));
   memset(ret, 0, sizeof(struct GNUNET_MysqlDatabaseHandle));
-  ret->dbf = mysql_init (NULL);
-  if (ret->dbf == NULL)
-    {
-      GNUNET_free(ret);
-      GNUNET_mutex_unlock(lock);
-      return NULL;
-    }
   ret->ectx = ectx;
   ret->cfg = cfg;
   ret->cnffile = get_my_cnf_path(ectx, cfg);
-  if (ret->cnffile == NULL)
+  if ( (ret->cnffile == NULL) ||
+       (GNUNET_OK != iopen(ret)) )
     {
-      mysql_close (ret->dbf);
+      if (ret->dbf != NULL)
+	mysql_close (ret->dbf);
+      GNUNET_free_non_null(ret->cnffile);
       GNUNET_free(ret);
-      GNUNET_mutex_unlock(lock);
-      return NULL;
-    }
-  mysql_options (ret->dbf, MYSQL_READ_DEFAULT_FILE, ret->cnffile);
-  mysql_options (ret->dbf, MYSQL_READ_DEFAULT_GROUP, "client");
-  mysql_options (ret->dbf, MYSQL_OPT_RECONNECT, &reconnect);
-  mysql_options (ret->dbf,
-                 MYSQL_OPT_CONNECT_TIMEOUT, (const void *) &timeout);
-  mysql_options (ret->dbf, MYSQL_OPT_READ_TIMEOUT, (const void *) &timeout);
-  mysql_options (ret->dbf, MYSQL_OPT_WRITE_TIMEOUT, (const void *) &timeout);
-
-  dbname = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg,
-                                            "MYSQL", "DATABASE", "gnunet",
-                                            &dbname);
-  GNUNET_GE_ASSERT (ectx, dbname != NULL);
-  mysql_real_connect (ret->dbf, NULL, NULL, NULL, dbname, 0, NULL, 0);
-  GNUNET_free (dbname);
-  if (mysql_error (ret->dbf)[0])
-    {
-      LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                 "mysql_real_connect", ret);
-      mysql_close (ret->dbf);
-      GNUNET_free(ret->cnffile);
-      GNUNET_free(ret);      
+      iclose();
       GNUNET_mutex_unlock(lock);
       return NULL;
     }
@@ -344,8 +350,11 @@ GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh)
     }
   else
     dbs = dbh->next;
-  mysql_close (dbh->dbf);
+  if (dbh->dbf != NULL)
+    mysql_close (dbh->dbf);
+  GNUNET_free (dbh->cnffile);
   GNUNET_free (dbh);
+  GNUNET_mutex_unlock(lock);
 }
 
 /**
@@ -356,7 +365,25 @@ int
 GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
 			   const char * statement)
 {
-  return GNUNET_SYSERR;
+  GNUNET_mutex_lock(lock);
+  if ( (! dbh->valid) &&
+       (GNUNET_OK != iopen(dbh)) )
+    {
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  mysql_query (dbh->dbf,
+               statement); 
+  if (mysql_error (dbh->dbf)[0])
+    {
+      LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                 "mysql_query", dbh);
+      iclose ();
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_mutex_unlock(lock);
+  return GNUNET_OK;
 }
 
 /**
@@ -368,7 +395,55 @@ struct GNUNET_MysqlStatementHandle *
 GNUNET_MYSQL_prepared_statement_create(struct GNUNET_MysqlDatabaseHandle * dbh,
 				       const char * statement)
 {
-  return NULL;
+  struct GNUNET_MysqlStatementHandle * ret;
+
+  GNUNET_mutex_lock(lock);
+  if ( (! dbh->valid) &&
+       (GNUNET_OK != iopen(dbh)) )
+    {
+      GNUNET_mutex_unlock(lock);
+      return NULL;
+    }
+  ret = GNUNET_malloc(sizeof(struct GNUNET_MysqlStatementHandle));
+  memset(ret, 0, sizeof(struct GNUNET_MysqlStatementHandle));
+  ret->db = dbh;
+  ret->query = GNUNET_strdup(statement);
+  ret->next = dbh->statements;
+  dbh->statements = ret;
+  GNUNET_mutex_unlock(lock);
+  return ret;
+}
+
+static int
+prepare_statement(struct GNUNET_MysqlStatementHandle * ret)
+{
+  if (GNUNET_YES == ret->valid)
+    return GNUNET_OK;
+  if ( (! ret->db->valid) &&
+       (GNUNET_OK != iopen(ret->db)) )
+    return GNUNET_SYSERR;
+   ret->statement = mysql_stmt_init(ret->db->dbf);
+  if (ret->statement == NULL) {
+    iclose();
+    return GNUNET_SYSERR;
+  }
+  if (mysql_stmt_prepare (ret->statement, 
+			  ret->query,
+			  strlen(ret->query)))
+    {								
+      GNUNET_GE_LOG (ret->db->ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER, 
+		     _("`%s' failed at %s:%d with error: %s"), 
+		     "mysql_stmt_prepare",
+		     __FILE__, __LINE__, 
+		     mysql_stmt_error (ret->statement));
+      mysql_stmt_close(ret->statement);
+      ret->statement = NULL;
+      iclose();  
+      return GNUNET_SYSERR;
+    } 
+  ret->valid = GNUNET_YES;
+  return GNUNET_OK;
 }
 
 /**
@@ -377,6 +452,104 @@ GNUNET_MYSQL_prepared_statement_create(struct GNUNET_MysqlDatabaseHandle * dbh,
 void
 GNUNET_MYSQL_prepared_statement_destroy(struct GNUNET_MysqlStatementHandle * s)
 {
+  struct GNUNET_MysqlStatementHandle * prev;
+
+  GNUNET_mutex_lock(lock);
+  prev = NULL;
+  if (s != s->db->statements)
+    {
+      prev = s->db->statements;
+      while ( (prev != NULL) &&
+	      (prev->next != s) )
+	prev = prev->next;
+      GNUNET_GE_ASSERT(NULL, prev != NULL);
+      prev->next = s->next;
+    }
+  else
+    s->db->statements = s->next;
+  if (s->valid)
+    mysql_stmt_close(s->statement);
+  GNUNET_free(s->query);
+  GNUNET_free(s);
+  GNUNET_mutex_unlock(lock);
+}
+
+static int
+init_params(struct GNUNET_MysqlStatementHandle * s,
+	    va_list ap)
+{
+  MYSQL_BIND qbind[MAX_PARAM];
+  unsigned int pc;
+  unsigned int off;
+  enum enum_field_types ft;
+
+  pc = mysql_stmt_param_count (s->statement);
+  if (pc > MAX_PARAM)
+    {
+      /* increase internal constant! */
+      GNUNET_GE_BREAK(NULL, 0);
+      return GNUNET_SYSERR;
+    }
+  memset(qbind, 0, sizeof(qbind));
+  off = 0;
+  ft = 0;
+  while ( (pc > 0) &&    
+	  (-1 != (ft = va_arg (ap, enum enum_field_types))) )
+    {
+      qbind[off].buffer_type = ft;
+      switch (ft)
+        {
+	case MYSQL_TYPE_LONGLONG:
+	  qbind[off].is_unsigned = 1;
+	  qbind[off].buffer = va_arg(ap, unsigned long long*);
+	  break;
+	case MYSQL_TYPE_LONG:
+	  qbind[off].is_unsigned = 1;
+	  qbind[off].buffer = va_arg(ap, unsigned int*);
+	  break;
+	case MYSQL_TYPE_BLOB:
+	  qbind[off].buffer = va_arg(ap, void*);
+	  qbind[off].buffer_length = va_arg(ap, unsigned long);
+	  qbind[off].length = va_arg(ap, unsigned long*);
+	  break;
+	default:
+	  /* unsupported type */
+	  GNUNET_GE_BREAK(NULL, 0);
+	  return GNUNET_SYSERR;    	  
+	}
+      pc--;
+      off++;
+    }
+  if (! ((pc == 0) && 
+	 (ft != -1) &&
+	 (va_arg(ap, int) == -1)) )
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return GNUNET_SYSERR;    
+    }		  
+  if (mysql_stmt_bind_param (s->statement, qbind))
+    {
+      GNUNET_GE_LOG (s->db->ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_bind_param",
+                     __FILE__, __LINE__,
+                     mysql_stmt_error (s->statement));
+      iclose ();
+      return GNUNET_SYSERR;
+    }
+  if (mysql_stmt_execute (s->statement))
+    {
+      GNUNET_GE_LOG (s->db->ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_execute",
+                     __FILE__, __LINE__,
+                     mysql_stmt_error (s->statement));
+      iclose ();
+      return GNUNET_SYSERR;
+    }  
+  return GNUNET_OK;
 }
 
 /**
@@ -401,6 +574,25 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
 					   void * processor_cls,
 					   ...)
 {
+  va_list ap;
+
+  GNUNET_mutex_lock(lock);
+  if (GNUNET_OK != prepare_statement(s))
+    {
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  va_start (ap, processor_cls);
+  if (GNUNET_OK != init_params(s, ap))
+    {
+      va_end (ap); 
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;    
+    }
+  va_end (ap);
+  /* FIXME: get data!!! */
+  mysql_stmt_reset (s->statement);
+  GNUNET_mutex_unlock(lock);
   return GNUNET_SYSERR;
 }
 
@@ -418,39 +610,25 @@ int
 GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
 				    ...)
 {
-  MYSQL_BIND qbind[42];
-  unsigned long length = 42;
+  va_list ap;
 
-  memset (qbind, 0, sizeof (qbind));
-  qbind[0].buffer_type = MYSQL_TYPE_BLOB;
-  qbind[0].buffer = (void *) NULL;
-  qbind[0].buffer_length = 42;
-  qbind[0].length = &length;
-  GNUNET_GE_ASSERT (s->db->ectx, mysql_stmt_param_count (s->statement) == 1);
-  if (mysql_stmt_bind_param (s->statement, qbind))
+  GNUNET_mutex_lock(lock);
+  if (GNUNET_OK != prepare_statement(s))
     {
-      GNUNET_GE_LOG (s->db->ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("`%s' failed at %s:%d with error: %s\n"),
-                     "mysql_stmt_bind_param",
-                     __FILE__, __LINE__,
-                     mysql_stmt_error (s->statement));
-      iclose ();
+      GNUNET_mutex_unlock(lock);
       return GNUNET_SYSERR;
     }
-  if (mysql_stmt_execute (s->statement))
+  va_start (ap, s);
+  if (GNUNET_OK != init_params(s, ap))
     {
-      GNUNET_GE_LOG (s->db->ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("`%s' failed at %s:%d with error: %s\n"),
-                     "mysql_stmt_execute",
-                     __FILE__, __LINE__,
-                     mysql_stmt_error (s->statement));
-      iclose ();
-      return GNUNET_SYSERR;
+      va_end (ap); 
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;    
     }
-  // *vkey = (unsigned long long) mysql_stmt_insert_id (dbh->insert_value);
+  va_end (ap);
+  /* FIXME: get any data?? */
   mysql_stmt_reset (s->statement);
+  GNUNET_mutex_unlock(lock);
   return GNUNET_OK;
 }
 
