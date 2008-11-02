@@ -347,7 +347,6 @@ GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh)
   mysql_thread_init (); 
   while (dbh->statements != NULL)
     GNUNET_MYSQL_prepared_statement_destroy(dbh->statements);
-  GNUNET_free (dbh->cnffile);
   if (dbs != dbh)
     {
       prev = dbs;
@@ -399,6 +398,56 @@ GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
   mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
   return GNUNET_OK;
+}
+
+
+/**
+ * Run the given MySQL SELECT statement.  The statement
+ * must have only a single result (one column, one row).
+ *
+ * @return result on success, NULL on error
+ */
+char *
+GNUNET_MYSQL_run_statement_select(struct GNUNET_MysqlDatabaseHandle * dbh,
+				  const char * statement)
+{
+  MYSQL_RES *sql_res;
+  MYSQL_ROW sql_row;
+  char * ret;
+
+  GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
+  if ( (! dbh->valid) &&
+       (GNUNET_OK != iopen(dbh)) )
+    {
+      mysql_thread_end ();
+      GNUNET_mutex_unlock(lock);
+      return NULL;
+    }
+  mysql_query (dbh->dbf, statement);
+  if ((mysql_error (dbh->dbf)[0]) ||
+      (!(sql_res = mysql_use_result (dbh->dbf))) ||
+      (!(sql_row = mysql_fetch_row (sql_res))))
+    {
+      LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+		 "mysql_query", dbh);
+      mysql_thread_end ();
+      GNUNET_mutex_unlock(lock);
+      return NULL;
+    }
+  if ( (mysql_num_fields (sql_res) != 1) || 
+       (sql_row[0] == NULL) )
+    {
+      GNUNET_GE_BREAK (dbh->ectx, 0);
+      if (sql_res != NULL)
+        mysql_free_result (sql_res);
+      mysql_thread_end ();
+      GNUNET_mutex_unlock(lock);
+      return NULL;
+    }
+  ret = GNUNET_strdup(sql_row[0]);
+  mysql_free_result (sql_res);
+  return ret;
 }
 
 /**
@@ -530,12 +579,12 @@ init_params(struct GNUNET_MysqlStatementHandle * s,
       switch (ft)
         {
 	case MYSQL_TYPE_LONGLONG:
-	  qbind[off].is_unsigned = 1;
 	  qbind[off].buffer = va_arg(ap, unsigned long long*);
+	  qbind[off].is_unsigned = va_arg(ap, int);
 	  break;
 	case MYSQL_TYPE_LONG:
-	  qbind[off].is_unsigned = 1;
 	  qbind[off].buffer = va_arg(ap, unsigned int*);
+	  qbind[off].is_unsigned = va_arg(ap, int);
 	  break;
 	case MYSQL_TYPE_BLOB:
 	  qbind[off].buffer = va_arg(ap, void*);
