@@ -103,10 +103,10 @@
 #include "gnunet_util.h"
 #include "gnunet_mysql.h"
 
-#define DEBUG_MYSQL GNUNET_NO
-
-#define DEBUG_TIME_MYSQL GNUNET_NO
-
+/**
+ * Maximum number of supported parameters for a prepared
+ * statement.  Increase if needed.
+ */
 #define MAX_PARAM 16
 
 /**
@@ -256,6 +256,12 @@ iclose ()
   return GNUNET_OK;
 }
 
+/**
+ * Open the connection with the database (and initialize
+ * our default options).
+ *
+ * @return GNUNET_OK on success
+ */
 static int
 iopen(struct GNUNET_MysqlDatabaseHandle * ret)
 {
@@ -304,6 +310,7 @@ GNUNET_MYSQL_database_open(struct GNUNET_GE_Context * ectx,
   struct GNUNET_MysqlDatabaseHandle * ret;
   
   GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
   ret = GNUNET_malloc(sizeof(struct GNUNET_MysqlDatabaseHandle));
   memset(ret, 0, sizeof(struct GNUNET_MysqlDatabaseHandle));
   ret->ectx = ectx;
@@ -322,6 +329,7 @@ GNUNET_MYSQL_database_open(struct GNUNET_GE_Context * ectx,
     }
   ret->next = dbs;
   dbs = ret;
+  mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
   return ret;
 }
@@ -336,6 +344,7 @@ GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh)
   struct GNUNET_MysqlDatabaseHandle * prev;
   
   GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
   while (dbh->statements != NULL)
     GNUNET_MYSQL_prepared_statement_destroy(dbh->statements);
   GNUNET_free (dbh->cnffile);
@@ -354,11 +363,13 @@ GNUNET_MYSQL_database_close(struct GNUNET_MysqlDatabaseHandle * dbh)
     mysql_close (dbh->dbf);
   GNUNET_free (dbh->cnffile);
   GNUNET_free (dbh);
+  mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
 }
 
 /**
- * Run the given MySQL statement.  
+ * Run the given MySQL statement.
+ *  
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
@@ -366,9 +377,11 @@ GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
 			   const char * statement)
 {
   GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
   if ( (! dbh->valid) &&
        (GNUNET_OK != iopen(dbh)) )
     {
+      mysql_thread_end ();
       GNUNET_mutex_unlock(lock);
       return GNUNET_SYSERR;
     }
@@ -379,15 +392,17 @@ GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
       LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                  "mysql_query", dbh);
       iclose ();
+      mysql_thread_end ();
       GNUNET_mutex_unlock(lock);
       return GNUNET_SYSERR;
     }
+  mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
   return GNUNET_OK;
 }
 
 /**
- * Prepare a statement.
+ * Create a prepared statement.
  *
  * @return NULL on error
  */
@@ -414,6 +429,11 @@ GNUNET_MYSQL_prepared_statement_create(struct GNUNET_MysqlDatabaseHandle * dbh,
   return ret;
 }
 
+/**
+ * Prepare a statement for running.
+ *
+ * @return GNUNET_OK on success
+ */
 static int
 prepare_statement(struct GNUNET_MysqlStatementHandle * ret)
 {
@@ -455,6 +475,7 @@ GNUNET_MYSQL_prepared_statement_destroy(struct GNUNET_MysqlStatementHandle * s)
   struct GNUNET_MysqlStatementHandle * prev;
 
   GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
   prev = NULL;
   if (s != s->db->statements)
     {
@@ -471,9 +492,18 @@ GNUNET_MYSQL_prepared_statement_destroy(struct GNUNET_MysqlStatementHandle * s)
     mysql_stmt_close(s->statement);
   GNUNET_free(s->query);
   GNUNET_free(s);
+  mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
 }
 
+/**
+ * Bind the parameters for the given MySQL statement
+ * and run it.
+ *
+ * @param s statement to bind and run
+ * @param ap arguments for the binding
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ */
 static int
 init_params(struct GNUNET_MysqlStatementHandle * s,
 	    va_list ap)
@@ -575,25 +605,79 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
 					   ...)
 {
   va_list ap;
+  int ret;
+  unsigned int rsize;
+  int total;
 
   GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
   if (GNUNET_OK != prepare_statement(s))
     {
       GNUNET_mutex_unlock(lock);
+      mysql_thread_end ();
       return GNUNET_SYSERR;
     }
   va_start (ap, processor_cls);
   if (GNUNET_OK != init_params(s, ap))
     {
       va_end (ap); 
+      mysql_thread_end ();
       GNUNET_mutex_unlock(lock);
       return GNUNET_SYSERR;    
     }
   va_end (ap);
-  /* FIXME: get data!!! */
+  rsize = mysql_stmt_field_count (s->statement);
+  if (rsize > result_size)
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      mysql_thread_end ();
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;    
+    }
+  if (mysql_stmt_bind_result (s->statement, results))
+    {
+      GNUNET_GE_LOG (s->db->ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("`%s' failed at %s:%d with error: %s\n"),
+		     "mysql_stmt_bind_result",
+		     __FILE__, __LINE__,
+		     mysql_stmt_error (s->statement));
+      iclose ();
+      mysql_thread_end ();
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  total = 0;
+  while (1)
+    {
+      ret = mysql_stmt_fetch (s->statement);
+      if (ret == MYSQL_NO_DATA)
+	break;
+      if (ret != 0)
+	{
+	  GNUNET_GE_LOG (s->db->ectx,
+			 GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+			 _("`%s' failed at %s:%d with error: %s\n"),
+			 "mysql_stmt_fetch",
+			 __FILE__, __LINE__,
+			 mysql_stmt_error (s->statement));
+	  iclose ();
+	  mysql_thread_end ();
+	  GNUNET_mutex_unlock (lock);
+	  return GNUNET_SYSERR;
+	}
+      if (processor != NULL)
+	if (GNUNET_OK != 
+	    processor(processor_cls,
+		      rsize,
+		      results))
+	  break;
+      total++;
+    }
   mysql_stmt_reset (s->statement);
+  mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
-  return GNUNET_SYSERR;
+  return total;
 }
 
 
@@ -603,33 +687,43 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
  * @param ... pairs and triplets of "MYSQL_TYPE_XXX" keys and their respective
  *        values (size + buffer-reference for pointers); terminated
  *        with "-1"
+ * @param insert_id NULL or address where to store the row ID of whatever
+ *        was inserted (only for INSERT statements!)
  * @return GNUNET_SYSERR on error, otherwise
  *         the number of successfully affected rows
  */
 int
 GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
+				    unsigned long long * insert_id,
 				    ...)
 {
   va_list ap;
+  int affected;
 
   GNUNET_mutex_lock(lock);
+  mysql_thread_init (); 
   if (GNUNET_OK != prepare_statement(s))
     {
+      mysql_thread_end ();
       GNUNET_mutex_unlock(lock);
       return GNUNET_SYSERR;
     }
-  va_start (ap, s);
+  va_start (ap, insert_id);
   if (GNUNET_OK != init_params(s, ap))
     {
       va_end (ap); 
+      mysql_thread_end ();
       GNUNET_mutex_unlock(lock);
       return GNUNET_SYSERR;    
     }
   va_end (ap);
-  /* FIXME: get any data?? */
+  affected = mysql_stmt_affected_rows (s->statement);
+  if (NULL != insert_id)
+    *insert_id = (unsigned long long) mysql_stmt_insert_id (s->statement);
   mysql_stmt_reset (s->statement);
+  mysql_thread_end ();
   GNUNET_mutex_unlock(lock);
-  return GNUNET_OK;
+  return affected;
 }
 
 void __attribute__ ((constructor)) GNUNET_mysql_ltdl_init ()

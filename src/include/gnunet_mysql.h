@@ -63,7 +63,7 @@ GNUNET_MYSQL_run_statement(struct GNUNET_MysqlDatabaseHandle * dbh,
 			   const char * statement);
 
 /**
- * Prepare a statement.
+ * Create a prepared statement.
  *
  * @return NULL on error
  */
@@ -119,11 +119,14 @@ GNUNET_MYSQL_prepared_statement_run_select(struct GNUNET_MysqlStatementHandle * 
  * @param ... pairs and triplets of "MYSQL_TYPE_XXX" keys and their respective
  *        values (size + buffer-reference for pointers); terminated
  *        with "-1"
+ * @param insert_id NULL or address where to store the row ID of whatever
+ *        was inserted (only for INSERT statements!)
  * @return GNUNET_SYSERR on error, otherwise
  *         the number of successfully affected rows
  */
 int
 GNUNET_MYSQL_prepared_statement_run(struct GNUNET_MysqlStatementHandle * s,
+				    unsigned long long * insert_id,
 				    ...);
 
 
