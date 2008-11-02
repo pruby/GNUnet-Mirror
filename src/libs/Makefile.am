@@ -1,1 +1,5 @@
-SUBDIRS = mysql
+if HAVE_MYSQL
+ MYSQL_DIR = mysql
+endif
+
+SUBDIRS = $(MYSQL_DIR)

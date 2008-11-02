@@ -1,6 +1,8 @@
 SUBDIRS = .
 INCLUDES = -I$(top_srcdir)/src/include
 
+AM_CPPFLAGS = $(CPPFLAGS) $(MYSQL_CPPFLAGS)
+
 if HAVE_ZLIB
  ZLIB_LNK = -lz
 endif
