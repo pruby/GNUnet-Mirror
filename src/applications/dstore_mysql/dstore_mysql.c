@@ -110,8 +110,8 @@ iopen ()
     return GNUNET_SYSERR;
 #define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_run_statement (db, a) )
 #define PINIT(a,b) (NULL == (a = GNUNET_MYSQL_prepared_statement_create(db, b)))
-  if ( MRUNS("DROP TABLE gn080dstore") ||
-       MRUNS("CREATE TEMPORARY TABLE gn080dstore ("
+  MRUNS("DROP TABLE gn080dstore");
+  if ( MRUNS("CREATE TEMPORARY TABLE gn080dstore ("
 	     "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
 	     "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
 	     "  puttime BIGINT UNSIGNED NOT NULL DEFAULT 0,"
