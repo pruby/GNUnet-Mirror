@@ -1,7 +1,12 @@
+Sun Nov  2 16:06:47 MST 2008
+	Fixed problem with MySQL disconnects in one module
+	impacting MySQL correctness in another module (caused
+	crashes).
+
 Sat Aug 16 00:18:34 CEST 2008
-  Improved keyword extraction
-  Fixed expiration time of keywords
-  Releasing 0.8.0b.
+	Improved keyword extraction
+	Fixed expiration time of keywords
+	Releasing 0.8.0b.
 
 Sun Jul 20 15:27:11 MDT 2008
 	Releasing 0.8.0a.
