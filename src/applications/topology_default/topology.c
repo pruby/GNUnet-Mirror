@@ -453,9 +453,7 @@ rereadConfiguration (void *ctx,
                                               "/friends", &fn);
         /**Nate change, don't beat me up if it's not pretty!*/
   if (GNUNET_OK != GNUNET_disk_file_test (ectx, fn))
-    {
-      GNUNET_disk_file_write (ectx, fn, NULL, 0, "600");
-    }
+    GNUNET_disk_file_write (ectx, fn, NULL, 0, "600");    
   if ((0 == GNUNET_disk_file_test (ectx, fn)) || (0 != STAT (fn, &frstat)))
     {
       GNUNET_free (fn);
@@ -472,7 +470,10 @@ rereadConfiguration (void *ctx,
   if (frstat.st_mtime != friends_mtime)
     friends_mtime = frstat.st_mtime;
   else
-    return 0;
+    {
+      GNUNET_free_non_null(fn);
+      return 0;
+    }
   if ((fn != NULL) && (frstat.st_size > 0))
     {
       data = GNUNET_malloc (frstat.st_size);
