@@ -438,6 +438,8 @@ GNUNET_MYSQL_run_statement_select (struct GNUNET_MysqlDatabaseHandle *dbh,
     }
   ret = GNUNET_strdup (sql_row[0]);
   mysql_free_result (sql_res);
+  mysql_thread_end ();
+  GNUNET_mutex_unlock (lock);
   return ret;
 }
 
