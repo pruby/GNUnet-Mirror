@@ -1437,7 +1437,14 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
       GNUNET_free (dir);
       return NULL;
     }
-  fn = dir;
+  fn = GNUNET_convert_string_to_utf8 (ectx, dir, strlen (dir),
+#ifdef ENABLE_NLS
+                                      nl_langinfo (CODESET)
+#else
+                                      "UTF-8"   /* good luck */
+#endif
+    );
+  GNUNET_free (dir);
   dbh = getDBHandle ();
   if (dbh == NULL)
     {

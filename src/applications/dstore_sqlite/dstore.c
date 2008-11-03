@@ -54,6 +54,7 @@ static unsigned long long quota;
  * Filename of this database
  */
 static char *fn;
+static char *fn_utf8;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
@@ -135,6 +136,7 @@ db_reset ()
     {
       UNLINK (fn);
       GNUNET_free (fn);
+      GNUNET_free (fn_utf8);
     }
   payload = 0;
 
@@ -163,8 +165,20 @@ db_reset ()
       return GNUNET_SYSERR;
     }
   CLOSE (fd);
-  if (SQLITE_OK != sqlite3_open (fn, &dbh))
-    return GNUNET_SYSERR;
+  fn_utf8 = GNUNET_convert_string_to_utf8 (coreAPI->ectx, fn, strlen (fn),
+#ifdef ENABLE_NLS
+                                           nl_langinfo (CODESET)
+#else
+                                           "UTF-8"      /* good luck */
+#endif
+    );
+  if (SQLITE_OK != sqlite3_open (fn_utf8, &dbh))
+    {
+      GNUNET_free (fn);
+      GNUNET_free (fn_utf8);
+      fn = NULL;
+      return GNUNET_SYSERR;
+    }
   db_init (dbh);
   sqlite3_close (dbh);
   return GNUNET_OK;
@@ -305,7 +319,7 @@ d_put (const GNUNET_HashCode * key,
     return GNUNET_SYSERR;
   GNUNET_hash (data, size, &vhash);
   GNUNET_mutex_lock (lock);
-  if ((fn == NULL) || (SQLITE_OK != sqlite3_open (fn, &dbh)))
+  if ((fn == NULL) || (SQLITE_OK != sqlite3_open (fn_utf8, &dbh)))
     {
       db_reset (dbh);
       GNUNET_mutex_unlock (lock);
@@ -469,7 +483,7 @@ d_get (const GNUNET_HashCode * key,
       GNUNET_mutex_unlock (lock);
       return 0;
     }
-  if ((fn == NULL) || (SQLITE_OK != sqlite3_open (fn, &dbh)))
+  if ((fn == NULL) || (SQLITE_OK != sqlite3_open (fn_utf8, &dbh)))
     {
       db_reset (dbh);
       GNUNET_mutex_unlock (lock);
@@ -628,6 +642,7 @@ release_module_dstore_sqlite ()
 {
   UNLINK (fn);
   GNUNET_free (fn);
+  GNUNET_free (fn_utf8);
   fn = NULL;
   if (bloom != NULL)
     {

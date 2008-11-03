@@ -247,6 +247,7 @@ getDBHandle (const char *name)
   unsigned int idx;
   sqliteHandle *dbh;
   sqliteDatabase *db;
+  char *utf8;
 
   GNUNET_mutex_lock (lock);
   db = getDB (name);
@@ -260,7 +261,14 @@ getDBHandle (const char *name)
   /* we haven't opened the DB for this thread yet */
   dbh = GNUNET_malloc (sizeof (sqliteHandle));
   dbh->tid = GNUNET_thread_get_self ();
-  if (sqlite3_open (db->fn, &dbh->dbh) != SQLITE_OK)
+  utf8 = GNUNET_convert_string_to_utf8 (ectx, db->fn, strlen (db->fn),
+#ifdef ENABLE_NLS
+                                        nl_langinfo (CODESET)
+#else
+                                        "UTF-8" /* good luck */
+#endif
+    );
+  if (sqlite3_open (utf8, &dbh->dbh) != SQLITE_OK)
     {
       LOG_SQLITE (dbh->dbh, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   "sqlite3_open");
@@ -268,8 +276,10 @@ getDBHandle (const char *name)
       GNUNET_mutex_unlock (lock);
       GNUNET_thread_release_self (dbh->tid);
       GNUNET_free (dbh);
+      GNUNET_free (utf8);
       return NULL;
     }
+  GNUNET_free (utf8);
   GNUNET_array_append (db->handles, db->handle_count, dbh);
   sqlite3_exec (dbh->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
   sqlite3_exec (dbh->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
