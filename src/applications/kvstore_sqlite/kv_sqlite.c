@@ -262,7 +262,6 @@ getDBHandle (const char *name)
   dbh->tid = GNUNET_thread_get_self ();
   if (sqlite3_open (db->fn, &dbh->dbh) != SQLITE_OK)
     {
-      printf ("FN: %s\n", db->fn);
       LOG_SQLITE (dbh->dbh, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   "sqlite3_open");
       sqlite3_close (dbh->dbh);
