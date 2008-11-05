@@ -897,6 +897,9 @@ then
 fi
 AM_CONDITIONAL(HAVE_QT, test x$qt != x0)
 
+AC_ARG_ENABLE(framework, [  --enable-framework      enable Mac OS X framework build helpers],enable_framework_build=$enableval)
+AM_CONDITIONAL(WANT_FRAMEWORK, test x$enable_framework_build = xyes)
+
 AC_SUBST(LIBPREFIX)
 AC_SUBST(DLLDIR)
 AC_SUBST(EXT_LIB_PATH)
@@ -1035,6 +1038,11 @@ fi
 if test "$adns" != 1 -a "$c_ares" != 1
 then
  AC_MSG_NOTICE([WARNING: Asynchronous resolver (adns or c-ares) not found, will use synchronous DNS resolution.])
+fi
+
+if test "$enable_framework_build" = "yes"
+then
+  AC_MSG_NOTICE([NOTICE: Mac OS X framework build enabled.])
 fi
 
 AC_MSG_NOTICE([********************************************
