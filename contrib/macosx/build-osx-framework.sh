@@ -460,6 +460,7 @@ build_gnunet()
 			./configure "${ARCH_HOSTSETTING}"	\
 			--prefix="${FW_DIR}"			\
 			--enable-shared				\
+			--enable-framework			\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
 			--with-libgcrypt-prefix=${SDK_PATH}/${FW_DIR}	\
 			--with-mysql=${SDK_PATH}/${FW_DIR}	\
@@ -780,7 +781,7 @@ cd "${ORIG_DIR}"
 copy_file_to_framework "./contrib/macosx/Info.plist" "Resources/Info.plist"
 fill_framework_revision "Resources/Info.plist"
 copy_file_to_framework "./contrib/macosx/English.lproj/InfoPlist.strings" "Resources/English.lproj/InfoPlist.strings"
-make_framework_link "lib/libgnunetutil.dylib" "GNUnet"
+make_framework_link "lib/libgnunet.dylib" "GNUnet"
 make_framework_link "lib" "Libraries"
 make_framework_link "lib/GNUnet" "PlugIns"
 make_framework_link "include/GNUnet" "Headers"
