@@ -21,11 +21,6 @@
 /**
  * @file include/gnunet_dht_lib.h
  * @brief convenience API to the DHT infrastructure for use by clients
- *        This API is synchronous and ugly (each get operation creates
- *        a thread and a client connection to gnunetd).  If this code
- *        if ever used by more than a testcase, the API should be
- *        made asynchronous.
- *
  * @author Christian Grothoff
  */
 
