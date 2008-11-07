@@ -287,7 +287,6 @@ iopen (struct GNUNET_MysqlDatabaseHandle *ret)
     {
       LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                  "mysql_real_connect", ret);
-      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   ret->valid = GNUNET_YES;
