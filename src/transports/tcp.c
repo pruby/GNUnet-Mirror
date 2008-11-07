@@ -611,9 +611,9 @@ tcp_connect (const GNUNET_MessageHello * hello,
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
-  memset (&soaddr, 0, sizeof (soaddr));
   if ((available & VERSION_AVAILABLE_IPV4) > 0)
     {
+      memset (&soaddr4, 0, sizeof (soaddr4));
       soaddr4.sin_family = AF_INET;
       memcpy (&soaddr4.sin_addr, &haddr->ipv4, sizeof (struct in_addr));
       soaddr4.sin_port = haddr->port;
@@ -622,6 +622,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
     }
   else
     {
+      memset (&soaddr6, 0, sizeof (soaddr6));
       soaddr6.sin6_family = AF_INET6;
       memcpy (&soaddr6.sin6_addr, &haddr->ipv6, sizeof (struct in6_addr));
       soaddr6.sin6_port = haddr->port;
