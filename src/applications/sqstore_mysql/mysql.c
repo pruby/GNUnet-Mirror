@@ -454,7 +454,6 @@ assembleDatum (MYSQL_BIND * result)
       GNUNET_GE_BREAK (NULL, 0);
       do_delete_entry_by_vkey (vkey);
       content_size -= ntohl (datum->size);
-      GNUNET_mutex_unlock (lock);
       GNUNET_free (datum);
       return NULL;
     }
@@ -1025,7 +1024,7 @@ update (unsigned long long vkey, int delta, GNUNET_CronTime expire)
                                               &expire,
                                               GNUNET_YES,
                                               MYSQL_TYPE_LONGLONG
-                                              & vkey, GNUNET_YES, -1);
+                                              &vkey, GNUNET_YES, -1);
 }
 
 
