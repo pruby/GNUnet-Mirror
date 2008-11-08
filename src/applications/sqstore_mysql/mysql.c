@@ -1023,7 +1023,7 @@ update (unsigned long long vkey, int delta, GNUNET_CronTime expire)
                                               MYSQL_TYPE_LONGLONG,
                                               &expire,
                                               GNUNET_YES,
-                                              MYSQL_TYPE_LONGLONG
+                                              MYSQL_TYPE_LONGLONG,
                                               &vkey, GNUNET_YES, -1);
 }
 
