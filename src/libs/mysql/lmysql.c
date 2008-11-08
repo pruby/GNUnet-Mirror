@@ -734,7 +734,7 @@ GNUNET_MYSQL_prepared_statement_run (struct GNUNET_MysqlStatementHandle *s,
       return GNUNET_SYSERR;
     }
   va_start (ap, insert_id);
-  if (GNUNET_OK != init_params (insert_id, ap))
+  if (GNUNET_OK != init_params (s, ap))
     {
       va_end (ap);
       mysql_thread_end ();
