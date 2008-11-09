@@ -489,11 +489,9 @@ prepare_statement (struct GNUNET_MysqlStatementHandle *ret)
     }
   if (mysql_stmt_prepare (ret->statement, ret->query, strlen (ret->query)))
     {
-      GNUNET_GE_LOG (ret->db->ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("`%s' failed at %s:%d with error: %s"),
-                     "mysql_stmt_prepare",
-                     __FILE__, __LINE__, mysql_stmt_error (ret->statement));
+      LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		 "mysql_stmt_prepare",
+		 ret->db);
       mysql_stmt_close (ret->statement);
       ret->statement = NULL;
       iclose ();
