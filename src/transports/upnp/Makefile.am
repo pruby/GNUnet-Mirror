@@ -1,10 +1,11 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
-AM_CFLAGS = $(GTK_CFLAGS)
 
 if USE_COVERAGE
-  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+  coverageflags = -fprofile-arcs -ftest-coverage
 endif
+
+AM_CFLAGS = $(GTK_CFLAGS) $(coverageflags)
 
 plugindir = $(libdir)/GNUnet
 
