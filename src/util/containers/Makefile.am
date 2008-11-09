@@ -15,7 +15,8 @@ libcontainers_la_LIBADD = \
 
 check_PROGRAMS = \
  bloomtest \
- metatest
+ maptest \
+ metatest 
 
 TESTS = $(check_PROGRAMS)
 
@@ -24,6 +25,10 @@ bloomtest_SOURCES = \
 bloomtest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
+maptest_SOURCES = \
+ maptest.c
+maptest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 metatest_SOURCES = \
  metatest.c

@@ -451,7 +451,9 @@ assembleDatum (MYSQL_BIND * result)
   if ((ret != GNUNET_OK) ||
       (rbind[0].buffer_length != contentSize) || (length != contentSize))
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, (ret != GNUNET_OK));
+      GNUNET_GE_BREAK (NULL, (rbind[0].buffer_length != contentSize));
+      GNUNET_GE_BREAK (NULL, (length != contentSize));
       do_delete_entry_by_vkey (vkey);
       content_size -= ntohl (datum->size);
       GNUNET_free (datum);

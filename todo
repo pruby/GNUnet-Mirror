@@ -1,7 +1,6 @@
 This is just the current plan, plans change.
 
-0.8.1 [8'08] (aka "growth"):
-- test & document multihashmap
+0.8.1 [12'08] (aka "growth"):
 - make GUIs handle namespace advertisement events
   => enable publishing of namespace ads in FSUI
   => test
@@ -17,7 +16,7 @@ This is just the current plan, plans change.
   * improve gnunet-setup (more auto-detection in wizards, more testing)
   * external IP detector webpage
 
-0.8.2 [12'08] (aka "integration"):
+0.8.2 [?'09] (aka "integration"):
 - Performance:
   * tune DHT
   * tune GAP query planning code
@@ -30,11 +29,11 @@ This is just the current plan, plans change.
   * HTTPS support (#1225)
   * support NAT-PMP (in addition to UPnP)
 
-0.8.3 [5'09] (aka "chat"):
+0.8.3 [?'09] (aka "chat"):
 - P2P chat
 
 
-1.0.0 [6'09] (aka "userfriendly"):
+1.0.0 [?'09] (aka "userfriendly"):
 - transport selection (given multiple choices,
   how should GNUnet pick a transport?)
 
