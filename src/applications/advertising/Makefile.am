@@ -5,6 +5,10 @@ plugindir = $(libdir)/GNUnet
 plugin_LTLIBRARIES = \
   libgnunetmodule_advertising.la 
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 libgnunetmodule_advertising_la_SOURCES = \
   advertising.c \
   bootstrap.c \

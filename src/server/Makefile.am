@@ -9,6 +9,10 @@ bin_PROGRAMS = \
  gnunet-transport-check \
  gnunet-update 
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 
 libgnunetcore_la_SOURCES = \
  connection.c connection.h \

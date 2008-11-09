@@ -1,5 +1,10 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
+
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 lib_LTLIBRARIES = \
   libgnunetecrs.la 
 

@@ -3,6 +3,10 @@ INCLUDES = -I$(top_srcdir)/src/include
 LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 plugindir = $(libdir)/GNUnet
 
 plugin_LTLIBRARIES = \

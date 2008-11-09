@@ -4,6 +4,9 @@ SUBDIRS = .
 
 noinst_LTLIBRARIES = \
   libnetwork.la
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
 
 if HAVE_C_ARES
 AR_LINK=-lcares

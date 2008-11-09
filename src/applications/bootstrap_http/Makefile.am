@@ -5,6 +5,10 @@ plugindir = $(libdir)/GNUnet
 plugin_LTLIBRARIES = \
   libgnunetmodule_bootstrap.la 
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 libgnunetmodule_bootstrap_la_SOURCES = \
   http.c 
 libgnunetmodule_bootstrap_la_LIBADD = @LIBCURL@ \

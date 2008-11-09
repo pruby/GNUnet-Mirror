@@ -2,6 +2,10 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 EXTRA_DIST = common.c common.h test.conf
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 plugindir = $(libdir)/GNUnet
 
 if HAVE_XML2

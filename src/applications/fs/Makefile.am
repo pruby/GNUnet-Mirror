@@ -1,6 +1,11 @@
 SUBDIRS = \
  . gap lib ecrs uritrack namespace fsui collection tools 
 
+
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 INCLUDES = -I$(top_srcdir)/src/include
 
 lib_LTLIBRARIES = \

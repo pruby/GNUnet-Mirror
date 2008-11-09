@@ -2,6 +2,9 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 noinst_LTLIBRARIES = \
   libpseudonym.la 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
 
 libpseudonym_la_SOURCES = \
   common.c common.h \

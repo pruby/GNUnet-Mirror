@@ -2,6 +2,10 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 AM_CFLAGS = $(GTK_CFLAGS)
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 plugindir = $(libdir)/GNUnet
 
 LIBS = @LIBINTL@ @LIBS@

@@ -1,5 +1,9 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
+
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
 LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \

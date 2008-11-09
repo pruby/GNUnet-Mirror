@@ -53,6 +53,10 @@ if CYGWIN
  CYGLIBADD = $(top_builddir)/src/util/win/libwin.la 
 endif
 
+if USE_COVERAGE
+  AM_CFLAGS += -fprofile-arcs -ftest-coverage
+endif
+
 lib_LTLIBRARIES = libgnunetutil.la
 
 libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \

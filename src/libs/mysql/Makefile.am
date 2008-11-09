@@ -1,6 +1,10 @@
 SUBDIRS = .
 INCLUDES = -I$(top_srcdir)/src/include
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 AM_CPPFLAGS = $(CPPFLAGS) $(MYSQL_CPPFLAGS)
 
 if HAVE_ZLIB

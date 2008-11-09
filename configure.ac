@@ -904,6 +904,17 @@ AC_SUBST(LIBPREFIX)
 AC_SUBST(DLLDIR)
 AC_SUBST(EXT_LIB_PATH)
 
+
+# gcov compilation
+use_gcov=no
+AC_ARG_ENABLE([coverage], AS_HELP_STRING([--enable-coverage],
+                                        [Compile the library with code coverage support (default is NO)]),
+                                        [use_gcov=yes], [use_gcov=no])
+AM_CONDITIONAL([USE_COVERAGE], [test "x$use_gcov" = "xyes"])
+
+
+
+
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
 contrib/Makefile

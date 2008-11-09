@@ -1,5 +1,9 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
+
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
 plugindir = $(libdir)/GNUnet
 
 lib_LTLIBRARIES = \

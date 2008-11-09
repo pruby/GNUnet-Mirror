@@ -1,5 +1,9 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
+if USE_COVERAGE
+  AM_CFLAGS = -fprofile-arcs -ftest-coverage
+endif
+
 plugindir = $(libdir)/GNUnet
 
 plugin_LTLIBRARIES = \
@@ -11,11 +15,6 @@ libgnunetmodule_fragmentation_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la  
 libgnunetmodule_fragmentation_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
-
-
-################################
-# TESTCASES 
-################################
 
 EXTRA_DIST = check.conf
 
