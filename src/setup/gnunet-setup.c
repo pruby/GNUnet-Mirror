@@ -118,6 +118,22 @@ static struct GNUNET_CommandLineOption gnunetsetupOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
+/**
+ * Client or server-only gnunet-setup command line options
+ */
+static struct GNUNET_CommandLineOption gnunetsetupNoDOptions[] = {
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  {'g', "get", "SECTION:ENTRY",
+   gettext_noop ("print a value from the configuration file to stdout"),
+   1, &get_option_helper, NULL},
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Tool to setup GNUnet.")),     /* -h */
+  {'s', "set", "SECTION:ENTRY=VALUE",
+   gettext_noop ("update a value in the configuration file"),
+   1, &set_option_helper, NULL},
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_END,
+};
+
 #if HAVE_GUILE
 static void
 gns2cfg (struct GNUNET_GNS_TreeNode *pos)
@@ -192,18 +208,41 @@ static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
 #endif
   "";
 
+static const char *INFO_CLIENT_ONLY = "gnunet-setup [OPTIONS] config|generate-defaults"
+#if HAVE_DIALOG
+  "|menuconfig"
+#endif
+#if HAVE_GTK
+  "|gconfig"
+#endif
+  "";
+
 /**
  * List of supported plugins.  One entry consists
  * of three strings: option name, plugin library
  * name and main method name.
  */
-static const char *modules[] = {
+static const char *modules_all[] = {
   "gconfig", "setup_gtk", "gconf_main",
   "menuconfig", "setup_curses", "mconf_main",
   "config", "setup_text", "main_",
   "wizard-curses", "setup_curses", "wizard_curs_main",
   "wizard-gtk", "setup_gtk", "gtk_wizard_main",
   "wizard-qt", "setup_qt", "qt_wizard_main",
+  "generate-defaults", "setup_text", "dump_",
+  NULL,
+};
+
+/**
+ * List of supported plugins if we do not
+ * have the server part.  One entry consists
+ * of three strings: option name, plugin library
+ * name and main method name.
+ */
+static const char *modules_client_only[] = {
+  "gconfig", "setup_gtk", "gconf_main",
+  "menuconfig", "setup_curses", "mconf_main",
+  "config", "setup_text", "main_",
   "generate-defaults", "setup_text", "dump_",
   NULL,
 };
@@ -222,7 +261,9 @@ main (int argc, char *const *argv)
   char *option;
   int i;
   struct stat buf;
-
+  int have_files;
+  const char ** modules;
+  
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
                                           GNUNET_GE_WARNING | GNUNET_GE_ERROR
                                           | GNUNET_GE_FATAL | GNUNET_GE_USER |
@@ -234,10 +275,32 @@ main (int argc, char *const *argv)
   GNUNET_os_init (ectx);
   cfg = GNUNET_GC_create ();
   GNUNET_GE_ASSERT (ectx, cfg != NULL);
-  i = GNUNET_parse_options (INFO,
+
+  have_files = 0;
+#if HAVE_GUILE
+  dirname = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+  GNUNET_GE_ASSERT (ectx, dirname != NULL);
+  specname =
+    GNUNET_malloc (strlen (dirname) + strlen ("config-daemon.scm") + 1);
+  strcpy (specname, dirname);
+  strcat (specname, "config-daemon.scm");
+  if (0 == ACCESS(specname, R_OK))
+    have_files = 1;
+  strcpy (specname, dirname);
+  strcat (specname, "config-client.scm");
+  if (0 == ACCESS(specname, R_OK))
+    have_files |= 2;
+  GNUNET_free (specname);
+  GNUNET_free (dirname);
+#endif
+  if (have_files == 1)
+    config_daemon = GNUNET_YES;
+
+  i = GNUNET_parse_options ((have_files == 2) ? INFO_CLIENT_ONLY : INFO,
                             ectx,
                             cfg,
-                            gnunetsetupOptions, (unsigned int) argc, argv);
+                            (have_files == 3) ? gnunetsetupOptions : gnunetsetupNoDOptions,
+			    (unsigned int) argc, argv);
   if (i < 0)
     {
       GNUNET_GC_free (cfg);
@@ -318,6 +381,7 @@ main (int argc, char *const *argv)
     GNUNET_GC_parse_configuration (cfg, cfgFilename);
   dirname = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
   GNUNET_GE_ASSERT (ectx, dirname != NULL);
+
 #if HAVE_GUILE
   specname =
     GNUNET_malloc (strlen (dirname) + strlen ("config-daemon.scm") + 1);
@@ -338,6 +402,7 @@ main (int argc, char *const *argv)
     }
   gns2cfg (GNUNET_GNS_get_tree_root (gns));
 #endif
+
   if (option_processing)
     {
       done = 0;
@@ -390,6 +455,10 @@ main (int argc, char *const *argv)
     }
   else
     {
+      if (have_files == 2)
+	modules = modules_client_only;
+      else
+	modules = modules_all;
       done = GNUNET_NO;
       i = 0;
       while ((done == GNUNET_NO) && (modules[i] != NULL))
