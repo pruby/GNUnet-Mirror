@@ -33,6 +33,7 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
+AC_PROG_OBJC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -972,6 +973,7 @@ src/setup/lib/Makefile
 src/setup/gtk/Makefile
 src/setup/qt/Makefile
 src/setup/qt/pixmaps/Makefile
+src/setup/cocoa/Makefile
 src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile

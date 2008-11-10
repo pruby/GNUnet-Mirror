@@ -206,6 +206,9 @@ static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
 #if HAVE_QT
   "|wizard-qt"
 #endif
+#if OSX
+  "|config-cocoa"
+#endif
   "";
 
 static const char *INFO_CLIENT_ONLY = "gnunet-setup [OPTIONS] config|generate-defaults"
@@ -224,6 +227,7 @@ static const char *INFO_CLIENT_ONLY = "gnunet-setup [OPTIONS] config|generate-de
  */
 static const char *modules_all[] = {
   "gconfig", "setup_gtk", "gconf_main",
+  "config-cocoa", "setup_cocoa", "config_cocoa_main",
   "menuconfig", "setup_curses", "mconf_main",
   "config", "setup_text", "main_",
   "wizard-curses", "setup_curses", "wizard_curs_main",

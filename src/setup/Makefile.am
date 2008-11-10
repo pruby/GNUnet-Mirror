@@ -6,6 +6,11 @@ endif
 if HAVE_QT
  qt_dir = qt
 endif
+if MACOSX
+if HAVE_GUILE
+ cocoa_dir = cocoa
+endif
+endif
 if HAVE_DIALOG
  curses_dir = ncurses
 endif
@@ -19,7 +24,7 @@ if HAVE_GUILE
 endif
 endif
 
-SUBDIRS = lib $(textdir) . $(curses_dir) $(gtk_dir) $(qt_dir) .
+SUBDIRS = lib $(textdir) . $(curses_dir) $(gtk_dir) $(qt_dir) $(cocoa_dir) .
 
 plugindir = $(libdir)/GNUnet
 
