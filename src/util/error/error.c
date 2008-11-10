@@ -34,7 +34,7 @@
  * After how many seconds do we always print
  * that "message X was repeated N times"?
  */
-#define BULK_DELAY_THRESHOLD (90 * GNUNET_CRON_SECONDS)
+#define BULK_DELAY_THRESHOLD (12 * GNUNET_CRON_HOURS)
 
 /**
  * After how many repetitions do we always print
