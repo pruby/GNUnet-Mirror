@@ -47,6 +47,7 @@
 	NSWindow *setupWindow;
 	PackingBoxContainer *rootView;
 	GNUNETSetupView *setupView;
+	NSImage *appIcon;
 }
 
 - (id) initWithConfig:(struct GNUNET_GC_Configuration *)config
@@ -79,10 +80,25 @@
 	configFilename:(const char *)filename
 {
 	if ((self = [super init])) {
+		char *dirname;
+		char *imageName;
+
 		gnunetConfig = config;
 		gnunetGNSCtx = gns;
 		gnunetGECtx = ectx;
 		configFilename = filename;
+
+		dirname = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+		GNUNET_GE_ASSERT (gnunetGECtx, dirname != NULL);
+		imageName = GNUNET_malloc(strlen (dirname) +
+				strlen ("gnunet-logo-color.png") + 1);
+		strcpy (imageName, dirname);
+		strcat (imageName, "gnunet-logo-color.png");
+		appIcon = [[NSImage alloc]
+			initByReferencingFile:[[[NSString alloc]
+				initWithCString:imageName
+				encoding:NSUTF8StringEncoding] autorelease]];
+		GNUNET_free (imageName);
 	}
 
 	return self;
@@ -189,6 +205,8 @@
 
 	[NSApp setWindowsMenu:menu];
 	[menu release];
+
+	[NSApp setApplicationIconImage:appIcon];
 }
 
 - (void) createWindow
@@ -241,25 +259,9 @@
 - (void) openAboutPanel:(id)sender
 {
 	NSDictionary *options;
-	NSImage *image;
-	char *dirname;
-	char *imageName;
-
-	dirname = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
-	GNUNET_GE_ASSERT (gnunetGECtx, dirname != NULL);
-	imageName = GNUNET_malloc(strlen (dirname) +
-			strlen ("gnunet-logo-color.png") + 1);
-	strcpy (imageName, dirname);
-	strcat (imageName, "gnunet-logo-color.png");
-	printf("[%s]\n", imageName);
-
-	image = [[NSImage alloc] initByReferencingFile:[[[NSString alloc]
-                                initWithCString:imageName
-                                encoding:NSUTF8StringEncoding] autorelease]];
-	GNUNET_free (imageName);
 
 	options = [NSDictionary dictionaryWithObjectsAndKeys:
-		image, @"ApplicationIcon",
+		appIcon, @"ApplicationIcon",
 		@"Copyright 2001-2008 Christian Grothoff (and other contributing authors)", @"Copyright",
 		@PACKAGE_STRING, @"ApplicationVersion",
 		nil];
@@ -364,6 +366,15 @@
 
 - (void) windowWillClose:(NSNotification *)notification
 {
+	NSEnumerator *e;
+	NSWindow *w;
+	e = [[NSApp windows] objectEnumerator];
+	while ((w = [e nextObject])) {
+		if (w != setupWindow && ![w isSheet] && [w isVisible] &&
+			([w styleMask] & NSClosableWindowMask)) {
+			[w close];
+		}
+	}
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[setupWindow setDelegate:nil];
 	[rootView removeFromSuperview];
