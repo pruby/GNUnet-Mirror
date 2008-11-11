@@ -32,6 +32,11 @@
 #import "GNUNETSetupView.h"
 #include "config_cocoa.h"
 
+// Stupid hack
+@interface NSApplication(Boohoo)
+- (void) setAppleMenu:(NSMenu *)menu;
+@end
+
 @interface GNUNETSetupApp : NSObject
 {
 	struct GNUNET_GC_Configuration *gnunetConfig;
@@ -48,9 +53,11 @@
 	setupContext:(struct GNUNET_GNS_Context *)gns
 	errorContext:(struct GNUNET_GE_Context *)ectx
 	configFilename:(const char *)filename;
+- (void) createMenu;
 - (void) createWindow;
 - (void) setupViewDidResize;
 - (BOOL) needsToSaveConfig;
+- (void) openAboutPanel:(id)sender;
 - (void) errorSavingAlertDidEnd:(NSAlert *)theAlert
 	returnCode:(int)returnCode
 	contextInfo:(void *)contextInfo;
@@ -84,6 +91,104 @@
 {
 	[setupWindow release];
 	[super dealloc];
+}
+
+- (void) createMenu
+{
+	NSString *appName = [[NSProcessInfo processInfo] processName];
+	NSMenuItem *menuItem;
+	NSMenu *menu;
+	NSMenu *appleMenu;
+
+	appleMenu = [[NSMenu alloc] initWithTitle:@""];
+
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:[@"About " stringByAppendingString:appName]
+		action:@selector(openAboutPanel:) 
+		keyEquivalent:@""];
+	[menuItem setTarget:self];
+	[appleMenu addItem:menuItem];
+	[menuItem release];
+
+	[appleMenu addItem:[NSMenuItem separatorItem]];
+
+	menu = [[NSMenu alloc] init];
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:@"Services" 
+		action:nil
+		keyEquivalent:@""];
+	[menuItem setSubmenu:menu];
+	[appleMenu addItem:menuItem];
+	[menuItem release];
+	
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:[@"Hide " stringByAppendingString:appName]
+		action:@selector(hide:)
+		keyEquivalent:@"h"];
+	[menuItem setTarget:NSApp];
+	[appleMenu addItem:menuItem];
+	[menuItem release];
+
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:@"Hide Others" 
+		action:@selector(hideOtherApplications:) 
+		keyEquivalent:@"h"];
+	[menuItem setKeyEquivalentModifierMask:
+		(NSAlternateKeyMask | NSCommandKeyMask)];
+	[menuItem setTarget:NSApp];
+	[appleMenu addItem:menuItem];
+	[menuItem release];
+
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:@"Show All" 
+		action:@selector(unhideAllApplications:) 
+		keyEquivalent:@""];
+	[menuItem setTarget:NSApp];
+	[appleMenu addItem:menuItem];
+	[menuItem release];
+	
+	[appleMenu addItem:[NSMenuItem separatorItem]];
+
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:[@"Quit " stringByAppendingString:appName]
+		action:@selector(terminate:) 
+		keyEquivalent:@"q"];
+	[menuItem setTarget:NSApp];
+	[appleMenu addItem:menuItem];
+	[menuItem release];
+	
+	menuItem = [[NSMenuItem alloc] initWithTitle:@"" 
+		action:nil 
+		keyEquivalent:@""];
+	[menuItem setSubmenu:appleMenu];	
+	[NSApp setMainMenu:[[[NSMenu alloc] init] autorelease]];
+	[[NSApp mainMenu] addItem:menuItem];
+	[menuItem release];
+
+	[NSApp setAppleMenu:appleMenu];
+	[appleMenu release];
+	[NSApp setServicesMenu:menu];
+	[menu release];
+
+	menu = [[NSMenu alloc] initWithTitle:@"Window"];
+
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:@"Minimize"
+		action:@selector(performMiniaturize:)
+		keyEquivalent:@"m"];
+	[menu addItem:menuItem];
+	[menuItem release];
+
+	menuItem = [[NSMenuItem alloc]
+		initWithTitle:@"Window"
+		action:nil
+		keyEquivalent:@""];
+	[menuItem setSubmenu:menu];
+	[[NSApp mainMenu] addItem:menuItem];
+	[menuItem release];
+
+	[NSApp setWindowsMenu:menu];
+	[menu release];
 }
 
 - (void) createWindow
@@ -131,6 +236,35 @@
 	frame.origin.y -= (frame.size.height - [setupWindow frame].size.height);
 	[setupWindow setFrame:frame display:YES];
 
+}
+
+- (void) openAboutPanel:(id)sender
+{
+	NSDictionary *options;
+	NSImage *image;
+	char *dirname;
+	char *imageName;
+
+	dirname = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+	GNUNET_GE_ASSERT (gnunetGECtx, dirname != NULL);
+	imageName = GNUNET_malloc(strlen (dirname) +
+			strlen ("gnunet-logo-color.png") + 1);
+	strcpy (imageName, dirname);
+	strcat (imageName, "gnunet-logo-color.png");
+	printf("[%s]\n", imageName);
+
+	image = [[NSImage alloc] initByReferencingFile:[[[NSString alloc]
+                                initWithCString:imageName
+                                encoding:NSUTF8StringEncoding] autorelease]];
+	GNUNET_free (imageName);
+
+	options = [NSDictionary dictionaryWithObjectsAndKeys:
+		image, @"ApplicationIcon",
+		@"Copyright 2001-2008 Christian Grothoff (and other contributing authors)", @"Copyright",
+		@PACKAGE_STRING, @"ApplicationVersion",
+		nil];
+
+	[NSApp orderFrontStandardAboutPanelWithOptions:options];
 }
 
 - (void) errorSavingAlertDidEnd:(NSAlert *)theAlert
@@ -277,7 +411,8 @@ int config_cocoa_mainsetup_cocoa (int argc, const char **argv,
                 initWithConfig:cfg setupContext:gns errorContext:ectx
 		configFilename:filename];
 	[NSApp setDelegate:setup];
-	//[NSApp setMainMenu:[[NSMenu alloc] init]];
+
+	[setup createMenu];
 	
 	[NSApp run];
 
