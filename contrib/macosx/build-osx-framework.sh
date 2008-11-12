@@ -296,7 +296,7 @@ build_package()
 		CXX="${ARCH_CXX}"
 		CPPFLAGS="${ARCH_CPPFLAGS}"
 		CFLAGS="${OPT_FLAGS} -no-cpp-precomp -fno-common -fPIC ${ARCH_CFLAGS}"
-		CXXFLAGS="${CFLAGS}"
+		CXXFLAGS="${CFLAGS} -fno-exceptions"
 		LDFLAGS="${ARCH_LDFLAGS}"
 		if ! ( cd "$1" && CC="${CC}"				\
 			CXX="${CXX}"					\
