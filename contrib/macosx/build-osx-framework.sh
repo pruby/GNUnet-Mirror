@@ -47,6 +47,8 @@ GUILE_URL=ftp://ftp.gnu.org/pub/gnu/guile
 GUILE_NAME=guile-1.8.5
 LIBMICROHTTPD_URL=ftp://ftp.cs.tu-berlin.de/pub/gnu/libmicrohttpd
 LIBMICROHTTPD_NAME=libmicrohttpd-0.3.1
+LIBESMTP_URL=http://www.stafford.uklinux.net/libesmtp
+LIBESMTP_NAME=libesmtp-1.0.4
 MYSQL_URL=http://mysql.mirrors.webname.dk/Downloads/MySQL-5.0
 MYSQL_NAME=mysql-5.0.67
 
@@ -91,6 +93,7 @@ fetch_all_packages()
 	fetch_package "${LIBGCRYPT_NAME}" "${LIBGCRYPT_URL}"
 	fetch_package "${GUILE_NAME}" "${GUILE_URL}"
 	fetch_package "${LIBMICROHTTPD_NAME}" "${LIBMICROHTTPD_URL}"
+	fetch_package "${LIBESMTP_NAME}" "${LIBESMTP_URL}"
 	fetch_package "${MYSQL_NAME}" "${MYSQL_URL}"
 }
 
@@ -410,6 +413,16 @@ build_dependencies()
 			--disable-shared		\
 			--enable-static"
 
+	prepare_package "${LIBESMTP_NAME}"
+	build_package "${LIBESMTP_NAME}"		\
+			"${ARCH_HOSTSETTING}		\
+			--prefix="${FW_DIR}"		\
+			--with-pic			\
+			--disable-shared		\
+			--enable-static			\
+			--without-openssl		\
+			--disable-nsauth"
+
 	prepare_package "${MYSQL_NAME}"
 	build_package "${MYSQL_NAME}"			\
 			"${ARCH_HOSTSETTING}		\
@@ -463,6 +476,7 @@ build_gnunet()
 			--enable-framework			\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
 			--with-libgcrypt-prefix=${SDK_PATH}/${FW_DIR}	\
+			--with-esmtp=${SDK_PATH}/${FW_DIR}	\
 			--with-mysql=${SDK_PATH}/${FW_DIR}	\
 			--disable-mysql-version-check		\
 			--with-libiconv-prefix=${SDK_PATH}/usr )
