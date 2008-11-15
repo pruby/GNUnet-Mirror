@@ -51,9 +51,7 @@
 #endif
 
 #ifdef OSX
-#include <mach-o/arch.h>
 #include <mach/mach.h>
-#include <mach/mach_error.h>
 
 static processor_cpu_load_info_t prev_cpu_load;
 #endif
