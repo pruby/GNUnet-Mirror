@@ -75,7 +75,7 @@ getAddressFromHostname (struct GNUNET_GE_Context *ectx,
   return ret;
 }
 
-#if HAVE_GETIFADDRS && HAVE_GNUNET_freeIFADDRS
+#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
 static int
 getAddressFromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
                           struct GNUNET_GE_Context *ectx,
