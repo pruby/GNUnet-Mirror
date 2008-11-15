@@ -42,6 +42,29 @@ GNUNET_list_network_interfaces (struct GNUNET_GE_Context *ectx,
 {
 #ifdef MINGW
   ListNICs (proc, cls);
+#elif HAVE_GETIFADDRS && HAVE_FREEIFADDRS
+  struct ifaddrs *ifa_first;
+
+  if (getifaddrs (&ifa_first) == 0)
+    {
+      struct ifaddrs *ifa_ptr;
+
+      ifa_ptr = ifa_first;
+      for (ifa_ptr = ifa_first; ifa_ptr != NULL; ifa_ptr = ifa_ptr->ifa_next)
+        {
+          if (ifa_ptr->ifa_name != NULL &&
+              ifa_ptr->ifa_addr != NULL && (ifa_ptr->ifa_flags & IFF_UP) != 0)
+            {
+              if (ifa_ptr->ifa_addr->sa_family != AF_INET)
+                continue;
+              if (GNUNET_OK != proc (ifa_ptr->ifa_name, strcmp
+                  (ifa_ptr->ifa_name, GNUNET_DEFAULT_INTERFACE) == 0, cls))
+                break;
+            }
+        }
+      freeifaddrs (ifa_first);
+    }
+
 #else
   char entry[11], *dst;
   FILE *f;
