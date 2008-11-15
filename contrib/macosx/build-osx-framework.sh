@@ -45,6 +45,8 @@ LIBGCRYPT_URL=ftp://ftp.gnupg.org/gcrypt/libgcrypt
 LIBGCRYPT_NAME=libgcrypt-1.4.3
 GUILE_URL=ftp://ftp.gnu.org/pub/gnu/guile
 GUILE_NAME=guile-1.8.5
+CURL_URL=http://curl.haxx.se/download
+CURL_NAME=curl-7.19.2
 LIBMICROHTTPD_URL=ftp://ftp.cs.tu-berlin.de/pub/gnu/libmicrohttpd
 LIBMICROHTTPD_NAME=libmicrohttpd-0.3.1
 LIBESMTP_URL=http://www.stafford.uklinux.net/libesmtp
@@ -92,6 +94,7 @@ fetch_all_packages()
 	fetch_package "${LIBGPG_ERROR_NAME}" "${LIBGPG_ERROR_URL}"
 	fetch_package "${LIBGCRYPT_NAME}" "${LIBGCRYPT_URL}"
 	fetch_package "${GUILE_NAME}" "${GUILE_URL}"
+	fetch_package "${CURL_NAME}" "${CURL_URL}"
 	fetch_package "${LIBMICROHTTPD_NAME}" "${LIBMICROHTTPD_URL}"
 	fetch_package "${LIBESMTP_NAME}" "${LIBESMTP_URL}"
 	fetch_package "${MYSQL_NAME}" "${MYSQL_URL}"
@@ -353,6 +356,27 @@ build_dependencies()
 			--disable-debug			\
 			--with-random=/dev/urandom"
 
+	prepare_package "${CURL_NAME}"
+	build_package "${CURL_NAME}"			\
+			"${ARCH_HOSTSETTING}		\
+			curl_cv_writable_argv=yes	\
+			ac_cv_working_ni_withscopeid=no	\
+			--prefix="${FW_DIR}"		\
+			--with-pic			\
+			--disable-shared		\
+			--enable-static			\
+			--disable-debug			\
+			--disable-ftp			\
+			--disable-file			\
+			--disable-ldap			\
+			--disable-ldaps			\
+			--disable-dict			\
+			--disable-telnet		\
+			--disable-tftp			\
+			--enable-ipv6			\
+			--disable-ares			\
+			--with-random=/dev/urandom"
+
 	prepare_package "${GETTEXT_NAME}"
 	build_package "${GETTEXT_NAME}"			\
 			"${ARCH_HOSTSETTING}		\
@@ -460,9 +484,11 @@ build_gnunet()
 		LDFLAGS="${ARCH_LDFLAGS}"
 		if ! ( CC="${ARCH_CC}"				\
 			CXX="${ARCH_CXX}"			\
+			OBJC="${ARCH_CC}"			\
 			CPPFLAGS="${CPPFLAGS}"			\
 			CFLAGS="${CFLAGS}"			\
 			CXXFLAGS="${CXXFLAGS}"			\
+			OBJCFLAGS="${CFLAGS}"			\
 			LDFLAGS="${LDFLAGS}"			\
 			gt_cv_func_gnugettext1_libintl=yes	\
 			ac_cv_func_memcmp_working=yes		\
@@ -470,6 +496,10 @@ build_gnunet()
 			ac_cv_func_chown_works=yes		\
 			ac_cv_func_closedir_void=no		\
 			ac_cv_unaligned_64_access=yes		\
+			libltdl_cv_need_uscore=no		\
+			lt_cv_dlopen_self=yes			\
+			lt_cv_dlopen_self_static=yes		\
+			LIBCURL="${SDK_PATH}/${FW_DIR}/lib/libcurl.a -lssl -lcrypto -lz"	\
 			./configure "${ARCH_HOSTSETTING}"	\
 			--prefix="${FW_DIR}"			\
 			--enable-shared				\
