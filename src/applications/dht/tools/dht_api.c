@@ -189,7 +189,6 @@ GNUNET_DHT_context_destroy (struct GNUNET_DHT_Context *ctx)
  *
  * @param table table to use for the lookup
  * @param key the key to store
- * @param expire how long until the content should expire (absolute time)
  * @param value what to store
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
