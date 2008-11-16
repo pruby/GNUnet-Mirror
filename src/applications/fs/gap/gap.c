@@ -563,8 +563,8 @@ GNUNET_FS_GAP_get_average_priority ()
   unsigned int active;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);
-  tot = total_priority);
-  active = active_request_count);
+  tot = total_priority;
+  active = active_request_count;
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (active == 0)
     return 0;
