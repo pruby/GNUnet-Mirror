@@ -407,7 +407,7 @@ GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
     if (GNUNET_OK == getAddressFromIOCTL (cfg, ectx, &address))
       retval = GNUNET_OK;
 #endif
-#if HAVE_GETIFADDRS && HAVE_GNUNET_freeIFADDRS
+#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
   if (retval == GNUNET_SYSERR)
     if (GNUNET_OK == getAddressFromGetIfAddrs (cfg, ectx, &address))
       retval = GNUNET_OK;

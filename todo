@@ -10,8 +10,23 @@ This is just the current plan, plans change.
   * insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
     as keyword (to allow getting meta-data from URI only)
 - Correctness: 
+  * new MySQL code sometimes causes gnunetd to "hang" 
+    (consumes 100% CPU, call to mysqld never returns, mysqld goes crazy,
+     gnunetd eventually disconnects from the network, badness...)
   * clean up and test VPN code
   * test RPC code (write a small demo)
+  * valgrind violation:
+	==23522== Thread 11:
+	==23522== Invalid read of size 1
+	==23522==    at 0x42BACE7: GNUNET_bloomfilter_or (bloomfilter.c:666)
+	==23522==    by 0x7821E4E: GNUNET_FS_GAP_execute_query (gap.c:312)
+	==23522==    by 0x781BD5A: handle_p2p_query (fs.c:687)
+	==23522==    by 0x40450AC: GNUNET_CORE_p2p_inject_message (handler.c:505)
+	==23522==    by 0x40459BB: handleMessage (handler.c:620)
+	==23522==    by 0x4045C4C: threadMain (handler.c:654)
+	==23522==    by 0x4155F3A: start_thread (pthread_create.c:297)
+	==23522==    by 0x4232B6D: clone (in /usr/lib/debug/libc-2.7.so)
+	==23522==  Address 0x7c8ee80 is not stack'd, malloc'd or (recently) free'd
 - Ease of use:
   * improve gnunet-setup (more auto-detection in wizards, more testing)
   * external IP detector webpage
