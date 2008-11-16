@@ -52,6 +52,10 @@
  */
 static struct RequestList **table;
 
+static unsigned long long total_priority;
+
+static unsigned int active_request_count;
+
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static GNUNET_Datastore_ServiceAPI *datastore;
@@ -299,6 +303,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
             }
           if (stats != NULL)
             stats->change (stat_gap_query_refreshed, 1);
+	  total_priority += priority;
           rl->value += priority;
           rl->remaining_value += priority;
           rl->expiration = newTTL;
@@ -320,7 +325,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
             }
           /* update BF */
           if (rl->bloomfilter != NULL)
-            GNUNET_bloomfilter_free (rl->bloomfilter);
+	    GNUNET_bloomfilter_free (rl->bloomfilter);
           rl->bloomfilter_mutator = filter_mutator;
           rl->bloomfilter_size = filter_size;
           if (filter_size > 0)
@@ -365,6 +370,8 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
         table[index] = rl->next;
       else
         prev->next = rl->next;
+      active_request_count--;
+      total_priority -= rl->value;
       GNUNET_FS_SHARED_free_request_list (rl);
     }
   /* create new table entry */
@@ -392,6 +399,8 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->response_target = peer;
   rl->policy = policy;
   rl->next = table[index];
+  active_request_count++;
+  total_priority += rl->value;
   table[index] = rl;
   if (stats != NULL)
     stats->change (stat_gap_query_routed, 1);
@@ -488,7 +497,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
       GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
       value += rl->value;
       rl_value = rl->value;
-      rl->value = 0;
+      total_priority -= rl->value;
+      rl->value = 0;      
 
       if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
         {
@@ -496,6 +506,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
             table[index] = rl->next;
           else
             prev->next = rl->next;
+	  active_request_count--;
+	  total_priority -= rl->value;
           GNUNET_FS_SHARED_free_request_list (rl);
           if (prev == NULL)
             rl = table[index];
@@ -547,24 +559,12 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
 unsigned int
 GNUNET_FS_GAP_get_average_priority ()
 {
-  struct RequestList *rl;
   unsigned long long tot;
-  unsigned int i;
   unsigned int active;
 
-  tot = 0;
-  active = 0;
   GNUNET_mutex_lock (GNUNET_FS_lock);
-  for (i = 0; i < table_size; i++)
-    {
-      rl = table[i];
-      while (rl != NULL)
-        {
-          tot += rl->value;
-          active++;
-          rl = rl->next;
-        }
-    }
+  tot = total_priority);
+  active = active_request_count);
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (active == 0)
     return 0;
@@ -599,6 +599,8 @@ cleanup_on_peer_disconnect (const GNUNET_PeerIdentity * peer, void *unused)
                 table[i] = rl->next;
               else
                 prev->next = rl->next;
+	      active_request_count--;
+	      total_priority -= rl->value;
               GNUNET_FS_SHARED_free_request_list (rl);
               if (prev == NULL)
                 rl = table[i];
@@ -721,6 +723,8 @@ GNUNET_FS_GAP_done ()
       while (NULL != (rl = table[i]))
         {
           table[i] = rl->next;
+	  active_request_count--;
+	  total_priority -= rl->value;
           GNUNET_FS_SHARED_free_request_list (rl);
         }
     }
@@ -737,6 +741,8 @@ GNUNET_FS_GAP_done ()
       coreAPI->service_release (stats);
       stats = NULL;
     }
+  GNUNET_GE_BREAK(NULL, active_request_count == 0);
+  GNUNET_GE_BREAK(NULL, total_priority == 0);
   return 0;
 }
 

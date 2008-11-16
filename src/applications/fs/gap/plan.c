@@ -370,6 +370,7 @@ struct RankingPeerContext
   struct PeerRankings *rankings;
   struct ClientInfoList *info;
   struct RequestList *request;
+  unsigned int avg_priority;
 };
 
 /**
@@ -450,7 +451,7 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
     prio = history->last_good_prio - GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2); /* fall over time */
   if (prio > 1)
     {
-      allowable_prio = GNUNET_FS_GAP_get_average_priority () + 1;
+      allowable_prio = rpc->avg_priority + 1;
       if (prio > allowable_prio)
         prio = allowable_prio;
     }
@@ -551,6 +552,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   rpc.info = info;
   rpc.request = request;
   rpc.rankings = NULL;
+  rpc.avg_priority = GNUNET_FS_GAP_get_average_priority ();
   total_peers = coreAPI->p2p_connections_iterate (rank_peers, &rpc);
   /* use request type, priority, system load and
      entropy of ranking to determine number of peers
