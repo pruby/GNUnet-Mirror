@@ -27,6 +27,8 @@ gnunet_stats_LDADD = \
 
 libgnunetstats_api_la_SOURCES = \
   clientapi.c 
+libgnunetstats_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetstats_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
@@ -36,5 +38,5 @@ libgnunetmodule_stats_la_SOURCES = \
 libgnunetmodule_stats_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_stats_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 

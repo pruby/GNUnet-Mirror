@@ -23,7 +23,7 @@ libgnunetmodule_upnp_la_SOURCES = \
  xmlnode.c xmlnode.h 
 
 libgnunetmodule_upnp_la_LDFLAGS = \
- -export-dynamic -avoid-version -module
+ $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_upnp_la_CFLAGS = \
  -I$(top_scrdir)/include \
  @LIBCURL_CPPFLAGS@ @XML_CPPFLAGS@

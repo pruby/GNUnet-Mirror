@@ -23,7 +23,7 @@ AM_CPPFLAGS = $(CPPFLAGS) $(SQLITE_CPPFLAGS)
 libgnunetmodule_sqstore_sqlite_la_SOURCES = \
   sqlite.c 
 libgnunetmodule_sqstore_sqlite_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module \
+  $(GN_PLUGIN_LDFLAGS) \
   $(SQLITE_LDFLAGS)
 libgnunetmodule_sqstore_sqlite_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \

@@ -30,8 +30,7 @@ libgnunetsetup_gtk_la_SOURCES = \
  wizard_gtk.c wizard_gtk.h
 
 libgnunetsetup_gtk_la_LDFLAGS = \
- $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ \
- -export-dynamic -avoid-version -module
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunetsetup_gtk_la_CFLAGS = \
  -I$(top_scrdir)/include \

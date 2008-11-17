@@ -28,10 +28,10 @@ DIALOG_LIBS = -lcdialog
 endif
 
 libgnunetsetup_curses_la_LDFLAGS = \
- -lncursesw $(DIALOG_LIBS) -lm \
- -export-dynamic -avoid-version -module
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunetsetup_curses_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/setup/lib/libgnunetsetup.la
+ $(top_builddir)/src/setup/lib/libgnunetsetup.la \
+ -lncursesw $(DIALOG_LIBS) -lm
 

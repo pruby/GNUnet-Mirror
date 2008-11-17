@@ -12,9 +12,9 @@ libgnunetmodule_session_la_SOURCES = \
   cache.c cache.h \
   connect.c 
 libgnunetmodule_session_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetmodule_session_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 
 if HAVE_MHD
   httptest = sessiontest_http sessiontest_nat_http

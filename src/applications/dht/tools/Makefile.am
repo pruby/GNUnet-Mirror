@@ -14,6 +14,8 @@ libgnunetdht_api_la_SOURCES = \
   dht_api.c dht_api.h
 libgnunetdht_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
+libgnunetdht_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 
 gnunet_dht_query_SOURCES = \
   dht-query.c

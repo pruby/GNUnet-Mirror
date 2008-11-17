@@ -11,6 +11,8 @@ plugin_LTLIBRARIES = \
 
 libgnunettraffic_api_la_SOURCES = \
   clientapi.c 
+libgnunettraffic_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunettraffic_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
@@ -20,4 +22,4 @@ libgnunetmodule_traffic_la_SOURCES = \
 libgnunetmodule_traffic_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_traffic_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)

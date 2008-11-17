@@ -9,10 +9,10 @@ if USE_COVERAGE
 endif
 
 if HAVE_C_ARES
-AR_LINK=-lcares
+ AR_LINK=-lcares
 else
 if HAVE_ADNS
-AR_LINK=-ladns
+ AR_LINK=-ladns
 endif
 endif
 
@@ -23,7 +23,8 @@ libnetwork_la_SOURCES = \
  ip.c \
  ipcheck.c \
  select.c 
-libnetwork_la_LIBADD = $(AR_LINK)
+libnetwork_la_LIBADD = \
+ $(AR_LINK)
 
 check_PROGRAMS = \
  ipchecktest \

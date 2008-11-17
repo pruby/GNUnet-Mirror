@@ -11,12 +11,16 @@ lib_LTLIBRARIES = \
 
 libgnunettesting_api_la_SOURCES = \
   testing.c 
+libgnunettesting_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunettesting_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 
 
 libgnunetremote_api_la_SOURCES = \
   remote.c remote.h
+libgnunetremote_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetremote_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 

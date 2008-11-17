@@ -13,7 +13,7 @@ libgnunetmodule_state_la_SOURCES = \
 libgnunetmodule_state_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_state_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 
 
 

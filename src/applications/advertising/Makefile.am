@@ -16,7 +16,7 @@ libgnunetmodule_advertising_la_SOURCES = \
 libgnunetmodule_advertising_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetmodule_advertising_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+ $(GN_PLUGIN_LDFLAGS)
 
 
 

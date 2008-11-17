@@ -21,11 +21,13 @@ libgnunetmodule_identity_la_SOURCES = \
 libgnunetmodule_identity_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_identity_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 
 
 libgnunetidentity_api_la_SOURCES = \
   clientapi.c 
+libgnunetidentity_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetidentity_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 

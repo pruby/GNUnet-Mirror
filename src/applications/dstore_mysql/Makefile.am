@@ -27,7 +27,7 @@ AM_CPPFLAGS = $(CPPFLAGS) $(MYSQL_CPPFLAGS)
 libgnunetmodule_dstore_mysql_la_SOURCES = \
   dstore_mysql.c 
 libgnunetmodule_dstore_mysql_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module \
+  $(GN_PLUGIN_LDFLAGS) \
   $(MYSQL_LDFLAGS)
 libgnunetmodule_dstore_mysql_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \

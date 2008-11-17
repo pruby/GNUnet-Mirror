@@ -17,5 +17,5 @@ libgnunetmodule_chat_la_SOURCES = \
 libgnunetmodule_chat_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_chat_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 

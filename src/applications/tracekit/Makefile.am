@@ -29,15 +29,16 @@ gnunet_tracekit_LDADD = \
 libgnunetmodule_tracekit_la_SOURCES = \
   tracekit.c \
   tracekit.h
-
+libgnunetmodule_tracekit_la_LDFLAGS = \
+  $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_tracekit_la_LIBADD = \
   $(LDADD)
 
-libgnunetmodule_tracekit_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
 
 libgnunettracekit_api_la_SOURCES = \
   clientapi.c 
+libgnunettracekit_api_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunettracekit_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 

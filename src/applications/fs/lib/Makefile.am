@@ -10,6 +10,8 @@ lib_LTLIBRARIES = \
 
 libgnunetfs_la_SOURCES = \
   fslib.c 
+libgnunetfs_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetfs_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/applications/fs/libgnunetecrs_core.la

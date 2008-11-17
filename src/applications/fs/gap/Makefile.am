@@ -24,10 +24,11 @@ libgnunetmodule_fs_la_SOURCES = \
   shared.c shared.h 
 
 libgnunetmodule_fs_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module -lm
+  $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_fs_la_LIBADD = \
- $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -lm
 
 
 

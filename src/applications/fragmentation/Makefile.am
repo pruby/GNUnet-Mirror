@@ -12,9 +12,9 @@ plugin_LTLIBRARIES = \
 libgnunetmodule_fragmentation_la_SOURCES = \
   fragmentation.c 
 libgnunetmodule_fragmentation_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+  $(top_builddir)/src/util/libgnunetutil.la  
 libgnunetmodule_fragmentation_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 
 EXTRA_DIST = check.conf
 

@@ -27,7 +27,7 @@ AM_CFLAGS = \
 LIBS = @LIBINTL@ @LIBICONV@ @LIBS@
 
 if SOLARIS
- SOLFLAGS = -lrt
+ SOLLIBADD = -lrt
 endif
 
 if MINGW
@@ -35,15 +35,15 @@ if MINGW
  WINSUBDIRS = win
  WINLIBADD = $(top_builddir)/src/util/win/libwin.la 
 else
- DLFLAG = -ldl
+ DLLIBADD = -ldl
 endif
 
 if XFREEBSD
- DLFLAG=
+ DLLIBADD=
 endif
 
 if OPENBSD
- DLFLAG=
+ DLLIBADD=
 endif
 
 
@@ -59,7 +59,7 @@ endif
 
 lib_LTLIBRARIES = libgnunetutil.la
 
-libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
+libgnunetutil_la_LIBADD = \
  boot/libboot.la \
  config/libconfig.la \
  containers/libcontainers.la \
@@ -74,7 +74,13 @@ libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
  network_client/libnetwork_client.la \
  os/libos.la \
  pseudonym/libpseudonym.la \
- threads/libthreads.la
+ threads/libthreads.la \
+ $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
+ $(LIBGCRYPT_LIBS) \
+ -lgmp \
+ $(LIBLTDL) \
+ $(SOLLIBADD) \
+ $(DLLIBADD)
 
 libgnunetutil_la_SOURCES = libgnunetutil.c
 
@@ -82,6 +88,6 @@ EXTRA_DIST = \
   check.conf
 
 libgnunetutil_la_LDFLAGS = \
- -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
+ $(GN_LIB_LDFLAGS) $(WINFLAGS) \
  -version-info 3:0:0
 

@@ -23,7 +23,8 @@ libgnunetcore_la_SOURCES = \
  version.c version.h
 libgnunetcore_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
-
+libgnunetcore_la_LDFLAGS = \
+ $(GN_LIB_LDFLAGS)
 
 gnunetd_SOURCES = \
  gnunetd.c 

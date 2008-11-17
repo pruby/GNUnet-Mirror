@@ -13,6 +13,8 @@ lib_LTLIBRARIES = \
 
 libgnunetecrs_core_la_SOURCES = \
   ecrs_core.c
+libgnunetecrs_core_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetecrs_core_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 

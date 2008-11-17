@@ -21,7 +21,7 @@ AM_CPPFLAGS = $(CPPFLAGS) $(SQLITE_CPPFLAGS)
 libgnunetmodule_kvstore_sqlite_la_SOURCES = \
   kv_sqlite.c 
 libgnunetmodule_kvstore_sqlite_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module \
+  $(GN_PLUGIN_LDFLAGS) \
   $(SQLITE_LDFLAGS)
 libgnunetmodule_kvstore_sqlite_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \

@@ -12,7 +12,7 @@ libgnunetsetup_text_la_SOURCES = \
   conf.c conf.h
 
 libgnunetsetup_text_la_LDFLAGS = \
- -export-dynamic -avoid-version -module
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunetsetup_text_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \

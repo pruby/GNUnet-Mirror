@@ -14,7 +14,7 @@ libgnunetmodule_bootstrap_la_SOURCES = \
 libgnunetmodule_bootstrap_la_LIBADD = @LIBCURL@ \
  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetmodule_bootstrap_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module 
+ $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_bootstrap_la_CPPFLAGS = \
  @LIBCURL_CPPFLAGS@ 
 

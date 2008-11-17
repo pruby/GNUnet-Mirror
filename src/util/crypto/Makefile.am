@@ -11,9 +11,9 @@ noinst_LTLIBRARIES = libcrypto.la
 AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS) -O3
 
 libcrypto_la_LIBADD = \
- $(GCLIBADD) 
-
-libcrypto_la_LDFLAGS = $(LIBGCRYPT_LIBS) -lgmp
+ $(GCLIBADD) \
+ $(LIBGCRYPT_LIBS) \
+ -lgmp
 
 libcrypto_la_SOURCES = \
  crc32.c \

@@ -23,10 +23,11 @@ libgnunetsetup_cocoa_la_SOURCES = \
  PackingBoxContainer.m PackingBoxContainer.h
 
 libgnunetsetup_cocoa_la_LDFLAGS = \
- -framework Cocoa -lm \
- -export-dynamic -avoid-version -module
+ $(GN_PLUGIN_LDFLAGS) \
+ -framework Cocoa
 
 libgnunetsetup_cocoa_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/setup/lib/libgnunetsetup.la
+ $(top_builddir)/src/setup/lib/libgnunetsetup.la \
+ -lm
 

@@ -22,6 +22,8 @@ libgnunetecrs_la_SOURCES = \
   unindex.c \
   upload.c \
   uri.c
+libgnunetecrs_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetecrs_la_LIBADD = \
  -lz \
  -lextractor \

@@ -51,7 +51,7 @@ libgnunettransport_smtp_la_SOURCES = smtp.c
 libgnunettransport_smtp_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la -lesmtp
 libgnunettransport_smtp_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunettransport_http_la_SOURCES = http.c
 libgnunettransport_http_la_LIBADD = \
@@ -59,7 +59,7 @@ libgnunettransport_http_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetip.la
 libgnunettransport_http_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+ $(GN_PLUGIN_LDFLAGS) 
 libgnunettransport_http_la_CPPFLAGS = \
  @LIBCURL_CPPFLAGS@
 
@@ -68,21 +68,21 @@ libgnunettransport_tcp_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetip.la
 libgnunettransport_tcp_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunettransport_nat_la_SOURCES = nat.c
 libgnunettransport_nat_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetip.la 
 libgnunettransport_nat_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunettransport_udp_la_SOURCES = udp.c
 libgnunettransport_udp_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetip.la
 libgnunettransport_udp_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+ $(GN_PLUGIN_LDFLAGS)
 
 
 

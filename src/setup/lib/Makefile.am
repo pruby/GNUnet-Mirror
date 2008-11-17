@@ -21,10 +21,11 @@ libgnunetsetup_la_SOURCES = \
   wizard_util.c wizard_util.h
 
 libgnunetsetup_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(GUILE_LIB)
 
 libgnunetsetup_la_LDFLAGS = \
- -export-dynamic $(GUILE_LIB)
+ $(GN_LIB_LDFLAGS)
 
 libgnunetsetup_la_CFLAGS = -I$(top_scrdir)/include 
 

@@ -25,6 +25,6 @@ libgnunetmodule_vpn_la_SOURCES = \
   p2p.c p2p.h \
   vpn.c vpn.h
 libgnunetmodule_vpn_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_vpn_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la 

@@ -19,11 +19,12 @@ libgnunetmodule_rpc_la_LIBADD = \
   $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la
 
 libgnunetmodule_rpc_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 
 libgnunetrpc_util_la_SOURCES = \
   parameters.c 
-
+libgnunetrpc_util_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS)
 libgnunetrpc_util_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 

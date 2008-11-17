@@ -23,11 +23,11 @@ AM_CPPFLAGS = $(CPPFLAGS) $(SQLITE_CPPFLAGS)
 libgnunetmodule_dstore_sqlite_la_SOURCES = \
   dstore.c 
 libgnunetmodule_dstore_sqlite_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module \
+  $(GN_PLUGIN_LDFLAGS) \
   $(SQLITE_LDFLAGS)
 libgnunetmodule_dstore_sqlite_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- -lsqlite3
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -lsqlite3
 
 EXTRA_DIST = check.conf
 

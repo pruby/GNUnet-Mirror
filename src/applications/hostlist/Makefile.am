@@ -18,7 +18,7 @@ libgnunetmodule_hostlist_la_SOURCES = \
 libgnunetmodule_hostlist_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la  -lmicrohttpd
 libgnunetmodule_hostlist_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  $(GN_PLUGIN_LDFLAGS)
 
 
 
