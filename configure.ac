@@ -845,11 +845,7 @@ AC_CHECK_FUNCS([floor gethostname memmove rmdir strncasecmp strrchr strtol atoll
 # restore LIBS
 LIBS=$SAVE_LIBS
 
-AC_SUBST(CPPFLAGS)
-AC_SUBST(LIBS)
-AC_SUBST(LDFLAGS)
-AC_SUBST(EXT_LIB_PATH)
-AC_SUBST(EXT_LIBS)
+
 
 # check for guile
 guile=0
@@ -891,6 +887,8 @@ else
  AC_DEFINE_UNQUOTED([HAVE_GUILE], 0, [We do NOT have GUILE])
 fi
 AM_CONDITIONAL(HAVE_GUILE, test x$guile = x1)
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 if test "$qt" = 1
 then
@@ -920,6 +918,11 @@ fi
 AC_SUBST(GN_LIB_LDFLAGS)
 AC_SUBST(GN_PLUGIN_LDFLAGS)
 
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LIBS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(EXT_LIB_PATH)
+AC_SUBST(EXT_LIBS)
 
 AC_SUBST(LIBPREFIX)
 AC_SUBST(DLLDIR)
