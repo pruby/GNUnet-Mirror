@@ -19,7 +19,7 @@ libgnunetfsui_la_SOURCES = \
   unindex.c \
   upload.c
 libgnunetfsui_la_LDFLAGS = \
-  $(GN_PLUGIN_LDFLAGS)
+  $(GN_LIB_LDFLAGS)
 libgnunetfsui_la_LIBADD = \
  -lextractor \
  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
