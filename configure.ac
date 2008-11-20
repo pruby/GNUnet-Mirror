@@ -219,7 +219,6 @@ AC_CHECK_FUNCS(pthread_equal)
 
 # libgcrypt
 gcrypt=0
-AC_MSG_CHECKING(for libgcrypt)
 AM_PATH_LIBGCRYPT(1.2.0, gcrypt=1)
 
 if test $gcrypt = 0
