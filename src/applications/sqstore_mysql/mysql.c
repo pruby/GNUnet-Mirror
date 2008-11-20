@@ -1163,7 +1163,6 @@ update_module_sqstore_mysql (GNUNET_UpdateAPI * uapi)
   /* run update queries here */
   GNUNET_MYSQL_database_close (db);
   db = NULL;
-  mysql_library_end ();
   ectx = NULL;
 }
 
