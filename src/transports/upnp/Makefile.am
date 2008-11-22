@@ -9,8 +9,6 @@ AM_CFLAGS = $(GTK_CFLAGS) $(coverageflags)
 
 plugindir = $(libdir)/GNUnet
 
-LIBS = @LIBINTL@ @LIBS@
-
 plugin_LTLIBRARIES = \
   libgnunetmodule_upnp.la
 
@@ -29,7 +27,8 @@ libgnunetmodule_upnp_la_CFLAGS = \
  @LIBCURL_CPPFLAGS@ @XML_CPPFLAGS@
 libgnunetmodule_upnp_la_LIBADD = \
  @EXT_LIB_PATH@ @EXT_LIBS@ @XML_LIBS@ @LIBCURL@ \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LTLIBINTL) 
 
 check_PROGRAMS = \
  upnptest 

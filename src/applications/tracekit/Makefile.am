@@ -5,9 +5,6 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/GNUnet
 
-LDADD =  \
-  $(top_builddir)/src/util/libgnunetutil.la 
-
 bin_PROGRAMS = \
   gnunet-tracekit
 
@@ -20,10 +17,10 @@ lib_LTLIBRARIES = \
 gnunet_tracekit_SOURCES = \
   gnunet-tracekit.c \
   tracekit.h
-
 gnunet_tracekit_LDADD = \
+  $(top_builddir)/src/applications/tracekit/libgnunettracekit_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/applications/tracekit/libgnunettracekit_api.la 
+  $(LTLIBINTL)
 
 
 libgnunetmodule_tracekit_la_SOURCES = \
@@ -32,7 +29,8 @@ libgnunetmodule_tracekit_la_SOURCES = \
 libgnunetmodule_tracekit_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_tracekit_la_LIBADD = \
-  $(LDADD)
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 libgnunettracekit_api_la_SOURCES = \
@@ -40,7 +38,8 @@ libgnunettracekit_api_la_SOURCES = \
 libgnunettracekit_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunettracekit_api_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 EXTRA_DIST = check.conf
 

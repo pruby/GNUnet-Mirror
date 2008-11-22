@@ -2,32 +2,27 @@ INCLUDES = -I$(top_srcdir)/src/include -I$(top_srcdir)/src/setup/lib
 
 plugindir = $(libdir)/GNUnet
 
-# GNU Gettext support
-LIBS = @LIBINTL@ @LIBS@
-
 plugin_LTLIBRARIES = \
- libgnunetsetup_cocoa.la
+  libgnunetsetup_cocoa.la
 
 if HAVE_GUILE
 GUILE_SRC = \
-	GNUNETSetupView.m GNUNETSetupView.h \
-	config_cocoa.m config_cocoa.h
+  GNUNETSetupView.m GNUNETSetupView.h \
+  config_cocoa.m config_cocoa.h
 endif
 
 EXTRA_DIST = \
-	GNUNETSetupView.m GNUNETSetupView.h \
-	config_cocoa.m config_cocoa.h
+  GNUNETSetupView.m GNUNETSetupView.h \
+  config_cocoa.m config_cocoa.h
 
 libgnunetsetup_cocoa_la_SOURCES = \
- $(GUILE_SRC) \
- PackingBoxContainer.m PackingBoxContainer.h
-
+  $(GUILE_SRC) \
+  PackingBoxContainer.m PackingBoxContainer.h
 libgnunetsetup_cocoa_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS) \
- -framework Cocoa
-
+  $(GN_PLUGIN_LDFLAGS) \
+  -framework Cocoa
 libgnunetsetup_cocoa_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/setup/lib/libgnunetsetup.la \
- -lm
+  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 

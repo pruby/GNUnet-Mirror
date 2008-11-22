@@ -25,13 +25,14 @@ libgnunetecrs_la_SOURCES = \
 libgnunetecrs_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetecrs_la_LIBADD = \
- -lz \
- -lextractor \
- $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
- $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
- $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
- $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+  -lz \
+  -lextractor \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+  $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
+  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
+  $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL) 
 
 
 check_PROGRAMS = \

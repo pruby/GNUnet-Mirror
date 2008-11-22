@@ -11,10 +11,11 @@ plugin_LTLIBRARIES = \
 libgnunetmodule_session_la_SOURCES = \
   cache.c cache.h \
   connect.c 
-libgnunetmodule_session_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetmodule_session_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
+libgnunetmodule_session_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 if HAVE_MHD
   httptest = sessiontest_http sessiontest_nat_http

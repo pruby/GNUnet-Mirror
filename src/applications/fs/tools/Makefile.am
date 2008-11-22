@@ -8,7 +8,8 @@ LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/libgnunetutil.la
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 bin_PROGRAMS = \
   gnunet-auto-share \
@@ -22,17 +23,18 @@ bin_PROGRAMS = \
 
 
 gnunet_auto_share_SOURCES = \
-  gnunet-auto-share.c 	
+  gnunet-auto-share.c
+
 
 gnunet_insert_SOURCES = \
   gnunet-insert.c 	
-
 gnunet_insert_LDADD = \
   $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/libgnunetutil.la
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 gnunet_unindex_SOURCES = \
@@ -43,7 +45,8 @@ gnunet_directory_SOURCES = \
 gnunet_directory_LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/libgnunetutil.la
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 gnunet_pseudonym_SOURCES = \
@@ -53,7 +56,8 @@ gnunet_pseudonym_LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/collection/libgnunetcollection.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/libgnunetutil.la
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 gnunet_search_SOURCES = \
   gnunet-search.c

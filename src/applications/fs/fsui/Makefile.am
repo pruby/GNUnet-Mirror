@@ -21,13 +21,14 @@ libgnunetfsui_la_SOURCES = \
 libgnunetfsui_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetfsui_la_LIBADD = \
- -lextractor \
- $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
- $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
- $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
- $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
- $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+  -lextractor \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
+  $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
+  $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL) 
 
 EXTRA_DIST = \
   check.conf \

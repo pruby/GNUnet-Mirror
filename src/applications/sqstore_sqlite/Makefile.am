@@ -26,8 +26,9 @@ libgnunetmodule_sqstore_sqlite_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS) \
   $(SQLITE_LDFLAGS)
 libgnunetmodule_sqstore_sqlite_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- -lsqlite3
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -lsqlite3 \
+  $(LTLIBINTL)
 
 EXTRA_DIST = check.conf
 

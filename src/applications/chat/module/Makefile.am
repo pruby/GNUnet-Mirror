@@ -14,8 +14,8 @@ plugin_LTLIBRARIES = \
 
 libgnunetmodule_chat_la_SOURCES = \
   chat.c 
-libgnunetmodule_chat_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_chat_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
-
+libgnunetmodule_chat_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)

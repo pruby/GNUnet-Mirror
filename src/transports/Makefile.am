@@ -41,7 +41,8 @@ libgnunetip_la_SOURCES = \
 libgnunetip_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS)
 libgnunetip_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LTLIBINTL)
 
 plugin_LTLIBRARIES = \
  libgnunettransport_tcp.la \
@@ -51,7 +52,9 @@ plugin_LTLIBRARIES = \
 
 libgnunettransport_smtp_la_SOURCES = smtp.c
 libgnunettransport_smtp_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la -lesmtp
+ $(top_builddir)/src/util/libgnunetutil.la \
+ -lesmtp \
+ $(LTLIBINTL)
 libgnunettransport_smtp_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
@@ -59,7 +62,8 @@ libgnunettransport_http_la_SOURCES = http.c
 libgnunettransport_http_la_LIBADD = \
  -lmicrohttpd @LIBCURL@ \
  $(top_builddir)/src/util/libgnunetutil.la \
- libgnunetip.la
+ libgnunetip.la \
+ $(LTLIBINTL)
 libgnunettransport_http_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS) 
 libgnunettransport_http_la_CPPFLAGS = \
@@ -68,7 +72,8 @@ libgnunettransport_http_la_CPPFLAGS = \
 libgnunettransport_tcp_la_SOURCES = tcp.c
 libgnunettransport_tcp_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- libgnunetip.la
+ libgnunetip.la \
+ $(LTLIBINTL)
 libgnunettransport_tcp_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
@@ -82,7 +87,8 @@ libgnunettransport_nat_la_LDFLAGS = \
 libgnunettransport_udp_la_SOURCES = udp.c
 libgnunettransport_udp_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- libgnunetip.la
+ libgnunetip.la \
+ $(LTLIBINTL)
 libgnunettransport_udp_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 

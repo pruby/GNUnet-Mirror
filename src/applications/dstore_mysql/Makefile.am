@@ -32,7 +32,8 @@ libgnunetmodule_dstore_mysql_la_LDFLAGS = \
 libgnunetmodule_dstore_mysql_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/libs/mysql/libgnunetmysql.la \
- -lmysqlclient $(ZLIB_LNK)
+ -lmysqlclient $(ZLIB_LNK) \
+ $(LTLIBINTL)
 
 EXTRA_DIST = check.conf
 

@@ -22,13 +22,13 @@ libgnunetmodule_fs_la_SOURCES = \
   pid_table.c pid_table.h \
   querymanager.c querymanager.h \
   shared.c shared.h 
-
 libgnunetmodule_fs_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_fs_la_LIBADD = \
   $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  -lm
+  -lm \
+  $(LTLIBINTL)
 
 
 

@@ -13,13 +13,12 @@ plugin_LTLIBRARIES = \
 
 libgnunetmodule_rpc_la_SOURCES = \
   rpc.c 
-
-libgnunetmodule_rpc_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la
-
 libgnunetmodule_rpc_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
+libgnunetmodule_rpc_la_LIBADD = \
+  $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 libgnunetrpc_util_la_SOURCES = \
   parameters.c 

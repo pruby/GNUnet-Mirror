@@ -15,11 +15,12 @@ plugin_LTLIBRARIES = \
 
 libgnunetmodule_hostlist_la_SOURCES = \
   hostlist.c
-libgnunetmodule_hostlist_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la  -lmicrohttpd
 libgnunetmodule_hostlist_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
-
+libgnunetmodule_hostlist_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -lmicrohttpd \
+  $(LTLIBINTL)
 
 
 check_PROGRAMS = \

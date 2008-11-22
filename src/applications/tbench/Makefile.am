@@ -5,9 +5,6 @@ if USE_COVERAGE
 endif
 plugindir = $(libdir)/GNUnet
 
-LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la 
-
 bin_PROGRAMS = \
   gnunet-tbench
 
@@ -18,16 +15,19 @@ plugin_LTLIBRARIES = \
 gnunet_tbench_SOURCES = \
   gnunet-tbench.c \
   tbench.h
-
+gnunet_tbench_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 libgnunetmodule_tbench_la_SOURCES = \
-  tbench.c\
+  tbench.c \
   tbench.h
-libgnunetmodule_tbench_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetmodule_tbench_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
+libgnunetmodule_tbench_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 if HAVE_MHD

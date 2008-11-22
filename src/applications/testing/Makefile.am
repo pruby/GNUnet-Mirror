@@ -14,16 +14,18 @@ libgnunettesting_api_la_SOURCES = \
 libgnunettesting_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunettesting_api_la_LIBADD = \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 
+  $(LTLIBINTL) 
 
 libgnunetremote_api_la_SOURCES = \
   remote.c remote.h
 libgnunetremote_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetremote_api_la_LIBADD = \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 
+  $(LTLIBINTL) 
 
 bin_PROGRAMS = \
   remotetest

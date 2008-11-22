@@ -13,8 +13,9 @@ libgnunetfs_la_SOURCES = \
 libgnunetfs_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetfs_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/applications/fs/libgnunetecrs_core.la
+  $(top_builddir)/src/applications/fs/libgnunetecrs_core.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 check_PROGRAMS = \

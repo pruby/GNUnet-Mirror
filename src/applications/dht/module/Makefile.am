@@ -14,13 +14,9 @@ libgnunetmodule_dht_la_SOURCES = \
   routing.c routing.h \
   service.c service.h \
   table.c table.h 
-
-libgnunetmodule_dht_la_LIBADD = -lm \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la
 libgnunetmodule_dht_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
-
-
-
-
+libgnunetmodule_dht_la_LIBADD = -lm \
+  $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)

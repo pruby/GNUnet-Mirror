@@ -18,10 +18,11 @@ EXTRA_DIST = \
 libgnunetmodule_identity_la_SOURCES = \
   identity.c identity.h \
   hostkey.c hostkey.h
-libgnunetmodule_identity_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_identity_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
+libgnunetmodule_identity_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
 
 
 libgnunetidentity_api_la_SOURCES = \
@@ -29,7 +30,8 @@ libgnunetidentity_api_la_SOURCES = \
 libgnunetidentity_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetidentity_api_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL) 
 
 
 check_PROGRAMS = \
