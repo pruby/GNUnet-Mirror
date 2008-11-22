@@ -332,6 +332,9 @@ main (int argc, char *const *argv)
 #if HAVE_DIALOG
           operation = "menuconfig";
 #endif
+#if OSX
+          operation = "config-cocoa";
+#endif
 #if HAVE_GTK
           operation = "gconfig";
 #endif
