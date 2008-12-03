@@ -30,8 +30,8 @@
 #include "gnunet_core.h"
 
 #define GNUNET_DV_LEAST_COST 1
-#define GNUNET_DV_MAX_DISTANCE -1
-#define GNUNET_DV_INITIAL_SEQUENCE_NUMBER 0
+#define GNUNET_DV_MAX_COST -1
+
 
 typedef struct
 {
@@ -43,19 +43,9 @@ typedef struct
   unsigned int reserved;
 
   /**
-   * Cost from received from node to neighbor node
+   * Cost from received from node to neighbor node, takes distance into account
    */
   unsigned int cost;
-
-  /**
-   * Distance from received from node to neighbor node (physical hops)
-   */
-  unsigned int distance;
-
-  /**
-   * Sequence number of value
-   */
-  unsigned int sequence_number;
 
   /**
    * Identity of neighbor of received from node
@@ -64,20 +54,14 @@ typedef struct
 
 } p2p_dv_MESSAGE_NeighborInfo;
 
-struct GNUNET_dv_connected_neighbor
-*findConnectedNeighbor(const GNUNET_PeerIdentity *);
-
-struct GNUNET_dv_extended_neighbor
-*findExtendedNeighbor(const GNUNET_PeerIdentity *);
+struct GNUNET_dv_neighbor
+*findNeighbor(const GNUNET_PeerIdentity *, const GNUNET_PeerIdentity *);
 
 static int
-addUpdateConnectedNeighbor(const GNUNET_PeerIdentity *, unsigned int, unsigned int, unsigned int);
-
-static int
-addUpdateExtendedNeighbor(const GNUNET_PeerIdentity *,const GNUNET_PeerIdentity *, unsigned int, unsigned int, unsigned int);
+addUpdateNeighbor(const GNUNET_PeerIdentity *, const GNUNET_PeerIdentity *, unsigned int);
 
 static void
-initialAddConnectedNeighbor(const GNUNET_PeerIdentity *, void *);
+initialAddNeighbor(const GNUNET_PeerIdentity *, void *);
 
 #endif
 
