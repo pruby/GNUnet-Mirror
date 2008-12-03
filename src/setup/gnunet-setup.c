@@ -277,6 +277,18 @@ main (int argc, char *const *argv)
                                           GNUNET_GE_BULK);
   GNUNET_GE_setDefaultContext (ectx);
   GNUNET_os_init (ectx);
+
+#if ENABLE_NLS
+  setlocale (LC_ALL, "");
+  dirname = GNUNET_get_installation_path (GNUNET_IPK_LOCALEDIR);
+  if (dirname != NULL)
+    {
+      BINDTEXTDOMAIN ("GNUnet", dirname);
+      GNUNET_free (dirname);
+    }
+  textdomain ("GNUnet");
+#endif
+
   cfg = GNUNET_GC_create ();
   GNUNET_GE_ASSERT (ectx, cfg != NULL);
 
