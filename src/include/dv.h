@@ -55,13 +55,19 @@ typedef struct
 } p2p_dv_MESSAGE_NeighborInfo;
 
 struct GNUNET_dv_neighbor
-*findNeighbor(const GNUNET_PeerIdentity *, const GNUNET_PeerIdentity *);
+*findNeighbor(const GNUNET_PeerIdentity *);
 
 static int
 addUpdateNeighbor(const GNUNET_PeerIdentity *, const GNUNET_PeerIdentity *, unsigned int);
 
 static void
 initialAddNeighbor(const GNUNET_PeerIdentity *, void *);
+
+struct GNUNET_dv_neighbor *
+chooseToNeighbor();
+
+struct GNUNET_dv_neighbor *
+chooseAboutNeighbor();
 
 #endif
 
