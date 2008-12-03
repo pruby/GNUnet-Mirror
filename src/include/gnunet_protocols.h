@@ -408,8 +408,13 @@ extern "C"
 #define GNUNET_P2P_PROTO_AIP_GETROUTE 67        /* request for a table entry from a peer */
 
 
-#define GNUNET_P2P_PROTO_MAX_USED 68
+/* ************* p2p Distance Vector Messages ************* */
 
+#define GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE 75
+
+/* ************* end p2p DV Messages ***************** */
+
+#define GNUNET_P2P_PROTO_MAX_USED 76
 
 
 /* ************** Block types (libecrs) ************************ */
