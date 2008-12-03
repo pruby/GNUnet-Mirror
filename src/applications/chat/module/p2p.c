@@ -22,7 +22,7 @@
  * @author Nathan Evans
  * @file applications/chat/chat_p2p.c
  */
-#include "chat_p2p.h"
+#include "p2p.h"
 
 int
 p2pHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
