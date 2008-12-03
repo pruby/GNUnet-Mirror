@@ -253,6 +253,7 @@ neighbor_send_thread (void *rcls)
 
 	struct GNUNET_dv_neighbor *about = NULL;
 	struct GNUNET_dv_neighbor *to = NULL;
+
 	p2p_dv_MESSAGE_NeighborInfo *message = GNUNET_malloc(sizeof(p2p_dv_MESSAGE_NeighborInfo));
 
 	message->header.size = htons (sizeof(p2p_dv_MESSAGE_NeighborInfo));
@@ -265,21 +266,11 @@ neighbor_send_thread (void *rcls)
 		about = chooseAboutNeighbor();
 		to = chooseToNeighbor();
 
-		if (message->neighbor != NULL)
-		{
-			GNUNET_free(message->neighbor);
-		}
-		message->neighbor = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
 		message->cost = htonl(about->cost);
 		memcpy(&message->neighbor,&about->neighbor,sizeof(GNUNET_PeerIdentity));
-		coreAPI->ciphertext_send(to->neighbor,&message,0,send_interval * GNUNET_CRON_MILLISECONDS);
+		coreAPI->ciphertext_send(to->neighbor,&message->header,0,send_interval * GNUNET_CRON_MILLISECONDS);
 
 		GNUNET_thread_sleep (send_interval * GNUNET_CRON_MILLISECONDS);
-	}
-
-  if (message->neighbor != NULL)
-	{
-		GNUNET_free(message->neighbor);
 	}
 
   GNUNET_free(message);
@@ -290,13 +281,13 @@ neighbor_send_thread (void *rcls)
 struct GNUNET_dv_neighbor *
 chooseToNeighbor()
 {
-
+	return NULL;
 }
 
 struct GNUNET_dv_neighbor *
 chooseAboutNeighbor()
 {
-
+	return NULL;
 }
 
 int
