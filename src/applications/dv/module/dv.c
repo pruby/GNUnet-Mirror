@@ -76,29 +76,28 @@ static struct GNUNET_Mutex *dvMutex;
 
 static int
 p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
-               const GNUNET_MessageHeader * message)
+                            const GNUNET_MessageHeader * message)
 {
   int ret = GNUNET_OK;
   const p2p_dv_MESSAGE_NeighborInfo *nmsg;
 
   if (ntohs (message->size) < sizeof (p2p_dv_MESSAGE_NeighborInfo))
-  {
-    GNUNET_GE_BREAK (NULL, 0);
-    return GNUNET_SYSERR;     /* invalid message */
-  }
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;     /* invalid message */
+    }
   nmsg = (const p2p_dv_MESSAGE_NeighborInfo *) message;
   /*
    * Need to fix nmsg->cost comparison to make sense!
    */
-  /*if ((nmsg->cost + 1 <= fisheye_depth) && (findNeighbor(&nmsg->neighbor,sender) == NULL))*/
+  /*if ((nmsg->cost + 1 <= fisheye_depth) && (findNeighbor(&nmsg->neighbor,sender) == NULL)) */
 
-  ret = addUpdateNeighbor(&nmsg->neighbor,sender, nmsg->cost);
+  ret = addUpdateNeighbor (&nmsg->neighbor, sender, nmsg->cost);
 
   if (GNUNET_OK != ret)
     GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     _("Problem adding/updating neighbor in `%s'\n"),
-                     "dv");
+                   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                   _("Problem adding/updating neighbor in `%s'\n"), "dv");
 
   return ret;
 }
@@ -109,98 +108,110 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   struct GNUNET_dv_neighbor *pos = neighbors;
   struct GNUNET_dv_neighbor *prev = NULL;
   int not_found = 1;
-  GNUNET_mutex_lock(dvMutex);
+  GNUNET_mutex_lock (dvMutex);
   while ((pos->next != NULL) && (not_found))
-  {
-    prev = pos;
-    if (memcmp(&peer, &pos->next->neighbor, sizeof(GNUNET_PeerIdentity)) == 0)
-      not_found = 0;
-    pos = pos->next;
-  }
-  if ((prev == NULL) && (memcmp(&peer, &pos->next->neighbor, sizeof(GNUNET_PeerIdentity)) == 0))
-  {
-    if (neighbors->referrer != NULL)
-      GNUNET_free(neighbors->referrer);
-    GNUNET_free(neighbors);
-    neighbors = NULL;
-    curr_table_size = 0;
-  }
+    {
+      prev = pos;
+      if (memcmp (&peer, &pos->next->neighbor, sizeof (GNUNET_PeerIdentity))
+          == 0)
+        not_found = 0;
+      pos = pos->next;
+    }
+  if ((prev == NULL)
+      && (memcmp (&peer, &pos->next->neighbor, sizeof (GNUNET_PeerIdentity))
+          == 0))
+    {
+      if (neighbors->referrer != NULL)
+        GNUNET_free (neighbors->referrer);
+      GNUNET_free (neighbors);
+      neighbors = NULL;
+      curr_table_size = 0;
+    }
   else if (prev != NULL)
-  {
-    prev->next = pos->next;
-    GNUNET_free(pos->neighbor);
-    if (pos->referrer != NULL)
-      GNUNET_free(pos->referrer);
-    GNUNET_free(pos);
-  }
-  GNUNET_mutex_unlock(dvMutex);
+    {
+      prev->next = pos->next;
+      GNUNET_free (pos->neighbor);
+      if (pos->referrer != NULL)
+        GNUNET_free (pos->referrer);
+      GNUNET_free (pos);
+    }
+  GNUNET_mutex_unlock (dvMutex);
   return;
 }
 
-struct GNUNET_dv_neighbor
-*findNeighbor(const GNUNET_PeerIdentity *neighbor, const GNUNET_PeerIdentity *referrer)
+struct GNUNET_dv_neighbor *
+findNeighbor (const GNUNET_PeerIdentity * neighbor,
+              const GNUNET_PeerIdentity * referrer)
 {
   struct GNUNET_dv_neighbor *pos = neighbors;
 
   while (pos != NULL)
-  {
-    if (memcmp(&neighbor, &pos->neighbor, sizeof(GNUNET_PeerIdentity)) == 0)
     {
-      if ((referrer == NULL) && (&pos->referrer == NULL))
-        return pos;
-      else if ((referrer != NULL) && (&pos->referrer != NULL) && (memcmp(&referrer, &pos->referrer, sizeof(GNUNET_PeerIdentity)) == 0))
-        return pos;
+      if (memcmp (&neighbor, &pos->neighbor, sizeof (GNUNET_PeerIdentity)) ==
+          0)
+        {
+          if ((referrer == NULL) && (&pos->referrer == NULL))
+            return pos;
+          else if ((referrer != NULL) && (&pos->referrer != NULL)
+                   &&
+                   (memcmp
+                    (&referrer, &pos->referrer,
+                     sizeof (GNUNET_PeerIdentity)) == 0))
+            return pos;
+        }
+      pos = pos->next;
     }
-    pos = pos->next;
-  }
   return pos;
 }
 
 static int
-addUpdateNeighbor(const GNUNET_PeerIdentity *neighbor,const GNUNET_PeerIdentity *referrer, unsigned int cost)
+addUpdateNeighbor (const GNUNET_PeerIdentity * neighbor,
+                   const GNUNET_PeerIdentity * referrer, unsigned int cost)
 {
   int ret = GNUNET_OK;
 
-  GNUNET_mutex_lock(dvMutex);
-  struct GNUNET_dv_neighbor *dv_neighbor = findNeighbor(neighbor,referrer);
+  GNUNET_mutex_lock (dvMutex);
+  struct GNUNET_dv_neighbor *dv_neighbor = findNeighbor (neighbor, referrer);
 
   if (dv_neighbor != NULL)
-  {
-    if (dv_neighbor->cost != cost)
     {
-      dv_neighbor->cost = cost;
+      if (dv_neighbor->cost != cost)
+        {
+          dv_neighbor->cost = cost;
+        }
     }
-  }
   else
-  {
-    dv_neighbor = GNUNET_malloc(sizeof(struct GNUNET_dv_neighbor));
-    dv_neighbor->cost = cost;
-    dv_neighbor->neighbor = malloc(sizeof(GNUNET_PeerIdentity));
-    memcpy(&dv_neighbor->neighbor, &neighbor, sizeof(GNUNET_PeerIdentity));
-
-    if (referrer != NULL)
     {
-      dv_neighbor->referrer = malloc(sizeof(GNUNET_PeerIdentity));
-      memcpy(&dv_neighbor->referrer, &referrer, sizeof(GNUNET_PeerIdentity));
-    }
-    else
-    {
-      dv_neighbor->referrer = NULL;
-    }
+      dv_neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+      dv_neighbor->cost = cost;
+      dv_neighbor->neighbor = malloc (sizeof (GNUNET_PeerIdentity));
+      memcpy (&dv_neighbor->neighbor, &neighbor,
+              sizeof (GNUNET_PeerIdentity));
 
-    dv_neighbor->next = neighbors;
-    neighbors = dv_neighbor;
-    curr_table_size++;
-  }
-  GNUNET_mutex_unlock(dvMutex);
+      if (referrer != NULL)
+        {
+          dv_neighbor->referrer = malloc (sizeof (GNUNET_PeerIdentity));
+          memcpy (&dv_neighbor->referrer, &referrer,
+                  sizeof (GNUNET_PeerIdentity));
+        }
+      else
+        {
+          dv_neighbor->referrer = NULL;
+        }
+
+      dv_neighbor->next = neighbors;
+      neighbors = dv_neighbor;
+      curr_table_size++;
+    }
+  GNUNET_mutex_unlock (dvMutex);
   return ret;
 }
 
 
 static void
-initialAddNeighbor(const GNUNET_PeerIdentity *neighbor, void *cls)
+initialAddNeighbor (const GNUNET_PeerIdentity * neighbor, void *cls)
 {
-  addUpdateNeighbor(neighbor, NULL, GNUNET_DV_LEAST_COST);
+  addUpdateNeighbor (neighbor, NULL, GNUNET_DV_LEAST_COST);
   return;
 }
 
@@ -210,10 +221,10 @@ connection_poll_dv_calc_thread (void *rcls)
   static GNUNET_CoreAPIForPlugins *capi = rcls;
 
   while (!closing)
-  {
-    capi->p2p_connections_iterate(&initialAddNeighbor,(void *)NULL);
-    GNUNET_thread_sleep(30 * GNUNET_CRON_SECONDS);
-  }
+    {
+      capi->p2p_connections_iterate (&initialAddNeighbor, (void *) NULL);
+      GNUNET_thread_sleep (30 * GNUNET_CRON_SECONDS);
+    }
 
 }
 
@@ -226,35 +237,36 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_LOG (capi->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handler %d\n"),
-                 "dv",GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
+                 "dv", GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
 
   if (GNUNET_SYSERR ==
       capi->peer_disconnect_notification_register (&peer_disconnect_handler,
-                                                 NULL))
+                                                   NULL))
     ok = GNUNET_SYSERR;
 
   if (GNUNET_SYSERR ==
-      capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE,
-                                 &p2pHandleDVNeighborMessage))
+      capi->
+      p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE,
+                                       &p2pHandleDVNeighborMessage))
     ok = GNUNET_SYSERR;
 
   GNUNET_thread_create (&connection_poll_thread, &coreAPI, 1024 * 4);
 
   /*
-   if (GNUNET_SYSERR == capi->p2p_connections_iterate(&initialAddNeighbor,
-      (void *)NULL))
-    ok = GNUNET_SYSERR;
-  */
+     if (GNUNET_SYSERR == capi->p2p_connections_iterate(&initialAddNeighbor,
+     (void *)NULL))
+     ok = GNUNET_SYSERR;
+   */
 
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                              "DV",
-                                              "FISHEYEDEPTH",
-                                              0, -1, 3, &fisheye_depth);
+                                            "DV",
+                                            "FISHEYEDEPTH",
+                                            0, -1, 3, &fisheye_depth);
 
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                                "DV",
-                                                "TABLESIZE",
-                                                0, -1, 100, &max_table_size);
+                                            "DV",
+                                            "TABLESIZE",
+                                            0, -1, 100, &max_table_size);
 
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -271,8 +283,9 @@ void
 done_module_dv ()
 {
   closing = 1;
-  coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE,
-                                  &p2pHandleDVNeighborMessage);
+  coreAPI->
+    p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE,
+                                       &p2pHandleDVNeighborMessage);
 
   GNUNET_mutex_destroy (dvMutex);
   coreAPI = NULL;
