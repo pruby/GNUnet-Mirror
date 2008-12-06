@@ -123,8 +123,8 @@ get_path_from_NSGetExecutablePath ()
         path = NULL;
       else
         {
-          len++;
           path = (char *) GNUNET_malloc (len);
+          memset (path, 0x00, len);
           ret = ((MyNSGetExecutablePathProto) func) (path, &len);
           if (ret != 0)
             {
