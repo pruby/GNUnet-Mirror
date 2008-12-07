@@ -256,8 +256,8 @@ free_tree (struct GNUNET_GNS_TreeNode *t)
       GNUNET_GE_BREAK (NULL, 0);
       break;
     }
-  GNUNET_free (t->description);
-  GNUNET_free (t->help);
+  GNUNET_free (t->untranslatedDescription);
+  GNUNET_free (t->untranslatedHelp);
   GNUNET_free (t->children);
   GNUNET_free (t);
 }

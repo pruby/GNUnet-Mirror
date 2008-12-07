@@ -446,7 +446,7 @@ conf (int indent,
         {
           iprintf (indent,
                    "[%s] %s = \"%s\"\n", tree->section, tree->option, ovalue);
-          iprintf (indent, "%s\n", gettext (tree->description));
+          iprintf (indent, "%s\n", tree->description);
           printChoice (indent, tree->type, &tree->value);
           i = readValue (tree->type, &tree->value);
           if (i == GNUNET_SYSERR)
@@ -457,7 +457,7 @@ conf (int indent,
           if (i == GNUNET_OK)
             break;
           printf ("\n\n");
-          iprintf (0, "%s\n", gettext (tree->help));
+          iprintf (0, "%s\n", tree->help);
           printf ("\n");
         }
       value = getValueAsString (tree->type, &tree->value);
@@ -479,7 +479,7 @@ conf (int indent,
       choice = '\0';
       while (choice == '\0')
         {
-          iprintf (indent, "%s\n", gettext (tree->description));
+          iprintf (indent, "%s\n", tree->description);
           iprintf (indent, _(   /* do not translate y/n/? */
                               "\tDescend? (y/n/?) "));
           choice = rd ();
@@ -494,7 +494,7 @@ conf (int indent,
               return GNUNET_SYSERR;     /* escape */
             case '?':
               iprintf (indent, "%c\n", choice);
-              iprintf (indent, "%s\n", gettext (tree->help));
+              iprintf (indent, "%s\n", tree->help);
               choice = '\0';
               break;
             case 'Y':

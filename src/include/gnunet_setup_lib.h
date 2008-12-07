@@ -166,12 +166,22 @@ typedef struct GNUNET_GNS_TreeNode
   char *option;
 
   /**
-   * Description for this node (never NULL)
+   * Description for this node, original from SCM (never NULL)
+   */
+  char *untranslatedDescription;
+
+  /**
+   * Description for this node, localized (never NULL)
    */
   char *description;
 
   /**
-   * Helptext for this node (never NULL)
+   * Helptext for this node, original from SCM (never NULL)
+   */
+  char *untranslatedHelp;
+
+  /**
+   * Helptext for this node, localized (never NULL)
    */
   char *help;
 

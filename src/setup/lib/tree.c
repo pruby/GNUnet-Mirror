@@ -235,8 +235,9 @@ set_option (SCM smob, SCM section, SCM option, SCM value)
 static SCM
 build_tree_node (SCM section,
                  SCM option,
-                 SCM description,
-                 SCM help, SCM children, SCM visible, SCM value, SCM range)
+                 SCM untranslatedDescription,
+                 SCM untranslatedHelp,
+                 SCM children, SCM visible, SCM value, SCM range)
 {
   struct GNUNET_GNS_TreeNode *tree;
   SCM child;
@@ -248,9 +249,10 @@ build_tree_node (SCM section,
   /* verify arguments */
   SCM_ASSERT (scm_string_p (section), section, SCM_ARG1, "build_tree_node");
   SCM_ASSERT (scm_string_p (option), option, SCM_ARG2, "build_tree_node");
-  SCM_ASSERT (scm_string_p (description), description, SCM_ARG3,
-              "build_tree_node");
-  SCM_ASSERT (scm_string_p (help), help, SCM_ARG4, "build_tree_node");
+  SCM_ASSERT (scm_string_p (untranslatedDescription), untranslatedDescription,
+              SCM_ARG3, "build_tree_node");
+  SCM_ASSERT (scm_string_p (untranslatedHelp), untranslatedHelp,
+              SCM_ARG4, "build_tree_node");
   SCM_ASSERT (scm_list_p (children), children, SCM_ARG5, "build_tree_node");
   clen = scm_to_int (scm_length (children));
   for (i = 0; i < clen; i++)
@@ -294,8 +296,10 @@ build_tree_node (SCM section,
   tree = GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode));
   tree->section = scm_to_locale_string (section);
   tree->option = scm_to_locale_string (option);
-  tree->description = scm_to_locale_string (description);
-  tree->help = scm_to_locale_string (help);
+  tree->untranslatedDescription = scm_to_locale_string (untranslatedDescription);
+  tree->description = _ (tree->untranslatedDescription);
+  tree->untranslatedHelp = scm_to_locale_string (untranslatedHelp);
+  tree->help = _ (tree->untranslatedHelp);
   tree->children =
     GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode *) * (clen + 1));
   for (i = 0; i < clen; i++)

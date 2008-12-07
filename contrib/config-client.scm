@@ -33,7 +33,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; for GNU gettext
-(define (_ msg) (gettext msg "GNUnet"))
+(define (_ msg) msg)
 
 ;; common string
 (define (nohelp) 
