@@ -106,39 +106,33 @@ typedef int (*MyNSGetExecutablePathProto) (char *buf, size_t * bufsize);
 static char *
 get_path_from_NSGetExecutablePath ()
 {
+  static char zero = '\0';
   char *path;
-  char zero = '\0';
   size_t len;
-  void *func;
+  MyNSGetExecutablePathProto func;
   int ret;
 
   path = NULL;
-  func = dlsym (RTLD_DEFAULT, "_NSGetExecutablePath");
-  if (func)
+  func = (MyNSGetExecutablePathProto) dlsym (RTLD_DEFAULT, "_NSGetExecutablePath");
+  if (! func)
+    return NULL;    
+  path = &zero;
+  len = 0;
+  func (path, &len);
+  if (len == 0)
+    return NULL;
+  len++;
+  path = GNUNET_malloc (len);
+  memset (path, 0x00, len);
+  ret = func (path, &len);
+  if (ret != 0)
     {
-      path = &zero;
-      len = 0;
-      ret = ((MyNSGetExecutablePathProto) func) (path, &len);
-      if (len == 0)
-        path = NULL;
-      else
-        {
-          path = (char *) GNUNET_malloc (len);
-          memset (path, 0x00, len);
-          ret = ((MyNSGetExecutablePathProto) func) (path, &len);
-          if (ret != 0)
-            {
-              GNUNET_free (path);
-              path = NULL;
-            }
-          else
-            {
-              while ((path[len] != '/') && (len > 0))
-                len--;
-              path[len] = '\0';
-            }
-        }
+      GNUNET_free (path);
+      return NULL;
     }
+  while ((path[len] != '/') && (len > 0))
+    len--;
+  path[len] = '\0';
   return path;
 }
 #endif
