@@ -118,18 +118,18 @@ get_path_from_NSGetExecutablePath ()
     return NULL;    
   path = &zero;
   len = 0;
+  /* get the path len, including the trailing \0 */
   func (path, &len);
   if (len == 0)
     return NULL;
-  len++;
   path = GNUNET_malloc (len);
-  memset (path, 0x00, len);
   ret = func (path, &len);
   if (ret != 0)
     {
       GNUNET_free (path);
       return NULL;
     }
+  len = strlen (path);
   while ((path[len] != '/') && (len > 0))
     len--;
   path[len] = '\0';
