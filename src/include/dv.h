@@ -41,6 +41,7 @@ typedef struct
    * Reserved (for alignment).
    */
   unsigned int reserved;
+  // CG: you are not aligning here -- header is 4 bytes!
 
   /**
    * Cost from received from node to neighbor node, takes distance into account
@@ -54,14 +55,22 @@ typedef struct
 
 } p2p_dv_MESSAGE_NeighborInfo;
 
+// CG: not sure any of these prototypes should live
+//     here; you need to add comments
+//     describing the functions and arguments
+//     name all arguments in prototypes, even
+//     if C does not require you to do so.
 struct GNUNET_dv_neighbor *findNeighbor (const GNUNET_PeerIdentity *, short);
 
+// CG: NEVER EVER put a "static" function
+//     prototype into any header anywhere!
 static int
 addUpdateNeighbor (const GNUNET_PeerIdentity *, const GNUNET_PeerIdentity *,
                    unsigned int);
 
 static void initialAddNeighbor (const GNUNET_PeerIdentity *, void *);
 
+// CG: If a prototype has no arguments, put "void"
 struct GNUNET_dv_neighbor *chooseToNeighbor ();
 
 struct GNUNET_dv_neighbor *chooseAboutNeighbor ();

@@ -38,15 +38,22 @@
  * (more likely sending and receiving incrementally) and . ? . ? .
  */
 
+// CG: if you must have globals, you MUST make them
+//     all "static", we do not want to have
+//     a global symbol "closing"!
 unsigned long long fisheye_depth;
 unsigned long long max_table_size;
 unsigned int send_interval = 1000;
+
+// CG: all static/global variables are initially
+//     set to zero, so = 0 is superfluous.
 unsigned int curr_neighbor_table_size = 0;
 unsigned int curr_connected_neighbor_table_size = 0;
 unsigned short closing = 0;
 
 static struct GNUNET_ThreadHandle *connectionThread;
 
+// CG: document each struct 
 struct GNUNET_dv_neighbor
 {
   /**
@@ -70,7 +77,6 @@ struct GNUNET_dv_neighbor
    */
   unsigned int cost;
 };
-
 
 struct GNUNET_dv_neighbor *neighbors;
 struct GNUNET_dv_neighbor *connected_neighbors;
@@ -419,6 +425,9 @@ neighbor_send_thread (void *rcls)
   return NULL;
 }
 
+// CG: unless defined in a header and used by 
+//     other C source files (or used with dlsym),'
+//     make sure all of your functions are declared "static"
 struct GNUNET_dv_neighbor *
 chooseToNeighbor ()
 {
