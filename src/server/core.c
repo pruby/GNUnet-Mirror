@@ -564,6 +564,8 @@ GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
   applicationCore.p2p_bandwidth_downstream_reserve = &GNUNET_CORE_connection_reserve_downstream_bandwidth;      /* connection.c */
   applicationCore.peer_disconnect_notification_register = &GNUNET_CORE_connection_register_notify_peer_disconnect;      /* connection .c */
   applicationCore.peer_disconnect_notification_unregister = &GNUNET_CORE_connection_unregister_notify_peer_disconnect;  /* connection .c */
+  applicationCore.peer_connect_notification_register = &GNUNET_CORE_connection_register_notify_peer_connect;    /* connection .c */
+  applicationCore.peer_connect_notification_unregister = &GNUNET_CORE_connection_unregister_notify_peer_connect;        /* connection .c */
 
 
   applicationCore.peer_send_notification_register =

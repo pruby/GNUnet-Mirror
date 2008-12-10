@@ -367,6 +367,26 @@ int
   GNUNET_CORE_connection_unregister_notify_peer_disconnect
   (GNUNET_NodeIteratorCallback callback, void *cls);
 
+/**
+ * Call the given function whenever we
+ * connect to a peer.
+ *
+ * @return GNUNET_OK
+ */
+int
+  GNUNET_CORE_connection_register_notify_peer_connect
+  (GNUNET_NodeIteratorCallback callback, void *cls);
+
+/**
+ * Stop calling the given function whenever we
+ * connect to a peer.
+ *
+ * @return GNUNET_OK on success, GNUNET_SYSERR
+ *         if this callback is not registered
+ */
+int
+  GNUNET_CORE_connection_unregister_notify_peer_connect
+  (GNUNET_NodeIteratorCallback callback, void *cls);
 
 /**
  * Try to reserve downstream bandwidth for a particular peer.

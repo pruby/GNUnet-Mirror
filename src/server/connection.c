@@ -282,10 +282,25 @@ struct DisconnectNotificationList
 
 };
 
+/**
+ * DisconnectNotificationList created first, this is just a copy.
+ * Maybe there should just be a NotificationList that both use?
+ */
+struct ConnectNotificationList
+{
+
+  struct ConnectNotificationList *next;
+
+  GNUNET_NodeIteratorCallback callback;
+
+  void *cls;
+
+};
+
 
 /**
  * The other side has decided to terminate the connection.  This
- * message MAY be send if the other node decides to be nice.  It is
+ * message MAY be sent if the other node decides to be nice.  It is
  * not required.  Mind that the message contains for which host the
  * termination is, such that we don't hang up the wrong connection...
  * A node can also choose to ignore the HANGUP message, though this is
@@ -625,6 +640,11 @@ static struct SendCallbackList *scl_head;
 static struct DisconnectNotificationList *disconnect_notification_list;
 
 /**
+ * Callbacks for connect notifications.
+ */
+static struct ConnectNotificationList *connect_notification_list;
+
+/**
  * Lock for the connection module.
  */
 static struct GNUNET_Mutex *lock;
@@ -744,6 +764,22 @@ notify_disconnect (BufferEntry * be)
       l = l->next;
     }
 }
+
+/**
+ * Notify all connect callbacks that a peer
+ * was connected.
+ */
+static void
+notify_connect (BufferEntry * be)
+{
+  struct ConnectNotificationList *l = connect_notification_list;
+  while (l != NULL)
+    {
+      l->callback (&be->session.sender, l->cls);
+      l = l->next;
+    }
+}
+
 
 /**
  * This allocates and initializes a BufferEntry.
@@ -3366,6 +3402,7 @@ GNUNET_CORE_connection_mark_session_as_confirmed (const GNUNET_PeerIdentity *
           be->status = STAT_UP;
           be->lastSequenceNumberReceived = 0;
           be->lastSequenceNumberSend = 1;
+          notify_connect (be);
         }
     }
   GNUNET_mutex_unlock (lock);
@@ -4440,6 +4477,66 @@ int
         {
           if (prev == NULL)
             disconnect_notification_list = pos->next;
+          else
+            prev->next = pos->next;
+          GNUNET_free (pos);
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_OK;
+        }
+      prev = pos;
+      pos = pos->next;
+    }
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_SYSERR;
+
+}
+
+
+/**
+ * Call the given function whenever we
+ * connect to a peer.
+ *
+ * @return GNUNET_OK
+ */
+int
+  GNUNET_CORE_connection_register_notify_peer_connect
+  (GNUNET_NodeIteratorCallback callback, void *cls)
+{
+  struct ConnectNotificationList *l;
+
+  l = GNUNET_malloc (sizeof (struct ConnectNotificationList));
+  l->callback = callback;
+  l->cls = cls;
+  GNUNET_mutex_lock (lock);
+  l->next = connect_notification_list;
+  connect_notification_list = l;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
+}
+
+/**
+ * Stop calling the given function whenever we
+ * connect to a peer.
+ *
+ * @return GNUNET_OK on success, GNUNET_SYSERR
+ *         if this callback is not registered
+ */
+int
+  GNUNET_CORE_connection_unregister_notify_peer_connect
+  (GNUNET_NodeIteratorCallback callback, void *cls)
+{
+  struct ConnectNotificationList *pos;
+  struct ConnectNotificationList *prev;
+
+  prev = NULL;
+  GNUNET_mutex_lock (lock);
+  pos = connect_notification_list;
+  while (pos != NULL)
+    {
+      if ((pos->callback == callback) && (pos->cls == cls))
+        {
+          if (prev == NULL)
+            connect_notification_list = pos->next;
           else
             prev->next = pos->next;
           GNUNET_free (pos);
