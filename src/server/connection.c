@@ -2438,7 +2438,7 @@ scheduleInboundTraffic ()
 
   /* if time difference is too small, we don't have enough
      sample data and should NOT update the limits;
-     however, if we have FAR to few peers, reschedule
+     however, if we have FAR too few peers, reschedule
      aggressively (since we are unlikely to get close
      to the limits anyway) */
   timeDifference = now - lastRoundStart;
