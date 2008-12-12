@@ -331,6 +331,25 @@ typedef struct
 
   /* *********************** notifications ********************* */
 
+  /**
+	 * Call the given function whenever we get
+	 * connect to a peer.
+	 *
+	 * @return GNUNET_OK
+	 */
+  int (*peer_connect_notification_register) (GNUNET_NodeIteratorCallback
+                                             callback, void *cls);
+
+        /**
+	 * Stop calling the given function whenever we
+	 * connect to a peer.
+	 *
+	 * @return GNUNET_OK on success, GNUNET_SYSERR
+	 *         if this callback is not registered
+	 */
+  int (*peer_connect_notification_unregister) (GNUNET_NodeIteratorCallback
+                                               callback, void *cls);
+
 
   /**
    * Call the given function whenever we get
