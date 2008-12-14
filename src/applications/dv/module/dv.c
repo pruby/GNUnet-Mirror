@@ -63,28 +63,31 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
 //     other C source files (or used with dlsym),'
 //     make sure all of your functions are declared "static"
 static int
-printTableEntry (const GNUNET_HashCode * key,
-    void *value, void *cls)
+printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 {
-  struct GNUNET_dv_neighbor *neighbor = (struct GNUNET_dv_neighbor *)value;
-  char *type = (char *)cls;
+  struct GNUNET_dv_neighbor *neighbor = (struct GNUNET_dv_neighbor *) value;
+  char *type = (char *) cls;
   GNUNET_EncName encPeer;
 
   GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encPeer);
-	fprintf (stderr, "%s\tNeighbor: %s\nCost: %d",type, (char *) &encPeer, neighbor->cost);
+  fprintf (stderr, "%s\tNeighbor: %s\nCost: %d", type, (char *) &encPeer,
+           neighbor->cost);
 
-	return GNUNET_OK;
+  return GNUNET_OK;
 }
 
-static void print_tables()
+static void
+print_tables ()
 {
   fprintf (stderr, "Printing directly connected neighbors:\n");
-	GNUNET_multi_hash_map_iterate(ctx->direct_neighbors, &printTableEntry, "DIRECT");
+  GNUNET_multi_hash_map_iterate (ctx->direct_neighbors, &printTableEntry,
+                                 "DIRECT");
 
-	fprintf (stderr, "Printing extended neighbors:\n");
-	GNUNET_multi_hash_map_iterate(ctx->extended_neighbors, &printTableEntry, "EXTENDED");
+  fprintf (stderr, "Printing extended neighbors:\n");
+  GNUNET_multi_hash_map_iterate (ctx->extended_neighbors, &printTableEntry,
+                                 "EXTENDED");
 
-	return;
+  return;
 }
 
 /*
@@ -116,80 +119,90 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 #ifdef DEBUG_DV
   GNUNET_EncName encPeer;
 
-	fprintf (stderr, "Entering addUpdateNeighbor\n");
-	if (referrer == NULL)
-		fprintf (stderr, "Referrer is NULL\n");
+  fprintf (stderr, "Entering addUpdateNeighbor\n");
+  if (referrer == NULL)
+    fprintf (stderr, "Referrer is NULL\n");
   GNUNET_hash_to_enc (&peer->hashPubKey, &encPeer);
   fprintf (stderr, "Adding/Updating Node %s\n", (char *) &encPeer);
 #endif
   ret = GNUNET_OK;
 
-  GNUNET_mutex_lock(ctx->dvMutex);
+  GNUNET_mutex_lock (ctx->dvMutex);
 
-  if (GNUNET_YES != GNUNET_multi_hash_map_contains(ctx->extended_neighbors,&peer->hashPubKey))
-	{
-		neighbor = GNUNET_malloc(sizeof (struct GNUNET_dv_neighbor));
-		neighbor->cost = cost;
-		neighbor->neighbor = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-		memcpy(neighbor->neighbor,peer,sizeof(GNUNET_PeerIdentity));
-		GNUNET_multi_hash_map_put (ctx->extended_neighbors,&peer->hashPubKey,
-																													 neighbor,
-																													 GNUNET_MultiHashMapOption_REPLACE);
+  if (GNUNET_YES !=
+      GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                      &peer->hashPubKey))
+    {
+      neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+      neighbor->cost = cost;
+      neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+      memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
+                                 neighbor, GNUNET_MultiHashMapOption_REPLACE);
 
-		GNUNET_DV_Heap_insert(&ctx->neighbor_max_heap, neighbor);
-		GNUNET_DV_Heap_insert(&ctx->neighbor_min_heap, neighbor);
+      GNUNET_DV_Heap_insert (&ctx->neighbor_max_heap, neighbor);
+      GNUNET_DV_Heap_insert (&ctx->neighbor_min_heap, neighbor);
 
-	}
-	else
-	{
-		neighbor = GNUNET_multi_hash_map_get(ctx->extended_neighbors,&peer->hashPubKey);
+    }
+  else
+    {
+      neighbor =
+        GNUNET_multi_hash_map_get (ctx->extended_neighbors,
+                                   &peer->hashPubKey);
 
-		if (neighbor->cost > cost)
-		{
-			if (memcmp(neighbor->referrer, peer, sizeof(GNUNET_PeerIdentity)) == 0)
-			{
-				neighbor->cost = cost;
-				GNUNET_DV_Heap_updatedCost(&ctx->neighbor_max_heap, neighbor);
-				GNUNET_DV_Heap_updatedCost(&ctx->neighbor_min_heap, neighbor);
-			}
-			else
-			{
-				GNUNET_DV_Heap_removeNode(&ctx->neighbor_max_heap, neighbor);
-				GNUNET_DV_Heap_removeNode(&ctx->neighbor_min_heap, neighbor);
-				GNUNET_free(neighbor->neighbor);
-				GNUNET_free(neighbor->referrer);
-				GNUNET_free(neighbor);
+      if (neighbor->cost > cost)
+        {
+          if (memcmp (neighbor->referrer, peer, sizeof (GNUNET_PeerIdentity))
+              == 0)
+            {
+              neighbor->cost = cost;
+              GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
+              GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
+            }
+          else
+            {
+              GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
+              GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
+              GNUNET_free (neighbor->neighbor);
+              GNUNET_free (neighbor->referrer);
+              GNUNET_free (neighbor);
 
-				neighbor = GNUNET_malloc(sizeof (struct GNUNET_dv_neighbor));
-				neighbor->cost = cost;
-				neighbor->neighbor = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-				memcpy(neighbor->neighbor,peer,sizeof(GNUNET_PeerIdentity));
-				if (referrer == NULL)
-					neighbor->referrer = NULL;
-				else
-					memcpy(neighbor->referrer, referrer, sizeof(GNUNET_PeerIdentity));
+              neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+              neighbor->cost = cost;
+              neighbor->neighbor =
+                GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+              memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+              if (referrer == NULL)
+                neighbor->referrer = NULL;
+              else
+                memcpy (neighbor->referrer, referrer,
+                        sizeof (GNUNET_PeerIdentity));
 
-				GNUNET_multi_hash_map_put (ctx->extended_neighbors,&peer->hashPubKey,
-																															 neighbor,
-																															 GNUNET_MultiHashMapOption_REPLACE);
+              GNUNET_multi_hash_map_put (ctx->extended_neighbors,
+                                         &peer->hashPubKey, neighbor,
+                                         GNUNET_MultiHashMapOption_REPLACE);
 
-				GNUNET_DV_Heap_insert(&ctx->neighbor_max_heap, neighbor);
-				GNUNET_DV_Heap_insert(&ctx->neighbor_min_heap, neighbor);
-			}
-		}
-		else if ((neighbor->cost < cost) && (memcmp(neighbor->referrer, referrer, sizeof(GNUNET_PeerIdentity)) == 0))
-		{
-			neighbor->cost = cost;
+              GNUNET_DV_Heap_insert (&ctx->neighbor_max_heap, neighbor);
+              GNUNET_DV_Heap_insert (&ctx->neighbor_min_heap, neighbor);
+            }
+        }
+      else if ((neighbor->cost < cost)
+               &&
+               (memcmp
+                (neighbor->referrer, referrer,
+                 sizeof (GNUNET_PeerIdentity)) == 0))
+        {
+          neighbor->cost = cost;
 
-			GNUNET_DV_Heap_updatedCost(&ctx->neighbor_max_heap, neighbor);
-			GNUNET_DV_Heap_updatedCost(&ctx->neighbor_min_heap, neighbor);
+          GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
+          GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
 
-		}
+        }
 
-	}
+    }
 
 #ifdef DEBUG_DV
-  print_tables();
+  print_tables ();
   fprintf (stderr, "Exiting addUpdateNeighbor\n");
 #endif
 
@@ -242,44 +255,46 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 {
 #ifdef DEBUG_DV
   fprintf (stderr, "Entering peer_connect_handler:\n");
-  print_tables();
+  print_tables ();
 
 #endif
-	struct GNUNET_dv_neighbor *neighbor;
-	unsigned int cost = GNUNET_DV_LEAST_COST;
+  struct GNUNET_dv_neighbor *neighbor;
+  unsigned int cost = GNUNET_DV_LEAST_COST;
 
-	if (GNUNET_YES != GNUNET_multi_hash_map_contains(ctx->direct_neighbors,&peer->hashPubKey))
-	{
-		neighbor = GNUNET_malloc(sizeof (struct GNUNET_dv_neighbor));
-		neighbor->cost = cost;
-		neighbor->neighbor = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-		memcpy(neighbor->neighbor,peer, sizeof(GNUNET_PeerIdentity));
-		GNUNET_multi_hash_map_put (ctx->direct_neighbors,&peer->hashPubKey,
-					                                                 neighbor,
-					                                                 GNUNET_MultiHashMapOption_REPLACE);
-	}
-	else
-	{
-		neighbor = GNUNET_multi_hash_map_get(ctx->direct_neighbors,&peer->hashPubKey);
+  if (GNUNET_YES !=
+      GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
+                                      &peer->hashPubKey))
+    {
+      neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+      neighbor->cost = cost;
+      neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+      memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
+                                 neighbor, GNUNET_MultiHashMapOption_REPLACE);
+    }
+  else
+    {
+      neighbor =
+        GNUNET_multi_hash_map_get (ctx->direct_neighbors, &peer->hashPubKey);
 
 
-		if (neighbor->cost != cost)
-		{
-			GNUNET_mutex_lock(ctx->dvMutex);
-			GNUNET_multi_hash_map_put (ctx->direct_neighbors,&peer->hashPubKey,
-			                                                 neighbor,
-			                                                 GNUNET_MultiHashMapOption_REPLACE);
-			GNUNET_mutex_unlock(ctx->dvMutex);
-		}
+      if (neighbor->cost != cost)
+        {
+          GNUNET_mutex_lock (ctx->dvMutex);
+          GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
+                                     neighbor,
+                                     GNUNET_MultiHashMapOption_REPLACE);
+          GNUNET_mutex_unlock (ctx->dvMutex);
+        }
 
-	}
+    }
 
-	addUpdateNeighbor(peer, NULL, cost);
+  addUpdateNeighbor (peer, NULL, cost);
 
 #ifdef DEBUG_DV
-	print_tables();
+  print_tables ();
 #endif
-	return;
+  return;
 
 }
 
@@ -287,19 +302,21 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
  * May use as a callback for deleting nodes from heaps...
  */
 static void
-delete_callback(struct GNUNET_dv_neighbor *neighbor, struct GNUNET_dv_heap *root,GNUNET_PeerIdentity * toMatch)
+delete_callback (struct GNUNET_dv_neighbor *neighbor,
+                 struct GNUNET_dv_heap *root, GNUNET_PeerIdentity * toMatch)
 {
-	if (memcmp(neighbor->referrer, toMatch, sizeof(GNUNET_PeerIdentity)) == 0)
-	{
-		GNUNET_DV_Heap_removeNode(&ctx->neighbor_max_heap, neighbor);
-		GNUNET_DV_Heap_removeNode(&ctx->neighbor_min_heap, neighbor);
-		GNUNET_multi_hash_map_remove_all(ctx->extended_neighbors, &neighbor->neighbor->hashPubKey);
+  if (memcmp (neighbor->referrer, toMatch, sizeof (GNUNET_PeerIdentity)) == 0)
+    {
+      GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
+      GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
+      GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
+                                        &neighbor->neighbor->hashPubKey);
 
-		GNUNET_free(neighbor->neighbor);
-		GNUNET_free(neighbor->referrer);
-		GNUNET_free(neighbor);
-	}
-	return;
+      GNUNET_free (neighbor->neighbor);
+      GNUNET_free (neighbor->referrer);
+      GNUNET_free (neighbor);
+    }
+  return;
 }
 
 /*
@@ -323,28 +340,33 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   fprintf (stderr, "Entering peer_disconnect_handler\n");
   GNUNET_hash_to_enc (&peer->hashPubKey, &myself);
   fprintf (stderr, "disconnected peer: %s\n", (char *) &myself);
-  print_tables();
+  print_tables ();
 #endif
 
   GNUNET_mutex_lock (ctx->dvMutex);
 
-  if (GNUNET_YES == GNUNET_multi_hash_map_contains(ctx->direct_neighbors, &peer->hashPubKey))
-	{
-  	neighbor = GNUNET_multi_hash_map_get(ctx->direct_neighbors, &peer->hashPubKey);
-  	if (neighbor != NULL)
-  	{
-  		GNUNET_multi_hash_map_remove_all(ctx->direct_neighbors, &peer->hashPubKey);
+  if (GNUNET_YES ==
+      GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
+                                      &peer->hashPubKey))
+    {
+      neighbor =
+        GNUNET_multi_hash_map_get (ctx->direct_neighbors, &peer->hashPubKey);
+      if (neighbor != NULL)
+        {
+          GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
+                                            &peer->hashPubKey);
 
-  		GNUNET_DV_Heap_Iterator (&delete_callback, &ctx->neighbor_max_heap, ctx->neighbor_max_heap.root, peer);
+          GNUNET_DV_Heap_Iterator (&delete_callback, &ctx->neighbor_max_heap,
+                                   ctx->neighbor_max_heap.root, peer);
 
-  		GNUNET_free(neighbor->neighbor);
-			if (neighbor->referrer)
-				GNUNET_free(neighbor->referrer);
+          GNUNET_free (neighbor->neighbor);
+          if (neighbor->referrer)
+            GNUNET_free (neighbor->referrer);
 
-			GNUNET_free(neighbor);
+          GNUNET_free (neighbor);
 
-  	}
-	}
+        }
+    }
 
   GNUNET_mutex_unlock (ctx->dvMutex);
 #ifdef DEBUG_DV
@@ -357,23 +379,25 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 static struct GNUNET_dv_neighbor *
 chooseToNeighbor ()
 {
-  if (GNUNET_multi_hash_map_size(ctx->direct_neighbors) == 0)
+  if (GNUNET_multi_hash_map_size (ctx->direct_neighbors) == 0)
     return NULL;
 
-  return (struct GNUNET_dv_neighbor *)GNUNET_multi_hash_map_get_random(ctx->direct_neighbors);
+  return (struct GNUNET_dv_neighbor *) GNUNET_multi_hash_map_get_random (ctx->
+                                                                         direct_neighbors);
 }
 
 static struct GNUNET_dv_neighbor *
 chooseAboutNeighbor ()
 {
-	if (ctx->neighbor_min_heap.size == 0)
+  if (ctx->neighbor_min_heap.size == 0)
     return NULL;
 
 #ifdef DEBUG_DV
-  fprintf (stderr, "Min heap size %d\nMax heap size %d\n", ctx->neighbor_min_heap.size,ctx->neighbor_max_heap.size);
+  fprintf (stderr, "Min heap size %d\nMax heap size %d\n",
+           ctx->neighbor_min_heap.size, ctx->neighbor_max_heap.size);
 #endif
 
-  return GNUNET_DV_Heap_Walk_getNext(&ctx->neighbor_min_heap);
+  return GNUNET_DV_Heap_Walk_getNext (&ctx->neighbor_min_heap);
 
 }
 
@@ -416,7 +440,8 @@ neighbor_send_thread (void *rcls)
           memcpy (&message->neighbor, about->neighbor,
                   sizeof (GNUNET_PeerIdentity));
           coreAPI->ciphertext_send (to->neighbor, &message->header, 0,
-                                    ctx->send_interval * GNUNET_CRON_MILLISECONDS);
+                                    ctx->send_interval *
+                                    GNUNET_CRON_MILLISECONDS);
         }
 
       GNUNET_thread_sleep (ctx->send_interval * GNUNET_CRON_MILLISECONDS);
@@ -475,20 +500,21 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
                                             0, -1, 100, &ctx->max_table_size);
 
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                            "gnunetd","connection-max-hosts",1,-1,50,
-                                            &max_hosts);
+                                            "gnunetd", "connection-max-hosts",
+                                            1, -1, 50, &max_hosts);
 
   ctx->direct_neighbors = GNUNET_multi_hash_map_create (max_hosts);
   if (ctx->direct_neighbors == NULL)
-  {
-  	ok = GNUNET_SYSERR;
-  }
+    {
+      ok = GNUNET_SYSERR;
+    }
 
-  ctx->extended_neighbors = GNUNET_multi_hash_map_create (ctx->max_table_size * 3);
+  ctx->extended_neighbors =
+    GNUNET_multi_hash_map_create (ctx->max_table_size * 3);
   if (ctx->extended_neighbors == NULL)
-	{
-		ok = GNUNET_SYSERR;
-	}
+    {
+      ok = GNUNET_SYSERR;
+    }
 
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -512,7 +538,7 @@ done_module_dv ()
   coreAPI->peer_disconnect_notification_unregister (&peer_disconnect_handler,
                                                     NULL);
   coreAPI->peer_disconnect_notification_unregister (&peer_connect_handler,
-                                                      NULL);
+                                                    NULL);
 
   GNUNET_mutex_destroy (ctx->dvMutex);
   coreAPI = NULL;

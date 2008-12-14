@@ -28,80 +28,83 @@
 #include "dv.h"
 
 
-void iterator_callback(struct GNUNET_dv_neighbor *neighbor, struct GNUNET_dv_heap *root)
+void
+iterator_callback (struct GNUNET_dv_neighbor *neighbor,
+                   struct GNUNET_dv_heap *root)
 {
-	fprintf(stdout, "Node is:%d\n", neighbor->cost);
+  fprintf (stdout, "Node is:%d\n", neighbor->cost);
 }
 
 
-int main(int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-	struct GNUNET_dv_heap *myHeap;
-	struct GNUNET_dv_neighbor *neighbor1;
-	struct GNUNET_dv_neighbor *neighbor2;
-	struct GNUNET_dv_neighbor *neighbor3;
-	struct GNUNET_dv_neighbor *neighbor4;
-	struct GNUNET_dv_neighbor *neighbor5;
-	struct GNUNET_dv_neighbor *neighbor6;
+  struct GNUNET_dv_heap *myHeap;
+  struct GNUNET_dv_neighbor *neighbor1;
+  struct GNUNET_dv_neighbor *neighbor2;
+  struct GNUNET_dv_neighbor *neighbor3;
+  struct GNUNET_dv_neighbor *neighbor4;
+  struct GNUNET_dv_neighbor *neighbor5;
+  struct GNUNET_dv_neighbor *neighbor6;
 
-	myHeap = malloc(sizeof(struct GNUNET_dv_heap));
-	myHeap->type = GNUNET_DV_MAX_HEAP;
-	myHeap->max_size = 10;
-	myHeap->size = 0;
+  myHeap = malloc (sizeof (struct GNUNET_dv_heap));
+  myHeap->type = GNUNET_DV_MAX_HEAP;
+  myHeap->max_size = 10;
+  myHeap->size = 0;
 
-	neighbor1 = malloc(sizeof(struct GNUNET_dv_neighbor));
-	neighbor2 = malloc(sizeof(struct GNUNET_dv_neighbor));
-	neighbor3 = malloc(sizeof(struct GNUNET_dv_neighbor));
-	neighbor4 = malloc(sizeof(struct GNUNET_dv_neighbor));
-	neighbor5 = malloc(sizeof(struct GNUNET_dv_neighbor));
-	neighbor6 = malloc(sizeof(struct GNUNET_dv_neighbor));
+  neighbor1 = malloc (sizeof (struct GNUNET_dv_neighbor));
+  neighbor2 = malloc (sizeof (struct GNUNET_dv_neighbor));
+  neighbor3 = malloc (sizeof (struct GNUNET_dv_neighbor));
+  neighbor4 = malloc (sizeof (struct GNUNET_dv_neighbor));
+  neighbor5 = malloc (sizeof (struct GNUNET_dv_neighbor));
+  neighbor6 = malloc (sizeof (struct GNUNET_dv_neighbor));
 
-	neighbor1->cost = 60;
-	neighbor2->cost = 50;
-	neighbor3->cost = 70;
-	neighbor4->cost = 120;
-	neighbor5->cost = 100;
-	neighbor6->cost = 30;
+  neighbor1->cost = 60;
+  neighbor2->cost = 50;
+  neighbor3->cost = 70;
+  neighbor4->cost = 120;
+  neighbor5->cost = 100;
+  neighbor6->cost = 30;
 
-	fprintf(stdout,"Inserting\n");
-	GNUNET_DV_Heap_insert(myHeap,neighbor1);
-	printTree(myHeap->root);
+  fprintf (stdout, "Inserting\n");
+  GNUNET_DV_Heap_insert (myHeap, neighbor1);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Inserting\n");
-	GNUNET_DV_Heap_insert(myHeap,neighbor2);
-	printTree(myHeap->root);
+  fprintf (stdout, "Inserting\n");
+  GNUNET_DV_Heap_insert (myHeap, neighbor2);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Inserting\n");
-	GNUNET_DV_Heap_insert(myHeap,neighbor3);
-	printTree(myHeap->root);
+  fprintf (stdout, "Inserting\n");
+  GNUNET_DV_Heap_insert (myHeap, neighbor3);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Inserting\n");
-	GNUNET_DV_Heap_insert(myHeap,neighbor4);
-	printTree(myHeap->root);
+  fprintf (stdout, "Inserting\n");
+  GNUNET_DV_Heap_insert (myHeap, neighbor4);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Inserting\n");
-	GNUNET_DV_Heap_insert(myHeap,neighbor5);
-	printTree(myHeap->root);
+  fprintf (stdout, "Inserting\n");
+  GNUNET_DV_Heap_insert (myHeap, neighbor5);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Inserting\n");
-	GNUNET_DV_Heap_insert(myHeap,neighbor6);
-	printTree(myHeap->root);
+  fprintf (stdout, "Inserting\n");
+  GNUNET_DV_Heap_insert (myHeap, neighbor6);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Removing\n");
-	GNUNET_DV_Heap_removeNode(myHeap,neighbor5);
-	printTree(myHeap->root);
+  fprintf (stdout, "Removing\n");
+  GNUNET_DV_Heap_removeNode (myHeap, neighbor5);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Removing\n");
-	GNUNET_DV_Heap_removeRoot(myHeap);
-	printTree(myHeap->root);
+  fprintf (stdout, "Removing\n");
+  GNUNET_DV_Heap_removeRoot (myHeap);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Updating\n");
-	GNUNET_DV_Heap_updateCost(myHeap, neighbor6, 200);
-	printTree(myHeap->root);
+  fprintf (stdout, "Updating\n");
+  GNUNET_DV_Heap_updateCost (myHeap, neighbor6, 200);
+  printTree (myHeap->root);
 
-	fprintf(stdout,"Iterating\n");
-	GNUNET_DV_Heap_Iterator (iterator_callback, myHeap, myHeap->root);
-	return 0;
+  fprintf (stdout, "Iterating\n");
+  GNUNET_DV_Heap_Iterator (iterator_callback, myHeap, myHeap->root);
+  return 0;
 }
 
 /* end of heaptest.c */

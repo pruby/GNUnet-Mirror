@@ -45,9 +45,9 @@ typedef enum
  */
 struct GNUNET_dv_heap_info
 {
-	struct GNUNET_dv_heap_node *min_loc;
+  struct GNUNET_dv_heap_node *min_loc;
 
-	struct GNUNET_dv_heap_node *max_loc;
+  struct GNUNET_dv_heap_node *max_loc;
 
 };
 
@@ -58,15 +58,15 @@ struct GNUNET_dv_heap_info
  */
 struct GNUNET_dv_heap
 {
-	unsigned int size;
+  unsigned int size;
 
-	unsigned int max_size;
+  unsigned int max_size;
 
-	GNUNET_DV_HeapType type;
+  GNUNET_DV_HeapType type;
 
-	struct GNUNET_dv_heap_node *root;
+  struct GNUNET_dv_heap_node *root;
 
-	struct GNUNET_dv_heap_node *traversal_pos;
+  struct GNUNET_dv_heap_node *traversal_pos;
 
 };
 
@@ -76,13 +76,13 @@ struct GNUNET_dv_heap
  */
 struct GNUNET_dv_heap_node
 {
-	struct GNUNET_dv_heap_node *parent;
+  struct GNUNET_dv_heap_node *parent;
 
-	struct GNUNET_dv_heap_node *left_child;
+  struct GNUNET_dv_heap_node *left_child;
 
-	struct GNUNET_dv_heap_node *right_child;
+  struct GNUNET_dv_heap_node *right_child;
 
-	struct GNUNET_dv_neighbor *neighbor;
+  struct GNUNET_dv_neighbor *neighbor;
 
 };
 
@@ -114,58 +114,70 @@ typedef int (*GNUNET_HeapIterator) (void *value, void *cls);
  *         GNUNET_SYSERR if there's a problem
  */
 int GNUNET_DV_heap_iterate (const struct GNUNET_dv_heap *heap,
-                                   GNUNET_HeapIterator iterator,
-                                   void *cls);
+                            GNUNET_HeapIterator iterator, void *cls);
 
 /**
  * Simple stupid tree print.  Prints in depth first order.
  */
-void printTree(struct GNUNET_dv_heap_node *root);
+void printTree (struct GNUNET_dv_heap_node *root);
 
 /**
  * Inserts a new item into the heap, item is always neighbor now.
  */
 int
-GNUNET_DV_Heap_insert(struct GNUNET_dv_heap *root, struct GNUNET_dv_neighbor *neighbor);
+GNUNET_DV_Heap_insert (struct GNUNET_dv_heap *root,
+                       struct GNUNET_dv_neighbor *neighbor);
 
 /**
  * Removes root of the tree, is remove max if a max heap and remove min
  * if a min heap, returns the data stored at the node.
  */
-struct GNUNET_dv_neighbor *
-GNUNET_DV_Heap_removeRoot(struct GNUNET_dv_heap *root);
+struct GNUNET_dv_neighbor *GNUNET_DV_Heap_removeRoot (struct GNUNET_dv_heap
+                                                      *root);
 
 /**
  * Returns data stored at root of tree, doesn't affect anything
  */
-struct GNUNET_dv_neighbor *
-GNUNET_DV_Heap_peekRoot(struct GNUNET_dv_heap *root);
+struct GNUNET_dv_neighbor *GNUNET_DV_Heap_peekRoot (struct GNUNET_dv_heap
+                                                    *root);
 
 /**
  * Removes any node from the tree based on the neighbor given, does
  * not traverse the tree (backpointers) but may take more time due to
  * percolation of nodes.
  */
-struct GNUNET_dv_neighbor *
-GNUNET_DV_Heap_removeNode(struct GNUNET_dv_heap *root, struct GNUNET_dv_neighbor *neighbor);
+struct GNUNET_dv_neighbor *GNUNET_DV_Heap_removeNode (struct GNUNET_dv_heap
+                                                      *root,
+                                                      struct
+                                                      GNUNET_dv_neighbor
+                                                      *neighbor);
 
 /**
  * Updates the cost of any node in the tree
  */
 int
-GNUNET_DV_Heap_updateCost(struct GNUNET_dv_heap *root, struct GNUNET_dv_neighbor *neighbor, unsigned int new_cost);
+GNUNET_DV_Heap_updateCost (struct GNUNET_dv_heap *root,
+                           struct GNUNET_dv_neighbor *neighbor,
+                           unsigned int new_cost);
 
 /**
  * Fixes the tree after a node's cost was externally modified
  */
 int
-GNUNET_DV_Heap_updatedCost(struct GNUNET_dv_heap *root, struct GNUNET_dv_neighbor *neighbor);
+GNUNET_DV_Heap_updatedCost (struct GNUNET_dv_heap *root,
+                            struct GNUNET_dv_neighbor *neighbor);
 
 /**
  * Iterator to go over all nodes in the tree... Goes from the bottom up
  */
 void
-GNUNET_DV_Heap_Iterator (void (*callee)(struct GNUNET_dv_neighbor *neighbor, struct GNUNET_dv_heap *root, GNUNET_PeerIdentity *toMatch), struct GNUNET_dv_heap *root, struct GNUNET_dv_heap_node *node,const GNUNET_PeerIdentity *toMatch);
+GNUNET_DV_Heap_Iterator (void (*callee)
+                         (struct GNUNET_dv_neighbor * neighbor,
+                          struct GNUNET_dv_heap * root,
+                          GNUNET_PeerIdentity * toMatch),
+                         struct GNUNET_dv_heap *root,
+                         struct GNUNET_dv_heap_node *node,
+                         const GNUNET_PeerIdentity * toMatch);
 
 
 /**
@@ -173,8 +185,8 @@ GNUNET_DV_Heap_Iterator (void (*callee)(struct GNUNET_dv_neighbor *neighbor, str
  * in the walk.  Calls callee with the data, or NULL if the tree is empty
  * or some other problem crops up.
  */
-struct GNUNET_dv_neighbor *
-GNUNET_DV_Heap_Walk_getNext (struct GNUNET_dv_heap *root);
+struct GNUNET_dv_neighbor *GNUNET_DV_Heap_Walk_getNext (struct GNUNET_dv_heap
+                                                        *root);
 
 
 #endif /* HEAP_H_ */
