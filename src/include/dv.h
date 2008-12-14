@@ -32,16 +32,12 @@
 #define GNUNET_DV_LEAST_COST 1
 #define GNUNET_DV_MAX_COST -1
 
-
+/**
+ * Message that gets sent between nodes updating dv infos
+ */
 typedef struct
 {
   GNUNET_MessageHeader header;
-
-  /**
-   * Reserved (for alignment).
-   */
-  unsigned int reserved;
-  // CG: you are not aligning here -- header is 4 bytes!
 
   /**
    * Cost from received from node to neighbor node, takes distance into account
@@ -55,25 +51,39 @@ typedef struct
 
 } p2p_dv_MESSAGE_NeighborInfo;
 
-// CG: not sure any of these prototypes should live
-//     here; you need to add comments
-//     describing the functions and arguments
-//     name all arguments in prototypes, even
-//     if C does not require you to do so.
-struct GNUNET_dv_neighbor *findNeighbor (const GNUNET_PeerIdentity *, short);
+/*
+ * Struct where actual neighbor information is stored,
+ * referenced by min_heap and max_heap.  Freeing dealt
+ * with when items removed from hashmap.
+ */
+struct GNUNET_dv_neighbor
+{
+  /*
+   * Back-pointer location in min heap
+   */
+  struct GNUNET_dv_heap_node *min_loc;
 
-// CG: NEVER EVER put a "static" function
-//     prototype into any header anywhere!
-static int
-addUpdateNeighbor (const GNUNET_PeerIdentity *, const GNUNET_PeerIdentity *,
-                   unsigned int);
+  /*
+   * Back-pointer location in max heap
+   */
+  struct GNUNET_dv_heap_node *max_loc;
 
-static void initialAddNeighbor (const GNUNET_PeerIdentity *, void *);
+  /**
+   * Identity of neighbor
+   */
+  GNUNET_PeerIdentity *neighbor;
 
-// CG: If a prototype has no arguments, put "void"
-struct GNUNET_dv_neighbor *chooseToNeighbor ();
+  /**
+   * Identity of referrer (where we got the information)
+   */
+  GNUNET_PeerIdentity *referrer;
 
-struct GNUNET_dv_neighbor *chooseAboutNeighbor ();
+  /**
+   * Cost to neighbor, used for actual distance vector computations
+   */
+  unsigned int cost;
+};
+
 
 #endif
 

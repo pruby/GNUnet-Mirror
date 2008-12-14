@@ -117,8 +117,7 @@ GNUNET_multi_hash_map_iterate (const struct GNUNET_MultiHashMap *map,
       e = map->map[i];
       while (e != NULL)
         {
-          if ( (NULL != it) &&
-	       (GNUNET_OK != it (&e->key, e->value, cls)) )
+          if ((NULL != it) && (GNUNET_OK != it (&e->key, e->value, cls)))
             return GNUNET_SYSERR;
           count++;
           e = e->next;
@@ -287,19 +286,35 @@ GNUNET_multi_hash_map_get_multiple (const struct GNUNET_MultiHashMap *map,
   e = map->map[idx_of (map, key)];
   while (e != NULL)
     {
-      if (0 == memcmp(key,
-		      &e->key,
-		      sizeof(GNUNET_HashCode))) 
-	{
-	  if ( (it != NULL) &&
-	       (GNUNET_OK != it (&e->key, e->value, cls)) )
-	    return GNUNET_SYSERR;
-	  count++;
-	}
+      if (0 == memcmp (key, &e->key, sizeof (GNUNET_HashCode)))
+        {
+          if ((it != NULL) && (GNUNET_OK != it (&e->key, e->value, cls)))
+            return GNUNET_SYSERR;
+          count++;
+        }
       e = e->next;
     }
   return count;
 }
 
+void *
+GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map)
+{
+  unsigned int rand;
+  struct MapEntry *e;
+  e = NULL;
+
+  if (map->size == 0)
+  	return NULL;
+
+  while(e == NULL)
+  {
+  	rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+  	                                         map->size);
+  	e = map->map[rand];
+  }
+
+  return e->value;
+}
 
 /* end of multihashmap.c */

@@ -346,14 +346,14 @@ enum GNUNET_MultiHashMapOption
 {
   /**
    * If a value with the given key exists, replace it.
-   * Note that the old value would NOT be freed 
+   * Note that the old value would NOT be freed
    * by replace (the application has to make sure that
    * this happens if required).
    */
   GNUNET_MultiHashMapOption_REPLACE,
 
   /**
-   * Allow multiple values with the same key.  
+   * Allow multiple values with the same key.
    */
   GNUNET_MultiHashMapOption_MULTIPLE,
 
@@ -366,7 +366,7 @@ enum GNUNET_MultiHashMapOption
 
   /**
    * There must only be one value per key, but don't
-   * bother checking if a value already exists 
+   * bother checking if a value already exists
    * (faster than UNIQUE_ONLY; implemented just like
    * MULTIPLE but this option documents better what
    * is intended if UNIQUE is what is desired).
@@ -448,7 +448,7 @@ int GNUNET_multi_hash_map_remove_all (struct GNUNET_MultiHashMap *map,
 /**
  * Check if the map contains any value under the given
  * key (including values that are NULL).
- * 
+ *
  * @param map the map
  * @param key the key to test if a value exists for it
  * @return GNUNET_YES if such a value exists,
@@ -466,7 +466,7 @@ int GNUNET_multi_hash_map_contains (const struct GNUNET_MultiHashMap *map,
  * @param opt options for put
  * @return GNUNET_OK on success,
  *         GNUNET_NO if a value was replaced (with REPLACE)
- *         GNUNET_SYSERR if UNIQUE_ONLY was the option and the 
+ *         GNUNET_SYSERR if UNIQUE_ONLY was the option and the
  *                       value already exists
  */
 int GNUNET_multi_hash_map_put (struct GNUNET_MultiHashMap *map,
@@ -512,7 +512,14 @@ int GNUNET_multi_hash_map_get_multiple (const struct GNUNET_MultiHashMap *map,
                                         const GNUNET_HashCode * key,
                                         GNUNET_HashMapIterator iterator,
                                         void *cls);
-
+/**
+ * Returns the stored value of a random non-null entry
+ * in the hash table.  Returns only the first value, does
+ * not go inside bucket linked list (yet).  Runs with a
+ * worst case time of N, so it's not efficient in any way
+ * shape or form!!!!.
+ */
+void * GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
