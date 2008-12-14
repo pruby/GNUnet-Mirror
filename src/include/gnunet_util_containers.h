@@ -519,7 +519,8 @@ int GNUNET_multi_hash_map_get_multiple (const struct GNUNET_MultiHashMap *map,
  * worst case time of N, so it's not efficient in any way
  * shape or form!!!!.
  */
-void * GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map);
+void *GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap
+                                        *map);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

@@ -305,14 +305,13 @@ GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map)
   e = NULL;
 
   if (map->size == 0)
-  	return NULL;
+    return NULL;
 
-  while(e == NULL)
-  {
-  	rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-  	                                         map->size);
-  	e = map->map[rand];
-  }
+  while (e == NULL)
+    {
+      rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, map->size);
+      e = map->map[rand];
+    }
 
   return e->value;
 }
