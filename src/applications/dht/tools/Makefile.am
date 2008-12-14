@@ -43,6 +43,16 @@ dht_loopback_test_LDADD = \
   $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+# This test requires an API change before we can
+# integrate it by default...
+#dht_expiration_test_SOURCES = \
+#  dht_expiration_test.c 
+#dht_expiration_test_LDADD = \
+#  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+#  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+#  $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
+#  $(top_builddir)/src/util/libgnunetutil.la 
+
 dht_twopeer_test_SOURCES = \
   dht_twopeer_test.c 
 dht_twopeer_test_LDADD = \
