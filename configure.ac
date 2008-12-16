@@ -191,7 +191,7 @@ AM_CONDITIONAL(OPENBSD, test "$build_target" = "openbsd")
 AM_CONDITIONAL(LINUX, test "$build_target" = "linux")
 AC_MSG_RESULT([$build_target])
 AC_SUBST(build_target)
-
+AM_CONDITIONAL([am__fastdepOBJC], false)
 AC_UNALIGNED_64_ACCESS
 
 
