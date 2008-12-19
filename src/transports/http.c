@@ -452,7 +452,7 @@ static void
 signal_select ()
 {
   static char c;
-  write (signal_pipe[1], &c, sizeof (c));
+  WRITE (signal_pipe[1], &c, sizeof (c));
 }
 
 /**
