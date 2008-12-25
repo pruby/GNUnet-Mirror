@@ -277,6 +277,20 @@ fi
 # restore LIBS
 LIBS=$SAVE_LIBS
 
+
+# Checks for standard header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+
+# Check for headers that are ALWAYS required
+AC_CHECK_HEADERS([fcntl.h math.h errno.h limits.h stdio.h stdlib.h string.h unistd.h stdarg.h signal.h locale.h sys/stat.h sys/types.h pthread.h],,AC_MSG_ERROR([Compiling GNUnet requires standard UNIX headers files]))
+
+# Checks for headers that are only required on some systems or opional (and where we do NOT abort if they are not there)
+AC_CHECK_HEADERS([langinfo.h sys/param.h sys/mount.h sys/statvfs.h sys/select.h sockLib.h sys/mman.h sys/msg.h sys/vfs.h arpa/inet.h fcntl.h libintl.h netdb.h netinet/in.h sys/ioctl.h sys/socket.h sys/time.h unistd.h kstat.h sys/sysinfo.h kvm.h sys/file.h sys/resource.h iconv.h ifaddrs.h mach/mach.h stddef.h sys/timeb.h terminos.h])
+
+# Check for GMP header (and abort if not present)
+AC_CHECK_HEADERS([gmp.h],,AC_MSG_ERROR([Compiling GNUnet requires gmp.h (from the GNU MP library, libgmp)]))
+
 # test for libgmp
 gmp=0
 AC_MSG_CHECKING(for libgmp)
@@ -639,11 +653,13 @@ AC_ARG_WITH(microhttpd,
       no)
         ;;
       yes)
-        AC_CHECK_HEADERS(microhttpd.h,
+        AC_CHECK_HEADERS([microhttpd.h],
 	  AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
             AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
               lmhd=1),
-	    [],[#include <microhttpd.h>]))
+	    [],[#include "src/include/platform.h"
+                #include <microhttpd.h>]),,
+            [#include "src/include/platform.h"])
         ;;
       *)
         LDFLAGS="-L$with_microhttpd/lib $LDFLAGS"
@@ -653,16 +669,20 @@ AC_ARG_WITH(microhttpd,
             AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
               EXT_LIB_PATH="-L$with_microhttpd/lib $EXT_LIB_PATH"
               lmhd=1),
-	    [],[#include <microhttpd.h>]))
+	    [],[#include "src/include/platform.h"
+                #include <microhttpd.h>]),,
+            [#include "src/include/platform.h"])
         ;;
     esac
    ],
    [AC_MSG_RESULT([--with-microhttpd not specified])
-    AC_CHECK_HEADERS(microhttpd.h,
+    AC_CHECK_HEADERS([microhttpd.h],
       AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
         AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
           lmhd=1),
-	[],[#include <microhttpd.h>]))])
+	[],[#include "src/include/platform.h"
+            #include <microhttpd.h>]),,
+       [#include "src/include/platform.h"])])
 AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
 AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
 # restore LIBS
@@ -794,22 +814,6 @@ AM_GNU_GETTEXT([external])
 
 # check for iconv
 AM_ICONV
-
-
-
-# Checks for standard header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
-
-# Check for headers that are ALWAYS required
-AC_CHECK_HEADERS([fcntl.h math.h errno.h limits.h stdio.h locale.h sys/stat.h sys/types.h pthread.h],,AC_MSG_ERROR([Compiling GNUnet requires standard UNIX headers files]))
-
-# Checks for headers that are only required on some systems or opional (and where we do NOT abort if they are not there)
-AC_CHECK_HEADERS([langinfo.h sys/param.h sys/mount.h sys/statvfs.h sys/vfs.h arpa/inet.h fcntl.h libintl.h netdb.h netinet/in.h sys/ioctl.h sys/socket.h sys/time.h unistd.h kstat.h sys/sysinfo.h kvm.h sys/file.h sys/resource.h iconv.h ifaddrs.h mach/mach.h stddef.h sys/timeb.h terminos.h])
-
-# Check for GMP header (and abort if not present)
-AC_CHECK_HEADERS([gmp.h],,AC_MSG_ERROR([Compiling GNUnet requires gmp.h (from the GNU MP library, libgmp)]))
-
 
 # Checks for standard typedefs, structures, and compiler characteristics.
 AC_C_CONST
