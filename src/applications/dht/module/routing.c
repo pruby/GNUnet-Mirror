@@ -44,9 +44,10 @@
 
 /**
  * What is the estimated per-hop delay for DHT operations
- * (this is how much we will request from the GNUnet core)
+ * (this is how much we will request from the GNUnet core);
+ * Must not be zero!
  */
-#define DHT_DELAY (5 * GNUNET_CRON_SECONDS)
+#define DHT_DELAY (500 * GNUNET_CRON_MILLISECONDS)
 
 /**
  * What is the maximum number of results returned by any DHT
@@ -77,8 +78,7 @@
 /**
  * How long do we keep content after receiving a PUT request for it?
  */
-#define CONTENT_LIFETIME (5 * GNUNET_CRON_SECONDS)
-// (12 * GNUNET_CRON_HOURS)
+#define CONTENT_LIFETIME (12 * GNUNET_CRON_HOURS)
 
 /**
  * @brief record used for sending response back
