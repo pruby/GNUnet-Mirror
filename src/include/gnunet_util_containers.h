@@ -23,10 +23,6 @@
  * @brief container classes for GNUnet
  *
  * @author Christian Grothoff
- * @author Krista Bennett
- * @author Gerd Knorr <kraxel@bytesex.org>
- * @author Ioana Patrascu
- * @author Tzvetan Horozov
  * @author Nils Durner
  */
 
@@ -521,6 +517,44 @@ int GNUNET_multi_hash_map_get_multiple (const struct GNUNET_MultiHashMap *map,
  */
 void *GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap
                                         *map);
+
+
+
+
+/* ******************** doubly-linked list *************** */
+
+/**
+ * Insert an element into a DLL. Assumes
+ * that head, tail and element are structs
+ * with prev and next fields.
+ */
+#define GNUNET_DLL_insert(head,tail,element) \
+  (element)->next = (head); \
+  (element)->prev = NULL; \
+  if ((tail) == NULL) \
+    (tail) = element; \
+  else \
+    (head)->prev = element; \
+  (head) = (element);
+
+/**
+ * Remove an element from a DLL. Assumes
+ * that head, tail and element are structs
+ * with prev and next fields.
+ */
+#define GNUNET_DLL_remove(head,tail,element) \
+  if ((element)->prev == NULL) \
+    (head) = (element)->next;  \
+  else \
+    (element)->prev->next = (element)->next; \
+  if ((element)->next == NULL) \
+    (tail) = (element)->prev;  \
+  else \
+    (element)->next->prev = (element)->prev;
+
+
+
+
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

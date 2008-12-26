@@ -37,7 +37,15 @@ extern "C"
 #endif
 #endif
 
+/**
+ * Opaque handle for asynchronous DHT get operation group.
+ */
 struct GNUNET_DHT_Context;
+
+/**
+ * Opaque handle for a DHT get request.
+ */
+struct GNUNET_DHT_GetRequest;
 
 /**
  * Set up a context for performing asynchronous DHT operations.
@@ -47,15 +55,11 @@ struct GNUNET_DHT_Context;
  *        GNUNET_SYSERR
  * @return NULL on error
  */
-struct GNUNET_DHT_Context *GNUNET_DHT_context_create (struct
-                                                      GNUNET_GC_Configuration
-                                                      *cfg,
-                                                      struct GNUNET_GE_Context
-                                                      *ectx,
-                                                      GNUNET_ResultProcessor
-                                                      resultCallback,
-                                                      void
-                                                      *resCallbackClosure);
+struct GNUNET_DHT_Context *
+GNUNET_DHT_context_create (struct GNUNET_GC_Configuration *cfg,
+			   struct GNUNET_GE_Context *ectx,
+			   GNUNET_ResultProcessor resultCallback,
+			   void *resCallbackClosure);
 
 /**
  * Start an asynchronous GET operation on the DHT looking for
@@ -63,21 +67,21 @@ struct GNUNET_DHT_Context *GNUNET_DHT_context_create (struct
  *
  * @param type the type of key to look up
  * @param key the key to look up
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return NULL on error
  */
-int GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
-                          unsigned int type, const GNUNET_HashCode * key);
-
+struct GNUNET_DHT_GetRequest *
+GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
+		      unsigned int type, const GNUNET_HashCode * key);
 
 /**
  * Stop an asynchronous GET operation on the DHT looking for
  * key.
- * @param type the type of key to look up
- * @param key the key to look up
+ *
+ * @param handle request to stop
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
-                         unsigned int type, const GNUNET_HashCode * key);
+			 struct GNUNET_DHT_GetRequest * handle);
 
 /**
  * Destroy a previously created context for DHT operations.
