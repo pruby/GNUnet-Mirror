@@ -31,7 +31,7 @@
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
-#include "dht_api.h"
+
 
 #define START_PEERS 1
 
@@ -111,6 +111,7 @@ main (int argc, const char **argv)
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_DHT_Context *ctx_peer1;
   struct GNUNET_DHT_Context *ctx_peer2;
+  struct GNUNET_DHT_GetRequest * get1;
   struct GNUNET_ClientServerConnection *sock;
   int left;
   int k;
@@ -230,9 +231,9 @@ main (int argc, const char **argv)
   peer2count = 10;
   printf ("Getting key 1 from peer 2 (stored at peer 1)");
   want = 'A';
-  CHECK (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer2,
-                                            GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                            &key));
+  CHECK (NULL != (get1 = GNUNET_DHT_get_start (ctx_peer2,
+					      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					      &key)));
   for (k = 0; k < NUM_ROUNDS; k++)
     {
       if (0 == (k % 10))
@@ -243,8 +244,7 @@ main (int argc, const char **argv)
         break;
     }
   CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer2,
-                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                           &key));
+                                           get1));
   printf (peer2count < 10 ? " OK!\n" : "?\n");
   CHECK (peer2count < 10);
 
@@ -252,9 +252,9 @@ main (int argc, const char **argv)
   GNUNET_hash ("key 2", 5, &key);
   peer1count = 10;
   want = 'B';
-  CHECK (GNUNET_OK == GNUNET_DHT_get_start (ctx_peer1,
-                                            GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                            &key));
+  CHECK (NULL != (get1 = GNUNET_DHT_get_start (ctx_peer1,
+					       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					       &key)));
   for (k = 0; k < NUM_ROUNDS; k++)
     {
       if (0 == (k % 10))
@@ -265,8 +265,7 @@ main (int argc, const char **argv)
         break;
     }
   CHECK (GNUNET_OK == GNUNET_DHT_get_stop (ctx_peer1,
-                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                           &key));
+                                           get1));
   printf (peer1count < 10 ? " OK!\n" : "?\n");
   CHECK (peer1count < 10);
 

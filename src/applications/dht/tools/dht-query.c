@@ -74,9 +74,9 @@ printCallback (const GNUNET_HashCode * hash,
 static void
 do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 {
-  int ret;
+  struct GNUNET_DHT_GetRequest* ret;
   GNUNET_HashCode hc;
-
+  
   GNUNET_hash (key, strlen (key), &hc);
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
@@ -85,12 +85,14 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 #endif
   ret = GNUNET_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &hc);
-  if (ret == GNUNET_SYSERR)
-    printf ("`%s(%s)' failed.\n", "get", key);
+  if (ret == NULL)
+    {
+      printf ("`%s(%s)' failed.\n", "get", key);
+      return;
+    }
   GNUNET_thread_sleep (timeout);
-  ret = GNUNET_DHT_get_stop (ctx,
-                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, &hc);
-  GNUNET_GE_ASSERT (NULL, ret == GNUNET_OK);
+  GNUNET_DHT_get_stop (ctx,
+		       ret);
 }
 
 static void

@@ -22,38 +22,122 @@
  * @file dht/tools/dht_api.c
  * @brief DHT-module's core API's implementation.
  * @author Tomi Tukiainen, Christian Grothoff, Nathan Evans
- *
- * TODO:
- * - track active requests
- * - automatically re-issue all requests if connection with gnunetd
- *   gets re-established
- * - re-establish connections with gnunetd (just like fslib does)
  */
-
-#include "dht_api.h"
+#include "platform.h"
+#include "gnunet_protocols.h"
+#include "dht.h"
+#include "gnunet_dht_lib.h"
+#include "gnunet_util.h"
 
 #define DEBUG_DHT_API GNUNET_NO
 
+/**
+ * Doubly-linked list of get requests.
+ */
+struct GNUNET_DHT_GetRequest
+{ 
+  struct GNUNET_DHT_GetRequest * prev;
+
+  struct GNUNET_DHT_GetRequest * next;
+
+  CS_dht_request_get_MESSAGE request; 
+};
+
+/**
+ * Data exchanged between main thread and GET thread.
+ */
+struct GNUNET_DHT_Context
+{
+
+  /**
+   * Connection with gnunetd.
+   */
+  struct GNUNET_ClientServerConnection *sock;
+
+  /**
+   * Lock for head and tail fields.
+   */
+  struct GNUNET_Mutex * lock;
+
+  /**
+   * Callback to call for each result.
+   */
+  GNUNET_ResultProcessor processor;
+
+  /**
+   * Extra argument for processor.
+   */
+  void *closure;
+
+  /**
+   * Thread polling for replies from gnunetd.
+   */
+  struct GNUNET_ThreadHandle *poll_thread;
+
+  /**
+   * Head of our pending requests.
+   */
+  struct GNUNET_DHT_GetRequest * head;
+
+  /**
+   * Tail of our pending requests.
+   */
+  struct GNUNET_DHT_GetRequest * tail;
+
+  /**
+   * Are we done (for whichever reason)?
+   */
+  int aborted;
+
+  /**
+   * Set to YES if we had a write error and need to
+   * resubmit all of our requests.
+   */
+  int restart;
+
+};
+
+/**
+ * Main loop of the poll thread.
+ * 
+ * @param cls the DHT context
+ * @return NULL (always)
+ */
 static void *
 poll_thread (void *cls)
 {
   struct GNUNET_DHT_Context *info = cls;
   GNUNET_MessageHeader *reply;
   CS_dht_request_put_MESSAGE *put;
+  struct GNUNET_DHT_GetRequest *get;
   unsigned int size;
 
   while (info->aborted == GNUNET_NO)
     {
       reply = NULL;
-      if (GNUNET_OK != GNUNET_client_connection_read (info->sock, &reply))
-        {
-          /* FIXME: we need to handle this better,
-             if we were not aborted, we need to try
-             to reconnect! -- this assertion failure
-             is more like a warning to the end-user/developer
-             that the code is not yet perfect... */
-          GNUNET_GE_BREAK (NULL, info->aborted != GNUNET_NO);
-          break;
+      if ( (info->restart == GNUNET_YES) ||
+	   (GNUNET_OK != GNUNET_client_connection_read (info->sock, &reply)) )
+	{
+	  info->restart = GNUNET_NO;
+	  while ( (info->aborted == GNUNET_NO) &&
+		  (GNUNET_OK != GNUNET_client_connection_ensure_connected (info->sock)) )
+	    GNUNET_thread_sleep(100 * GNUNET_CRON_MILLISECONDS);
+	  if (info->aborted != GNUNET_NO)
+	    break;	  
+	  GNUNET_mutex_lock(info->lock);
+	  get = info->head;
+	  while ( (get != NULL) &&
+		  (info->restart == GNUNET_NO) &&
+		  (info->aborted == GNUNET_NO) )
+	    {
+	      if (GNUNET_OK !=
+		  GNUNET_client_connection_write (info->sock,
+						  &get->request.header))
+		info->restart = GNUNET_YES;
+	      get = get->next;
+	    }
+	  GNUNET_mutex_unlock(info->lock);
+	  continue;
         }
       if ((sizeof (CS_dht_request_put_MESSAGE) > ntohs (reply->size)) ||
           (GNUNET_CS_PROTO_DHT_REQUEST_PUT != ntohs (reply->type)))
@@ -77,7 +161,6 @@ poll_thread (void *cls)
       GNUNET_free (reply);
     }
   info->aborted = GNUNET_YES;
-  GNUNET_thread_stop_sleep (info->poll_thread);
   return NULL;
 }
 
@@ -103,13 +186,19 @@ GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return NULL;
-
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DHT_Context));
+  ctx->lock = GNUNET_mutex_create(GNUNET_NO);
   ctx->sock = sock;
-  ctx->closure = resCallbackClosure;
   ctx->processor = resultCallback;
+  ctx->closure = resCallbackClosure;
   ctx->poll_thread = GNUNET_thread_create (&poll_thread, ctx, 1024 * 8);
-  ctx->aborted = GNUNET_NO;
+  if (ctx->poll_thread == NULL)
+    {
+      GNUNET_client_connection_destroy (sock);
+      GNUNET_mutex_destroy (ctx->lock);
+      GNUNET_free (ctx);
+      return NULL;
+    }
   return ctx;
 }
 
@@ -122,48 +211,50 @@ GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
  * @param key the key to look up
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int
+struct GNUNET_DHT_GetRequest *
 GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
                       unsigned int type, const GNUNET_HashCode * key)
 {
-  CS_dht_request_get_MESSAGE req;
+  struct GNUNET_DHT_GetRequest * req;
 
-  if (ctx->sock == NULL)
-    return GNUNET_SYSERR;
-  req.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
-  req.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET);
-  req.type = htonl (type);
-  req.key = *key;
-  if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req.header))
-    return GNUNET_SYSERR;
-  return GNUNET_OK;
+  req = GNUNET_malloc(sizeof(struct GNUNET_DHT_GetRequest));
+  req->request.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
+  req->request.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET);
+  req->request.type = htonl (type);
+  req->request.key = *key;
+  GNUNET_mutex_lock(ctx->lock);
+  GNUNET_DLL_insert(ctx->head, ctx->tail, req);
+  GNUNET_mutex_unlock(ctx->lock);
+  if (GNUNET_OK != 
+      GNUNET_client_connection_write (ctx->sock, &req->request.header))
+    ctx->restart = GNUNET_YES;
+  return req;
 }
 
 
 /**
  * Stop an asynchronous GET operation on the DHT looking for
  * key.
- * @param type the type of key to look up
- * @param key the key to look up
+ *
+ * @param req request to stop
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
 GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
-                     unsigned int type, const GNUNET_HashCode * key)
+		     struct GNUNET_DHT_GetRequest * req)
 {
+  CS_dht_request_get_MESSAGE creq;
 
-  CS_dht_request_get_MESSAGE req;
-
-  if (ctx->sock == NULL)
-    return GNUNET_SYSERR;
-  req.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
-  req.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET_END);
-  req.type = htonl (type);
-  req.key = *key;
-  if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req.header))
-    return GNUNET_SYSERR;
+  creq.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
+  creq.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET_END);
+  creq.type = req->request.type;
+  creq.key = req->request.key;
+  GNUNET_mutex_lock(ctx->lock);
+  GNUNET_DLL_remove(ctx->head, ctx->tail, req);
+  GNUNET_mutex_unlock(ctx->lock);
+  if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &creq.header))
+    ctx->restart = GNUNET_YES;
   return GNUNET_OK;
-
 }
 
 /**
@@ -176,10 +267,16 @@ int
 GNUNET_DHT_context_destroy (struct GNUNET_DHT_Context *ctx)
 {
   void *unused;
+
+  GNUNET_GE_ASSERT(NULL, ctx->head == NULL);
+  GNUNET_GE_ASSERT(NULL, ctx->tail == NULL);
   ctx->aborted = GNUNET_YES;
   GNUNET_client_connection_close_forever (ctx->sock);
+  GNUNET_thread_stop_sleep (ctx->poll_thread);
   GNUNET_thread_join (ctx->poll_thread, &unused);
   GNUNET_client_connection_destroy (ctx->sock);
+  GNUNET_mutex_destroy(ctx->lock);
+  GNUNET_free(ctx);
   return GNUNET_OK;
 }
 

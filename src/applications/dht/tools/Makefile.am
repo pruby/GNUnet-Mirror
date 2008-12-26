@@ -11,7 +11,7 @@ noinst_PROGRAMS = \
   gnunet-dht-query 
 
 libgnunetdht_api_la_SOURCES = \
-  dht_api.c dht_api.h
+  dht_api.c
 libgnunetdht_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetdht_api_la_LIBADD = \

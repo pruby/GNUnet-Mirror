@@ -37,6 +37,8 @@
 
 static int err;
 
+static int found;
+
 static int
 result_callback (const GNUNET_HashCode * key,
                  unsigned int type,
@@ -56,6 +58,7 @@ result_callback (const GNUNET_HashCode * key,
       err = 1;
       return GNUNET_SYSERR;
     }
+  found = 1;
   return GNUNET_OK;
 }
 
@@ -77,10 +80,10 @@ main (int argc, const char **argv)
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_DHT_Context *ctx;
-  void *unused_cls = NULL;
+  struct GNUNET_DHT_GetRequest * get1;
+  struct GNUNET_DHT_GetRequest * get2;
   int left;
   int i;
-
 
   ectx = NULL;
   cfg = GNUNET_GC_create ();
@@ -104,10 +107,10 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  ctx = GNUNET_DHT_context_create (cfg, ectx, &result_callback, unused_cls);
+  ctx = GNUNET_DHT_context_create (cfg, ectx, &result_callback, &i);
   CHECK (ctx != NULL);
   /* actual test code */
-  GNUNET_hash ("key2", 4, &key);
+  GNUNET_hash ("key_for_A", 4, &key);
   value = GNUNET_malloc (8);
   memset (value, 'A', 8);
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
@@ -116,11 +119,10 @@ main (int argc, const char **argv)
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
   i = 'A';
-  CHECK (1 == GNUNET_DHT_get_start (ctx,
-                                    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                    &key));
-  CHECK (err == 0);
-  GNUNET_hash ("key", 3, &key);
+  CHECK (NULL != (get1 = GNUNET_DHT_get_start (ctx,
+					       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					       &key)));
+  GNUNET_hash ("key_for_B", 3, &key);
   value = GNUNET_malloc (8);
   memset (value, 'B', 8);
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
@@ -128,31 +130,26 @@ main (int argc, const char **argv)
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
-  CHECK (err == 0);
-  i = 'B';
-  CHECK (1 == GNUNET_DHT_get_start (ctx,
-                                    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                    &key));
-  GNUNET_hash ("key2", 4, &key);
-  CHECK (err == 0);
   left = 10;
-  do
-    {
-      fprintf (stderr, ".");
-      i = 'A';
-      if (1 == GNUNET_DHT_get_start (ctx,
-                                     GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                     &key))
-        break;
-      CHECK (err == 0);
-      left--;
-    }
-  while (left > 0);
-  CHECK (left > 0);
+  while ( (found == 0) && (--left >= 0) )
+    GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
+  CHECK (err == 0);
+  CHECK (found != 0);
+  found = 0;
+  GNUNET_DHT_get_stop(ctx, get1);
+  i = 'B';
+  CHECK (NULL != (get2 = GNUNET_DHT_get_start (ctx,
+					       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					       &key)));
+  left = 10;
+  while ( (found == 0) && (--left >= 0) )
+    GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
+  CHECK (err == 0);
+  CHECK (found != 0);
+  GNUNET_DHT_get_stop(ctx, get2);
   /* end of actual test code */
 
   GNUNET_DHT_context_destroy (ctx);
-
 FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
