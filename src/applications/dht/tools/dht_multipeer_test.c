@@ -42,7 +42,7 @@
  * How many times will we try the DHT-GET operation before
  * giving up for good?
  */
-#define NUM_ROUNDS 100
+#define NUM_ROUNDS 20
 
 /**
  * How often do we iterate the put-get loop?
@@ -119,6 +119,7 @@ main (int argc, const char **argv)
       GNUNET_GC_free (cfg);
       return -1;
     }
+  printf("Starting %u peers...\n", NUM_PEERS);
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "advertising dht stats",
                                         "/tmp/gnunet-dht-test",
@@ -142,39 +143,50 @@ main (int argc, const char **argv)
             }
         }
     }
-
+  found = 0;
   for (r = 0; r < NUM_REPEAT; r++)
     {
+      if (r > 0)
+	{
+	  printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS * r);
+	  if (found >= NUM_PEERS * NUM_PEERS * r / 2)
+	    break; /* good enough */
+	}
       if (GNUNET_shutdown_test() == GNUNET_YES)
 	break;
       /* put loop */
+      printf ("Waiting for DHT connections of peer");
       for (i = 0; i < NUM_PEERS; i++)
 	{
 	  if (GNUNET_shutdown_test() == GNUNET_YES)
 	    break;
+	  ok = 0;
+	  printf (" %d", i);
+	  fflush (stdout);
 	  GNUNET_snprintf (buf, sizeof(buf), "localhost:%u", 2087 + i * 10);
 	  GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
 						    buf);
 	  /* wait for some DHT's to find each other! */
 	  sock = GNUNET_client_connection_create (NULL, cfg);
 	  left = 30;                /* how many iterations should we wait? */
-	  printf ("Waiting for peer %u to DHT-connect", i);
 	  while (GNUNET_OK ==
 		 GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
 	    {
 	      if (GNUNET_shutdown_test() == GNUNET_YES)
 		break;
-	      printf (".");
+	      if (9 == left % 10)
+		printf (".");
 	      fflush (stdout);
 	      GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
 	      left--;
 	      if (left == 0)
 		break;
 	    }
-	  printf (left > 0 ? " OK!\n" : "?\n");
 	  GNUNET_client_connection_destroy (sock);
 	  if (ok == 0)
 	    {
+	      printf ("ERROR!\n");
+	      fflush (stdout);
 	      GNUNET_TESTING_stop_daemons (peers);
 	      fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
 	      GNUNET_GC_free (cfg);
@@ -190,9 +202,8 @@ main (int argc, const char **argv)
 					      8, value));
 	  GNUNET_free (value);
 	}
-      
+      printf("\n");
       /* get loop */
-      found = 0;
       for (i = 0; i < NUM_PEERS; i++)
 	{
 	  if (GNUNET_shutdown_test() == GNUNET_YES)
@@ -201,6 +212,8 @@ main (int argc, const char **argv)
 	  GNUNET_GC_set_configuration_value_string (cfg,
 						    ectx, "NETWORK", "HOST", buf);
 	  dctx = GNUNET_DHT_context_create (cfg, ectx, &result_callback, &c);
+	  printf ("Peer %d gets key", i);
+	  fflush (stdout);
 	  for (j = 0; j < NUM_PEERS; j++)
 	    {
 	      if (GNUNET_shutdown_test() == GNUNET_YES)
@@ -208,7 +221,8 @@ main (int argc, const char **argv)
 	      c = 'A' + j;
 	      GNUNET_snprintf (buf, sizeof(buf), "localhost:%u", 2087 + j * 10);
 	      GNUNET_hash (buf, strlen (buf), &key);
-	      printf ("Peer %d gets key %d", i, j);
+	      printf (" %d", j);
+	      fflush (stdout);
 	      last = found;
 	      get1 = GNUNET_DHT_get_start (dctx,
 					   GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
@@ -218,8 +232,11 @@ main (int argc, const char **argv)
 		{
 		  if (GNUNET_shutdown_test() == GNUNET_YES)
 		    break;
-		  if (0 == (k % 10))
-		    printf (".");
+		  if (9 == (k % 10))
+		    {
+		      printf (".");
+		      fflush (stdout);	  
+		    }
 		  fflush (stdout);
 		  GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
 		  if (last < found)
@@ -227,17 +244,20 @@ main (int argc, const char **argv)
 		}
 	      GNUNET_DHT_get_stop (dctx,
 				   get1);
-	      if (k < NUM_ROUNDS)
-		printf (" OK!\n");
-	      else
-		printf ("?\n");
+	      if (k == NUM_ROUNDS)
+		{
+		  printf ("?");
+		  fflush (stdout);
+		}
 	    }
 	  GNUNET_DHT_context_destroy (dctx);
+	  printf ("\n");
 	}
     }
   /* end of actual test code */
-  printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS * NUM_REPEAT);
-  if (found < NUM_PEERS * NUM_PEERS * NUM_REPEAT / 2)
+  if (r == NUM_REPEAT)
+    printf ("Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS * r);
+  if (found < NUM_PEERS * NUM_PEERS * r / 2)
     {
       printf
         ("Not enough results (not even 50%%), marking test as failed!\n");
