@@ -359,6 +359,38 @@ AM_CONDITIONAL(HAVE_SQLITE, test x$sqlite = xtrue)
 AC_SUBST(SQLITE_CPPFLAGS)
 AC_SUBST(SQLITE_LDFLAGS)
 
+# test for postgres
+postgres=false
+AC_MSG_CHECKING(for postgres)
+AC_ARG_WITH(postgres,
+  [  --with-postgres=PFX       base of postgres installation],
+  [AC_MSG_RESULT("$with_postgres")
+   case $with_postgres in
+   no)
+     ;;
+   yes)
+    AC_CHECK_HEADERS(postgresql/libpq-fe.h,
+     postgres=true)
+     ;;
+   *)
+    LDFLAGS="-L$with_postgres/lib $LDFLAGS"
+    CPPFLAGS="-I$with_postgres/include $CPPFLAGS"
+    AC_CHECK_HEADERS(postgresql/libpq-fe.h,
+     EXT_LIB_PATH="-L$with_postgres/lib $EXT_LIB_PATH"
+     SQLITE_LDFLAGS="-L$with_postgres/lib"
+     SQLITE_CPPFLAGS="-I$with_postgres/include"
+     postgres=true)
+    LDFLAGS=$SAVE_LDFLAGS
+    CPPFLAGS=$SAVE_CPPFLAGS
+    ;;
+   esac
+  ],
+  [AC_MSG_RESULT([--with-postgres not specified])
+    AC_CHECK_HEADERS(postgresql/libpq-fe.h, postgres=true)])
+AM_CONDITIONAL(HAVE_POSTGRES, test x$postgres = xtrue)
+AC_SUBST(POSTGRES_CPPFLAGS)
+AC_SUBST(POSTGRES_LDFLAGS)
+
 
 # test for libz (maybe required for linking mysql)
 zlib=1
@@ -981,6 +1013,7 @@ src/applications/pingpong/Makefile
 src/applications/rpc/Makefile
 src/applications/session/Makefile
 src/applications/sqstore_mysql/Makefile
+src/applications/sqstore_postgres/Makefile
 src/applications/sqstore_sqlite/Makefile
 src/applications/state/Makefile
 src/applications/stats/Makefile
