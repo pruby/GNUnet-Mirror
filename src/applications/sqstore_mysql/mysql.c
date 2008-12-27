@@ -1096,7 +1096,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
       res = GNUNET_MYSQL_run_statement_select (db, SELECT_SIZE);
       if ((res == NULL) || (1 != SSCANF (res, "%llu", &content_size)))
         {
-          GNUNET_GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, res == NULL);
           content_size = 0;
         }
       GNUNET_free_non_null (res);
