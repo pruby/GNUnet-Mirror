@@ -338,19 +338,17 @@ process_mandatory_zero (const GNUNET_HashCode * key, void *value, void *cls)
 
   if (pos->mandatoryMatchesRemaining == 0)
     {
-      ((GNUNET_ECRS_FileInfo *) event->data.SearchResumed.fis)[event->data.
-                                                               SearchResumed.
-                                                               fisSize] =
-        pos->fi;
-      event->data.SearchResumed.availability_rank[event->data.SearchResumed.
-                                                  fisSize] =
+      ((GNUNET_ECRS_FileInfo *) event->data.SearchResumed.fis)[event->
+                                                               data.SearchResumed.fisSize]
+        = pos->fi;
+      event->data.SearchResumed.availability_rank[event->data.
+                                                  SearchResumed.fisSize] =
         pos->probeSuccess - pos->probeFailure;
-      event->data.SearchResumed.availability_certainty[event->data.
-                                                       SearchResumed.
-                                                       fisSize] =
-        pos->probeSuccess + pos->probeFailure;
-      event->data.SearchResumed.applicability_rank[event->data.SearchResumed.
-                                                   fisSize] =
+      event->data.SearchResumed.availability_certainty[event->
+                                                       data.SearchResumed.fisSize]
+        = pos->probeSuccess + pos->probeFailure;
+      event->data.SearchResumed.applicability_rank[event->data.
+                                                   SearchResumed.fisSize] =
         pos->matchingSearchCount;
       event->data.SearchResumed.fisSize++;
     }

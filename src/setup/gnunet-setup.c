@@ -211,7 +211,8 @@ static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
 #endif
   "";
 
-static const char *INFO_CLIENT_ONLY = "gnunet-setup [OPTIONS] config|generate-defaults"
+static const char *INFO_CLIENT_ONLY =
+  "gnunet-setup [OPTIONS] config|generate-defaults"
 #if HAVE_DIALOG
   "|menuconfig"
 #endif
@@ -266,8 +267,8 @@ main (int argc, char *const *argv)
   int i;
   struct stat buf;
   int have_files;
-  const char ** modules;
-  
+  const char **modules;
+
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
                                           GNUNET_GE_WARNING | GNUNET_GE_ERROR
                                           | GNUNET_GE_FATAL | GNUNET_GE_USER |
@@ -300,11 +301,11 @@ main (int argc, char *const *argv)
     GNUNET_malloc (strlen (dirname) + strlen ("config-daemon.scm") + 1);
   strcpy (specname, dirname);
   strcat (specname, "config-daemon.scm");
-  if (0 == ACCESS(specname, R_OK))
+  if (0 == ACCESS (specname, R_OK))
     have_files = 1;
   strcpy (specname, dirname);
   strcat (specname, "config-client.scm");
-  if (0 == ACCESS(specname, R_OK))
+  if (0 == ACCESS (specname, R_OK))
     have_files |= 2;
   GNUNET_free (specname);
   GNUNET_free (dirname);
@@ -315,8 +316,9 @@ main (int argc, char *const *argv)
   i = GNUNET_parse_options ((have_files == 2) ? INFO_CLIENT_ONLY : INFO,
                             ectx,
                             cfg,
-                            (have_files == 3) ? gnunetsetupOptions : gnunetsetupNoDOptions,
-			    (unsigned int) argc, argv);
+                            (have_files ==
+                             3) ? gnunetsetupOptions : gnunetsetupNoDOptions,
+                            (unsigned int) argc, argv);
   if (i < 0)
     {
       GNUNET_GC_free (cfg);
@@ -475,9 +477,9 @@ main (int argc, char *const *argv)
   else
     {
       if (have_files == 2)
-	modules = modules_client_only;
+        modules = modules_client_only;
       else
-	modules = modules_all;
+        modules = modules_all;
       done = GNUNET_NO;
       i = 0;
       while ((done == GNUNET_NO) && (modules[i] != NULL))

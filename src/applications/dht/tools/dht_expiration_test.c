@@ -104,11 +104,11 @@ main (int argc, const char **argv)
   /* FIXME: this value has to be >> than the expiration
      time (which is currently fixed to 12h, so we can not
      really do this test in practice... */
-  GNUNET_thread_sleep(60 * GNUNET_CRON_SECONDS);
+  GNUNET_thread_sleep (60 * GNUNET_CRON_SECONDS);
   CHECK (1 == GNUNET_DHT_get_start (ctx,
                                     GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                     &key));
-  GNUNET_thread_sleep(15 * GNUNET_CRON_SECONDS);
+  GNUNET_thread_sleep (15 * GNUNET_CRON_SECONDS);
   GNUNET_DHT_context_destroy (ctx);
 
 FAILURE:

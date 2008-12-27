@@ -4,6 +4,6 @@ do
   cd `dirname $n`; 
   cd ..; 
   echo Running `basename $n`
-  valgrind --tool=memcheck --leak-check=yes --suppressions=$HOME/svn/GNUnet/contrib/gnunet.supp .libs/`basename $n` &> `basename $n`.val || echo FAILED
+  valgrind --tool=memcheck --leak-check=yes --suppressions=$HOME/svn/GNUnet/contrib/gnunet.supp .libs/`basename $n` 2> `basename $n`.val > `basename $n`.out || echo FAILED
   cd $HOME/svn/GNUnet/
 done

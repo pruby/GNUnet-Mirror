@@ -80,8 +80,8 @@ main (int argc, const char **argv)
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_DHT_Context *ctx;
-  struct GNUNET_DHT_GetRequest * get1;
-  struct GNUNET_DHT_GetRequest * get2;
+  struct GNUNET_DHT_GetRequest *get1;
+  struct GNUNET_DHT_GetRequest *get2;
   int left;
   int i;
 
@@ -120,8 +120,8 @@ main (int argc, const char **argv)
                                       8, value));
   i = 'A';
   CHECK (NULL != (get1 = GNUNET_DHT_get_start (ctx,
-					       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					       &key)));
+                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                               &key)));
   GNUNET_hash ("key_for_B", 3, &key);
   value = GNUNET_malloc (8);
   memset (value, 'B', 8);
@@ -131,22 +131,22 @@ main (int argc, const char **argv)
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       8, value));
   left = 10;
-  while ( (found == 0) && (--left >= 0) )
-    GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
+  while ((found == 0) && (--left >= 0))
+    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
   CHECK (err == 0);
   CHECK (found != 0);
   found = 0;
-  GNUNET_DHT_get_stop(ctx, get1);
+  GNUNET_DHT_get_stop (ctx, get1);
   i = 'B';
   CHECK (NULL != (get2 = GNUNET_DHT_get_start (ctx,
-					       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					       &key)));
+                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                               &key)));
   left = 10;
-  while ( (found == 0) && (--left >= 0) )
-    GNUNET_thread_sleep(50 * GNUNET_CRON_MILLISECONDS);
+  while ((found == 0) && (--left >= 0))
+    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
   CHECK (err == 0);
   CHECK (found != 0);
-  GNUNET_DHT_get_stop(ctx, get2);
+  GNUNET_DHT_get_stop (ctx, get2);
   /* end of actual test code */
 
   GNUNET_DHT_context_destroy (ctx);

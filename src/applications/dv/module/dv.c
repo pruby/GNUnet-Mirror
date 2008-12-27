@@ -382,8 +382,8 @@ chooseToNeighbor ()
   if (GNUNET_multi_hash_map_size (ctx->direct_neighbors) == 0)
     return NULL;
 
-  return (struct GNUNET_dv_neighbor *) GNUNET_multi_hash_map_get_random (ctx->
-                                                                         direct_neighbors);
+  return (struct GNUNET_dv_neighbor *)
+    GNUNET_multi_hash_map_get_random (ctx->direct_neighbors);
 }
 
 static struct GNUNET_dv_neighbor *
@@ -469,19 +469,18 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
 
 
   if (GNUNET_SYSERR ==
-      coreAPI->
-      peer_disconnect_notification_register (&peer_disconnect_handler, NULL))
+      coreAPI->peer_disconnect_notification_register
+      (&peer_disconnect_handler, NULL))
     ok = GNUNET_SYSERR;
 
   if (GNUNET_SYSERR ==
-      coreAPI->
-      peer_connect_notification_register (&peer_connect_handler, NULL))
+      coreAPI->peer_connect_notification_register (&peer_connect_handler,
+                                                   NULL))
     ok = GNUNET_SYSERR;
 
   if (GNUNET_SYSERR ==
-      coreAPI->
-      p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE,
-                                       &p2pHandleDVNeighborMessage))
+      coreAPI->p2p_ciphertext_handler_register
+      (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE, &p2pHandleDVNeighborMessage))
     ok = GNUNET_SYSERR;
 
 
@@ -531,9 +530,8 @@ void
 done_module_dv ()
 {
   ctx->closing = 1;
-  coreAPI->
-    p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE,
-                                       &p2pHandleDVNeighborMessage);
+  coreAPI->p2p_ciphertext_handler_unregister
+    (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE, &p2pHandleDVNeighborMessage);
 
   coreAPI->peer_disconnect_notification_unregister (&peer_disconnect_handler,
                                                     NULL);

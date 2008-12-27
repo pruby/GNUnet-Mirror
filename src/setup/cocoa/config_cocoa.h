@@ -27,11 +27,10 @@
 #define GNUNET_SETUP_COCOA_H
 
 int config_cocoa_mainsetup_cocoa (int argc, const char **argv,
-	struct GNUNET_PluginHandle *selfHandle,
-	struct GNUNET_GE_Context *ectx,
-	struct GNUNET_GC_Configuration *cfg,
-	struct GNUNET_GNS_Context *gns,
-	const char *filename,
-	int is_daemon);
+                                  struct GNUNET_PluginHandle *selfHandle,
+                                  struct GNUNET_GE_Context *ectx,
+                                  struct GNUNET_GC_Configuration *cfg,
+                                  struct GNUNET_GNS_Context *gns,
+                                  const char *filename, int is_daemon);
 
 #endif

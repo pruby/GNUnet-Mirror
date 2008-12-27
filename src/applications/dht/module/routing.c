@@ -250,8 +250,8 @@ get_forward_count (unsigned int hop_count, double target_replication)
  */
 static int
 route_result (const GNUNET_HashCode * key,
-             unsigned int type,
-             unsigned int size, const char *data, void *cls)
+              unsigned int type,
+              unsigned int size, const char *data, void *cls)
 {
   DHTQueryRecord *q;
   unsigned int i;
@@ -398,7 +398,7 @@ route_result (const GNUNET_HashCode * key,
  */
 static int
 add_route (const GNUNET_PeerIdentity * sender,
-          GNUNET_ResultProcessor handler, void *cls, const DHT_MESSAGE * get)
+           GNUNET_ResultProcessor handler, void *cls, const DHT_MESSAGE * get)
 {
   DHTQueryRecord *q;
   unsigned int i;
@@ -484,7 +484,7 @@ add_route (const GNUNET_PeerIdentity * sender,
  */
 static int
 handle_get (const GNUNET_PeerIdentity * sender,
-           const GNUNET_MessageHeader * msg)
+            const GNUNET_MessageHeader * msg)
 {
   GNUNET_PeerIdentity next[GET_TRIES + 1];
   const DHT_MESSAGE *get;
@@ -583,7 +583,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
  */
 static int
 handle_put (const GNUNET_PeerIdentity * sender,
-           const GNUNET_MessageHeader * msg)
+            const GNUNET_MessageHeader * msg)
 {
   GNUNET_PeerIdentity next[PUT_TRIES + 1];
   const DHT_MESSAGE *put;
@@ -693,7 +693,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
  */
 static int
 handle_result (const GNUNET_PeerIdentity * sender,
-              const GNUNET_MessageHeader * msg)
+               const GNUNET_MessageHeader * msg)
 {
   const DHT_MESSAGE *result;
 #if DEBUG_ROUTING
@@ -715,9 +715,9 @@ handle_result (const GNUNET_PeerIdentity * sender,
                  "Received REMOTE DHT RESULT for key `%s'.\n", &enc);
 #endif
   route_result (&result->key,
-               ntohl (result->type),
-               ntohs (result->header.size) - sizeof (DHT_MESSAGE),
-               (const char *) &result[1], (void *) msg);
+                ntohl (result->type),
+                ntohs (result->header.size) - sizeof (DHT_MESSAGE),
+                (const char *) &result[1], (void *) msg);
   return GNUNET_OK;
 }
 

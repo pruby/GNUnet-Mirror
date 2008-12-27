@@ -39,56 +39,54 @@ testMap (int i)
   GNUNET_HashCode k2;
   int j;
 
-  CHECK(NULL != (m = GNUNET_multi_hash_map_create (i)));
-  memset(&k1, 0, sizeof(k1));
-  memset(&k2, 1, sizeof(k2));
-  CHECK(GNUNET_NO == GNUNET_multi_hash_map_contains(m, &k1));
-  CHECK(GNUNET_NO == GNUNET_multi_hash_map_contains(m, &k2));
-  CHECK(GNUNET_NO == GNUNET_multi_hash_map_remove(m, &k1, NULL));
-  CHECK(GNUNET_NO == GNUNET_multi_hash_map_remove(m, &k2, NULL));
-  CHECK(NULL == GNUNET_multi_hash_map_get(m, &k1));
-  CHECK(NULL == GNUNET_multi_hash_map_get(m, &k2));
-  CHECK(0 == GNUNET_multi_hash_map_remove_all(m, &k1));
-  CHECK(0 == GNUNET_multi_hash_map_size(m));
-  CHECK(0 == GNUNET_multi_hash_map_iterate(m, NULL, NULL));
-  CHECK(0 == GNUNET_multi_hash_map_get_multiple(m, &k1, NULL, NULL));
+  CHECK (NULL != (m = GNUNET_multi_hash_map_create (i)));
+  memset (&k1, 0, sizeof (k1));
+  memset (&k2, 1, sizeof (k2));
+  CHECK (GNUNET_NO == GNUNET_multi_hash_map_contains (m, &k1));
+  CHECK (GNUNET_NO == GNUNET_multi_hash_map_contains (m, &k2));
+  CHECK (GNUNET_NO == GNUNET_multi_hash_map_remove (m, &k1, NULL));
+  CHECK (GNUNET_NO == GNUNET_multi_hash_map_remove (m, &k2, NULL));
+  CHECK (NULL == GNUNET_multi_hash_map_get (m, &k1));
+  CHECK (NULL == GNUNET_multi_hash_map_get (m, &k2));
+  CHECK (0 == GNUNET_multi_hash_map_remove_all (m, &k1));
+  CHECK (0 == GNUNET_multi_hash_map_size (m));
+  CHECK (0 == GNUNET_multi_hash_map_iterate (m, NULL, NULL));
+  CHECK (0 == GNUNET_multi_hash_map_get_multiple (m, &k1, NULL, NULL));
 
-  CHECK(GNUNET_OK == GNUNET_multi_hash_map_put(m, 
-					       &k1,
-					       "v1",
-					       GNUNET_MultiHashMapOption_REPLACE));
-  CHECK(1 == GNUNET_multi_hash_map_size(m));
-  CHECK(0 == strcmp("v1", GNUNET_multi_hash_map_get(m, &k1)));
-  CHECK(GNUNET_NO == GNUNET_multi_hash_map_put(m, 
-					       &k1,
-					       "v1",
-					       GNUNET_MultiHashMapOption_REPLACE));
-  CHECK(1 == GNUNET_multi_hash_map_size(m));
-  CHECK(GNUNET_OK == GNUNET_multi_hash_map_put(m, 
-					       &k1,
-					       "v2",
-					       GNUNET_MultiHashMapOption_MULTIPLE));
-  CHECK(GNUNET_OK == GNUNET_multi_hash_map_put(m, 
-					       &k1,
-					       "v3",
-					       GNUNET_MultiHashMapOption_MULTIPLE));
-  CHECK(3 == GNUNET_multi_hash_map_size(m));
-  CHECK(GNUNET_OK == GNUNET_multi_hash_map_remove(m, 
-						  &k1,
-						  "v3"));
-  CHECK(2 == GNUNET_multi_hash_map_size(m));
-  CHECK(GNUNET_YES == GNUNET_multi_hash_map_contains(m, &k1));
-  CHECK(GNUNET_NO == GNUNET_multi_hash_map_contains(m, &k2));
-  CHECK(2 == GNUNET_multi_hash_map_get_multiple(m, &k1, NULL, NULL));  
-  CHECK(0 == GNUNET_multi_hash_map_get_multiple(m, &k2, NULL, NULL));  
-  CHECK(2 == GNUNET_multi_hash_map_iterate(m, NULL, NULL));
-  CHECK(2 == GNUNET_multi_hash_map_remove_all(m, &k1));
-  for (j=0;j<1024;j++)
-    CHECK(GNUNET_OK == GNUNET_multi_hash_map_put(m, 
-						 &k1,
-						 "v2",
-						 GNUNET_MultiHashMapOption_MULTIPLE));    
-  GNUNET_multi_hash_map_destroy(m);
+  CHECK (GNUNET_OK == GNUNET_multi_hash_map_put (m,
+                                                 &k1,
+                                                 "v1",
+                                                 GNUNET_MultiHashMapOption_REPLACE));
+  CHECK (1 == GNUNET_multi_hash_map_size (m));
+  CHECK (0 == strcmp ("v1", GNUNET_multi_hash_map_get (m, &k1)));
+  CHECK (GNUNET_NO == GNUNET_multi_hash_map_put (m,
+                                                 &k1,
+                                                 "v1",
+                                                 GNUNET_MultiHashMapOption_REPLACE));
+  CHECK (1 == GNUNET_multi_hash_map_size (m));
+  CHECK (GNUNET_OK == GNUNET_multi_hash_map_put (m,
+                                                 &k1,
+                                                 "v2",
+                                                 GNUNET_MultiHashMapOption_MULTIPLE));
+  CHECK (GNUNET_OK == GNUNET_multi_hash_map_put (m,
+                                                 &k1,
+                                                 "v3",
+                                                 GNUNET_MultiHashMapOption_MULTIPLE));
+  CHECK (3 == GNUNET_multi_hash_map_size (m));
+  CHECK (GNUNET_OK == GNUNET_multi_hash_map_remove (m, &k1, "v3"));
+  CHECK (2 == GNUNET_multi_hash_map_size (m));
+  CHECK (GNUNET_YES == GNUNET_multi_hash_map_contains (m, &k1));
+  CHECK (GNUNET_NO == GNUNET_multi_hash_map_contains (m, &k2));
+  CHECK (2 == GNUNET_multi_hash_map_get_multiple (m, &k1, NULL, NULL));
+  CHECK (0 == GNUNET_multi_hash_map_get_multiple (m, &k2, NULL, NULL));
+  CHECK (2 == GNUNET_multi_hash_map_iterate (m, NULL, NULL));
+  CHECK (2 == GNUNET_multi_hash_map_remove_all (m, &k1));
+  for (j = 0; j < 1024; j++)
+    CHECK (GNUNET_OK == GNUNET_multi_hash_map_put (m,
+                                                   &k1,
+                                                   "v2",
+                                                   GNUNET_MultiHashMapOption_MULTIPLE));
+  GNUNET_multi_hash_map_destroy (m);
   return 0;
 }
 

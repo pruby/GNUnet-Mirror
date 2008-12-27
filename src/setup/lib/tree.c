@@ -296,10 +296,11 @@ build_tree_node (SCM section,
   tree = GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode));
   tree->section = scm_to_locale_string (section);
   tree->option = scm_to_locale_string (option);
-  tree->untranslatedDescription = scm_to_locale_string (untranslatedDescription);
-  tree->description = _ (tree->untranslatedDescription);
+  tree->untranslatedDescription =
+    scm_to_locale_string (untranslatedDescription);
+  tree->description = _(tree->untranslatedDescription);
   tree->untranslatedHelp = scm_to_locale_string (untranslatedHelp);
-  tree->help = _ (tree->untranslatedHelp);
+  tree->help = _(tree->untranslatedHelp);
   tree->children =
     GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode *) * (clen + 1));
   for (i = 0; i < clen; i++)

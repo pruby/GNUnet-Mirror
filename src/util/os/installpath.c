@@ -113,9 +113,10 @@ get_path_from_NSGetExecutablePath ()
   int ret;
 
   path = NULL;
-  func = (MyNSGetExecutablePathProto) dlsym (RTLD_DEFAULT, "_NSGetExecutablePath");
-  if (! func)
-    return NULL;    
+  func =
+    (MyNSGetExecutablePathProto) dlsym (RTLD_DEFAULT, "_NSGetExecutablePath");
+  if (!func)
+    return NULL;
   path = &zero;
   len = 0;
   /* get the path len, including the trailing \0 */

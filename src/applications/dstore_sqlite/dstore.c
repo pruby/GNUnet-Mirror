@@ -330,8 +330,8 @@ d_put (const GNUNET_HashCode * key,
 #if DEBUG_DSTORE
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-                 "dstore processes put `%.*s' with expiration %llu\n", 
-		 size, data, discard_time);
+                 "dstore processes put `%.*s' with expiration %llu\n",
+                 size, data, discard_time);
 #endif
 
   /* first try UPDATE */
@@ -500,8 +500,7 @@ d_get (const GNUNET_HashCode * key,
 #if DEBUG_DSTORE
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-                 "dstore processes get at `%llu'\n",
-		 now);
+                 "dstore processes get at `%llu'\n", now);
 #endif
   if (sq_prepare (dbh,
                   "SELECT count(*) FROM ds080 WHERE key=? AND type=? AND expire >= ?",

@@ -303,7 +303,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
             }
           if (stats != NULL)
             stats->change (stat_gap_query_refreshed, 1);
-	  total_priority += priority;
+          total_priority += priority;
           rl->value += priority;
           rl->remaining_value += priority;
           rl->expiration = newTTL;
@@ -325,7 +325,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
             }
           /* update BF */
           if (rl->bloomfilter != NULL)
-	    GNUNET_bloomfilter_free (rl->bloomfilter);
+            GNUNET_bloomfilter_free (rl->bloomfilter);
           rl->bloomfilter_mutator = filter_mutator;
           rl->bloomfilter_size = filter_size;
           if (filter_size > 0)
@@ -498,7 +498,7 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
       value += rl->value;
       rl_value = rl->value;
       total_priority -= rl->value;
-      rl->value = 0;      
+      rl->value = 0;
 
       if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
         {
@@ -506,8 +506,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
             table[index] = rl->next;
           else
             prev->next = rl->next;
-	  active_request_count--;
-	  total_priority -= rl->value;
+          active_request_count--;
+          total_priority -= rl->value;
           GNUNET_FS_SHARED_free_request_list (rl);
           if (prev == NULL)
             rl = table[index];
@@ -599,8 +599,8 @@ cleanup_on_peer_disconnect (const GNUNET_PeerIdentity * peer, void *unused)
                 table[i] = rl->next;
               else
                 prev->next = rl->next;
-	      active_request_count--;
-	      total_priority -= rl->value;
+              active_request_count--;
+              total_priority -= rl->value;
               GNUNET_FS_SHARED_free_request_list (rl);
               if (prev == NULL)
                 rl = table[i];
@@ -723,8 +723,8 @@ GNUNET_FS_GAP_done ()
       while (NULL != (rl = table[i]))
         {
           table[i] = rl->next;
-	  active_request_count--;
-	  total_priority -= rl->value;
+          active_request_count--;
+          total_priority -= rl->value;
           GNUNET_FS_SHARED_free_request_list (rl);
         }
     }
@@ -741,8 +741,8 @@ GNUNET_FS_GAP_done ()
       coreAPI->service_release (stats);
       stats = NULL;
     }
-  GNUNET_GE_BREAK(NULL, active_request_count == 0);
-  GNUNET_GE_BREAK(NULL, total_priority == 0);
+  GNUNET_GE_BREAK (NULL, active_request_count == 0);
+  GNUNET_GE_BREAK (NULL, total_priority == 0);
   return 0;
 }
 

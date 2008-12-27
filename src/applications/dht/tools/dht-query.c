@@ -74,9 +74,9 @@ printCallback (const GNUNET_HashCode * hash,
 static void
 do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 {
-  struct GNUNET_DHT_GetRequest* ret;
+  struct GNUNET_DHT_GetRequest *ret;
   GNUNET_HashCode hc;
-  
+
   GNUNET_hash (key, strlen (key), &hc);
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
@@ -91,8 +91,7 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
       return;
     }
   GNUNET_thread_sleep (timeout);
-  GNUNET_DHT_get_stop (ctx,
-		       ret);
+  GNUNET_DHT_get_stop (ctx, ret);
 }
 
 static void

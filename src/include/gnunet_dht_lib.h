@@ -55,11 +55,15 @@ struct GNUNET_DHT_GetRequest;
  *        GNUNET_SYSERR
  * @return NULL on error
  */
-struct GNUNET_DHT_Context *
-GNUNET_DHT_context_create (struct GNUNET_GC_Configuration *cfg,
-			   struct GNUNET_GE_Context *ectx,
-			   GNUNET_ResultProcessor resultCallback,
-			   void *resCallbackClosure);
+struct GNUNET_DHT_Context *GNUNET_DHT_context_create (struct
+                                                      GNUNET_GC_Configuration
+                                                      *cfg,
+                                                      struct GNUNET_GE_Context
+                                                      *ectx,
+                                                      GNUNET_ResultProcessor
+                                                      resultCallback,
+                                                      void
+                                                      *resCallbackClosure);
 
 /**
  * Start an asynchronous GET operation on the DHT looking for
@@ -69,9 +73,10 @@ GNUNET_DHT_context_create (struct GNUNET_GC_Configuration *cfg,
  * @param key the key to look up
  * @return NULL on error
  */
-struct GNUNET_DHT_GetRequest *
-GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
-		      unsigned int type, const GNUNET_HashCode * key);
+struct GNUNET_DHT_GetRequest *GNUNET_DHT_get_start (struct GNUNET_DHT_Context
+                                                    *ctx, unsigned int type,
+                                                    const GNUNET_HashCode *
+                                                    key);
 
 /**
  * Stop an asynchronous GET operation on the DHT looking for
@@ -81,7 +86,7 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
-			 struct GNUNET_DHT_GetRequest * handle);
+                         struct GNUNET_DHT_GetRequest *handle);
 
 /**
  * Destroy a previously created context for DHT operations.

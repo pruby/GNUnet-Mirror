@@ -58,7 +58,8 @@ GNUNET_list_network_interfaces (struct GNUNET_GE_Context *ectx,
               if (ifa_ptr->ifa_addr->sa_family != AF_INET)
                 continue;
               if (GNUNET_OK != proc (ifa_ptr->ifa_name, strcmp
-                  (ifa_ptr->ifa_name, GNUNET_DEFAULT_INTERFACE) == 0, cls))
+                                     (ifa_ptr->ifa_name,
+                                      GNUNET_DEFAULT_INTERFACE) == 0, cls))
                 break;
             }
         }

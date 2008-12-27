@@ -223,14 +223,14 @@ free_request_manager (struct GNUNET_ECRS_DownloadContext *rm)
   while (rm->head != NULL)
     {
       pos = rm->head;
-      GNUNET_DLL_remove(rm->head, rm->tail, pos);
+      GNUNET_DLL_remove (rm->head, rm->tail, pos);
       if (rm->my_sctx != GNUNET_YES)
         GNUNET_FS_stop_search (rm->sctx, &content_receive_callback, pos);
       GNUNET_free (pos);
     }
   if (rm->my_sctx != GNUNET_YES)
     GNUNET_FS_resume_search_context (rm->sctx);
-  GNUNET_GE_ASSERT(NULL, rm->tail == NULL);
+  GNUNET_GE_ASSERT (NULL, rm->tail == NULL);
   if (rm->handle >= 0)
     CLOSE (rm->handle);
   if (rm->main != NULL)
@@ -302,7 +302,7 @@ add_request (struct Node *node)
 {
   struct GNUNET_ECRS_DownloadContext *rm = node->ctx;
 
-  GNUNET_DLL_insert(rm->head, rm->tail, node);
+  GNUNET_DLL_insert (rm->head, rm->tail, node);
   GNUNET_FS_start_search (rm->sctx,
                           rm->have_target == GNUNET_NO ? NULL : &rm->target,
                           GNUNET_ECRS_BLOCKTYPE_DATA, 1,
@@ -331,7 +331,7 @@ delete_node (struct Node *node)
 {
   struct GNUNET_ECRS_DownloadContext *rm = node->ctx;
 
-  GNUNET_DLL_remove(rm->head, rm->tail, node);
+  GNUNET_DLL_remove (rm->head, rm->tail, node);
   GNUNET_free (node);
   if (rm->head == NULL)
     GNUNET_thread_stop_sleep (rm->main);
