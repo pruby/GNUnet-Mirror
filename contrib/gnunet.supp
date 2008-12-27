@@ -1,0 +1,93 @@
+{
+   libcdlstuff
+   Memcheck:Cond
+   fun:strlen
+   fun:_dl_init_paths
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   libcdlstuff2
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+}
+{
+   libdlstuff3
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+}
+{
+   libcdlstuff4
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+}
+{
+   libcldstuff5
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+}
+{
+   libcdlstuff6
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+}
+{
+   libcdlstuff7
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.8.90.so
+}
+
+{
+   badlibz
+   Memcheck:Cond
+   obj:/usr/lib/libz.so.1.2.3.3
+   fun:deflate
+   fun:compress2
+}
+
+{
+   badgetaddrinfo
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:dlerror_run
+   fun:__libc_dlopen_mode
+   fun:__nss_lookup_function
+   fun:gaih_inet
+   fun:getaddrinfo
+   fun:getaddrinfo_resolve
+}
