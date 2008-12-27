@@ -6,6 +6,10 @@ if HAVE_SQLITE
  SQLITE_DIR = sqstore_sqlite kvstore_sqlite dstore_sqlite
 endif
 
+if HAVE_POSTGRES
+# POSTGRES_DIR = sqstore_postgres
+endif
+
 if LINUX
  VPN_DIR = vpn
 endif
@@ -28,6 +32,7 @@ SUBDIRS	= \
  session \
  $(MYSQL_DIR) \
  $(SQLITE_DIR) \
+ $(POSTGRES_DIR) \
  tbench \
  template \
  topology_default \
