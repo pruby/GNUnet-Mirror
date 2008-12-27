@@ -254,6 +254,7 @@ GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
   GNUNET_mutex_unlock(ctx->lock);
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &creq.header))
     ctx->restart = GNUNET_YES;
+  GNUNET_free(req);
   return GNUNET_OK;
 }
 

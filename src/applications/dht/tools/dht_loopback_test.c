@@ -154,6 +154,7 @@ FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
+  GNUNET_free (value);
   GNUNET_GC_free (cfg);
   return ret;
 }

@@ -106,7 +106,7 @@ main (int argc, const char **argv)
 #endif
   int ret = 0;
   GNUNET_HashCode key;
-  char *value;
+  char value[8];
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_DHT_Context *ctx_peer1;
@@ -212,13 +212,12 @@ main (int argc, const char **argv)
                                             "NETWORK", "HOST",
                                             "localhost:2087");
   GNUNET_hash ("key 1", 5, &key);
-  value = GNUNET_malloc (8);
-  memset (value, 'A', 8);
+  memset (value, 'A', sizeof(value));
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      8, value));
+                                      sizeof(value), value));
   GNUNET_hash ("key 2", 5, &key);
   value = GNUNET_malloc (8);
   memset (value, 'B', 8);
@@ -226,7 +225,7 @@ main (int argc, const char **argv)
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      8, value));
+                                      sizeof(value), value));
   GNUNET_hash ("key 1", 5, &key);
   peer2count = 10;
   printf ("Getting key 1 from peer 2 (stored at peer 1)");
