@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 */
 /*
- * @file applications/sqstore_mysql/mysqltest3.c
+ * @file applications/sqstore_sqlite/sqlitetest3.c
  * @brief Profile sqstore iterators.
  * @author Christian Grothoff
  */
@@ -205,4 +205,4 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* end of mysqltest3.c */
+/* end of sqlitetest3.c */
