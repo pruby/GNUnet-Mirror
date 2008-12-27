@@ -538,6 +538,31 @@ void *GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap
   (head) = (element);
 
 /**
+ * Insert an element into a DLL after the given other 
+ * element.  Insert at the head if the other
+ * element is NULL.
+ */
+#define GNUNET_DLL_insert_after(head,tail,other,element) \
+  (element)->prev = (other); \
+  if (NULL == other) \
+    { \
+      (element)->next = (head); \
+      (head) = (element); \
+    } \
+  else \
+    { \
+      (element)->next = (other)->next; \
+      (other)->next = (element); \
+    } \
+  if (NULL == (element)->next) \
+    (tail) = (element); \
+  else \
+    (element)->next->prev = (element); 
+
+
+
+
+/**
  * Remove an element from a DLL. Assumes
  * that head, tail and element are structs
  * with prev and next fields.

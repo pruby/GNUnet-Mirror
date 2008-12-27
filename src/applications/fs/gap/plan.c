@@ -341,25 +341,7 @@ queue_request (PID_INDEX target,
   while (total-- > 0)
     pos = pos->next;
   /* insert into datastructure at pos */
-  if (pos == NULL)
-    {
-      if (qpl->tail != NULL)
-        qpl->tail->next = entry;
-      else
-        qpl->head = entry;
-      entry->prev = qpl->tail;
-      qpl->tail = entry;
-    }
-  else
-    {
-      entry->next = pos->next;
-      if (pos->next == NULL)
-        qpl->tail = entry;
-      else
-        pos->next->prev = entry;
-      entry->prev = pos;
-      pos->next = entry;
-    }
+  GNUNET_DLL_insert_after(qpl->head, qpl->tail, pos, entry);
 }
 
 /**
@@ -742,14 +724,7 @@ query_fill_callback (const GNUNET_PeerIdentity *
           if (ret != 0)
             {
               /* remove e from e's doubly-linked list */
-              if (e->prev != NULL)
-                e->prev->next = e->next;
-              else
-                pl->head = e->next;
-              if (e->next != NULL)
-                e->next->prev = e->prev;
-              else
-                pl->tail = e->prev;
+	      GNUNET_DLL_remove(pl->head, pl->tail, e);
               /* remove e from singly-linked list of request */
               prev = NULL;
               pos = e->request->plan_entries;

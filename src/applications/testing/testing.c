@@ -86,7 +86,9 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   GNUNET_MessageHello *hello;
   int round;
 
+#if VERBOSE
   fprintf (stderr, "Starting peer on port %u\n", app_port);
+#endif
 #if 0
   /* do not usually do this -- may easily
      exhaust entropy pool for hostkey generation... */
@@ -262,7 +264,9 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
       sock1 = GNUNET_client_connection_create (NULL, cfg1);
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
       ret = -20;
+#if VERBOSE
       fprintf (stderr, _("Waiting for peers to connect"));
+#endif
       while ((ret++ < -1) && (GNUNET_shutdown_test () == GNUNET_NO))
         {
           h1 = NULL;
@@ -275,7 +279,9 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
                                                       h2)) &&
               (GNUNET_OK == GNUNET_IDENTITY_peer_add (sock2, h1)))
             {
+#if VERBOSE
               fprintf (stderr, ".");
+#endif
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock1,
                                                                  &h2->senderIdentity))
                 {
@@ -313,13 +319,17 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
           GNUNET_IDENTITY_request_peer_infos (sock2, &printInfo, NULL);
 #endif
         }
+#if VERBOSE
       fprintf (stderr, "%s\n", ret == GNUNET_OK ? "!" : "?");
+#endif
       GNUNET_client_connection_destroy (sock1);
       GNUNET_client_connection_destroy (sock2);
     }
   else
     {
+#if VERBOSE
       fprintf (stderr, "Failed to establish connection with peers.\n");
+#endif
     }
   GNUNET_GC_free (cfg1);
   GNUNET_GC_free (cfg2);

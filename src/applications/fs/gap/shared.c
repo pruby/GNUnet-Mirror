@@ -49,14 +49,7 @@ GNUNET_FS_SHARED_free_request_list (struct RequestList *rl)
     {
       planl = rl->plan_entries;
       rl->plan_entries = planl->plan_entries_next;
-      if (planl->next != NULL)
-        planl->next->prev = planl->prev;
-      else
-        planl->list->tail = planl->prev;
-      if (planl->prev != NULL)
-        planl->prev->next = planl->next;
-      else
-        planl->list->head = planl->next;
+      GNUNET_DLL_remove(planl->list->head, planl->list->tail, planl);
       GNUNET_free (planl);
     }
   if (rl->bloomfilter != NULL)
