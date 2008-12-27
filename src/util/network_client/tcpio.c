@@ -334,6 +334,7 @@ GNUNET_client_connection_ensure_connected (struct
                          _
                          ("Error connecting to %s:%u. Is the daemon running?\n"),
                          host, port);
+	  GNUNET_free (host);
           return GNUNET_SYSERR;
         }
       soaddr = NULL;
