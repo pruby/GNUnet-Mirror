@@ -1255,8 +1255,6 @@ update (unsigned long long uid, int delta, GNUNET_CronTime expire)
 static void
 postgres_shutdown ()
 {
-  unsigned int idx;
-
   if (dbh == NULL)
     return; /* already down */
 #if DEBUG_POSTGRES
