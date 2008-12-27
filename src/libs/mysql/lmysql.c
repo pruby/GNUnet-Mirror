@@ -428,7 +428,7 @@ GNUNET_MYSQL_run_statement_select (struct GNUNET_MysqlDatabaseHandle *dbh,
     }
   if ((mysql_num_fields (sql_res) != 1) || (sql_row[0] == NULL))
     {
-      GNUNET_GE_BREAK (dbh->ectx, 0);
+      GNUNET_GE_BREAK (dbh->ectx, mysql_num_fields (sql_res) == 1);
       if (sql_res != NULL)
         mysql_free_result (sql_res);
       mysql_thread_end ();
