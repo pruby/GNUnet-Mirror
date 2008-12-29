@@ -158,26 +158,21 @@ pq_exec (const char * sql)
 }
 
 /**
- * Create indices 
+ * Prepare SQL statement.
  */
 static int
-create_indices ()
+pq_prepare (const char * name,
+	    const char * sql,
+	    int nparms)
 {
-  if ( (GNUNET_OK != 
-	pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)")) ||
-       (GNUNET_OK != 
-	pq_exec ("CREATE INDEX idx_hash_vhash ON gn080 (hash,vhash)"))  ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_prio ON gn080 (prio)")) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_expire ON gn080 (expire)")) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_comb3 ON gn080 (prio,anonLevel)")) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_comb4 ON gn080 (prio,hash,anonLevel)")) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_comb7 ON gn080 (expire,hash)")) )
-    return GNUNET_SYSERR;
+  PGresult * ret;
+  ret = PQprepare (dbh, name, sql, nparms, NULL);
+  if (GNUNET_OK != check_result (ret, PGRES_COMMAND_OK, "PQprepare"))
+    {      
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  PQclear(ret);
   return GNUNET_OK;
 }
 
@@ -185,7 +180,7 @@ create_indices ()
  * @brief Get a database handle
  * @return the native Postgres database handle, NULL on error
  */
-static PGconn *
+static int
 init_connection ()
 {
   char * conninfo;
@@ -200,7 +195,7 @@ init_connection ()
   if (dbh == NULL)
     {
       /* FIXME: warn about out-of-memory? */
-      return NULL;
+      return GNUNET_SYSERR;
     }
   if (PQstatus(dbh) != CONNECTION_OK)
     {
@@ -210,9 +205,11 @@ init_connection ()
                      PQerrorMessage (dbh));
       PQfinish (dbh);
       dbh = NULL;
-      return NULL;
+      return GNUNET_SYSERR;
     }
-  
+
+  /* FIXME: this could fail if the table already
+     exists -- add check! */
   if ( (GNUNET_OK !=
 	pq_exec ("CREATE TABLE gn080 ("
 		 "  size INTEGER NOT NULL DEFAULT 0,"
@@ -223,16 +220,62 @@ init_connection ()
 		 "  hash BYTEA NOT NULL DEFAULT '',"
 		 "  vhash BYTEA NOT NULL DEFAULT '',"
 		 "  value BYTEA NOT NULL DEFAULT '')")) ||
+       (GNUNET_OK != 
+	pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)")) ||
+       (GNUNET_OK != 
+	pq_exec ("CREATE INDEX idx_hash_vhash ON gn080 (hash,vhash)"))  ||
        (GNUNET_OK !=
-	create_indices () ) )
+	pq_exec ("CREATE INDEX idx_prio ON gn080 (prio)")) ||
+       (GNUNET_OK !=
+	pq_exec ("CREATE INDEX idx_expire ON gn080 (expire)")) ||
+       (GNUNET_OK !=
+	pq_exec ("CREATE INDEX idx_comb3 ON gn080 (prio,anonLevel)")) ||
+       (GNUNET_OK !=
+	pq_exec ("CREATE INDEX idx_comb4 ON gn080 (prio,hash,anonLevel)")) ||
+       (GNUNET_OK !=
+	pq_exec ("CREATE INDEX idx_comb7 ON gn080 (expire,hash)")) )
     {
       PQfinish (dbh);
       dbh = NULL;
-      return NULL;
+      return GNUNET_SYSERR;
     }
-  /* FIXME: prepare statements! */
+
+  if ( (GNUNET_OK !=
+	pq_prepare("getvt",
+		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+		   "WHERE hash=$1 AND vhash=$2 AND type=$3 "
+		   "AND oid >= $4 ORDER BY oid ASC LIMIT 1 OFFSET $5",
+		   5)) ||
+       (GNUNET_OK !=
+	pq_prepare("gett",
+		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+		   "WHERE hash=$1 AND type=$2"
+		   "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
+		   4)) ||
+       (GNUNET_OK !=
+	pq_prepare("getv",
+		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+		   "WHERE hash=$1 AND vhash=$2"
+		   "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
+		   4)) ||
+       (GNUNET_OK !=
+	pq_prepare("get",
+		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+		   "WHERE hash=$1"
+		   "AND oid >= $2 ORDER BY oid ASC LIMIT 1 OFFSET $3",
+		   3)) ||
+       (GNUNET_OK !=
+	pq_prepare("delrow",
+		   "DELETE FROM gn080 "
+		   "WHERE oid=$1",
+		   1)) )
+    {
+      PQfinish (dbh);
+      dbh = NULL;
+      return GNUNET_SYSERR;
+    }
   
-  return dbh;
+  return GNUNET_OK;
 }
 
 
@@ -288,122 +331,79 @@ getStat (const char *key)
   return 0;
 }
 
-
-///////////////////////////////////////////////
-
-
-static void
+/**
+ * Delete the row identified by the given rowid (qid
+ * in postgres).
+ *
+ * @return GNUNET_OK on success
+ */
+static int
 delete_by_rowid (unsigned int rowid)
 {
-  /* FIXME... */
+  const char * paramValues[] = { (const char* ) &rowid };
+  int paramLengths[] = { sizeof(rowid) };
+  const int paramFormats[] = {1};
+  PGresult * ret;
+
+  ret = PQexecPrepared (dbh,
+			"delrow",
+			1,
+			paramValues,
+			paramLengths,
+			paramFormats,
+			1);
+  if (GNUNET_OK != check_result (ret, PGRES_COMMAND_OK, "PQexecPrepared"))
+    {      
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  PQclear (ret);
+  return GNUNET_OK;
 }
 
 /**
- * Given a full row from gn080 table (size,type,priority,anonLevel,expire,GNUNET_hash,value),
+ * Given a full row from gn080 table (size,type,priority,anonLevel,expire,hash,value,rowid),
  * assemble it into a GNUNET_DatastoreValue representation.
  */
 static GNUNET_DatastoreValue *
-assembleDatum (PGresult * handle,
+assembleDatum (PGresult * res,
                GNUNET_HashCode * key,
 	       unsigned int * rowid)
 {
-  return NULL;
-#if 0
   GNUNET_DatastoreValue *value;
-  int contentSize;
-  unsigned int type;
+  unsigned int size;
 
-  *rowid = postgres3_column_int64 (stmt, 7);
-  type = postgres3_column_int (stmt, 1);
-  contentSize = postgres3_column_int (stmt, 0) - sizeof (GNUNET_DatastoreValue);
-  dbh = handle->dbh;
-  if (contentSize < 0)
+  if ( (1 != PQntuples (res)) ||
+       (8 != PQnfields (res)) ||
+       (sizeof(unsigned int) != PQfsize (res, 0)) ||
+       (sizeof(unsigned int) != PQfsize (res, 7)) )
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _
-                     ("Invalid data in %s.  Trying to fix (by deletion).\n"),
-                     _("postgres datastore"));
-      if (POSTGRES_OK != postgres3_reset (stmt))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_reset");
-      if (sq_prepare (dbh, "DELETE FROM gn080 WHERE size < ?", &stmtd) !=
-          POSTGRES_OK)
-        {
-          LOG_POSTGRES (handle,
-                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                      GNUNET_GE_BULK, "sq_prepare");
-          return NULL;
-        }
-      if (POSTGRES_OK !=
-          postgres3_bind_int (stmtd, 1, sizeof (GNUNET_DatastoreValue)))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_bind_int");
-      if (POSTGRES_DONE != postgres3_step (stmtd))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_step");
-      if (POSTGRES_OK != postgres3_finalize (stmtd))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_finalize");
-      return NULL;              /* error */
-    }
-
-  if (postgres3_column_bytes (stmt, 5) != sizeof (GNUNET_HashCode) ||
-      postgres3_column_bytes (stmt, 6) != contentSize)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Invalid data in %s.  Trying to fix (by deletion).\n"),
-                     _("postgres datastore"));
-      if (POSTGRES_OK != postgres3_reset (stmt))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_reset");
-      if (sq_prepare
-          (dbh,
-           "DELETE FROM gn080 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))",
-           &stmtd) != POSTGRES_OK)
-        {
-          LOG_POSTGRES (handle,
-                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                      GNUNET_GE_BULK, "sq_prepare");
-          return NULL;
-        }
-
-      if (POSTGRES_OK != postgres3_bind_int (stmtd, 1, sizeof (GNUNET_HashCode)))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_bind_int");
-      if (POSTGRES_OK !=
-          postgres3_bind_int (stmtd, 2, sizeof (GNUNET_DatastoreValue)))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_bind_int");
-      if (POSTGRES_DONE != postgres3_step (stmtd))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_step");
-      if (POSTGRES_OK != postgres3_finalize (stmtd))
-        LOG_POSTGRES (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                    GNUNET_GE_BULK, "postgres3_finalize");
+      GNUNET_GE_BREAK (NULL, 0);
       return NULL;
     }
-
-  value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + contentSize);
-  value->size = htonl (contentSize + sizeof (GNUNET_DatastoreValue));
-  value->type = htonl (type);
-  value->priority = htonl (postgres3_column_int (stmt, 2));
-  value->anonymity_level = htonl (postgres3_column_int (stmt, 3));
-  value->expiration_time = GNUNET_htonll (postgres3_column_int64 (stmt, 4));
-  memcpy (key, postgres3_column_blob (stmt, 5), sizeof (GNUNET_HashCode));
-  memcpy (&value[1], postgres3_column_blob (stmt, 6), contentSize);
+  *rowid = * (unsigned int*) PQgetvalue (res, 0, 7);
+  size   = * (unsigned int*) PQgetvalue (res, 0, 0);
+  if ( (size < sizeof (GNUNET_DatastoreValue)) ||
+       (sizeof(unsigned int) != PQfsize (res, 1)) ||
+       (sizeof(unsigned int) != PQfsize (res, 2)) ||
+       (sizeof(unsigned int) != PQfsize (res, 3)) ||
+       (sizeof(unsigned long long) != PQfsize (res, 4)) ||
+       (sizeof(GNUNET_HashCode) != PQfsize (res, 5)) ||
+       (size - sizeof (GNUNET_DatastoreValue) != PQgetlength (res, 0, 6) ) )
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      delete_by_rowid (*rowid);
+      return NULL;
+    }
+  value = GNUNET_malloc (size);
+  value->size = htonl (size);
+  value->type = htonl ( * (unsigned int*) PQgetvalue (res, 0, 1));
+  value->priority = htonl ( * (unsigned int*) PQgetvalue (res, 0, 2));
+  value->anonymity_level = htonl ( * (unsigned int*) PQgetvalue (res, 0, 3));
+  value->expiration_time = GNUNET_htonll ( * (unsigned long long*) PQgetvalue (res, 0, 4));
+  memcpy (key,  PQgetvalue (res, 0, 5), sizeof (GNUNET_HashCode));
+  memcpy (&value[1], PQgetvalue (res, 0, 6), size - sizeof(GNUNET_DatastoreValue));
   return value;
-#endif
 }
 
 /**
@@ -665,9 +665,6 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
 }
 
 
-
-
-
 /**
  * Iterate over all entries matching a particular key and
  * type.
@@ -696,8 +693,7 @@ get (const GNUNET_HashCode * key,
   unsigned int rowid;
   int nparams;
   int iret;
-
-
+  const char * pname;
   int count;
   int off;
   int limit_off;
@@ -718,6 +714,12 @@ get (const GNUNET_HashCode * key,
 	  paramLengths[1] = sizeof(GNUNET_HashCode);
 	  paramValues[2] = (const char*) &type;
 	  paramLengths[2] = sizeof(unsigned int);
+	  paramValues[3] = (const char*) &last_rowid;
+	  paramLengths[3] = sizeof(last_rowid);
+	  paramValues[4] = (const char*) &limit_off;
+	  paramLengths[4] = sizeof(limit_off);
+	  nparams = 5;
+	  pname = "getvt";
 	  ret = PQexecParams(dbh,
 			     "SELECT count(*) FROM gn080 WHERE hash=$1 AND vhash=$2 AND type=$3",
 			     3,
@@ -731,6 +733,12 @@ get (const GNUNET_HashCode * key,
 	{
 	  paramValues[1] = (const char*) &type;
 	  paramLengths[1] = sizeof(unsigned int);
+	  paramValues[2] = (const char*) &last_rowid;
+	  paramLengths[2] = sizeof(last_rowid);
+	  paramValues[3] = (const char*) &limit_off;
+	  paramLengths[3] = sizeof(limit_off);
+	  nparams = 4;
+	  pname = "gett";
 	  ret = PQexecParams(dbh,
 			     "SELECT count(*) FROM gn080 WHERE hash=$1 AND type=$2",
 			     2,
@@ -747,8 +755,12 @@ get (const GNUNET_HashCode * key,
 	{
 	  paramValues[1] = (const char*) vhash;
 	  paramLengths[1] = sizeof(GNUNET_HashCode);
-	  const int paramLengths[] = { sizeof(GNUNET_HashCode), sizeof(GNUNET_HashCode) };
-	  const int paramFormats[] = { 1, 1 };
+	  paramValues[2] = (const char*) &last_rowid;
+	  paramLengths[2] = sizeof(last_rowid);
+	  paramValues[3] = (const char*) &limit_off;
+	  paramLengths[3] = sizeof(limit_off);
+	  nparams = 4;
+	  pname = "getv";	  
 	  ret = PQexecParams(dbh,
 			     "SELECT count(*) FROM gn080 WHERE hash=$1 AND vhash=$2",
 			     2,
@@ -760,6 +772,12 @@ get (const GNUNET_HashCode * key,
 	}
       else
 	{
+	  paramValues[1] = (const char*) &last_rowid;
+	  paramLengths[1] = sizeof(last_rowid);
+	  paramValues[2] = (const char*) &limit_off;
+	  paramLengths[2] = sizeof(limit_off);
+	  nparams = 3;
+	  pname = "get";	  
 	  ret = PQexecParams(dbh,
 			     "SELECT count(*) FROM gn080 WHERE hash=$1",
 			     1,
@@ -791,78 +809,6 @@ get (const GNUNET_HashCode * key,
       GNUNET_mutex_unlock (lock);
       return total;
     }
-  if (type != 0)
-    {
-      if (vhash != NULL)
-	{
-	  paramValues[3] = (const char*) &last_rowid;
-	  paramLengths[3] = sizeof(last_rowid);
-	  paramValues[4] = (const char*) &limit_off;
-	  paramLengths[4] = sizeof(limit_off);
-	  nparams = 5;
-	  ret = PQprepare(dbh,
-			   "",
-			   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-			   "WHERE hash=$1 AND vhash=$2 AND type=$3 "
-			   "AND oid >= $4 ORDER BY oid ASC LIMIT 1 OFFSET $5",
-			   5,
-			   NULL);
-	}
-      else
-	{
-	  paramValues[2] = (const char*) &last_rowid;
-	  paramLengths[2] = sizeof(last_rowid);
-	  paramValues[3] = (const char*) &limit_off;
-	  paramLengths[3] = sizeof(limit_off);
-	  nparams = 4;
-	  ret = PQprepare(dbh,
-			  "",
-			  "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-			  "WHERE hash=$1 AND type=$2"
-			  "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
-			  4,
-			  NULL);
-	}
-    }
-  else
-    {
-       if (vhash != NULL)
-	{
-	  paramValues[2] = (const char*) &last_rowid;
-	  paramLengths[2] = sizeof(last_rowid);
-	  paramValues[3] = (const char*) &limit_off;
-	  paramLengths[3] = sizeof(limit_off);
-	  nparams = 4;
-	  ret = PQprepare(dbh,
-			  "",
-			  "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-			  "WHERE hash=$1 AND vhash=$2"
-			  "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
-			  4,
-			  NULL);
-	}
-      else
-	{
-	  paramValues[1] = (const char*) &last_rowid;
-	  paramLengths[1] = sizeof(last_rowid);
-	  paramValues[2] = (const char*) &limit_off;
-	  paramLengths[2] = sizeof(limit_off);
-	  nparams = 3;
-	  ret = PQprepare(dbh,
-			  "",
-			  "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-			  "WHERE hash=$1"
-			  "AND oid >= $2 ORDER BY oid ASC LIMIT 1 OFFSET $3",
-			  3,
-			  NULL);
-	}   
-    }
-  if (GNUNET_OK != check_result (ret, PGRES_COMMAND_OK, "PQprepare"))
-    {      
-      GNUNET_mutex_unlock (lock);
-      return GNUNET_SYSERR;
-    }
-  PQclear(ret);
 
   count = 0;
   last_rowid = 0;
@@ -875,7 +821,7 @@ get (const GNUNET_HashCode * key,
         limit_off = 0;
 
       ret = PQexecPrepared (dbh,
-			    "",
+			    pname,
 			    nparams,
 			    paramValues,
 			    paramLengths,
@@ -1103,8 +1049,7 @@ provide_module_sqstore_postgres (GNUNET_CoreAPIForPlugins * capi)
 
   payload = 0;
   lastSync = 0;
-  dbh = init_connection ();
-  if (dbh == NULL)
+  if (GNUNET_OK != init_connection ())
     {
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
@@ -1161,12 +1106,8 @@ release_module_sqstore_postgres ()
   coreAPI = NULL;
 }
 
-
-
 /**
- * Update postgres database module.
- *
- * Currently only makes sure that the postgres indices are created.
+ * Update postgres database module.  Does nothing right now.
  */
 void
 update_module_sqstore_postgres (GNUNET_UpdateAPI * uapi)
@@ -1174,13 +1115,11 @@ update_module_sqstore_postgres (GNUNET_UpdateAPI * uapi)
   payload = 0;
   lastSync = 0;
   lock = GNUNET_mutex_create (GNUNET_NO);
-  dbh = init_connection ();
-  if (dbh == NULL)
+  if (GNUNET_OK != init_connection ()) 
     {
       GNUNET_mutex_destroy (lock);
       return;
     }
-  create_indices ();
   postgres_shutdown ();
   GNUNET_mutex_destroy (lock);
 }
