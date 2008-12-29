@@ -27,7 +27,7 @@ libgnunetmodule_sqstore_postgres_la_LDFLAGS = \
   $(POSTGRES_LDFLAGS)
 libgnunetmodule_sqstore_postgres_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  -lpg \
+  -lpq \
   $(LTLIBINTL)
 
 EXTRA_DIST = check.conf
