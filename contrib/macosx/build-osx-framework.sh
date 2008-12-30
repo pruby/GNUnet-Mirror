@@ -850,10 +850,6 @@ for tfn in share/man/man5/gnunet*
 do
 	install_file_to_framework "$tfn"
 done
-for tfn in $(find ./share/locale -name 'GNUnet*')
-do
-	install_file_to_framework "$tfn"
-done
 for tfn in share/guile/1.8/ice-9/*.scm
 do
 	install_file_to_framework "$tfn"
