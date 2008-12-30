@@ -41,51 +41,51 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_POSTGRES(cmd) do { GNUNET_GE_LOG(ectx, GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, PQerrorMessage(dbh)); abort(); } while(0)
+#define DIE_POSTGRES(cmd) do { GNUNET_GE_LOG(coreAPI->ectx, GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN, _("`%s' failed at %s:%d with error: %s"), cmd, __FILE__, __LINE__, PQerrorMessage(dbh)); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_POSTGRES(level, cmd) do { GNUNET_GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, PQerrorMessage(dbh)); } while(0)
+#define LOG_POSTGRES(level, cmd) do { GNUNET_GE_LOG(coreAPI->ectx, level, _("`%s' failed at %s:%d with error: %s"), cmd, __FILE__, __LINE__, PQerrorMessage(dbh)); } while(0)
 
 
 #define SELECT_IT_LOW_PRIORITY "(SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                               "FORCE INDEX(prio) WHERE (prio = $1 AND oid > $2) "			\
+                               "WHERE (prio = $1 AND oid > $2) "			\
                                "ORDER BY prio ASC,oid ASC LIMIT 1) "\
                                "UNION "\
                                "(SELECT  size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                               "FORCE INDEX(prio) WHERE (prio > $1 AND oid != $2)"\
+                               "WHERE (prio > $1 AND oid != $2)"\
                                "ORDER BY prio ASC,oid ASC LIMIT 1)"\
                                "ORDER BY prio ASC,oid ASC LIMIT 1"
 
 #define SELECT_IT_NON_ANONYMOUS "(SELECT  size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                                "FORCE INDEX(prio) WHERE (prio = $1 AND oid < $2)"\
-                                " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,oid DESC LIMIT 1) "\
+                                "WHERE (prio = $1 AND oid < $2)"\
+                                " AND anonLevel=0 ORDER BY prio DESC,oid DESC LIMIT 1) "\
                                 "UNION "\
                                 "(SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                                "FORCE INDEX(prio) WHERE (prio < $1 AND oid != $2)"\
-                                " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,oid DESC LIMIT 1) "\
+                                "WHERE (prio < $1 AND oid != $2)"\
+                                " AND anonLevel=0 ORDER BY prio DESC,oid DESC LIMIT 1) "\
                                 "ORDER BY prio DESC,oid DESC LIMIT 1"
 
 #define SELECT_IT_EXPIRATION_TIME "(SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                                  "FORCE INDEX(expire) WHERE (expire = $1 AND oid > $2) "\
+                                  "WHERE (expire = $1 AND oid > $2) "\
                                   "ORDER BY expire ASC,oid ASC LIMIT 1) "\
                                   "UNION "\
                                   "(SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                                  "FORCE INDEX(expire) WHERE (expire > $1 AND oid != $2) "		\
+                                  "WHERE (expire > $1 AND oid != $2) "		\
                                   "ORDER BY expire ASC,oid ASC LIMIT 1)"\
                                   "ORDER BY expire ASC,oid ASC LIMIT 1"
 
 
 #define SELECT_IT_MIGRATION_ORDER "(SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                                  "FORCE INDEX(expire) WHERE (expire = $1 AND oid < $2)"\
+                                  "WHERE (expire = $1 AND oid < $2)"\
                                   " AND expire > $3 AND type!=3"\
                                   " ORDER BY expire DESC,oid DESC LIMIT 1) "\
                                   "UNION "\
                                   "(SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "\
-                                  "FORCE INDEX(expire) WHERE (expire < $1 AND oid != $2)"		\
+                                  "WHERE (expire < $1 AND oid != $2)"		\
                                   " AND expire > $3 AND type!=3"\
                                   " ORDER BY expire DESC,oid DESC LIMIT 1)"\
                                   "ORDER BY expire DESC,oid DESC LIMIT 1"
@@ -112,8 +112,6 @@ static GNUNET_Stats_ServiceAPI *stats;
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static unsigned int stat_size;
-
-static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_Mutex *lock;
 
@@ -196,7 +194,8 @@ init_connection ()
   /* Open database and precompile statements */
   conninfo = NULL;
   GNUNET_GC_get_configuration_value_string (coreAPI->cfg,
-					    "POSTGRES", "CONFIG", "connect_timeout=10",
+					    "POSTGRES", "CONFIG", 
+					    "connect_timeout=10",
 					    &conninfo);
   dbh = PQconnectdb(conninfo);
   GNUNET_free (conninfo);
@@ -207,15 +206,15 @@ init_connection ()
     }
   if (PQstatus(dbh) != CONNECTION_OK)
     {
-      GNUNET_GE_LOG (ectx,
+      GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Unable to initialize Postgres: %s.\n"),
+                     _("Unable to initialize Postgres: %s"),
                      PQerrorMessage (dbh));
       PQfinish (dbh);
       dbh = NULL;
       return GNUNET_SYSERR;
     }
-
+  pq_exec ("DROP TABLE gn080");
   /* FIXME: this could fail if the table already
      exists -- add check! */
   if ( (GNUNET_OK !=
@@ -227,7 +226,8 @@ init_connection ()
 		 "  expire BIGINT NOT NULL DEFAULT 0,"
 		 "  hash BYTEA NOT NULL DEFAULT '',"
 		 "  vhash BYTEA NOT NULL DEFAULT '',"
-		 "  value BYTEA NOT NULL DEFAULT '')")) ||
+		 "  value BYTEA NOT NULL DEFAULT '')"
+		 "WITH OIDS")) ||
        (GNUNET_OK != 
 	pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)")) ||
        (GNUNET_OK != 
@@ -279,7 +279,7 @@ init_connection ()
 		   8)) ||
        (GNUNET_OK !=
 	pq_prepare("update", 
-                   "UPDATE gn080 SET prio = prio + $1, expire = MAX(expire, $2) "
+                   "UPDATE gn080 SET prio = prio + $1, expire = CASE WHEN expire < $2 THEN $2 ELSE expire END "
 		   "WHERE oid = $3",
 		   3)) ||
        (GNUNET_OK !=
@@ -890,7 +890,7 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
 
   if ((ntohl (value->size) < sizeof (GNUNET_DatastoreValue)))
     {
-      GNUNET_GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
       return GNUNET_SYSERR;
     }
   GNUNET_hash (&value[1], size - sizeof (GNUNET_DatastoreValue), &vhash);
@@ -963,7 +963,7 @@ postgres_shutdown ()
   if (dbh == NULL)
     return; /* already down */
 #if DEBUG_POSTGRES
-  GNUNET_GE_LOG (ectx,
+  GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Postgres: closing database\n");
 #endif
@@ -989,9 +989,9 @@ provide_module_sqstore_postgres (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_SQstore_ServiceAPI api;
 
-  ectx = capi->ectx;
+  coreAPI = capi;
 #if DEBUG_POSTGRES
-  GNUNET_GE_LOG (ectx,
+  GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Postgres: initializing database\n");
 #endif
@@ -1000,13 +1000,13 @@ provide_module_sqstore_postgres (GNUNET_CoreAPIForPlugins * capi)
   lastSync = 0;
   if (GNUNET_OK != init_connection ())
     {
-      GNUNET_GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
       return NULL;
     }
   payload = getStat ("PAYLOAD");
   if (payload == GNUNET_SYSERR)
     {
-      GNUNET_GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
       LOG_POSTGRES (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
 		    GNUNET_GE_BULK, "postgres_payload");
       GNUNET_mutex_destroy (lock);
@@ -1046,7 +1046,7 @@ release_module_sqstore_postgres ()
     coreAPI->service_release (stats);
   postgres_shutdown ();
 #if DEBUG_POSTGRES
-  GNUNET_GE_LOG (ectx,
+  GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Postgres: database shutdown\n");
 #endif
