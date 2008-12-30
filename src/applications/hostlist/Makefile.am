@@ -20,7 +20,7 @@ libgnunetmodule_hostlist_la_LDFLAGS = \
 libgnunetmodule_hostlist_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lmicrohttpd \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 
 check_PROGRAMS = \

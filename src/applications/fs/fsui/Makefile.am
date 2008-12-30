@@ -28,7 +28,7 @@ libgnunetfsui_la_LIBADD = \
   $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL) 
+  $(GN_LIBINTL) 
 
 EXTRA_DIST = \
   check.conf \

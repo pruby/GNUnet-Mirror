@@ -64,7 +64,7 @@ libgnunetutil_la_LIBADD = \
   $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
   $(LIBGCRYPT_LIBS) \
   -lgmp \
-  $(LTLIBINTL) \
+  $(GN_LIBINTL) \
   $(LTLIBICONV) \
   $(LIBLTDL) \
   $(LIBADD_DL) \

@@ -28,7 +28,7 @@ libgnunetmodule_upnp_la_CFLAGS = \
 libgnunetmodule_upnp_la_LIBADD = \
  @EXT_LIB_PATH@ @EXT_LIBS@ @XML_LIBS@ @LIBCURL@ \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL) 
+ $(GN_LIBINTL) 
 
 check_PROGRAMS = \
  upnptest 

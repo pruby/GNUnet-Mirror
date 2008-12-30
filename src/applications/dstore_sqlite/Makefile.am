@@ -28,7 +28,7 @@ libgnunetmodule_dstore_sqlite_la_LDFLAGS = \
 libgnunetmodule_dstore_sqlite_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lsqlite3 \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 EXTRA_DIST = check.conf
 

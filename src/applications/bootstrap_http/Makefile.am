@@ -13,7 +13,7 @@ libgnunetmodule_bootstrap_la_SOURCES = \
   http.c 
 libgnunetmodule_bootstrap_la_LIBADD = @LIBCURL@ \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL) 
+ $(GN_LIBINTL) 
 libgnunetmodule_bootstrap_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_bootstrap_la_CPPFLAGS = \

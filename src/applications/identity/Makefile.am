@@ -22,7 +22,7 @@ libgnunetmodule_identity_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_identity_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 
 libgnunetidentity_api_la_SOURCES = \
@@ -31,7 +31,7 @@ libgnunetidentity_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetidentity_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL) 
+  $(GN_LIBINTL) 
 
 
 check_PROGRAMS = \

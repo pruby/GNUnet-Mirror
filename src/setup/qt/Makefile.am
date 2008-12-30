@@ -28,7 +28,7 @@ libgnunetsetup_qt_la_LIBADD = \
  @QTLIBS@ @EXT_LIB_PATH@ @EXT_LIBS@ \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
- $(LTLIBINTL)
+ $(GN_LIBINTL)
 
 
 

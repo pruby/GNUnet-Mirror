@@ -16,14 +16,14 @@ libgnunetdht_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetdht_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 gnunet_dht_query_SOURCES = \
   dht-query.c
 gnunet_dht_query_LDADD =  \
   $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 
 

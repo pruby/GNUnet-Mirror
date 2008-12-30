@@ -12,4 +12,4 @@ gnunet_chat_SOURCES = \
 gnunet_chat_LDADD = \
   $(top_builddir)/src/applications/chat/lib/libgnunetchat_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)

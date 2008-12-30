@@ -377,17 +377,17 @@ build_dependencies()
 			--disable-ares			\
 			--with-random=/dev/urandom"
 
-	prepare_package "${GETTEXT_NAME}"
-	build_package "${GETTEXT_NAME}"			\
-			"${ARCH_HOSTSETTING}		\
-			--prefix="${FW_DIR}"		\
-			--with-pic			\
-			--disable-shared		\
-			--enable-static			\
-			--disable-java			\
-			--disable-native-java		\
-			--without-emacs			\
-			--with-libiconv-prefix=${SDK_PATH}/usr"
+#	prepare_package "${GETTEXT_NAME}"
+#	build_package "${GETTEXT_NAME}"			\
+#			"${ARCH_HOSTSETTING}		\
+#			--prefix="${FW_DIR}"		\
+#			--with-pic			\
+#			--disable-shared		\
+#			--enable-static			\
+#			--disable-java			\
+#			--disable-native-java		\
+#			--without-emacs			\
+#			--with-libiconv-prefix=${SDK_PATH}/usr"
 
 	prepare_package "${GMP_NAME}"
 	build_package "${GMP_NAME}"			\
@@ -490,7 +490,6 @@ build_gnunet()
 			CXXFLAGS="${CXXFLAGS}"			\
 			OBJCFLAGS="${CFLAGS}"			\
 			LDFLAGS="${LDFLAGS}"			\
-			gt_cv_func_gnugettext1_libintl=yes	\
 			ac_cv_func_memcmp_working=yes		\
 			ac_cv_func_stat_empty_string_bug=no	\
 			ac_cv_func_chown_works=yes		\
@@ -661,6 +660,52 @@ install_file_to_framework()
 	done
 }
 
+install_message_catalog_to_framework()
+{
+	local src_file="$1"
+	local lang_name=$( basename -s .po $src_file )
+	local dst_file="${FINAL_FW_DIR}/Resources/${lang_name}.lproj/Localizable.strings"
+	if [ ! -e "$dst_file" ]
+	then
+		echo "MSGCAT $src_file $dst_file"
+		create_directory_for "$dst_file"
+		if ! ( msgcat -t UTF-8 --stringtable-output -o "$dst_file" "$src_file" )
+		then
+			echo "error creating message catalog: $lang"
+			exit 1
+		fi
+		if ! ( chmod 0755 "${dst_file}" )
+		then
+			echo "error setting permissions"
+			exit 1
+		fi
+		plutil -lint "$dst_file"
+	fi
+}
+
+install_en_message_catalog_to_framework()
+{
+	local src_file="$1"
+	local lang_name="en"
+	local dst_file="${FINAL_FW_DIR}/Resources/${lang_name}.lproj/Localizable.strings"
+	if [ ! -e "$dst_file" ]
+	then
+		echo "MSGCAT $src_file $dst_file"
+		create_directory_for "$dst_file"
+		if ! ( msgcat -t UTF-8 "$src_file" | msgen --stringtable-output -o "$dst_file" - )
+		then
+			echo "error creating English message catalog"
+			exit 1
+		fi
+		if ! ( chmod 0755 "${dst_file}" )
+		then
+			echo "error setting permissions"
+			exit 1
+		fi
+		plutil -lint "$dst_file"
+	fi
+}
+
 copy_file_to_framework()
 {
 	local src_file="$1"
@@ -824,7 +869,11 @@ done
 cd "${ORIG_DIR}"
 copy_file_to_framework "./contrib/macosx/Info.plist" "Resources/Info.plist"
 fill_framework_revision "Resources/Info.plist"
-copy_file_to_framework "./contrib/macosx/English.lproj/InfoPlist.strings" "Resources/English.lproj/InfoPlist.strings"
+for tfn in ./po/*.po
+do
+	install_message_catalog_to_framework "$tfn"
+done
+install_en_message_catalog_to_framework "./po/GNUnet.pot"
 make_framework_link "lib/libgnunet.dylib" "GNUnet"
 make_framework_link "lib" "Libraries"
 make_framework_link "lib/GNUnet" "PlugIns"

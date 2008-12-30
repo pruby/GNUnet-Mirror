@@ -21,7 +21,7 @@ libgnunetsetup_la_LDFLAGS = \
 libgnunetsetup_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GUILE_LIB) \
-  $(LTLIBINTL) \
+  $(GN_LIBINTL) \
   $(LIBLTDL) \
   $(LIBADD_DL)
 

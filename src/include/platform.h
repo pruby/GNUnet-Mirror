@@ -165,12 +165,16 @@
 
 #include <pthread.h>
 #include <locale.h>
+#ifndef FRAMEWORK_BUILD
 #include "gettext.h"
-
 /**
  * GNU gettext support macro.
  */
 #define _(String) dgettext("GNUnet",String)
+#else
+#include "libintlemu.h"
+#define _(String) dgettext("org.gnunet.GNUnet",String)
+#endif
 
 #ifdef CYGWIN
 #define SIOCGIFCONF     _IOW('s', 100, struct ifconf)   /* get if list */

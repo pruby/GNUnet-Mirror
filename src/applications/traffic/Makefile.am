@@ -15,7 +15,7 @@ libgnunettraffic_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunettraffic_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL) 
+  $(GN_LIBINTL) 
 
 
 libgnunetmodule_traffic_la_SOURCES = \
@@ -24,4 +24,4 @@ libgnunetmodule_traffic_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_traffic_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)

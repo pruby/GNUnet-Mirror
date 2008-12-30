@@ -931,8 +931,17 @@ then
 fi
 AM_CONDITIONAL(HAVE_QT, test x$qt != x0)
 
+GN_INTLINCL=""
+GN_LIBINTL="$LTLIBINTL"
 AC_ARG_ENABLE(framework, [  --enable-framework      enable Mac OS X framework build helpers],enable_framework_build=$enableval)
 AM_CONDITIONAL(WANT_FRAMEWORK, test x$enable_framework_build = xyes)
+if test x$enable_framework_build = xyes
+then
+  AC_DEFINE([FRAMEWORK_BUILD], 1, [Build a Mac OS X Framework])
+  GN_INTLINCL='-I$(top_srcdir)/src/intlemu'
+  GN_LIBINTL='$(top_builddir)/src/intlemu/libintlemu.la -framework CoreFoundation'
+  AC_LIB_APPENDTOVAR([CPPFLAGS], [$GN_INTLINCL]) 
+fi
 
 GN_LIB_LDFLAGS="-export-dynamic -no-undefined"
 GN_PLUGIN_LDFLAGS="-export-dynamic -avoid-version -module -no-undefined"
@@ -952,6 +961,8 @@ then
 fi
 AC_SUBST(GN_LIB_LDFLAGS)
 AC_SUBST(GN_PLUGIN_LDFLAGS)
+AC_SUBST(GN_INTLINCL)
+AC_SUBST(GN_LIBINTL)
 
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
@@ -982,6 +993,7 @@ doc/Makefile
 doc/man/Makefile
 src/Makefile
 src/include/Makefile
+src/intlemu/Makefile
 src/applications/Makefile
 src/applications/advertising/Makefile
 src/applications/bootstrap_http/Makefile

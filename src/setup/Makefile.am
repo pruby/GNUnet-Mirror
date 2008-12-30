@@ -41,7 +41,7 @@ gnunet_setup_SOURCES = \
 gnunet_setup_LDADD = \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL)
+ $(GN_LIBINTL)
 
 gnunet_win_tool_SOURCE = \
  gnunet-win-tool.c

@@ -23,7 +23,7 @@ gnunet_stats_SOURCES = \
 gnunet_stats_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 libgnunetstats_api_la_SOURCES = \
   clientapi.c 
@@ -31,7 +31,7 @@ libgnunetstats_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetstats_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL) 
+  $(GN_LIBINTL) 
 
 libgnunetmodule_stats_la_SOURCES = \
   statistics.c \
@@ -40,5 +40,5 @@ libgnunetmodule_stats_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_stats_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 

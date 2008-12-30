@@ -17,7 +17,7 @@ gnunet_template_SOURCES = \
   gnunet-template.c 	
 gnunet_template_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 
 libgnunetmodule_template_la_SOURCES = \
@@ -26,4 +26,4 @@ libgnunetmodule_template_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_template_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)

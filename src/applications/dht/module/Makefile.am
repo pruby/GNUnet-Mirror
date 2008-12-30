@@ -19,4 +19,4 @@ libgnunetmodule_dht_la_LDFLAGS = \
 libgnunetmodule_dht_la_LIBADD = -lm \
   $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)

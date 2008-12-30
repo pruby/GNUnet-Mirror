@@ -16,7 +16,7 @@ libgnunetchat_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetchat_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 check_PROGRAMS = \
   loopback_test

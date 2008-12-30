@@ -37,5 +37,5 @@ libgnunetsetup_gtk_la_LIBADD = \
   -lgthread-2.0 \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
- $(LTLIBINTL)
+ $(GN_LIBINTL)
 

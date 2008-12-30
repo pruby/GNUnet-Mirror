@@ -32,7 +32,7 @@ libgnunetecrs_la_LIBADD = \
   $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
   $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL) 
+  $(GN_LIBINTL) 
 
 
 check_PROGRAMS = \

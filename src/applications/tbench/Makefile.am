@@ -17,7 +17,7 @@ gnunet_tbench_SOURCES = \
   tbench.h
 gnunet_tbench_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 
 libgnunetmodule_tbench_la_SOURCES = \
@@ -27,7 +27,7 @@ libgnunetmodule_tbench_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_tbench_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 
 if HAVE_MHD

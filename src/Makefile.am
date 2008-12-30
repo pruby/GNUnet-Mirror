@@ -1,4 +1,8 @@
-SUBDIRS = include util libs setup server transports applications
+if WANT_FRAMEWORK
+  INTLEMU_SUBDIRS = intlemu
+endif
+
+SUBDIRS = include $(INTLEMU_SUBDIRS) util libs setup server transports applications
 
 if WANT_FRAMEWORK
 lib_LTLIBRARIES = libgnunet.la

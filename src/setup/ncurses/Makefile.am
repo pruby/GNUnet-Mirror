@@ -30,5 +30,5 @@ libgnunetsetup_curses_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
  -lncursesw $(DIALOG_LIBS) -lm \
- $(LTLIBINTL)
+ $(GN_LIBINTL)
 

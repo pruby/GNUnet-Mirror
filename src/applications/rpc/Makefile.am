@@ -18,7 +18,7 @@ libgnunetmodule_rpc_la_LDFLAGS = \
 libgnunetmodule_rpc_la_LIBADD = \
   $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
 libgnunetrpc_util_la_SOURCES = \
   parameters.c 

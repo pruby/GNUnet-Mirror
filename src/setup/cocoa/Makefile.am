@@ -24,5 +24,5 @@ libgnunetsetup_cocoa_la_LDFLAGS = \
 libgnunetsetup_cocoa_la_LIBADD = \
   $(top_builddir)/src/setup/lib/libgnunetsetup.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 

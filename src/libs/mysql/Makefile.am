@@ -21,5 +21,5 @@ libgnunetmysql_la_LDFLAGS = \
 libgnunetmysql_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lmysqlclient $(ZLIB_LNK) \
-  $(LTLIBINTL)
+  $(GN_LIBINTL)
 
