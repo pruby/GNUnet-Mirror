@@ -393,15 +393,10 @@ static void
 showErr (const char *prefix, const char *error)
 {
   GtkWidget *dialog;
-  char *err;
-
-  err = GNUNET_malloc (strlen (prefix) + strlen (error) + 2);
-  sprintf (err, "%s %s", prefix, error);
 
   dialog = gtk_message_dialog_new (NULL,
                                    GTK_DIALOG_MODAL,
-                                   GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, err);
-  GNUNET_free (err);
+                                   GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s %s", prefix, error);
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
 }
