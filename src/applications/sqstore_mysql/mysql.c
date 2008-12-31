@@ -213,10 +213,10 @@ static struct GNUNET_MysqlStatementHandle *update_entry;
                                "ORDER BY prio ASC,vkey ASC LIMIT 1"
 
 #define SELECT_IT_NON_ANONYMOUS "(SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX(prio) WHERE (prio = ? AND vkey < ?)"\
-                                " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,vkey DESC LIMIT 1) "\
+                                " AND anonLevel=0 ORDER BY prio DESC,vkey DESC LIMIT 1) "\
                                 "UNION "\
                                 "(SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX(prio) WHERE (prio < ? AND vkey != ?)"\
-                                " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,vkey DESC LIMIT 1) "\
+                                " AND anonLevel=0 ORDER BY prio DESC,vkey DESC LIMIT 1) "\
                                 "ORDER BY prio DESC,vkey DESC LIMIT 1"
 
 #define SELECT_IT_EXPIRATION_TIME "(SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX(expire) WHERE (expire = ? AND vkey > ?) "\
