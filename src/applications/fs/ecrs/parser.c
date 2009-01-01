@@ -136,7 +136,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
     {
       type--;
       typename = EXTRACTOR_getKeywordTypeAsString (type);
-      typename_i18n = dgettext ("libextractor", typename);
+      typename_i18n = dgettext (LIBEXTRACTOR_GETTEXT_DOMAIN, typename);
       if ((strlen (tmp) >= strlen (typename) + 1) &&
           (tmp[strlen (typename)] == ':') &&
           (0 == strncmp (typename, tmp, strlen (typename))))

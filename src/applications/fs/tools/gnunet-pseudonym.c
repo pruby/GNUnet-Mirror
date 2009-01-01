@@ -114,7 +114,7 @@ static int
 itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
 {
   printf ("\t%20s: %s\n",
-          dgettext ("libextractor",
+          dgettext (LIBEXTRACTOR_GETTEXT_DOMAIN,
                     EXTRACTOR_getKeywordTypeAsString (type)), data);
   return GNUNET_OK;
 }

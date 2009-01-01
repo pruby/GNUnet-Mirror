@@ -45,7 +45,7 @@ static int
 printStatistics (const char *name, unsigned long long value, void *cls)
 {
   FILE *stream = cls;
-  FPRINTF (stream, "%-60s: %16llu\n", dgettext ("GNUnet", name), value);
+  FPRINTF (stream, "%-60s: %16llu\n", _(name), value);
   return GNUNET_OK;
 }
 

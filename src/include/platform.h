@@ -171,9 +171,11 @@
  * GNU gettext support macro.
  */
 #define _(String) dgettext("GNUnet",String)
+#define LIBEXTRACTOR_GETTEXT_DOMAIN "libextractor"
 #else
 #include "libintlemu.h"
 #define _(String) dgettext("org.gnunet.GNUnet",String)
+#define LIBEXTRACTOR_GETTEXT_DOMAIN "org.gnunet.libextractor"
 #endif
 
 #ifdef CYGWIN

@@ -140,9 +140,10 @@ listKeywords (void *cls, const char *fullName)
       fn = fullName;
       while (NULL != strstr (fn, DIR_SEPARATOR_STR))
         fn = 1 + strstr (fn, DIR_SEPARATOR_STR);
-      printf ("%s - %s\n", dgettext ("libextractor", "filename"), fn);
       printf ("%s - %s\n",
-              dgettext ("libextractor", "mimetype"),
+              dgettext (LIBEXTRACTOR_GETTEXT_DOMAIN, "filename"), fn);
+      printf ("%s - %s\n",
+              dgettext (LIBEXTRACTOR_GETTEXT_DOMAIN, "mimetype"),
               "application/gnunet-directory");
       GNUNET_disk_directory_scan (NULL, fullName, &listKeywords, cls);
     }
