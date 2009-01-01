@@ -60,6 +60,8 @@ char * intlemu_bgettext (CFBundleRef bundle, const char *msgid)
 
 	if (msgid == NULL)
 		return NULL;
+	if (bundle == NULL)
+		return msgid;
 
 	key = CFStringCreateWithBytes(
 		kCFAllocatorDefault, 
