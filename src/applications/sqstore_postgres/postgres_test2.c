@@ -73,7 +73,7 @@
  * at 90% wait, 10% CPU).  This is with MySQL 5.0.
  *
  */
-#define MAX_SIZE 1024LL * 1024 * 16 * 10
+#define MAX_SIZE 1024LL * 1024 * 16
 
 /**
  * Report progress outside of major reports? Should probably be GNUNET_YES if
