@@ -150,7 +150,7 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i, int k)
                    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
 #if RANDOMIZE
   gcry_randomize (&value[1], size - sizeof (GNUNET_DatastoreValue),
-		  GCRY_WEAK_RANDOM);
+                  GCRY_WEAK_RANDOM);
 #else
   memset (&value[1], i, size - sizeof (GNUNET_DatastoreValue));
   if (i > 255)
@@ -206,9 +206,9 @@ test (GNUNET_SQstore_ServiceAPI * api)
   int i;
   int j;
   unsigned long long size;
-  PGresult * res;
-  PGconn * dbh = PQconnectdb("dbname=gnunetcheck");
- 
+  PGresult *res;
+  PGconn *dbh = PQconnectdb ("dbname=gnunetcheck");
+
   for (i = 0; i < ITERATIONS; i++)
     {
 #if REPORT_ID
@@ -228,26 +228,20 @@ test (GNUNET_SQstore_ServiceAPI * api)
       else
         api->iterateExpirationTime (0, &iterateDelete, api);
       size = 0;
-      res = PQexec (dbh, "SELECT pg_database_size('gnunetcheck')");      
-      if (PQresultStatus (res) != PGRES_TUPLES_OK)       
-	{
-	  fprintf(stderr,
-		  "Failed with error: %s", 
-		  PQerrorMessage(dbh));
-	  PQclear(res);
-	  abort();
-	}
-      ASSERT (1 == 
-	      sscanf(PQgetvalue(res, 0, 0),
-		     "%llu",
-		     &size));
+      res = PQexec (dbh, "SELECT pg_database_size('gnunetcheck')");
+      if (PQresultStatus (res) != PGRES_TUPLES_OK)
+        {
+          fprintf (stderr, "Failed with error: %s", PQerrorMessage (dbh));
+          PQclear (res);
+          abort ();
+        }
+      ASSERT (1 == sscanf (PQgetvalue (res, 0, 0), "%llu", &size));
       PQclear (res);
       printf (
 #if REPORT_ID
                "\n"
 #endif
-               "Useful %lluk, API %lluk, disk %lluk (%.2f%%) / %lluk ops / %llu ops/s\n", 
-	       stored_bytes / 1024,     /* used size in k */
+               "Useful %lluk, API %lluk, disk %lluk (%.2f%%) / %lluk ops / %llu ops/s\n", stored_bytes / 1024,  /* used size in k */
                api->getSize () / 1024,  /* API-reported size in k */
                size / 1024,     /* disk size in kb */
                (100.0 * size / stored_bytes) - 100,     /* overhead */

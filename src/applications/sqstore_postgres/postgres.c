@@ -113,28 +113,24 @@ static unsigned int lastSync;
  */
 static int
 check_result (PGresult * ret,
-	      int expected_status,
-	      const char * command,
-	      const char * args,
-	      int line)
+              int expected_status,
+              const char *command, const char *args, int line)
 {
   if (ret == NULL)
-    {      
-      GNUNET_GE_LOG(coreAPI->ectx,
-		    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-		    "Postgres failed to allocate result for `%s:%s' at %d\n",
-		    command,
-		    args,
-		    line);
+    {
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     "Postgres failed to allocate result for `%s:%s' at %d\n",
+                     command, args, line);
       return GNUNET_SYSERR;
     }
-  if (PQresultStatus (ret) != expected_status)       
+  if (PQresultStatus (ret) != expected_status)
     {
-      GNUNET_GE_LOG(coreAPI->ectx, 
-		    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-		    _("`%s:%s' failed at %s:%d with error: %s"), 
-		    command, args, __FILE__, line, PQerrorMessage(dbh));
-      PQclear(ret);
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s:%s' failed at %s:%d with error: %s"),
+                     command, args, __FILE__, line, PQerrorMessage (dbh));
+      PQclear (ret);
       return GNUNET_SYSERR;
     }
   return GNUNET_OK;
@@ -144,13 +140,13 @@ check_result (PGresult * ret,
  * Run simple SQL statement (without results).
  */
 static int
-pq_exec (const char * sql, int line)
+pq_exec (const char *sql, int line)
 {
-  PGresult * ret;
+  PGresult *ret;
   ret = PQexec (dbh, sql);
   if (GNUNET_OK != check_result (ret, PGRES_COMMAND_OK, "PQexec", sql, line))
-    return GNUNET_SYSERR;    
-  PQclear(ret);
+    return GNUNET_SYSERR;
+  PQclear (ret);
   return GNUNET_OK;
 }
 
@@ -158,16 +154,14 @@ pq_exec (const char * sql, int line)
  * Prepare SQL statement.
  */
 static int
-pq_prepare (const char * name,
-	    const char * sql,
-	    int nparms,
-	    int line)
+pq_prepare (const char *name, const char *sql, int nparms, int line)
 {
-  PGresult * ret;
+  PGresult *ret;
   ret = PQprepare (dbh, name, sql, nparms, NULL);
-  if (GNUNET_OK != check_result (ret, PGRES_COMMAND_OK, "PQprepare", sql, line))
-    return GNUNET_SYSERR;   
-  PQclear(ret);
+  if (GNUNET_OK !=
+      check_result (ret, PGRES_COMMAND_OK, "PQprepare", sql, line))
+    return GNUNET_SYSERR;
+  PQclear (ret);
   return GNUNET_OK;
 }
 
@@ -178,23 +172,22 @@ pq_prepare (const char * name,
 static int
 init_connection ()
 {
-  char * conninfo;
-  PGresult * ret;
+  char *conninfo;
+  PGresult *ret;
 
   /* Open database and precompile statements */
   conninfo = NULL;
   GNUNET_GC_get_configuration_value_string (coreAPI->cfg,
-					    "POSTGRES", "CONFIG", 
-					    "connect_timeout=10",
-					    &conninfo);
-  dbh = PQconnectdb(conninfo);
+                                            "POSTGRES", "CONFIG",
+                                            "connect_timeout=10", &conninfo);
+  dbh = PQconnectdb (conninfo);
   GNUNET_free (conninfo);
   if (dbh == NULL)
     {
       /* FIXME: warn about out-of-memory? */
       return GNUNET_SYSERR;
     }
-  if (PQstatus(dbh) != CONNECTION_OK)
+  if (PQstatus (dbh) != CONNECTION_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
@@ -205,123 +198,124 @@ init_connection ()
       return GNUNET_SYSERR;
     }
 
-  ret = PQexec (dbh, 
-		"CREATE TABLE gn080 ("
-		"  size INTEGER NOT NULL DEFAULT 0,"
-		"  type INTEGER NOT NULL DEFAULT 0,"
-		"  prio INTEGER NOT NULL DEFAULT 0,"
-		"  anonLevel INTEGER NOT NULL DEFAULT 0,"
-		"  expire BIGINT NOT NULL DEFAULT 0,"
-		"  hash BYTEA NOT NULL DEFAULT '',"
-		"  vhash BYTEA NOT NULL DEFAULT '',"
-		"  value BYTEA NOT NULL DEFAULT '')"
-		"WITH OIDS");
-  if ( (ret == NULL) ||
-       ( (PQresultStatus (ret) != PGRES_COMMAND_OK) &&
-	 (0 != strcmp("42P07", /* duplicate table */
-		      PQresultErrorField (ret, PG_DIAG_SQLSTATE))) ) )
+  ret = PQexec (dbh,
+                "CREATE TABLE gn080 ("
+                "  size INTEGER NOT NULL DEFAULT 0,"
+                "  type INTEGER NOT NULL DEFAULT 0,"
+                "  prio INTEGER NOT NULL DEFAULT 0,"
+                "  anonLevel INTEGER NOT NULL DEFAULT 0,"
+                "  expire BIGINT NOT NULL DEFAULT 0,"
+                "  hash BYTEA NOT NULL DEFAULT '',"
+                "  vhash BYTEA NOT NULL DEFAULT '',"
+                "  value BYTEA NOT NULL DEFAULT '')" "WITH OIDS");
+  if ((ret == NULL) || ((PQresultStatus (ret) != PGRES_COMMAND_OK) && (0 != strcmp ("42P07",    /* duplicate table */
+                                                                                    PQresultErrorField
+                                                                                    (ret,
+                                                                                     PG_DIAG_SQLSTATE)))))
     {
       check_result (ret, PGRES_COMMAND_OK, "CREATE TABLE", "gn080", __LINE__);
       PQfinish (dbh);
       dbh = NULL;
       return GNUNET_SYSERR;
     }
-  if (PQresultStatus (ret) == PGRES_COMMAND_OK) 
+  if (PQresultStatus (ret) == PGRES_COMMAND_OK)
     {
-      if ( (GNUNET_OK != 
-	    pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)", __LINE__)) ||
-	   (GNUNET_OK != 
-	    pq_exec ("CREATE INDEX idx_hash_vhash ON gn080 (hash,vhash)", __LINE__))  ||
-	   (GNUNET_OK !=
-	    pq_exec ("CREATE INDEX idx_prio ON gn080 (prio)", __LINE__)) ||
-	   (GNUNET_OK !=
-	    pq_exec ("CREATE INDEX idx_expire ON gn080 (expire)", __LINE__)) ||
-	   (GNUNET_OK !=
-	    pq_exec ("CREATE INDEX idx_comb3 ON gn080 (prio,anonLevel)", __LINE__)) ||
-	   (GNUNET_OK !=
-	    pq_exec ("CREATE INDEX idx_comb4 ON gn080 (prio,hash,anonLevel)", __LINE__)) ||
-	   (GNUNET_OK !=
-	    pq_exec ("CREATE INDEX idx_comb7 ON gn080 (expire,hash)", __LINE__)) )
-	{
-	  PQclear(ret);
-	  PQfinish (dbh);
-	  dbh = NULL;
-	  return GNUNET_SYSERR;
-	}
+      if ((GNUNET_OK !=
+           pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)", __LINE__)) ||
+          (GNUNET_OK !=
+           pq_exec ("CREATE INDEX idx_hash_vhash ON gn080 (hash,vhash)",
+                    __LINE__))
+          || (GNUNET_OK !=
+              pq_exec ("CREATE INDEX idx_prio ON gn080 (prio)", __LINE__))
+          || (GNUNET_OK !=
+              pq_exec ("CREATE INDEX idx_expire ON gn080 (expire)", __LINE__))
+          || (GNUNET_OK !=
+              pq_exec ("CREATE INDEX idx_comb3 ON gn080 (prio,anonLevel)",
+                       __LINE__))
+          || (GNUNET_OK !=
+              pq_exec
+              ("CREATE INDEX idx_comb4 ON gn080 (prio,hash,anonLevel)",
+               __LINE__))
+          || (GNUNET_OK !=
+              pq_exec ("CREATE INDEX idx_comb7 ON gn080 (expire,hash)",
+                       __LINE__)))
+        {
+          PQclear (ret);
+          PQfinish (dbh);
+          dbh = NULL;
+          return GNUNET_SYSERR;
+        }
     }
-  PQclear(ret);
-  if ( (GNUNET_OK !=
-	pq_prepare("getvt",
-		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-		   "WHERE hash=$1 AND vhash=$2 AND type=$3 "
-		   "AND oid >= $4 ORDER BY oid ASC LIMIT 1 OFFSET $5",
-		   5,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("gett",
-		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-		   "WHERE hash=$1 AND type=$2"
-		   "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
-		   4,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("getv",
-		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-		   "WHERE hash=$1 AND vhash=$2"
-		   "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
-		   4,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("get",
-		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
-		   "WHERE hash=$1"
-		   "AND oid >= $2 ORDER BY oid ASC LIMIT 1 OFFSET $3",
-		   3,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("put",
-		   "INSERT INTO gn080 (size, type, prio, anonLevel, expire, hash, vhash, value) "
-		   "VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-		   8,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("update", 
+  PQclear (ret);
+  if ((GNUNET_OK !=
+       pq_prepare ("getvt",
+                   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+                   "WHERE hash=$1 AND vhash=$2 AND type=$3 "
+                   "AND oid >= $4 ORDER BY oid ASC LIMIT 1 OFFSET $5",
+                   5,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("gett",
+                   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+                   "WHERE hash=$1 AND type=$2"
+                   "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
+                   4,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("getv",
+                   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+                   "WHERE hash=$1 AND vhash=$2"
+                   "AND oid >= $3 ORDER BY oid ASC LIMIT 1 OFFSET $4",
+                   4,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("get",
+                   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
+                   "WHERE hash=$1"
+                   "AND oid >= $2 ORDER BY oid ASC LIMIT 1 OFFSET $3",
+                   3,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("put",
+                   "INSERT INTO gn080 (size, type, prio, anonLevel, expire, hash, vhash, value) "
+                   "VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+                   8,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("update",
                    "UPDATE gn080 SET prio = prio + $1, expire = CASE WHEN expire < $2 THEN $2 ELSE expire END "
-		   "WHERE oid = $3",
-		   3,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("select_low_priority", 
+                   "WHERE oid = $3",
+                   3,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("select_low_priority",
                    SELECT_IT_LOW_PRIORITY,
-		   2,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("select_non_anonymous", 
+                   2,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("select_non_anonymous",
                    SELECT_IT_NON_ANONYMOUS,
-		   2,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("select_expiration_time", 
+                   2,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("select_expiration_time",
                    SELECT_IT_EXPIRATION_TIME,
-		   2,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("select_migration_order", 
+                   2,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("select_migration_order",
                    SELECT_IT_MIGRATION_ORDER,
-		   3,
-		   __LINE__)) ||
-       (GNUNET_OK !=
-	pq_prepare("delrow",
-		   "DELETE FROM gn080 "
-		   "WHERE oid=$1",
-		   1,
-		   __LINE__)) )
+                   3,
+                   __LINE__)) ||
+      (GNUNET_OK !=
+       pq_prepare ("delrow",
+                   "DELETE FROM gn080 " "WHERE oid=$1", 1, __LINE__)))
     {
       PQfinish (dbh);
       dbh = NULL;
       return GNUNET_SYSERR;
     }
-  
+
   return GNUNET_OK;
 }
 
@@ -351,7 +345,7 @@ getSize ()
   GNUNET_mutex_lock (lock);
   ret = payload;
   if (stats)
-    stats->set (stat_size, ret);    
+    stats->set (stat_size, ret);
   GNUNET_mutex_unlock (lock);
   return (unsigned long long) (ret * 1.00);
   /* benchmarking shows XX% overhead */
@@ -387,20 +381,18 @@ getStat (const char *key)
 static int
 delete_by_rowid (unsigned int rowid)
 {
-  const char * paramValues[] = { (const char* ) &rowid };
-  int paramLengths[] = { sizeof(rowid) };
-  const int paramFormats[] = {1};
-  PGresult * ret;
+  const char *paramValues[] = { (const char *) &rowid };
+  int paramLengths[] = { sizeof (rowid) };
+  const int paramFormats[] = { 1 };
+  PGresult *ret;
 
   ret = PQexecPrepared (dbh,
-			"delrow",
-			1,
-			paramValues,
-			paramLengths,
-			paramFormats,
-			1);
-  if (GNUNET_OK != check_result (ret, PGRES_COMMAND_OK, "PQexecPrepared", "delrow", __LINE__))
-    {      
+                        "delrow",
+                        1, paramValues, paramLengths, paramFormats, 1);
+  if (GNUNET_OK !=
+      check_result (ret, PGRES_COMMAND_OK, "PQexecPrepared", "delrow",
+                    __LINE__))
+    {
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -413,32 +405,30 @@ delete_by_rowid (unsigned int rowid)
  * assemble it into a GNUNET_DatastoreValue representation.
  */
 static GNUNET_DatastoreValue *
-assembleDatum (PGresult * res,
-               GNUNET_HashCode * key,
-	       unsigned int * rowid)
+assembleDatum (PGresult * res, GNUNET_HashCode * key, unsigned int *rowid)
 {
   GNUNET_DatastoreValue *value;
   unsigned int size;
-  
+
   if (0 == PQntuples (res))
-    return NULL; /* no result */    
-  if ( (1 != PQntuples (res)) ||
-       (8 != PQnfields (res)) ||
-       (sizeof(unsigned int) != PQfsize (res, 0)) ||
-       (sizeof(unsigned int) != PQfsize (res, 7)) )
+    return NULL;                /* no result */
+  if ((1 != PQntuples (res)) ||
+      (8 != PQnfields (res)) ||
+      (sizeof (unsigned int) != PQfsize (res, 0)) ||
+      (sizeof (unsigned int) != PQfsize (res, 7)))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return NULL;
     }
-  *rowid = * (unsigned int*) PQgetvalue (res, 0, 7);
-  size   = ntohl(* (unsigned int*) PQgetvalue (res, 0, 0));
-  if ( (size < sizeof (GNUNET_DatastoreValue)) ||
-       (sizeof(unsigned int) != PQfsize (res, 1)) ||
-       (sizeof(unsigned int) != PQfsize (res, 2)) ||
-       (sizeof(unsigned int) != PQfsize (res, 3)) ||
-       (sizeof(unsigned long long) != PQfsize (res, 4)) ||
-       (sizeof(GNUNET_HashCode) != PQgetlength (res, 0, 5)) ||
-       (size - sizeof (GNUNET_DatastoreValue) != PQgetlength (res, 0, 6) ) )
+  *rowid = *(unsigned int *) PQgetvalue (res, 0, 7);
+  size = ntohl (*(unsigned int *) PQgetvalue (res, 0, 0));
+  if ((size < sizeof (GNUNET_DatastoreValue)) ||
+      (sizeof (unsigned int) != PQfsize (res, 1)) ||
+      (sizeof (unsigned int) != PQfsize (res, 2)) ||
+      (sizeof (unsigned int) != PQfsize (res, 3)) ||
+      (sizeof (unsigned long long) != PQfsize (res, 4)) ||
+      (sizeof (GNUNET_HashCode) != PQgetlength (res, 0, 5)) ||
+      (size - sizeof (GNUNET_DatastoreValue) != PQgetlength (res, 0, 6)))
     {
       GNUNET_GE_BREAK (NULL, 0);
       delete_by_rowid (*rowid);
@@ -446,12 +436,13 @@ assembleDatum (PGresult * res,
     }
   value = GNUNET_malloc (size);
   value->size = htonl (size);
-  value->type = * (unsigned int*) PQgetvalue (res, 0, 1);
-  value->priority = * (unsigned int*) PQgetvalue (res, 0, 2);
-  value->anonymity_level = * (unsigned int*) PQgetvalue (res, 0, 3);
-  value->expiration_time = * (unsigned long long*) PQgetvalue (res, 0, 4);
-  memcpy (key,  PQgetvalue (res, 0, 5), sizeof (GNUNET_HashCode));
-  memcpy (&value[1], PQgetvalue (res, 0, 6), size - sizeof(GNUNET_DatastoreValue));
+  value->type = *(unsigned int *) PQgetvalue (res, 0, 1);
+  value->priority = *(unsigned int *) PQgetvalue (res, 0, 2);
+  value->anonymity_level = *(unsigned int *) PQgetvalue (res, 0, 3);
+  value->expiration_time = *(unsigned long long *) PQgetvalue (res, 0, 4);
+  memcpy (key, PQgetvalue (res, 0, 5), sizeof (GNUNET_HashCode));
+  memcpy (&value[1], PQgetvalue (res, 0, 6),
+          size - sizeof (GNUNET_DatastoreValue));
   return value;
 }
 
@@ -469,25 +460,24 @@ assembleDatum (PGresult * res,
  */
 static int
 postgres_iterate (unsigned int type,
-		  int is_asc,
-		  unsigned int iter_select,
-		  GNUNET_DatastoreValueIterator dviter, 
-		  void *closure)
+                  int is_asc,
+                  unsigned int iter_select,
+                  GNUNET_DatastoreValueIterator dviter, void *closure)
 {
   GNUNET_DatastoreValue *datum;
   int count;
-  const char * pname;
+  const char *pname;
   int pcount;
   int iret;
-  PGresult * ret;
+  PGresult *ret;
   unsigned int last_prio;
   unsigned long long last_expire;
   unsigned int last_oid;
   GNUNET_CronTime now;
   GNUNET_HashCode key;
-  const char * paramValues[3];
+  const char *paramValues[3];
   int paramLengths[3];
-  const int paramFormats[] = {1,1,1};
+  const int paramFormats[] = { 1, 1, 1 };
 
   if (is_asc)
     {
@@ -497,8 +487,8 @@ postgres_iterate (unsigned int type,
     }
   else
     {
-      last_prio   = 0x7FFFFFFFL;
-      last_oid    = 0xFFFFFFFF;
+      last_prio = 0x7FFFFFFFL;
+      last_oid = 0xFFFFFFFF;
       last_expire = 0x7FFFFFFFFFFFFFFFLL;
     }
   switch (iter_select)
@@ -506,86 +496,81 @@ postgres_iterate (unsigned int type,
     case 0:
       pname = "select_low_priority";
       pcount = 2;
-      paramValues[0] = (const char*) &last_prio;
-      paramValues[1] = (const char*) &last_oid;
-      paramLengths[0] = sizeof(last_prio);
-      paramLengths[1] = sizeof(last_oid);
+      paramValues[0] = (const char *) &last_prio;
+      paramValues[1] = (const char *) &last_oid;
+      paramLengths[0] = sizeof (last_prio);
+      paramLengths[1] = sizeof (last_oid);
       break;
     case 1:
       pname = "select_non_anonymous";
       pcount = 2;
-      paramValues[0] = (const char*) &last_prio;
-      paramValues[1] = (const char*) &last_oid;
-      paramLengths[0] = sizeof(last_prio);
-      paramLengths[1] = sizeof(last_oid);
+      paramValues[0] = (const char *) &last_prio;
+      paramValues[1] = (const char *) &last_oid;
+      paramLengths[0] = sizeof (last_prio);
+      paramLengths[1] = sizeof (last_oid);
       break;
     case 2:
       pname = "select_expiration_time";
       pcount = 2;
-      paramValues[0] = (const char*) &last_expire;
-      paramValues[1] = (const char*) &last_oid;
-      paramLengths[0] = sizeof(last_expire);
-      paramLengths[1] = sizeof(last_oid);
+      paramValues[0] = (const char *) &last_expire;
+      paramValues[1] = (const char *) &last_oid;
+      paramLengths[0] = sizeof (last_expire);
+      paramLengths[1] = sizeof (last_oid);
       break;
     case 3:
       pname = "select_migration_order";
       pcount = 3;
-      paramValues[0] = (const char*) &last_expire;
-      paramValues[1] = (const char*) &last_oid;
-      paramValues[2] = (const char*) &now;
-      paramLengths[0] = sizeof(last_expire);
-      paramLengths[1] = sizeof(last_oid);
-      paramLengths[2] = sizeof(now);
+      paramValues[0] = (const char *) &last_expire;
+      paramValues[1] = (const char *) &last_oid;
+      paramValues[2] = (const char *) &now;
+      paramLengths[0] = sizeof (last_expire);
+      paramLengths[1] = sizeof (last_oid);
+      paramLengths[2] = sizeof (now);
       break;
     default:
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
-    }  
-  now = GNUNET_htonll(GNUNET_get_time ());
+    }
+  now = GNUNET_htonll (GNUNET_get_time ());
   count = 0;
   GNUNET_mutex_lock (lock);
   while (1)
     {
-      ret = PQexecPrepared(dbh,
-			   pname,
-			   pcount,
-			   paramValues,
-			   paramLengths,
-			   paramFormats,
-			   1);
-      if (GNUNET_OK != check_result (ret, 
-				     PGRES_TUPLES_OK, 
-				     "PQexecPrepared",
-				     pname,
-				     __LINE__))
-	{      
-	  GNUNET_mutex_unlock (lock);
-	  return GNUNET_SYSERR;
-	}
-      datum = assembleDatum (ret, &key, &last_oid);      
+      ret = PQexecPrepared (dbh,
+                            pname,
+                            pcount,
+                            paramValues, paramLengths, paramFormats, 1);
+      if (GNUNET_OK != check_result (ret,
+                                     PGRES_TUPLES_OK,
+                                     "PQexecPrepared", pname, __LINE__))
+        {
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_SYSERR;
+        }
+      datum = assembleDatum (ret, &key, &last_oid);
       if (datum == NULL)
-	break; /* iteration complete */
+        break;                  /* iteration complete */
       last_prio = datum->priority;
       last_expire = datum->expiration_time;
       count++;
       if (dviter != NULL)
         {
-	  GNUNET_mutex_unlock (lock);
+          GNUNET_mutex_unlock (lock);
           iret = dviter (&key, datum, closure, last_oid);
-	  GNUNET_mutex_lock (lock);
+          GNUNET_mutex_lock (lock);
           if (iret == GNUNET_SYSERR)
             {
               GNUNET_free (datum);
               break;
             }
           if (iret == GNUNET_NO)
-	    {
-	      payload -= getContentDatastoreSize (datum);
-	      lastSync++;  
-	      delete_by_rowid(last_oid);
-	    }
-	}
-      GNUNET_free (datum);      
+            {
+              payload -= getContentDatastoreSize (datum);
+              lastSync++;
+              delete_by_rowid (last_oid);
+            }
+        }
+      GNUNET_free (datum);
     }
   GNUNET_mutex_unlock (lock);
   return count;
@@ -690,136 +675,121 @@ get (const GNUNET_HashCode * key,
      unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
 {
   unsigned long long total;
-  const char * paramValues[5];
+  const char *paramValues[5];
   int paramLengths[5];
-  const int paramFormats[] = {1,1,1,1,1};
+  const int paramFormats[] = { 1, 1, 1, 1, 1 };
   unsigned int last_rowid;
   unsigned int rowid;
   int nparams;
   int iret;
   unsigned int n_type;
-  const char * pname;
+  const char *pname;
   long long count;
   long long off;
   long long limit_off;
-  PGresult * ret;
+  PGresult *ret;
   GNUNET_DatastoreValue *datum;
   GNUNET_HashCode rkey;
 
   if (key == NULL)
     return iterateLowPriority (type, iter, closure);
   GNUNET_mutex_lock (lock);
-  paramValues[0] = (const char*) key;
-  paramLengths[0] = sizeof(GNUNET_HashCode);
+  paramValues[0] = (const char *) key;
+  paramLengths[0] = sizeof (GNUNET_HashCode);
   if (type != 0)
-    {      
-      n_type = htonl(type);
+    {
+      n_type = htonl (type);
       if (vhash != NULL)
-	{
-	  paramValues[1] = (const char*) vhash;
-	  paramLengths[1] = sizeof(GNUNET_HashCode);
-	  paramValues[2] = (const char*) &n_type;
-	  paramLengths[2] = sizeof(unsigned int);
-	  paramValues[3] = (const char*) &last_rowid;
-	  paramLengths[3] = sizeof(last_rowid);
-	  paramValues[4] = (const char*) &limit_off;
-	  paramLengths[4] = sizeof(limit_off);
-	  nparams = 5;
-	  pname = "getvt";
-	  ret = PQexecParams(dbh,
-			     "SELECT count(*) FROM gn080 WHERE hash=$1 AND vhash=$2 AND type=$3",
-			     3,
-			     NULL,
-			     paramValues,
-			     paramLengths,
-			     paramFormats,
-			     1);
-	}
+        {
+          paramValues[1] = (const char *) vhash;
+          paramLengths[1] = sizeof (GNUNET_HashCode);
+          paramValues[2] = (const char *) &n_type;
+          paramLengths[2] = sizeof (unsigned int);
+          paramValues[3] = (const char *) &last_rowid;
+          paramLengths[3] = sizeof (last_rowid);
+          paramValues[4] = (const char *) &limit_off;
+          paramLengths[4] = sizeof (limit_off);
+          nparams = 5;
+          pname = "getvt";
+          ret = PQexecParams (dbh,
+                              "SELECT count(*) FROM gn080 WHERE hash=$1 AND vhash=$2 AND type=$3",
+                              3,
+                              NULL,
+                              paramValues, paramLengths, paramFormats, 1);
+        }
       else
-	{
-	  paramValues[1] = (const char*) &n_type;
-	  paramLengths[1] = sizeof(unsigned int);
-	  paramValues[2] = (const char*) &last_rowid;
-	  paramLengths[2] = sizeof(last_rowid);
-	  paramValues[3] = (const char*) &limit_off;
-	  paramLengths[3] = sizeof(limit_off);
-	  nparams = 4;
-	  pname = "gett";
-	  ret = PQexecParams(dbh,
-			     "SELECT count(*) FROM gn080 WHERE hash=$1 AND type=$2",
-			     2,
-			     NULL,
-			     paramValues,
-			     paramLengths,
-			     paramFormats,
-			     1);
-	}
+        {
+          paramValues[1] = (const char *) &n_type;
+          paramLengths[1] = sizeof (unsigned int);
+          paramValues[2] = (const char *) &last_rowid;
+          paramLengths[2] = sizeof (last_rowid);
+          paramValues[3] = (const char *) &limit_off;
+          paramLengths[3] = sizeof (limit_off);
+          nparams = 4;
+          pname = "gett";
+          ret = PQexecParams (dbh,
+                              "SELECT count(*) FROM gn080 WHERE hash=$1 AND type=$2",
+                              2,
+                              NULL,
+                              paramValues, paramLengths, paramFormats, 1);
+        }
     }
   else
     {
-       if (vhash != NULL)
-	{
-	  paramValues[1] = (const char*) vhash;
-	  paramLengths[1] = sizeof(GNUNET_HashCode);
-	  paramValues[2] = (const char*) &last_rowid;
-	  paramLengths[2] = sizeof(last_rowid);
-	  paramValues[3] = (const char*) &limit_off;
-	  paramLengths[3] = sizeof(limit_off);
-	  nparams = 4;
-	  pname = "getv";	  
-	  ret = PQexecParams(dbh,
-			     "SELECT count(*) FROM gn080 WHERE hash=$1 AND vhash=$2",
-			     2,
-			     NULL,
-			     paramValues,
-			     paramLengths,
-			     paramFormats,
-			     1);
-	}
+      if (vhash != NULL)
+        {
+          paramValues[1] = (const char *) vhash;
+          paramLengths[1] = sizeof (GNUNET_HashCode);
+          paramValues[2] = (const char *) &last_rowid;
+          paramLengths[2] = sizeof (last_rowid);
+          paramValues[3] = (const char *) &limit_off;
+          paramLengths[3] = sizeof (limit_off);
+          nparams = 4;
+          pname = "getv";
+          ret = PQexecParams (dbh,
+                              "SELECT count(*) FROM gn080 WHERE hash=$1 AND vhash=$2",
+                              2,
+                              NULL,
+                              paramValues, paramLengths, paramFormats, 1);
+        }
       else
-	{
-	  paramValues[1] = (const char*) &last_rowid;
-	  paramLengths[1] = sizeof(last_rowid);
-	  paramValues[2] = (const char*) &limit_off;
-	  paramLengths[2] = sizeof(limit_off);
-	  nparams = 3;
-	  pname = "get";	  
-	  ret = PQexecParams(dbh,
-			     "SELECT count(*) FROM gn080 WHERE hash=$1",
-			     1,
-			     NULL,
-			     paramValues,
-			     paramLengths,
-			     paramFormats,
-			     1);
-	}   
+        {
+          paramValues[1] = (const char *) &last_rowid;
+          paramLengths[1] = sizeof (last_rowid);
+          paramValues[2] = (const char *) &limit_off;
+          paramLengths[2] = sizeof (limit_off);
+          nparams = 3;
+          pname = "get";
+          ret = PQexecParams (dbh,
+                              "SELECT count(*) FROM gn080 WHERE hash=$1",
+                              1,
+                              NULL,
+                              paramValues, paramLengths, paramFormats, 1);
+        }
     }
-   if (GNUNET_OK != check_result (ret, 
-				  PGRES_TUPLES_OK,
-				  "PQexecParams",
-				  pname,
-				  __LINE__))
-    {      
+  if (GNUNET_OK != check_result (ret,
+                                 PGRES_TUPLES_OK,
+                                 "PQexecParams", pname, __LINE__))
+    {
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-   if ( (PQntuples (ret) != 1) ||
-	(PQnfields (ret) != 1) ||
-       (PQgetlength (ret, 0, 0) != sizeof(unsigned long long) ) )
+  if ((PQntuples (ret) != 1) ||
+      (PQnfields (ret) != 1) ||
+      (PQgetlength (ret, 0, 0) != sizeof (unsigned long long)))
     {
       GNUNET_GE_BREAK (NULL, 0);
-      PQclear(ret);
+      PQclear (ret);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-   total = GNUNET_ntohll(*(const unsigned long long*) PQgetvalue(ret, 0, 0));
-  PQclear(ret);
-  if ( (iter == NULL) || (total == 0) )
+  total =
+    GNUNET_ntohll (*(const unsigned long long *) PQgetvalue (ret, 0, 0));
+  PQclear (ret);
+  if ((iter == NULL) || (total == 0))
     {
       GNUNET_mutex_unlock (lock);
-      fprintf(stderr,
-	      "Total is %llu\n", 
-	      total);
+      fprintf (stderr, "Total is %llu\n", total);
       return total;
     }
 
@@ -834,54 +804,49 @@ get (const GNUNET_HashCode * key,
         limit_off = 0;
 
       ret = PQexecPrepared (dbh,
-			    pname,
-			    nparams,
-			    paramValues,
-			    paramLengths,
-			    paramFormats,
-			    1);
+                            pname,
+                            nparams,
+                            paramValues, paramLengths, paramFormats, 1);
       if (GNUNET_OK != check_result (ret,
-				     PGRES_TUPLES_OK,
-				     "PQexecPrepared",
-				     pname,
-				     __LINE__))
-	{      
-	  GNUNET_mutex_unlock (lock);
-	  return GNUNET_SYSERR;
-	}
+                                     PGRES_TUPLES_OK,
+                                     "PQexecPrepared", pname, __LINE__))
+        {
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_SYSERR;
+        }
       datum = assembleDatum (ret, &rkey, &rowid);
       last_rowid = rowid + 1;
       PQclear (ret);
       if (datum == NULL)
-	{
-	  total--;
-	  if (count == total)
-	    break;
-	  continue;
-	}
-      if ( (key != NULL) &&
-	   (0 != memcmp (&rkey, key, sizeof (GNUNET_HashCode))))
-	{
-	  GNUNET_GE_BREAK (NULL, 0);
-	  GNUNET_free (datum);
-	  continue;
-	}
+        {
+          total--;
+          if (count == total)
+            break;
+          continue;
+        }
+      if ((key != NULL) &&
+          (0 != memcmp (&rkey, key, sizeof (GNUNET_HashCode))))
+        {
+          GNUNET_GE_BREAK (NULL, 0);
+          GNUNET_free (datum);
+          continue;
+        }
       GNUNET_mutex_unlock (lock);
       count++;
       iret = iter (&rkey, datum, closure, rowid);
       GNUNET_mutex_lock (lock);
       if (iret == GNUNET_SYSERR)
-	{
-	  GNUNET_free (datum);
-	  break;
-	}
+        {
+          GNUNET_free (datum);
+          break;
+        }
       if (iret == GNUNET_NO)
-	{
-	  payload -= getContentDatastoreSize (datum);
-	  lastSync++;
-	  delete_by_rowid (rowid);
-	}
-      GNUNET_free (datum);    
+        {
+          payload -= getContentDatastoreSize (datum);
+          lastSync++;
+          delete_by_rowid (rowid);
+        }
+      GNUNET_free (datum);
       if (count + off == total)
         last_rowid = 0;         /* back to start */
       if (count == total)
@@ -900,31 +865,30 @@ get (const GNUNET_HashCode * key,
 static int
 put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
 {
-  unsigned int size = ntohl(value->size);
+  unsigned int size = ntohl (value->size);
   GNUNET_HashCode vhash;
-  PGresult * ret;
-  const char * paramValues[] = { 
-    (const char*) &value->size,
-    (const char*) &value->type,
-    (const char*) &value->priority,
-    (const char*) &value->anonymity_level,
-    (const char*) &value->expiration_time,
-    (const char*) key,
-    (const char*) &vhash,
-    (const char*) &value[1]
-  };     
-  int paramLengths[] = 
-    {
-      sizeof(value->size),
-      sizeof(value->type),
-      sizeof(value->priority),
-      sizeof(value->anonymity_level),
-      sizeof(value->expiration_time),
-      sizeof(GNUNET_HashCode),
-      sizeof(GNUNET_HashCode),
-      size - sizeof (GNUNET_DatastoreValue)
-    };
-  const int paramFormats[] = {1,1,1,1,1,1,1,1};
+  PGresult *ret;
+  const char *paramValues[] = {
+    (const char *) &value->size,
+    (const char *) &value->type,
+    (const char *) &value->priority,
+    (const char *) &value->anonymity_level,
+    (const char *) &value->expiration_time,
+    (const char *) key,
+    (const char *) &vhash,
+    (const char *) &value[1]
+  };
+  int paramLengths[] = {
+    sizeof (value->size),
+    sizeof (value->type),
+    sizeof (value->priority),
+    sizeof (value->anonymity_level),
+    sizeof (value->expiration_time),
+    sizeof (GNUNET_HashCode),
+    sizeof (GNUNET_HashCode),
+    size - sizeof (GNUNET_DatastoreValue)
+  };
+  const int paramFormats[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
 
   if (size < sizeof (GNUNET_DatastoreValue))
     {
@@ -936,18 +900,11 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   if (lastSync > 1000)
     syncStats ();
   ret = PQexecPrepared (dbh,
-			"put",
-			8,
-			paramValues,
-			paramLengths,
-			paramFormats,
-			1);
-  if (GNUNET_OK != check_result (ret, 
-				 PGRES_COMMAND_OK, 
-				 "PQexecPrepared",
-				 "put",
-				 __LINE__))
-    {      
+                        "put", 8, paramValues, paramLengths, paramFormats, 1);
+  if (GNUNET_OK != check_result (ret,
+                                 PGRES_COMMAND_OK,
+                                 "PQexecPrepared", "put", __LINE__))
+    {
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -965,37 +922,30 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
 static int
 update (unsigned long long uid, int delta, GNUNET_CronTime expire)
 {
-  unsigned int oid = (unsigned int) uid; /* only 32 bit for postgres */
-  int n_delta = htonl(delta);
-  GNUNET_CronTime n_expire = GNUNET_htonll(expire);
-  PGresult * ret;
-  const char * paramValues[] = { 
-    (const char*) &n_delta,
-    (const char*) &n_expire,
-    (const char*) &oid,
-  };     
-  int paramLengths[] = 
-    {
-      sizeof(n_delta),
-      sizeof(n_expire),
-      sizeof(oid),
-    };
-  const int paramFormats[] = {1,1,1};
+  unsigned int oid = (unsigned int) uid;        /* only 32 bit for postgres */
+  int n_delta = htonl (delta);
+  GNUNET_CronTime n_expire = GNUNET_htonll (expire);
+  PGresult *ret;
+  const char *paramValues[] = {
+    (const char *) &n_delta,
+    (const char *) &n_expire,
+    (const char *) &oid,
+  };
+  int paramLengths[] = {
+    sizeof (n_delta),
+    sizeof (n_expire),
+    sizeof (oid),
+  };
+  const int paramFormats[] = { 1, 1, 1 };
 
   GNUNET_mutex_lock (lock);
   ret = PQexecPrepared (dbh,
-			"update",
-			3,
-			paramValues,
-			paramLengths,
-			paramFormats,
-			1);
+                        "update",
+                        3, paramValues, paramLengths, paramFormats, 1);
   if (GNUNET_OK != check_result (ret,
-				 PGRES_COMMAND_OK, 
-				 "PQexecPrepared",
-				 "update",
-				 __LINE__))
-    {      
+                                 PGRES_COMMAND_OK,
+                                 "PQexecPrepared", "update", __LINE__))
+    {
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -1010,7 +960,7 @@ static void
 postgres_shutdown ()
 {
   if (dbh == NULL)
-    return; /* already down */
+    return;                     /* already down */
 #if DEBUG_POSTGRES
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -1067,7 +1017,8 @@ provide_module_sqstore_postgres (GNUNET_CoreAPIForPlugins * capi)
     {
       stat_size = stats->create (gettext_noop ("# bytes in datastore"));
 #if DEBUG_POSTGRES
-      stat_mem = stats->create (gettext_noop ("# bytes allocated by Postgres"));
+      stat_mem =
+        stats->create (gettext_noop ("# bytes allocated by Postgres"));
 #endif
     }
 
@@ -1112,7 +1063,7 @@ void
 update_module_sqstore_postgres (GNUNET_UpdateAPI * uapi)
 {
   lock = GNUNET_mutex_create (GNUNET_NO);
-  if (GNUNET_OK != init_connection ()) 
+  if (GNUNET_OK != init_connection ())
     {
       GNUNET_mutex_destroy (lock);
       return;

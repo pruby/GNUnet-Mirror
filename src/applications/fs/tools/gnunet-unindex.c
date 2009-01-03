@@ -75,9 +75,9 @@ printstatus (void *cls, const GNUNET_FSUI_Event * event)
                   event->data.UnindexCompleted.total,
                   delta / GNUNET_CRON_SECONDS,
                   (delta ==
-                   0) ? (double) (-1.0) : (double) (event->data.
-                                                    UnindexCompleted.total /
-                                                    1024.0 *
+                   0) ? (double) (-1.0) : (double) (event->
+                                                    data.UnindexCompleted.
+                                                    total / 1024.0 *
                                                     GNUNET_CRON_SECONDS /
                                                     delta));
         }

@@ -69,11 +69,11 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i, int k)
       GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 32 * 1024);
   size = size - (size & 7);     /* always multiple of 8 */
   if (size == 0)
-    size = 8; /* never zero */
+    size = 8;                   /* never zero */
   /* generate random key */
   key.bits[0] = (unsigned int) GNUNET_get_time ();
   GNUNET_hash (&key, sizeof (GNUNET_HashCode), &key);
-  value = GNUNET_malloc (size );
+  value = GNUNET_malloc (size);
   value->size = htonl (size);
   value->type = htonl (i);
   value->priority =

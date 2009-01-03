@@ -21,6 +21,6 @@
 
 #define gettext_noop(s) s
 
-extern char * intlemu_bgettext (CFBundleRef bundle, const char *msgid);
+extern char *intlemu_bgettext (CFBundleRef bundle, const char *msgid);
 
 #endif

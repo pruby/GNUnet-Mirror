@@ -46,30 +46,36 @@ struct P2W;
 }
 
 -(id) init;
--(id) initWithConfig: (struct GNUNET_GC_Configuration *) config setupContext: (struct GNUNET_GNS_Context *) gns errorContext: (struct GNUNET_GE_Context *) ectx maxWidth:(float)
-  maxWidth;
+-(id) initWithConfig:(struct GNUNET_GC_Configuration *)
+     config setupContext:(struct GNUNET_GNS_Context *)
+     gns errorContext:(struct GNUNET_GE_Context *)
+     ectx maxWidth:(float) maxWidth;
 -(void) dealloc;
 -(struct GNUNET_GC_Configuration *) gnunetGCConfiguration;
 -(struct GNUNET_GE_Context *) gnunetGEContext;
 -(void) updateVisibility;
 -(void) linkVisibilityNode:(struct GNUNET_GNS_TreeNode *)
      pos view:(NSView *) w;
--(int) addNodeToTreeWithTabView: (NSTabView *) tabView parent: (GNUNETSetupTreeNode *) parent pos:(struct GNUNET_GNS_TreeNode *)
-  pos;
--(int) addLeafToTreeWithContainer: (PackingBoxContainer *) parent pos:(struct GNUNET_GNS_TreeNode *)
-  pos;
+-(int) addNodeToTreeWithTabView:(NSTabView *)
+     tabView parent:(GNUNETSetupTreeNode *)
+     parent pos:(struct GNUNET_GNS_TreeNode *) pos;
+-(int) addLeafToTreeWithContainer:(PackingBoxContainer *)
+     parent pos:(struct GNUNET_GNS_TreeNode *) pos;
 -(void) repackViewTreeFrom:(NSView *) v;
--(void) alertDidEnd: (NSAlert *) alert returnCode: (int) returnCode contextInfo:(void *)
-  contextInfo;
--(void) tabView: (NSTabView *) tabView didSelectTabViewItem:(NSTabViewItem *)
-  tabViewItem;
+-(void) alertDidEnd:(NSAlert *)
+     alert returnCode:(int)
+     returnCode contextInfo:(void *) contextInfo;
+-(void) tabView:(NSTabView *)
+     tabView didSelectTabViewItem:(NSTabViewItem *) tabViewItem;
 // NSOutlineView data source
 -(int) outlineView:(NSOutlineView *)
      outlineView numberOfChildrenOfItem:(id) item;
 -(BOOL) outlineView:(NSOutlineView *)
      outlineView isItemExpandable:(id) item;
--(id) outlineView: (NSOutlineView *) outlineView child: (int) index ofItem:(id)
-  item;
--(id) outlineView: (NSOutlineView *) outlineView objectValueForTableColumn: (NSTableColumn *) tableColumn byItem:(id)
-  item;
+-(id) outlineView:(NSOutlineView *)
+     outlineView child:(int)
+     index ofItem:(id) item;
+-(id) outlineView:(NSOutlineView *)
+     outlineView objectValueForTableColumn:(NSTableColumn *)
+     tableColumn byItem:(id) item;
 @end
