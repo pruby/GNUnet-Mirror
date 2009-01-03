@@ -126,7 +126,6 @@ check_result (PGresult * ret,
 		    command,
 		    args,
 		    line);
-      /* FIXME: report error! */
       return GNUNET_SYSERR;
     }
   if (PQresultStatus (ret) != expected_status)       
@@ -180,6 +179,7 @@ static int
 init_connection ()
 {
   char * conninfo;
+  PGresult * ret;
 
   /* Open database and precompile statements */
   conninfo = NULL;
@@ -204,40 +204,52 @@ init_connection ()
       dbh = NULL;
       return GNUNET_SYSERR;
     }
-  pq_exec ("DROP TABLE gn080", __LINE__);
-  /* FIXME: this could fail if the table already
-     exists -- add check! */
-  if ( (GNUNET_OK !=
-	pq_exec ("CREATE TABLE gn080 ("
-		 "  size INTEGER NOT NULL DEFAULT 0,"
-		 "  type INTEGER NOT NULL DEFAULT 0,"
-		 "  prio INTEGER NOT NULL DEFAULT 0,"
-		 "  anonLevel INTEGER NOT NULL DEFAULT 0,"
-		 "  expire BIGINT NOT NULL DEFAULT 0,"
-		 "  hash BYTEA NOT NULL DEFAULT '',"
-		 "  vhash BYTEA NOT NULL DEFAULT '',"
-		 "  value BYTEA NOT NULL DEFAULT '')"
-		 "WITH OIDS", __LINE__)) ||
-       (GNUNET_OK != 
-	pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)", __LINE__)) ||
-       (GNUNET_OK != 
-	pq_exec ("CREATE INDEX idx_hash_vhash ON gn080 (hash,vhash)", __LINE__))  ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_prio ON gn080 (prio)", __LINE__)) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_expire ON gn080 (expire)", __LINE__)) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_comb3 ON gn080 (prio,anonLevel)", __LINE__)) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_comb4 ON gn080 (prio,hash,anonLevel)", __LINE__)) ||
-       (GNUNET_OK !=
-	pq_exec ("CREATE INDEX idx_comb7 ON gn080 (expire,hash)", __LINE__)) )
+
+  ret = PQexec (dbh, 
+		"CREATE TABLE gn080 ("
+		"  size INTEGER NOT NULL DEFAULT 0,"
+		"  type INTEGER NOT NULL DEFAULT 0,"
+		"  prio INTEGER NOT NULL DEFAULT 0,"
+		"  anonLevel INTEGER NOT NULL DEFAULT 0,"
+		"  expire BIGINT NOT NULL DEFAULT 0,"
+		"  hash BYTEA NOT NULL DEFAULT '',"
+		"  vhash BYTEA NOT NULL DEFAULT '',"
+		"  value BYTEA NOT NULL DEFAULT '')"
+		"WITH OIDS");
+  if ( (ret == NULL) ||
+       ( (PQresultStatus (ret) != PGRES_COMMAND_OK) &&
+	 (0 != strcmp("42P07", /* duplicate table */
+		      PQresultErrorField (ret, PG_DIAG_SQLSTATE))) ) )
     {
+      check_result (ret, PGRES_COMMAND_OK, "CREATE TABLE", "gn080", __LINE__);
       PQfinish (dbh);
       dbh = NULL;
       return GNUNET_SYSERR;
     }
-
+  if (PQresultStatus (ret) == PGRES_COMMAND_OK) 
+    {
+      if ( (GNUNET_OK != 
+	    pq_exec ("CREATE INDEX idx_hash ON gn080 (hash)", __LINE__)) ||
+	   (GNUNET_OK != 
+	    pq_exec ("CREATE INDEX idx_hash_vhash ON gn080 (hash,vhash)", __LINE__))  ||
+	   (GNUNET_OK !=
+	    pq_exec ("CREATE INDEX idx_prio ON gn080 (prio)", __LINE__)) ||
+	   (GNUNET_OK !=
+	    pq_exec ("CREATE INDEX idx_expire ON gn080 (expire)", __LINE__)) ||
+	   (GNUNET_OK !=
+	    pq_exec ("CREATE INDEX idx_comb3 ON gn080 (prio,anonLevel)", __LINE__)) ||
+	   (GNUNET_OK !=
+	    pq_exec ("CREATE INDEX idx_comb4 ON gn080 (prio,hash,anonLevel)", __LINE__)) ||
+	   (GNUNET_OK !=
+	    pq_exec ("CREATE INDEX idx_comb7 ON gn080 (expire,hash)", __LINE__)) )
+	{
+	  PQclear(ret);
+	  PQfinish (dbh);
+	  dbh = NULL;
+	  return GNUNET_SYSERR;
+	}
+    }
+  PQclear(ret);
   if ( (GNUNET_OK !=
 	pq_prepare("getvt",
 		   "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "

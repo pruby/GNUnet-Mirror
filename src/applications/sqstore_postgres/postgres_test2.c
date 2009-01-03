@@ -32,13 +32,6 @@
  * Priorities and expiration dates are set using a pseudo-random value
  * within a realistic range.
  * <p>
- *
- * Note that the disk overhead calculations are not very sane for
- * MySQL: we take the entire /var/lib/mysql directory (best we can
- * do for ISAM), which may contain other data and which never
- * shrinks.  The scanning of the entire mysql directory during
- * each report is also likely to be the cause of a minor
- * slowdown compared to postgres.<p>
  */
 
 #include "platform.h"
@@ -46,6 +39,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_sqstore_service.h"
 #include "core.h"
+#include <postgresql/libpq-fe.h>
 
 #define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
@@ -79,7 +73,7 @@
  * at 90% wait, 10% CPU).  This is with MySQL 5.0.
  *
  */
-#define MAX_SIZE 1024LL * 1024 * 16
+#define MAX_SIZE 1024LL * 1024 * 16 * 100
 
 /**
  * Report progress outside of major reports? Should probably be GNUNET_YES if
@@ -103,14 +97,6 @@
  * 10 iterations.  Abort with CTRL-C.
  */
 #define ITERATIONS 100
-
-/**
- * Name of the database on disk.
- * You may have to adjust this path and the access
- * permission to the respective directory in order
- * to obtain all of the performance information.
- */
-#define DB_NAME "/tmp/gnunet-postgres-sqstore-test/data/fs/"
 
 static unsigned long long stored_bytes;
 
@@ -200,11 +186,9 @@ test (GNUNET_SQstore_ServiceAPI * api)
   int i;
   int j;
   unsigned long long size;
-  int have_file;
-  struct stat sbuf;
-
-  have_file = 0 == stat (DB_NAME, &sbuf);
-
+  PGresult * res;
+  PGconn * dbh = PQconnectdb("dbname=gnunetcheck");
+ 
   for (i = 0; i < ITERATIONS; i++)
     {
 #if REPORT_ID
@@ -224,9 +208,24 @@ test (GNUNET_SQstore_ServiceAPI * api)
       else
         api->iterateExpirationTime (0, &iterateDelete, api);
 
+      res = PQexec (dbh, "VACUUM FULL gn080");      
+      PQclear(res);
       size = 0;
-      if (have_file)
-        GNUNET_disk_file_size (NULL, DB_NAME, &size, GNUNET_NO);
+      res = PQexec (dbh, "SELECT pg_database_size('gnunetcheck')");      
+      if (PQresultStatus (res) != PGRES_TUPLES_OK)       
+	{
+	  fprintf(stderr,
+		  "Failed with error: %s", 
+		  PQerrorMessage(dbh));
+	  PQclear(res);
+	  abort();
+	}
+      ASSERT (1 == 
+	      sscanf(PQgetvalue(res, 0, 0),
+		     "%llu",
+		     &size));
+      PQclear (res);
+      size *= 1024;
       printf (
 #if REPORT_ID
                "\n"
@@ -242,6 +241,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
         break;
     }
   api->drop ();
+  PQfinish (dbh);
   return GNUNET_OK;
 
 FAILURE:
@@ -282,4 +282,4 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* end of mysqltest2.c */
+/* end of postgres_test2.c */

@@ -41,7 +41,7 @@ postgres_test_LDADD = \
 
 postgres_test2_SOURCES = \
  postgres_test2.c 
-postgres_test2_LDADD = \
+postgres_test2_LDADD = -lpq \
  $(top_builddir)/src/server/libgnunetcore.la  \
  $(top_builddir)/src/util/libgnunetutil.la  
 
