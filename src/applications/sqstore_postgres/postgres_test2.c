@@ -73,7 +73,7 @@
  * at 90% wait, 10% CPU).  This is with MySQL 5.0.
  *
  */
-#define MAX_SIZE 1024LL * 1024 * 16 * 100
+#define MAX_SIZE 1024LL * 1024 * 16 * 10
 
 /**
  * Report progress outside of major reports? Should probably be GNUNET_YES if
@@ -97,6 +97,21 @@
  * 10 iterations.  Abort with CTRL-C.
  */
 #define ITERATIONS 100
+
+/**
+ * Should we use randomized content?  Postgres compresses
+ * our binary data, so for accurate size overheads we need
+ * to at least randomize it.  The problem is that with this
+ * option, we spend extra time generating random data
+ * (so the numbers we get are lower compared to other DBs).
+ * If we set the option to zero, the DB ends up 90% smaller,
+ * which gives PG an unfair advantage...
+ */
+#define RANDOMIZE 1
+
+#if RANDOMIZE
+#include <gcrypt.h>
+#endif
 
 static unsigned long long stored_bytes;
 
@@ -133,10 +148,15 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i, int k)
   value->expiration_time =
     GNUNET_htonll (GNUNET_get_time () +
                    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
+#if RANDOMIZE
+  gcry_randomize (&value[1], size - sizeof (GNUNET_DatastoreValue),
+		  GCRY_WEAK_RANDOM);
+#else
   memset (&value[1], i, size - sizeof (GNUNET_DatastoreValue));
   if (i > 255)
     memset (&value[1], i - 255, (size - sizeof (GNUNET_DatastoreValue)) / 2);
   ((char *) &value[1])[0] = k;
+#endif
   if (GNUNET_OK != api->put (&key, value))
     {
       GNUNET_free (value);
@@ -207,9 +227,6 @@ test (GNUNET_SQstore_ServiceAPI * api)
         api->iterateLowPriority (0, &iterateDelete, api);
       else
         api->iterateExpirationTime (0, &iterateDelete, api);
-
-      res = PQexec (dbh, "VACUUM FULL gn080");      
-      PQclear(res);
       size = 0;
       res = PQexec (dbh, "SELECT pg_database_size('gnunetcheck')");      
       if (PQresultStatus (res) != PGRES_TUPLES_OK)       
@@ -225,12 +242,11 @@ test (GNUNET_SQstore_ServiceAPI * api)
 		     "%llu",
 		     &size));
       PQclear (res);
-      size *= 1024;
       printf (
 #if REPORT_ID
                "\n"
 #endif
-               "Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n", 
+               "Useful %lluk, API %lluk, disk %lluk (%.2f%%) / %lluk ops / %llu ops/s\n", 
 	       stored_bytes / 1024,     /* used size in k */
                api->getSize () / 1024,  /* API-reported size in k */
                size / 1024,     /* disk size in kb */
