@@ -231,7 +231,8 @@ test (GNUNET_SQstore_ServiceAPI * api)
 #if REPORT_ID
                "\n"
 #endif
-               "Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n", stored_bytes / 1024,     /* used size in k */
+               "Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n", 
+	       stored_bytes / 1024,     /* used size in k */
                api->getSize () / 1024,  /* API-reported size in k */
                size / 1024,     /* disk size in kb */
                (100.0 * size / stored_bytes) - 100,     /* overhead */
