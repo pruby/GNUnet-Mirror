@@ -645,13 +645,13 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   "sqstore"
   (_ "Which database should be used?")
   (_ 
-"Which database should be used?  The options are \"sqstore_sqlite\" and \"sqstore_mysql\".  You must run gnunet-update after changing this value!
+"Which database should be used?  The options are \"sqstore_sqlite\", \"sqstore_postgres\" and \"sqstore_mysql\".  You must run gnunet-update after changing this value!
 			
-In order to use sqstore_mysql, you must configure the mysql database, which is relatively simple.  Read the file doc/README.mysql for how to setup mysql." )
+In order to use MySQL or Postgres, you must configure the respective database, which is relatively simple.  Read the file doc/README.mysql or doc/README.postgres for how to setup the respective database." )
   '()
   #t
   "sqstore_sqlite"
-  (list "SC" "sqstore_sqlite" "sqstore_mysql")
+  (list "SC" "sqstore_sqlite" "sqstore_postgres" "sqstore_mysql")
   'fs-loaded) )
 
 (define (modules-dstore builder)

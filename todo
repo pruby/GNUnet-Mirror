@@ -12,7 +12,6 @@ This is just the current plan, plans change.
 - Correctness: 
   * kv_sqlitetest has MAJOR valgrind failures!
   * kvstore_mysql is not implemented!
-  * sqstore_postgres is not implemented
   *  dstore_postgres is not implemented
   * kvstore_postgres is not implemented
   * new MySQL code sometimes causes gnunetd to "hang" 

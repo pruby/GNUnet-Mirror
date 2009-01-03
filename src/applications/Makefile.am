@@ -7,7 +7,7 @@ if HAVE_SQLITE
 endif
 
 if HAVE_POSTGRES
-# POSTGRES_DIR = sqstore_postgres
+ POSTGRES_DIR = sqstore_postgres
 endif
 
 if LINUX

@@ -1,2 +1,2 @@
 SUBDIRS = . man
-EXTRA_DIST = README.mysql
+EXTRA_DIST = README.mysql README.postgres
