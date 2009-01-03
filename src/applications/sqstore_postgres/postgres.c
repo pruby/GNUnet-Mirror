@@ -953,19 +953,20 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
 static int
 update (unsigned long long uid, int delta, GNUNET_CronTime expire)
 {
+  unsigned int oid = (unsigned int) uid; /* only 32 bit for postgres */
   int n_delta = htonl(delta);
   GNUNET_CronTime n_expire = GNUNET_htonll(expire);
   PGresult * ret;
   const char * paramValues[] = { 
     (const char*) &n_delta,
     (const char*) &n_expire,
-    (const char*) &uid,
+    (const char*) &oid,
   };     
   int paramLengths[] = 
     {
       sizeof(n_delta),
       sizeof(n_expire),
-      sizeof(uid),
+      sizeof(oid),
     };
   const int paramFormats[] = {1,1,1};
 
