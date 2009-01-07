@@ -47,6 +47,8 @@ static struct GNUNET_LoadMonitor *mon;
 
 static char *cfgFilename = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 
+static int no_daemonize_flag;
+
 static int debug_flag;
 
 static int loud_flag;
@@ -98,15 +100,15 @@ gnunet_main ()
   struct GNUNET_SignalHandlerContext *shc_hup;
   int filedes[2];               /* pipe between client and parent */
 
-  if ((GNUNET_NO == debug_flag)
+  if ((GNUNET_NO == debug_flag) && (GNUNET_NO == no_daemonize_flag)
       && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes,
                                                PIDFILE_DATA)))
     return GNUNET_SYSERR;
-  if (GNUNET_NO != debug_flag)
+  if ((GNUNET_NO != debug_flag) || (GNUNET_NO != no_daemonize_flag))
     GNUNET_pid_file_write (ectx, cfg, (unsigned int) getpid (), PIDFILE_DATA);
   if (NULL == (mon = GNUNET_network_monitor_create (ectx, cfg)))
     {
-      if (GNUNET_NO == debug_flag)
+      if ((GNUNET_NO == debug_flag) && (GNUNET_NO == no_daemonize_flag))
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       else
         GNUNET_pid_file_delete (ectx, cfg, PIDFILE_DATA);
@@ -128,7 +130,7 @@ gnunet_main ()
 #ifndef WINDOWS
       GNUNET_signal_handler_uninstall (SIGHUP, &reread_config, shc_hup);
 #endif
-      if (GNUNET_NO == debug_flag)
+      if ((GNUNET_NO == debug_flag) && (GNUNET_NO == no_daemonize_flag))
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       return GNUNET_SYSERR;
     }
@@ -138,7 +140,7 @@ gnunet_main ()
 
   GNUNET_CORE_connection_init (ectx, cfg, mon, cron);
   GNUNET_CORE_load_application_modules ();
-  if (GNUNET_NO == debug_flag)
+  if ((GNUNET_NO == debug_flag) && (GNUNET_NO == no_daemonize_flag))
     GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
   GNUNET_cron_start (cron);
   GNUNET_CORE_p2p_enable_processing ();
@@ -175,6 +177,9 @@ static struct GNUNET_CommandLineOption gnunetdOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
   {'@', "win-service", NULL, "", 0,
    &GNUNET_getopt_configure_set_option, "GNUNETD:WINSERVICE"},
+  {'n', "no-daemonize", NULL,
+   gettext_noop ("do not daemonize (run gnunetd as a foreground process)"),
+   0, &GNUNET_getopt_configure_set_one, &no_daemonize_flag},
   {'d', "debug", NULL,
    gettext_noop ("run in debug mode; gnunetd will "
                  "not daemonize and error messages will "
