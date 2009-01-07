@@ -294,7 +294,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    ("publish the files under the pseudonym NAME (place file into namespace)"),
    1, &GNUNET_getopt_configure_set_string, &pseudonym},
   {'s', "simulate-only", NULL,
-   gettext_noop ("only simulte the process but do not do any "
+   gettext_noop ("only simulate the process but do not do any "
                  "actual publishing (useful to compute URIs)"),
    0, &GNUNET_getopt_configure_set_one, &do_simulate},
   {'t', "this", "ID",
