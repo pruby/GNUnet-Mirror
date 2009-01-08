@@ -198,7 +198,7 @@ However, active testing and qualified feedback of these features is always welco
  (_ "This option is used when clients need to start gnunetd.")
  '()
  #t
- "/etc/gnunetd.conf"
+ "@GN_DAEMON_CONFIG_DIR@/gnunetd.conf"
  '()
  'always) )
 
@@ -402,7 +402,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (_ "The directory for GNUnet files that belong to the user.")
   '()
   #t
-  "~/.gnunet"
+  "@GN_USER_HOME_DIR@"
   '()
   'always) )
 

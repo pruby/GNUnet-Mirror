@@ -117,7 +117,7 @@ However, active testing and qualified feedback of these features is always welco
 "This gives the root-directory of the GNUnet installation. Make sure there is some space left in that directory. :-)  Users inserting or indexing files will be able to store data in this directory up to the (global) quota specified below.  Having a few gigabytes of free space is recommended." ) 
   '()
   #t
-  "/var/lib/gnunet"
+  "@GN_DAEMON_HOME_DIR@"
   '()
   'always) )
 
@@ -310,7 +310,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   (_ "The default is no longer /var/run/gnunetd.pid since we could not delete the file on shutdown at that location." )
   '()
   #f
-  "/var/run/gnunetd/pid"
+  "@GN_DAEMON_PIDFILE@"
   '()
   'rare) )
 

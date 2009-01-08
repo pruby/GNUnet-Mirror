@@ -1,7 +1,9 @@
-pkgdata_DATA = \
- config-daemon.scm \
- config-client.scm \
+dist_pkgdata_DATA = \
  gnunet-logo-color.png
+
+nodist_pkgdata_DATA = \
+ config-daemon.scm \
+ config-client.scm
 
 EXTRA_DIST = \
  gnunet.conf \
@@ -14,5 +16,4 @@ EXTRA_DIST = \
  junkinsert.sh \
  junklookup.sh \
  namespacehelper.sh \
- report.sh \
- $(pkgdata_DATA)
+ report.sh

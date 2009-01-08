@@ -931,6 +931,35 @@ then
 fi
 AM_CONDITIONAL(HAVE_QT, test x$qt != x0)
 
+gn_user_home_dir="~/.gnunet"
+AC_ARG_WITH(user-home-dir,
+        AC_HELP_STRING(
+                [--with-user-home-dir=DIR],
+                [default user home directory (~/.gnunet)]),
+        [gn_user_home_dir=$withval])
+AC_SUBST(GN_USER_HOME_DIR, $gn_user_home_dir)
+gn_daemon_home_dir="/var/lib/gnunet"
+AC_ARG_WITH(daemon-home-dir,
+        AC_HELP_STRING(
+                [--with-daemon-home-dir=DIR],
+                [default daemon home directory (/var/lib/gnunet)]),
+        [gn_daemon_home_dir=$withval])
+AC_SUBST(GN_DAEMON_HOME_DIR, $gn_daemon_home_dir)
+gn_daemon_config_dir="/etc"
+AC_ARG_WITH(daemon-config-dir,
+        AC_HELP_STRING(
+                [--with-daemon-config-dir=DIR],
+                [default daemon config directory (/etc)]),
+        [gn_daemon_config_dir=$withval])
+AC_SUBST(GN_DAEMON_CONFIG_DIR, $gn_daemon_config_dir)
+gn_daemon_pidfile="/var/run/gnunetd/pid"
+AC_ARG_WITH(daemon-pidfile,
+        AC_HELP_STRING(
+                [--with-daemon-pidfile=FILE],
+                [default daemon pidfile (/var/run/gnunetd/pid)]),
+        [gn_daemon_pidfile=$withval])
+AC_SUBST(GN_DAEMON_PIDFILE, $gn_daemon_pidfile)
+
 GN_INTLINCL=""
 GN_LIBINTL="$LTLIBINTL"
 AC_ARG_ENABLE(framework, [  --enable-framework      enable Mac OS X framework build helpers],enable_framework_build=$enableval)
@@ -988,11 +1017,14 @@ AM_CONDITIONAL([USE_COVERAGE], [test "x$use_gcov" = "xyes"])
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
 contrib/Makefile
+contrib/config-client.scm
+contrib/config-daemon.scm
 contrib/macosx/Info.plist
 doc/Makefile
 doc/man/Makefile
 src/Makefile
 src/include/Makefile
+src/include/gnunet_directories.h
 src/intlemu/Makefile
 src/applications/Makefile
 src/applications/advertising/Makefile
