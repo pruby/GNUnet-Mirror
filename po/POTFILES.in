@@ -32,7 +32,6 @@ src/util/win/winproc.c
 src/util/containers/bloomfilter.c
 src/util/containers/metatest.c
 src/util/containers/meta.c
-src/util/containers/hashtest.c
 src/util/containers/bloomtest.c
 src/util/libgnunetutil.c
 src/util/config/configtest.c
@@ -310,7 +309,6 @@ src/applications/traffic/traffic.h
 src/applications/tracekit/tracekit.h
 src/applications/advertising/bootstrap.h
 src/applications/chat/module/p2p.h
-src/applications/dht/tools/dht_api.h
 src/applications/dht/module/service.h
 src/applications/dht/module/routing.h
 src/applications/dht/module/table.h
@@ -418,4 +416,3 @@ src/transports/upnp/upnp.h
 src/transports/common.h
 contrib/config-daemon.scm
 contrib/config-client.scm
-contrib/gnunet-download-manager.scm

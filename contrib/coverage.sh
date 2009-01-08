@@ -2,7 +2,7 @@
 # make sure configure was run with coverage enabled...
 lcov --directory . --zerocounters
 make check
-for n in `find * -name "*.gcno" | grep libs`
+for n in `find * -name "*.gc??" | grep libs`
 do
   cd `dirname $n`
   mv `basename $n` ..
