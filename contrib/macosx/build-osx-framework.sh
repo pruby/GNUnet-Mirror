@@ -490,6 +490,7 @@ build_gnunet()
 			CXXFLAGS="${CXXFLAGS}"			\
 			OBJCFLAGS="${CFLAGS}"			\
 			LDFLAGS="${LDFLAGS}"			\
+			NM="/usr/bin/nm -p"			\
 			ac_cv_func_memcmp_working=yes		\
 			ac_cv_func_stat_empty_string_bug=no	\
 			ac_cv_func_chown_works=yes		\
@@ -501,8 +502,14 @@ build_gnunet()
 			LIBCURL="${SDK_PATH}/${FW_DIR}/lib/libcurl.a -lssl -lcrypto -lz"	\
 			./configure "${ARCH_HOSTSETTING}"	\
 			--prefix="${FW_DIR}"			\
+			--with-user-home-dir="~/Library/GNUnet"	\
+			--with-daemon-home-dir="/Library/GNUnet"	\
+			--with-daemon-config-dir="/Library/GNUnet"	\
+			--with-daemon-pidfile="/Library/GNUnet/gnunetd.pid" \
 			--enable-shared				\
 			--enable-framework			\
+			--with-ltdl-include=/usr/include	\
+			--with-ltdl-lib=/usr/lib		\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
 			--with-libgcrypt-prefix=${SDK_PATH}/${FW_DIR}	\
 			--with-esmtp=${SDK_PATH}/${FW_DIR}	\
