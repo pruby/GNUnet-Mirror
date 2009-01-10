@@ -1269,7 +1269,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  (nohelp)
  '()
  #t
- "eth0"
+ @DEFAULT_INTERFACE@
  '()
  'advanced) )
 
@@ -1445,7 +1445,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
  (_ "For which interfaces should we do accounting?  GNUnet will evaluate the total traffic (not only the GNUnet related traffic) and adjust its bandwidth usage accordingly. You can currently only specify a single interface. GNUnet will also use this interface to determine the IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.  'ifconfig' will tell you what you have.  Never use 'lo', that just won't work.  Under Windows, specify the index number reported by  'gnunet-win-tool -n'.")
  '()
  #t
- "eth0"
+ @DEFAULT_INTERFACE@
  (list "*" "eth0" "eth1" "eth2")
  'nobasiclimit))
 

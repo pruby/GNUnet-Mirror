@@ -180,6 +180,7 @@ netbsd*)
 ;;
 esac
 AC_DEFINE_UNQUOTED([GNUNET_DEFAULT_INTERFACE], $DEFAULT_INTERFACE, [This should be the default choice for the name of the first network interface])
+AC_SUBST(DEFAULT_INTERFACE)
 
 AC_MSG_CHECKING([for build target])
 AM_CONDITIONAL(MACOSX,  test "$build_target" = "macosx")
