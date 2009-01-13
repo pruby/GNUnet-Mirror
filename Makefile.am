@@ -5,7 +5,6 @@ EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath \
  install-sh \
- mkinstalldirs \
  HACKING \
  README.fr \
  README.win32 \
