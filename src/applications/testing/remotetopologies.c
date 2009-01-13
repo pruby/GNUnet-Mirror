@@ -43,6 +43,8 @@ printInfo (void *data,
   return GNUNET_OK;
 }
 
+/*int GNUNET_REMOTE_connect_erdos_renyi*/
+
 int
 GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list)
 {
@@ -380,13 +382,15 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
             {
               fprintf (stderr, ".");
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock1,
-                                                                 &h2->senderIdentity))
+                                                                 &h2->
+                                                                 senderIdentity))
                 {
                   ret = GNUNET_OK;
                   break;
                 }
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock2,
-                                                                 &h1->senderIdentity))
+                                                                 &h1->
+                                                                 senderIdentity))
                 {
                   ret = GNUNET_OK;
                   break;

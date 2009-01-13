@@ -77,7 +77,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s", username,
             hostname, gnunetd_home, remote_config_path, configFileName);
 
-  fprintf (stderr, "ssh command is : %s \n", cmd);
+  fprintf (stderr, _("ssh command is : %s \n"), cmd);
 
   system (cmd);
 
@@ -408,7 +408,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                   GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
                                               temp, remote_config_path,
                                               curr_host, ssh_username,
-                                              temp_pos->remote_friend_file_path);
+                                              temp_pos->
+                                              remote_friend_file_path);
 
                   GNUNET_GC_get_configuration_value_number (basecfg,
                                                             "NETWORK",
