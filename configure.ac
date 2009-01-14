@@ -1100,11 +1100,6 @@ src/util/win/Makefile
 ])
 AC_OUTPUT
 
-# Workaround for libtool < 1.5.24
-sed "s/^ECHO=/echo=/" libtool > libtool.tmp
-mv libtool.tmp libtool  # MinGW sed doesn't support -i
-chmod 755 libtool
-
 # Finally: summary!
 
 # warn user if mysql found but not used due to version
