@@ -31,6 +31,8 @@
 
 #define GNUNET_DV_LEAST_COST 1
 #define GNUNET_DV_MAX_COST -1
+#define GNUNET_DV_MAX_TABLE_SIZE -1
+#define GNUNET_DV_DEFAULT_SEND_INTERVAL 2000
 
 /**
  * Message that gets sent between nodes updating dv infos
