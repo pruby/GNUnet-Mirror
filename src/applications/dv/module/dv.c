@@ -41,8 +41,6 @@ struct GNUNET_DV_Context
   unsigned long long max_table_size;
   unsigned int send_interval;
 
-  unsigned int curr_neighbor_table_size;
-  unsigned int curr_connected_neighbor_table_size;
   unsigned short closing;
 
   struct GNUNET_Mutex *dvMutex;
@@ -68,11 +66,18 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
   struct GNUNET_dv_neighbor *neighbor = (struct GNUNET_dv_neighbor *) value;
   char *type = (char *) cls;
   GNUNET_EncName encPeer;
+  GNUNET_EncName encReferrer;
 
-  GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encPeer);
-  fprintf (stderr, "%s\tNeighbor: %s\nCost: %d", type, (char *) &encPeer,
+  GNUNET_hash_to_enc (&neighbor->neighbor->hashPubKey, &encPeer);
+  if (neighbor->referrer == NULL)
+  	fprintf (stderr, "%s\tNeighbor: %s\nCost: %d\n", type, (char *) &encPeer,
            neighbor->cost);
-
+  else
+  {
+  	GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encReferrer);
+  	fprintf (stderr, "%s\tNeighbor: %s\nCost: %d Referred by: %s\n", type, (char *) &encPeer,
+  	           neighbor->cost, (char*)&encReferrer);
+  }
   return GNUNET_OK;
 }
 
@@ -105,7 +110,7 @@ p2pHandleDVRouteMessage (const GNUNET_PeerIdentity * sender,
  * or having been gossiped about, also called when a cost for a neighbor
  * needs to be updated.
  *
- * @param neighbor - ident of the peer whose info is being added/updated
+ * @param neighbor - identity of the peer whose info is being added/updated
  * @param referrer - if this is a gossiped peer, who did we hear it from?
  * @param cost - the cost to this peer (the actual important part!)
  *
@@ -118,12 +123,17 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
   struct GNUNET_dv_neighbor *neighbor;
 #ifdef DEBUG_DV
   GNUNET_EncName encPeer;
-
+  GNUNET_EncName encReferrer;
   fprintf (stderr, "Entering addUpdateNeighbor\n");
-  if (referrer == NULL)
-    fprintf (stderr, "Referrer is NULL\n");
+
   GNUNET_hash_to_enc (&peer->hashPubKey, &encPeer);
-  fprintf (stderr, "Adding/Updating Node %s\n", (char *) &encPeer);
+  if (referrer == NULL)
+  	fprintf (stderr, "Adding/Updating Node %s\n", (char *) &encPeer);
+  else
+  {
+  	GNUNET_hash_to_enc (&referrer->hashPubKey, &encReferrer);
+  	fprintf (stderr, "Adding/Updating Node %s, Learned about from %s\n", (char *) &encPeer, (char *) &encReferrer);
+  }
 #endif
   ret = GNUNET_OK;
 
@@ -299,13 +309,29 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 }
 
 /*
- * May use as a callback for deleting nodes from heaps...
+ * A callback for deleting nodes from heaps...
  */
-static void
+static int
 delete_callback (struct GNUNET_dv_neighbor *neighbor,
-                 struct GNUNET_dv_heap *root, GNUNET_PeerIdentity * toMatch)
+		struct GNUNET_dv_heap *root, void * cls)
 {
-  if (memcmp (neighbor->referrer, toMatch, sizeof (GNUNET_PeerIdentity)) == 0)
+	GNUNET_PeerIdentity * toMatch = cls;
+#ifdef DEBUG_DV
+	GNUNET_EncName encNeighbor;
+	GNUNET_EncName encReferrer;
+	GNUNET_EncName encToMatch;
+
+	GNUNET_hash_to_enc (&neighbor->neighbor->hashPubKey, &encNeighbor);
+	GNUNET_hash_to_enc (&toMatch->hashPubKey, &encToMatch);
+	if (neighbor->referrer != NULL)
+	{
+		GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encReferrer);
+		fprintf(stderr, "Checking for node\n%s to match\n%s or\n%s\n", (char *)&encToMatch, (char *)&encNeighbor, (char *)&encReferrer);
+	}
+	fprintf(stderr, "Checking for node %s to match %s\n", (char *)&encToMatch, (char *)&encNeighbor);
+#endif
+
+  if ((memcmp (neighbor->neighbor, toMatch, sizeof (GNUNET_PeerIdentity)) == 0) || ((neighbor->referrer != NULL) && (memcmp (neighbor->referrer, toMatch, sizeof (GNUNET_PeerIdentity)) == 0)))
     {
       GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
       GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
@@ -313,26 +339,23 @@ delete_callback (struct GNUNET_dv_neighbor *neighbor,
                                         &neighbor->neighbor->hashPubKey);
 
       GNUNET_free (neighbor->neighbor);
-      GNUNET_free (neighbor->referrer);
+      if (neighbor->referrer != NULL)
+      	GNUNET_free (neighbor->referrer);
       GNUNET_free (neighbor);
     }
-  return;
+  return GNUNET_OK;
 }
 
 /*
- * Handles the receipt of a peer disconnect notification.
+ * Handles the receipt of a peer disconnect notification, removing
+ * the direct neighbor from the direct list and any referenced
+ * neighbors as well.
  *
  * @param peer - the peer that has disconnected from us
  */
 static void
 peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 {
-/*
- * Update for heap and hashmap structures.  Namely, replace linked list
- * iteration with hashmap lookup.  Will also need to traverse *both* heaps
- * to find and remove any peers that have peer as their referrer! A
- * callback implementation probably makes more sense...
- */
   struct GNUNET_dv_neighbor *neighbor;
 
 #ifdef DEBUG_DV
@@ -356,8 +379,8 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
           GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
                                             &peer->hashPubKey);
 
-          GNUNET_DV_Heap_Iterator (&delete_callback, &ctx->neighbor_max_heap,
-                                   ctx->neighbor_max_heap.root, peer);
+          GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
+                                   ctx->neighbor_max_heap.root, &delete_callback, (void *)peer);
 
           GNUNET_free (neighbor->neighbor);
           if (neighbor->referrer)
@@ -459,6 +482,14 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
   unsigned long long max_hosts;
+
+  ctx = GNUNET_malloc(sizeof(struct GNUNET_DV_Context));
+
+  ctx->neighbor_min_heap.type = GNUNET_DV_MIN_HEAP;
+  ctx->neighbor_max_heap.type = GNUNET_DV_MAX_HEAP;
+  ctx->neighbor_min_heap.max_size = GNUNET_DV_MAX_TABLE_SIZE;
+  ctx->neighbor_max_heap.max_size = GNUNET_DV_MAX_TABLE_SIZE;
+  ctx->send_interval = GNUNET_DV_DEFAULT_SEND_INTERVAL;
   ctx->dvMutex = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
   GNUNET_GE_LOG (capi->ectx,
@@ -484,8 +515,8 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
     ok = GNUNET_SYSERR;
 
 
-  sendingThread =
-    GNUNET_thread_create (&neighbor_send_thread, &coreAPI, 1024 * 1);
+  /*sendingThread =
+    GNUNET_thread_create (&neighbor_send_thread, &coreAPI, 1024 * 1);*/
 
 
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,

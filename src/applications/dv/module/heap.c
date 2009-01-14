@@ -24,7 +24,9 @@
  * @brief Implementation of heap operations
  */
 
-
+#include "platform.h"
+#include "gnunet_protocols.h"
+#include "gnunet_util.h"
 #include "dv.h"
 #include "heap.h"
 
@@ -205,58 +207,6 @@ percolateDownHeap (struct GNUNET_dv_heap_node *pos,
   return;
 }
 
-int
-GNUNET_DV_Heap_insert (struct GNUNET_dv_heap *root,
-                       struct GNUNET_dv_neighbor *neighbor)
-{
-  struct GNUNET_dv_heap_node *new_pos;
-  int ret;
-  ret = GNUNET_YES;
-
-  if (root->max_size > root->size)
-    {
-      new_pos = getNextPos (root);
-      new_pos->neighbor = neighbor;
-      root->size++;
-      percolateHeap (new_pos, root);
-    }
-  else
-    {
-      ret = GNUNET_NO;
-    }
-
-  return ret;
-}
-
-struct GNUNET_dv_neighbor *
-GNUNET_DV_Heap_removeRoot (struct GNUNET_dv_heap *root)
-{
-  struct GNUNET_dv_neighbor *ret;
-  struct GNUNET_dv_heap_node *root_node;
-  struct GNUNET_dv_heap_node *last;
-
-  root_node = root->root;
-  ret = root_node->neighbor;
-  last = getPos (root, root->size);
-
-  if (last->parent->left_child == last)
-    last->parent->left_child = NULL;
-  else if (last->parent->right_child == last)
-    last->parent->right_child = NULL;
-
-  root_node->neighbor = last->neighbor;
-
-  if (root->traversal_pos == last)
-    {
-      root->traversal_pos = root->root;
-    }
-
-  GNUNET_free (last);
-  root->size--;
-  percolateDownHeap (root->root, root);
-  return ret;
-}
-
 struct GNUNET_dv_neighbor *
 GNUNET_DV_Heap_removeNode (struct GNUNET_dv_heap *root,
                            struct GNUNET_dv_neighbor *neighbor)
@@ -265,6 +215,7 @@ GNUNET_DV_Heap_removeNode (struct GNUNET_dv_heap *root,
   struct GNUNET_dv_heap_node *del_node;
   struct GNUNET_dv_heap_node *last;
 
+	del_node = NULL;
   if (root->type == GNUNET_DV_MAX_HEAP)
     del_node = neighbor->max_loc;
   else if (root->type == GNUNET_DV_MIN_HEAP)
@@ -308,6 +259,62 @@ GNUNET_DV_Heap_removeNode (struct GNUNET_dv_heap *root,
 }
 
 int
+GNUNET_DV_Heap_insert (struct GNUNET_dv_heap *root,
+                       struct GNUNET_dv_neighbor *neighbor)
+{
+  struct GNUNET_dv_heap_node *new_pos;
+  int ret;
+  ret = GNUNET_YES;
+
+  if (root->max_size > root->size)
+    {
+      new_pos = getNextPos (root);
+      new_pos->neighbor = neighbor;
+      root->size++;
+      if (root->type == GNUNET_DV_MIN_HEAP)
+      	new_pos->neighbor->min_loc = new_pos;
+      else if (root->type == GNUNET_DV_MAX_HEAP)
+      	new_pos->neighbor->max_loc = new_pos;
+      percolateHeap (new_pos, root);
+    }
+  else
+    {
+      ret = GNUNET_NO;
+    }
+
+  return ret;
+}
+
+struct GNUNET_dv_neighbor *
+GNUNET_DV_Heap_removeRoot (struct GNUNET_dv_heap *root)
+{
+  struct GNUNET_dv_neighbor *ret;
+  struct GNUNET_dv_heap_node *root_node;
+  struct GNUNET_dv_heap_node *last;
+
+  root_node = root->root;
+  ret = root_node->neighbor;
+  last = getPos (root, root->size);
+
+  if (last->parent->left_child == last)
+    last->parent->left_child = NULL;
+  else if (last->parent->right_child == last)
+    last->parent->right_child = NULL;
+
+  root_node->neighbor = last->neighbor;
+
+  if (root->traversal_pos == last)
+    {
+      root->traversal_pos = root->root;
+    }
+
+  GNUNET_free (last);
+  root->size--;
+  percolateDownHeap (root->root, root);
+  return ret;
+}
+
+int
 GNUNET_DV_Heap_updateCost (struct GNUNET_dv_heap *root,
                            struct GNUNET_dv_neighbor *neighbor,
                            unsigned int new_cost)
@@ -325,8 +332,6 @@ GNUNET_DV_Heap_updatedCost (struct GNUNET_dv_heap *root,
 {
   struct GNUNET_dv_heap_node *node;
   struct GNUNET_dv_heap_node *parent;
-  struct GNUNET_dv_heap_node *left_child;
-  struct GNUNET_dv_heap_node *right_child;
 
   if (neighbor == NULL)
     return GNUNET_SYSERR;
@@ -363,49 +368,48 @@ GNUNET_DV_Heap_delete_matching_referrers (struct GNUNET_dv_heap *root,
                                           struct GNUNET_dv_heap_node *node,
                                           GNUNET_PeerIdentity * toMatch)
 {
+	int count = 0;
   if (node->left_child != NULL)
     {
-      GNUNET_DV_Heap_delete_matching_referrers (root, node->left_child,
+      count += GNUNET_DV_Heap_delete_matching_referrers (root, node->left_child,
                                                 toMatch);
     }
   if (node->right_child != NULL)
     {
-      GNUNET_DV_Heap_delete_matching_referrers (root, node->right_child,
+  	count += GNUNET_DV_Heap_delete_matching_referrers (root, node->right_child,
                                                 toMatch);
     }
   if ((node->neighbor != NULL)
       &&
-      (memcmp (node->neighbor, toMatch, sizeof (struct GNUNET_PeerIdentity))
+      (memcmp (node->neighbor, toMatch, sizeof (GNUNET_PeerIdentity))
        == 0))
     {
-      GNUNET_DV_removeNode (root, node->neighbor);
+      GNUNET_DV_Heap_removeNode (root, node->neighbor);
+      count++;
     }
+
+	return count;
 
 }
 
 void
-GNUNET_DV_Heap_Iterator (void (*callee)
-                         (struct GNUNET_dv_neighbor * neighbor,
-                          struct GNUNET_dv_heap * root,
-                          GNUNET_PeerIdentity * toMatch),
-                         struct GNUNET_dv_heap *root,
-                         struct GNUNET_dv_heap_node *node,
-                         const GNUNET_PeerIdentity * toMatch)
+GNUNET_DV_Heap_Iterator (struct GNUNET_dv_heap *root,struct GNUNET_dv_heap_node *node
+												,GNUNET_HeapIterator iterator,void *cls)
 {
 
   if (node->left_child != NULL)
     {
-      GNUNET_DV_Heap_Iterator (callee, root, node->left_child, toMatch);
+      GNUNET_DV_Heap_Iterator (root, node->left_child, iterator, cls);
     }
 
   if (node->right_child != NULL)
     {
-      GNUNET_DV_Heap_Iterator (callee, root, node->right_child, toMatch);
+      GNUNET_DV_Heap_Iterator (root, node->right_child, iterator, cls);
     }
 
   if (node->neighbor != NULL)
     {
-      callee (node->neighbor, root);
+      iterator(node->neighbor, root, cls);
     }
 }
 
@@ -428,10 +432,12 @@ GNUNET_DV_Heap_Walk_getNext (struct GNUNET_dv_heap *root)
   choice = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1);
 
   switch (choice)
+  {
     case 1:
-    root->traversal_pos = root->traversal_pos->right_child;
-case 0:
-  root->traversal_pos = root->traversal_pos->left_child;
+    	root->traversal_pos = root->traversal_pos->right_child;
+    case 0:
+    	root->traversal_pos = root->traversal_pos->left_child;
+  }
 
   return neighbor;
 

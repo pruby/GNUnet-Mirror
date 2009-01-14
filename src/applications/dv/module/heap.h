@@ -97,12 +97,14 @@ struct GNUNET_dv_heap_node
  * Iterator for heap
  *
  * @param value - obj stored in heap
+ * @param root - root of heap in which obj is stored
  * @param cls - client arg passed through
  * @return GNUNET_YES if we should continue to
  *         iterate,
  *         GNUNET_NO if not.
  */
-typedef int (*GNUNET_HeapIterator) (void *value, void *cls);
+typedef int (*GNUNET_HeapIterator) (struct GNUNET_dv_neighbor *neighbor,
+		struct GNUNET_dv_heap *root, void *cls);
 
 /**
  * Iterate over all entries in the map.
@@ -171,13 +173,10 @@ GNUNET_DV_Heap_updatedCost (struct GNUNET_dv_heap *root,
  * Iterator to go over all nodes in the tree... Goes from the bottom up
  */
 void
-GNUNET_DV_Heap_Iterator (void (*callee)
-                         (struct GNUNET_dv_neighbor * neighbor,
-                          struct GNUNET_dv_heap * root,
-                          GNUNET_PeerIdentity * toMatch),
-                         struct GNUNET_dv_heap *root,
+GNUNET_DV_Heap_Iterator (struct GNUNET_dv_heap *root,
                          struct GNUNET_dv_heap_node *node,
-                         const GNUNET_PeerIdentity * toMatch);
+                         GNUNET_HeapIterator iterator,
+                         void *cls);
 
 
 /**
