@@ -69,6 +69,17 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   system (cmd);
 
   GNUNET_free (cmd);
+  
+  length =
+    snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username, hostname,
+              gnunetd_home, remote_config_path, configFileName);
+  cmd = GNUNET_malloc (length + 1);
+  snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s", username,
+            hostname, gnunetd_home, remote_config_path, configFileName);
+
+  fprintf (stderr, _("ssh command is : %s \n"), cmd);
+  
+	GNUNET_free (cmd);
 
   length =
     snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s", username, hostname,
