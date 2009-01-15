@@ -533,6 +533,18 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
                  "dv", GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
 
 
+  ctx->direct_neighbors = GNUNET_multi_hash_map_create (max_hosts);
+    if (ctx->direct_neighbors == NULL)
+      {
+        ok = GNUNET_SYSERR;
+      }
+
+    ctx->extended_neighbors =
+      GNUNET_multi_hash_map_create (ctx->max_table_size * 3);
+    if (ctx->extended_neighbors == NULL)
+      {
+        ok = GNUNET_SYSERR;
+      }
 
   if (GNUNET_SYSERR ==
       coreAPI->peer_disconnect_notification_register
@@ -550,8 +562,8 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
     ok = GNUNET_SYSERR;
 
 
-  /*sendingThread =
-    GNUNET_thread_create (&neighbor_send_thread, &coreAPI, 1024 * 1);*/
+  sendingThread =
+    GNUNET_thread_create (&neighbor_send_thread, &coreAPI, 1024 * 1);
 
 
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
@@ -567,19 +579,6 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
                                             "gnunetd", "connection-max-hosts",
                                             1, -1, 50, &max_hosts);
-
-  ctx->direct_neighbors = GNUNET_multi_hash_map_create (max_hosts);
-  if (ctx->direct_neighbors == NULL)
-    {
-      ok = GNUNET_SYSERR;
-    }
-
-  ctx->extended_neighbors =
-    GNUNET_multi_hash_map_create (ctx->max_table_size * 3);
-  if (ctx->extended_neighbors == NULL)
-    {
-      ok = GNUNET_SYSERR;
-    }
 
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
