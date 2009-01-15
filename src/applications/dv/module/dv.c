@@ -70,12 +70,16 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 
   GNUNET_hash_to_enc (&neighbor->neighbor->hashPubKey, &encPeer);
   if (neighbor->referrer == NULL)
-  	fprintf (stderr, "%s\tNeighbor: %s\nCost: %d\n", type, (char *) &encPeer,
+  	GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s\tNeighbor: %s\nCost: %d\n", type, (char *) &encPeer,
            neighbor->cost);
   else
   {
   	GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encReferrer);
-  	fprintf (stderr, "%s\tNeighbor: %s\nCost: %d Referred by: %s\n", type, (char *) &encPeer,
+  	GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s\tNeighbor: %s\nCost: %d Referred by: %s\n", type, (char *) &encPeer,
   	           neighbor->cost, (char*)&encReferrer);
   }
   return GNUNET_OK;
@@ -84,11 +88,15 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 static void
 print_tables ()
 {
-  fprintf (stderr, "Printing directly connected neighbors:\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Printing directly connected neighbors:\n");
   GNUNET_multi_hash_map_iterate (ctx->direct_neighbors, &printTableEntry,
                                  "DIRECT");
 
-  fprintf (stderr, "Printing extended neighbors:\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Printing extended neighbors:\n");
   GNUNET_multi_hash_map_iterate (ctx->extended_neighbors, &printTableEntry,
                                  "EXTENDED");
 
@@ -124,15 +132,21 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 #ifdef DEBUG_DV
   GNUNET_EncName encPeer;
   GNUNET_EncName encReferrer;
-  fprintf (stderr, "Entering addUpdateNeighbor\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Entering addUpdateNeighbor\n");
 
   GNUNET_hash_to_enc (&peer->hashPubKey, &encPeer);
   if (referrer == NULL)
-  	fprintf (stderr, "Adding/Updating Node %s\n", (char *) &encPeer);
+  	GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Adding/Updating Node %s\n", (char *) &encPeer);
   else
   {
   	GNUNET_hash_to_enc (&referrer->hashPubKey, &encReferrer);
-  	fprintf (stderr, "Adding/Updating Node %s, Learned about from %s\n", (char *) &encPeer, (char *) &encReferrer);
+  	GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Adding/Updating Node %s, Learned about from %s\n", (char *) &encPeer, (char *) &encReferrer);
   }
 #endif
   ret = GNUNET_OK;
@@ -213,7 +227,9 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 
 #ifdef DEBUG_DV
   print_tables ();
-  fprintf (stderr, "Exiting addUpdateNeighbor\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Exiting addUpdateNeighbor\n");
 #endif
 
   GNUNET_mutex_unlock (ctx->dvMutex);
@@ -248,7 +264,9 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
 #ifdef DEBUG_DV
   GNUNET_hash_to_enc (&sender->hashPubKey, &from);
   GNUNET_hash_to_enc (&nmsg->neighbor.hashPubKey, &about);
-  fprintf (stderr,
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
            "Received info about peer %s from directly connected peer %s\n",
            (char *) &about, (char *) &from);
 #endif
@@ -264,7 +282,9 @@ static void
 peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 {
 #ifdef DEBUG_DV
-  fprintf (stderr, "Entering peer_connect_handler:\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Entering peer_connect_handler:\n");
   print_tables ();
 
 #endif
@@ -360,9 +380,13 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 
 #ifdef DEBUG_DV
   GNUNET_EncName myself;
-  fprintf (stderr, "Entering peer_disconnect_handler\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Entering peer_disconnect_handler\n");
   GNUNET_hash_to_enc (&peer->hashPubKey, &myself);
-  fprintf (stderr, "disconnected peer: %s\n", (char *) &myself);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "disconnected peer: %s\n", (char *) &myself);
   print_tables ();
 #endif
 
@@ -394,7 +418,9 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_unlock (ctx->dvMutex);
 #ifdef DEBUG_DV
   print_tables ();
-  fprintf (stderr, "Exiting peer_disconnect_handler\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Exiting peer_disconnect_handler\n");
 #endif
   return;
 }
@@ -416,7 +442,9 @@ chooseAboutNeighbor ()
     return NULL;
 
 #ifdef DEBUG_DV
-  fprintf (stderr, "Min heap size %d\nMax heap size %d\n",
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Min heap size %d\nMax heap size %d\n",
            ctx->neighbor_min_heap.size, ctx->neighbor_max_heap.size);
 #endif
 
@@ -428,7 +456,9 @@ static void *
 neighbor_send_thread (void *rcls)
 {
 #ifdef DEBUG_DV
-  fprintf (stderr, "Entering neighbor_send_thread...\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Entering neighbor_send_thread...\n");
   GNUNET_EncName encPeerAbout;
   GNUNET_EncName encPeerTo;
 #endif
@@ -455,7 +485,9 @@ neighbor_send_thread (void *rcls)
 #ifdef DEBUG_DV
           GNUNET_hash_to_enc (&about->neighbor->hashPubKey, &encPeerAbout);
           GNUNET_hash_to_enc (&to->neighbor->hashPubKey, &encPeerTo);
-          fprintf (stderr,
+          GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
                    "Sending info about peer %s to directly connected peer %s\n",
                    (char *) &encPeerAbout, (char *) &encPeerTo);
 #endif
@@ -472,7 +504,9 @@ neighbor_send_thread (void *rcls)
 
   GNUNET_free (message);
 #ifdef DEBUG_DV
-  fprintf (stderr, "Exiting neighbor_send_thread...\n");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Exiting neighbor_send_thread...\n");
 #endif
   return NULL;
 }
@@ -493,7 +527,8 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   ctx->dvMutex = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
   GNUNET_GE_LOG (capi->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                       GNUNET_GE_BULK,
                  _("`%s' registering P2P handler %d\n"),
                  "dv", GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
 
