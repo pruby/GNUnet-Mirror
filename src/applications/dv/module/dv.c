@@ -533,6 +533,29 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
                  "dv", GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
 
 
+	GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
+                                            "DV",
+                                            "FISHEYEDEPTH",
+                                            0, -1, 3, &ctx->fisheye_depth);
+
+  GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
+                                            "DV",
+                                            "TABLESIZE",
+                                            0, -1, 100, &ctx->max_table_size);
+
+  GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
+                                            "gnunetd", "connection-max-hosts",
+                                            1, -1, 50, &max_hosts);
+
+  GNUNET_GE_ASSERT (capi->ectx,
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "dv",
+                                                                   _
+                                                                   ("enables distance vector type routing (wip)")));
+
+
   ctx->direct_neighbors = GNUNET_multi_hash_map_create (max_hosts);
     if (ctx->direct_neighbors == NULL)
       {
@@ -564,29 +587,6 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
 
   sendingThread =
     GNUNET_thread_create (&neighbor_send_thread, &coreAPI, 1024 * 1);
-
-
-  GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                            "DV",
-                                            "FISHEYEDEPTH",
-                                            0, -1, 3, &ctx->fisheye_depth);
-
-  GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                            "DV",
-                                            "TABLESIZE",
-                                            0, -1, 100, &ctx->max_table_size);
-
-  GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                            "gnunetd", "connection-max-hosts",
-                                            1, -1, 50, &max_hosts);
-
-  GNUNET_GE_ASSERT (capi->ectx,
-                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                                   capi->ectx,
-                                                                   "ABOUT",
-                                                                   "dv",
-                                                                   _
-                                                                   ("enables distance vector type routing (wip)")));
 
   return ok;
 }
