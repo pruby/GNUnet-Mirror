@@ -79,6 +79,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 
   fprintf (stderr, _("ssh command is : %s \n"), cmd);
   
+  system (cmd);
 	GNUNET_free (cmd);
 
   length =
