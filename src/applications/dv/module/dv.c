@@ -471,9 +471,18 @@ neighbor_send_thread (void *rcls)
   message->header.size = htons (sizeof (p2p_dv_MESSAGE_NeighborInfo));
   message->header.type = htons (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
 
-
+#ifdef DEBUG_DV
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Still in neighbor_send_thread...\n");
+#endif
   while (!ctx->closing)
     {
+#ifdef DEBUG_DV
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Sending infos...\n");
+#endif
       //updateSendInterval();
       about = chooseAboutNeighbor ();
       to = chooseToNeighbor ();
