@@ -309,7 +309,7 @@ GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map)
 
   while (e == NULL)
     {
-      rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, map->size);
+      rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, map->map_length);
       e = map->map[rand];
     }
 
