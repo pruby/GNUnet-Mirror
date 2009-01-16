@@ -496,7 +496,6 @@ build_gnunet()
 			ac_cv_func_chown_works=yes		\
 			ac_cv_func_closedir_void=no		\
 			ac_cv_unaligned_64_access=yes		\
-			libltdl_cv_need_uscore=no		\
 			lt_cv_dlopen_self=yes			\
 			lt_cv_dlopen_self_static=yes		\
 			LIBCURL="${SDK_PATH}/${FW_DIR}/lib/libcurl.a -lssl -lcrypto -lz"	\
@@ -508,8 +507,6 @@ build_gnunet()
 			--with-daemon-pidfile="/Library/GNUnet/gnunetd.pid" \
 			--enable-shared				\
 			--enable-framework			\
-			--with-ltdl-include=/usr/include	\
-			--with-ltdl-lib=/usr/lib		\
 			--with-extractor="${LIBEXTRACTOR_BASE_DIR}"	\
 			--with-libgcrypt-prefix=${SDK_PATH}/${FW_DIR}	\
 			--with-esmtp=${SDK_PATH}/${FW_DIR}	\
