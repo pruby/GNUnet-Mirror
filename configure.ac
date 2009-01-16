@@ -39,9 +39,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([disable-static dlopen win32-dll])
-LTDL_INIT
-AC_SUBST(LTDLINCL)
-AC_SUBST(LIBLTDL)
+AM_PATH_LIBLTDL([lt_dlopenext lt_dlsym], ,AC_MSG_ERROR([GNUnet needs libltdl]))
 AC_SUBST(MKDIR_P)
 
 # large file support
