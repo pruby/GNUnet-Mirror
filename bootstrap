@@ -1,4 +1,8 @@
 #!/bin/sh
-aclocal -I m4/
-automake
-autoreconf -fi
+
+#libtoolize --automake --copy --force
+aclocal -I m4
+autoheader
+autoconf
+automake --add-missing --copy
+
