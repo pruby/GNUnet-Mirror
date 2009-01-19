@@ -21,18 +21,20 @@
 /**
  * @author Nathan Evans
  * @file applications/dv/module/heaptest.c
- * @brief Definitions of heap operations
+ * @brief Test of heap operations
  */
 
 #include "heap.h"
 #include "dv.h"
 
 
-void
+static int
 iterator_callback (struct GNUNET_dv_neighbor *neighbor,
-                   struct GNUNET_dv_heap *root)
+                   struct GNUNET_dv_heap *root, void *cls)
 {
-  fprintf (stdout, "Node is:%d\n", neighbor->cost);
+  fprintf (stdout, "%d\n", neighbor->cost);
+
+  return GNUNET_OK;
 }
 
 
@@ -66,44 +68,43 @@ main (int argc, char **argv)
   neighbor5->cost = 100;
   neighbor6->cost = 30;
 
-  fprintf (stdout, "Inserting\n");
   GNUNET_DV_Heap_insert (myHeap, neighbor1);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Inserting\n");
   GNUNET_DV_Heap_insert (myHeap, neighbor2);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Inserting\n");
   GNUNET_DV_Heap_insert (myHeap, neighbor3);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Inserting\n");
   GNUNET_DV_Heap_insert (myHeap, neighbor4);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Inserting\n");
   GNUNET_DV_Heap_insert (myHeap, neighbor5);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Inserting\n");
   GNUNET_DV_Heap_insert (myHeap, neighbor6);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Removing\n");
   GNUNET_DV_Heap_removeNode (myHeap, neighbor5);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Removing\n");
   GNUNET_DV_Heap_removeRoot (myHeap);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Updating\n");
   GNUNET_DV_Heap_updateCost (myHeap, neighbor6, 200);
+  fprintf(stdout, "\n");
   printTree (myHeap->root);
 
-  fprintf (stdout, "Iterating\n");
-  GNUNET_DV_Heap_Iterator (iterator_callback, myHeap, myHeap->root);
+  GNUNET_DV_Heap_Iterator (myHeap, myHeap->root, iterator_callback, NULL);
   return 0;
 }
 
