@@ -103,8 +103,8 @@ struct GNUNET_dv_heap_node
  *         iterate,
  *         GNUNET_NO if not.
  */
-typedef int (*GNUNET_HeapIterator) (struct GNUNET_dv_neighbor *neighbor,
-		struct GNUNET_dv_heap *root, void *cls);
+typedef int (*GNUNET_HeapIterator) (struct GNUNET_dv_neighbor * neighbor,
+                                    struct GNUNET_dv_heap * root, void *cls);
 
 /**
  * Iterate over all entries in the map.
@@ -175,8 +175,7 @@ GNUNET_DV_Heap_updatedCost (struct GNUNET_dv_heap *root,
 void
 GNUNET_DV_Heap_Iterator (struct GNUNET_dv_heap *root,
                          struct GNUNET_dv_heap_node *node,
-                         GNUNET_HeapIterator iterator,
-                         void *cls);
+                         GNUNET_HeapIterator iterator, void *cls);
 
 
 /**
