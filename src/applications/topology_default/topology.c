@@ -488,7 +488,7 @@ rereadConfiguration (void *ctx,
     }
   if ((fn != NULL) && (frstat.st_size > 0))
     {
-			GNUNET_array_grow (fInfo.friends, fInfo.friendCount, 0);
+      GNUNET_array_grow (fInfo.friends, fInfo.friendCount, 0);
       data = GNUNET_malloc (frstat.st_size);
       if (frstat.st_size !=
           GNUNET_disk_file_read (ectx, fn, frstat.st_size, data))
