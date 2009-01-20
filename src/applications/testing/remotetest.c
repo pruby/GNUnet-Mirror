@@ -20,7 +20,7 @@
 
 /**
  * @file applications/testing/remotetest.c
- * @brief Testcase for remote library
+ * @brief Start gnunet daemons, connect them together to create some topology
  * @author Nathan Evans
  */
 
@@ -31,6 +31,7 @@
 #include "remote.h"
 
 static char *configFile = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
+static char *dotOutFileName = NULL;
 static unsigned long long number_of_daemons;
 
 static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
@@ -42,14 +43,14 @@ static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
   {'n', "number_of_daemons", "NUMBER_OF_DAEMONS",
    gettext_noop ("set number of daemons to start"),
    1, &GNUNET_getopt_configure_set_ulong, &number_of_daemons},  /* -n */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  {'O', "output", "DOT_OUTPUT",
+	 gettext_noop ("set output file for a dot input file which represents the graph of the connected nodes"),
+	 1, &GNUNET_getopt_configure_set_string, &dotOutFileName},
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
-/**
- * Testcase
- * @return 0: ok, -1: error
- */
 int
 main (int argc, char *const *argv)
 {
@@ -76,6 +77,14 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return -1;
     }
+
+  if (dotOutFileName != NULL)
+  {
+  	GNUNET_GC_set_configuration_value_string (hostConfig, NULL,
+  	                                                        "MULTIPLE_SERVER_TESTING",
+  	                                                        "DOT_OUTPUT",
+  	                                                        dotOutFileName);
+  }
 
   GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons);
 

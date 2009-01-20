@@ -69,7 +69,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   system (cmd);
 
   GNUNET_free (cmd);
-  
+
   length =
     snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username, hostname,
               gnunetd_home, remote_config_path, configFileName);
@@ -78,7 +78,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
             hostname, gnunetd_home, remote_config_path, configFileName);
 
   fprintf (stderr, _("ssh command is : %s \n"), cmd);
-  
+
   system (cmd);
 	GNUNET_free (cmd);
 
@@ -108,10 +108,11 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   struct GNUNET_REMOTE_host_list *temp_pos;
   GNUNET_REMOTE_TOPOLOGIES type_of_topology;
   list_as_array = &array_of_pointers[0];
-
+  FILE *dotOutFile;
 
   char *ssh_username;
   char *control_host;
+  char *percentage_string;
   char *remote_config_path;
   char *remote_gnunetd_path;
   char *remote_pid_path;
@@ -123,6 +124,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   char *temp_pid_file;
   char *curr_host;
   char *temp_remote_config_path;
+  char *dotOutFileName;
 
   unsigned long long starting_port;
   unsigned long long port_increment;
@@ -145,6 +147,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   int friend_location_length;
   int ret;
   char *ipk_dir;
+  double percentage;
 
   length = 0;
   ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
@@ -157,34 +160,65 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "SSH_USERNAME", "",
                                             &ssh_username);
+
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "TOPOLOGY", 0, -1, 0, &topology);
+
   type_of_topology = (unsigned int) topology;
+
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                              "PERCENTAGE", "1.0",
+                                              &percentage_string);
+  percentage = atof(percentage_string);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "CONTROL_HOST", "localhost",
                                             &control_host);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "HOSTNAMES", "localhost",
                                             &hostnames);
+
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                              "DOT_OUTPUT", "",
+                                              &dotOutFileName);
+
+  dotOutFile = NULL;
+  if (strcmp(dotOutFileName,"") != 0)
+  {
+  	dotOutFile = FOPEN (dotOutFileName,"w");
+  	if (dotOutFile != NULL)
+  	{
+  		fprintf(dotOutFile, "strict graph G {\n");
+  	}
+  }
+
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "STARTING_PORT",
                                             1, -1, 1, &starting_port);
+
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "PORT_INCREMENT",
                                             1, -1, 2, &port_increment);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "REMOTE_CONFIG_PATH", "/tmp/",
                                             &remote_config_path);
+
   ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "REMOTE_GNUNETD_PATH", ipk_dir,
                                             &remote_gnunetd_path);
+
   if (ipk_dir != NULL)
     GNUNET_free (ipk_dir);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "BASE_CONFIG",
                                             "gnunetd.conf.skel",
                                             &base_config);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "PID_PATH", "/tmp/",
                                             &remote_pid_path);
@@ -445,8 +479,15 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
       GNUNET_GC_free (basecfg);
       ++i;
     }
-  ret = GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons);
+  ret = GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons, dotOutFile, percentage);
+  if (dotOutFile != NULL)
+  {
+  	fprintf(dotOutFile,"}\n");
+  	fclose(dotOutFile);
+  }
 
+  GNUNET_free (dotOutFileName);
+  GNUNET_free (percentage_string);
   GNUNET_free (base_config);
   GNUNET_free (remote_pid_path);
   GNUNET_free (data_dir);
@@ -460,8 +501,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 }
 
 int
-GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
-                               int number_of_daemons)
+GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
+                               int number_of_daemons, FILE *dotOutFile, double percentage)
 {
   FILE *temp_friend_handle;
   int ret;
@@ -472,11 +513,11 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
   int length;
 
   ret = GNUNET_OK;
-  switch (t)
+  switch (type)
     {
     case GNUNET_REMOTE_CLIQUE:
       fprintf (stderr, "Creating clique topology\n");
-      ret = GNUNET_REMOTE_connect_clique (head);
+      ret = GNUNET_REMOTE_connect_clique (head, dotOutFile);
       break;
     case GNUNET_REMOTE_SMALL_WORLD:
       fprintf (stderr, "Creating small world topology\n");
@@ -484,11 +525,15 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
       break;
     case GNUNET_REMOTE_RING:
       fprintf (stderr, "Creating ring topology\n");
-      ret = GNUNET_SYSERR;
+      ret = GNUNET_REMOTE_connect_ring (head, dotOutFile);
       break;
     case GNUNET_REMOTE_2D_TORUS:
       fprintf (stderr, "Creating 2d torus topology\n");
-      ret = GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array);
+      ret = GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array, dotOutFile);
+      break;
+    case GNUNET_REMOTE_ERDOS_RENYI:
+      fprintf (stderr, "Creating Erdos-Renyi topology\n");
+      ret = GNUNET_REMOTE_connect_erdos_renyi (percentage, head, dotOutFile);
       break;
     default:
       ret = GNUNET_SYSERR;
@@ -551,7 +596,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES t,
                        friend_pos->hostentry->port);
               GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
                                              friend_pos->hostentry->hostname,
-                                             friend_pos->hostentry->port);
+                                             friend_pos->hostentry->port, dotOutFile);
               friend_pos = friend_pos->next;
             }
           pos = pos->next;
