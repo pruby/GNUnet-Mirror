@@ -185,8 +185,10 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
         GNUNET_multi_hash_map_get (ctx->extended_neighbors,
                                    &peer->hashPubKey);
 
-      if ((neighbor->cost != cost) && ((neighbor->referrer == NULL) && (referrer == NULL)) || (((neighbor->referrer != NULL) && (referrer != NULL)) && (memcmp (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity))
-              == 0)))
+      if ( (neighbor->cost != cost) &&
+      		(((neighbor->referrer == NULL) && (referrer == NULL)) ||
+      		(((neighbor->referrer != NULL) && (referrer != NULL)) && (memcmp (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity))
+              == 0))))
 				{
 					neighbor->cost = cost;
 					GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
@@ -221,7 +223,6 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 					}
 			}
 
-    }
 
 #ifdef DEBUG_DV
   print_tables ();
