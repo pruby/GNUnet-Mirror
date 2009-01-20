@@ -259,7 +259,7 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
     }
   nmsg = (const p2p_dv_MESSAGE_NeighborInfo *) message;
 
-  ret = addUpdateNeighbor (&nmsg->neighbor, sender, ntohl (nmsg->cost));
+  ret = addUpdateNeighbor (&nmsg->neighbor, sender, ntohl (nmsg->cost) + 1);
 
   if (GNUNET_OK != ret)
     GNUNET_GE_LOG (coreAPI->ectx,
