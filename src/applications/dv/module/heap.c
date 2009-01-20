@@ -437,7 +437,7 @@ GNUNET_DV_Heap_Walk_getNext (struct GNUNET_dv_heap *root)
 
   neighbor = root->traversal_pos->neighbor;
 
-  choice = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1);
+  choice = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2);
 
   switch (choice)
     {
