@@ -158,7 +158,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 
   GNUNET_mutex_lock (ctx->dvMutex);
 
-  if (GNUNET_YES !=
+  if (GNUNET_NO ==
       GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
                                       &peer->hashPubKey))
     {
@@ -166,6 +166,12 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
       neighbor->cost = cost;
       neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+
+      if (referrer == NULL)
+				neighbor->referrer = NULL;
+			else
+				memcpy (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity));
+
       GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
                                  neighbor, GNUNET_MultiHashMapOption_REPLACE);
 
@@ -179,21 +185,20 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
         GNUNET_multi_hash_map_get (ctx->extended_neighbors,
                                    &peer->hashPubKey);
 
-      if (neighbor->cost > cost)
-        {
-          if (memcmp (neighbor->referrer, peer, sizeof (GNUNET_PeerIdentity))
-              == 0)
-            {
-              neighbor->cost = cost;
-              GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
-              GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
-            }
-          else
-            {
+      if (((neighbor->referrer == NULL) && (referrer == NULL)) || (((neighbor->referrer != NULL) && (referrer != NULL)) && (memcmp (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity))
+              == 0)))
+				{
+					neighbor->cost = cost;
+					GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
+					GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
+				}
+			else if (neighbor->cost > cost)
+				{
               GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
               GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
               GNUNET_free (neighbor->neighbor);
-              GNUNET_free (neighbor->referrer);
+              if (neighbor->referrer != NULL)
+              	GNUNET_free (neighbor->referrer);
               GNUNET_free (neighbor);
 
               neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
@@ -213,20 +218,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 
               GNUNET_DV_Heap_insert (&ctx->neighbor_max_heap, neighbor);
               GNUNET_DV_Heap_insert (&ctx->neighbor_min_heap, neighbor);
-            }
-        }
-      else if ((neighbor->cost < cost)
-               &&
-               (memcmp
-                (neighbor->referrer, referrer,
-                 sizeof (GNUNET_PeerIdentity)) == 0))
-        {
-          neighbor->cost = cost;
-
-          GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
-          GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
-
-        }
+					}
+			}
 
     }
 
