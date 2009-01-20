@@ -170,7 +170,10 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
       if (referrer == NULL)
 				neighbor->referrer = NULL;
 			else
+			{
+				neighbor->referrer = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
 				memcpy (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity));
+			}
 
       GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
                                  neighbor, GNUNET_MultiHashMapOption_REPLACE);
