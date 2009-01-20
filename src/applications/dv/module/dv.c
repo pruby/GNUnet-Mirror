@@ -185,7 +185,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
         GNUNET_multi_hash_map_get (ctx->extended_neighbors,
                                    &peer->hashPubKey);
 
-      if (((neighbor->referrer == NULL) && (referrer == NULL)) || (((neighbor->referrer != NULL) && (referrer != NULL)) && (memcmp (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity))
+      if ((neighbor->cost != cost) && ((neighbor->referrer == NULL) && (referrer == NULL)) || (((neighbor->referrer != NULL) && (referrer != NULL)) && (memcmp (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity))
               == 0)))
 				{
 					neighbor->cost = cost;
