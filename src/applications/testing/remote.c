@@ -71,8 +71,8 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   GNUNET_free (cmd);
 
   length =
-    snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username, hostname,
-              gnunetd_home, remote_config_path, configFileName);
+    snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username,
+              hostname, gnunetd_home, remote_config_path, configFileName);
   cmd = GNUNET_malloc (length + 1);
   snprintf (cmd, length + 1, "ssh %s@%s %sgnunet-update -c %s%s", username,
             hostname, gnunetd_home, remote_config_path, configFileName);
@@ -80,7 +80,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   fprintf (stderr, _("ssh command is : %s \n"), cmd);
 
   system (cmd);
-	GNUNET_free (cmd);
+  GNUNET_free (cmd);
 
   length =
     snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s", username, hostname,
@@ -167,9 +167,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   type_of_topology = (unsigned int) topology;
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
-                                              "PERCENTAGE", "1.0",
-                                              &percentage_string);
-  percentage = atof(percentage_string);
+                                            "PERCENTAGE", "1.0",
+                                            &percentage_string);
+  percentage = atof (percentage_string);
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "CONTROL_HOST", "localhost",
@@ -180,18 +180,18 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                             &hostnames);
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
-                                              "DOT_OUTPUT", "",
-                                              &dotOutFileName);
+                                            "DOT_OUTPUT", "",
+                                            &dotOutFileName);
 
   dotOutFile = NULL;
-  if (strcmp(dotOutFileName,"") != 0)
-  {
-  	dotOutFile = FOPEN (dotOutFileName,"w");
-  	if (dotOutFile != NULL)
-  	{
-  		fprintf(dotOutFile, "strict graph G {\n");
-  	}
-  }
+  if (strcmp (dotOutFileName, "") != 0)
+    {
+      dotOutFile = FOPEN (dotOutFileName, "w");
+      if (dotOutFile != NULL)
+        {
+          fprintf (dotOutFile, "strict graph G {\n");
+        }
+    }
 
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "STARTING_PORT",
@@ -479,12 +479,14 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
       GNUNET_GC_free (basecfg);
       ++i;
     }
-  ret = GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons, dotOutFile, percentage);
+  ret =
+    GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons,
+                                   dotOutFile, percentage);
   if (dotOutFile != NULL)
-  {
-  	fprintf(dotOutFile,"}\n");
-  	fclose(dotOutFile);
-  }
+    {
+      fprintf (dotOutFile, "}\n");
+      fclose (dotOutFile);
+    }
 
   GNUNET_free (dotOutFileName);
   GNUNET_free (percentage_string);
@@ -502,7 +504,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 
 int
 GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
-                               int number_of_daemons, FILE *dotOutFile, double percentage)
+                               int number_of_daemons, FILE * dotOutFile,
+                               double percentage)
 {
   FILE *temp_friend_handle;
   int ret;
@@ -529,7 +532,9 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       break;
     case GNUNET_REMOTE_2D_TORUS:
       fprintf (stderr, "Creating 2d torus topology\n");
-      ret = GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array, dotOutFile);
+      ret =
+        GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array,
+                                        dotOutFile);
       break;
     case GNUNET_REMOTE_ERDOS_RENYI:
       fprintf (stderr, "Creating Erdos-Renyi topology\n");
@@ -585,7 +590,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
        * to the first later, but this IS simple.  If performance becomes a problem
        * with MANY conns, we'll see...
        */
-      while (pos != NULL)
+      while ((pos != NULL) && (ret == GNUNET_OK))
         {
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
@@ -594,9 +599,13 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                        pos->hostname, pos->port,
                        friend_pos->hostentry->hostname,
                        friend_pos->hostentry->port);
-              GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
-                                             friend_pos->hostentry->hostname,
-                                             friend_pos->hostentry->port, dotOutFile);
+              ret = GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
+                                                   friend_pos->hostentry->
+                                                   hostname,
+                                                   friend_pos->hostentry->
+                                                   port, dotOutFile);
+              if (ret != GNUNET_OK)
+                break;
               friend_pos = friend_pos->next;
             }
           pos = pos->next;

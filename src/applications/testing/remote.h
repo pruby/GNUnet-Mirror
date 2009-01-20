@@ -68,7 +68,8 @@ struct GNUNET_REMOTE_friends_list
  */
 int
 GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
-                               char *hostname2, unsigned short port2, FILE *dotOutFile);
+                               char *hostname2, unsigned short port2,
+                               FILE * dotOutFile);
 
 /**
  * Because we need to copy over the friends file before actually connecting,
@@ -94,7 +95,8 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
  */
 int
 GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
-                               int number_of_daemons, FILE *dotOufFile, double percentage);
+                               int number_of_daemons, FILE * dotOufFile,
+                               double percentage);
 
 
 #endif /*REMOTE_H_ */

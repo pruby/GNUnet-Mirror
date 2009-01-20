@@ -43,10 +43,11 @@ static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
   {'n', "number_of_daemons", "NUMBER_OF_DAEMONS",
    gettext_noop ("set number of daemons to start"),
    1, &GNUNET_getopt_configure_set_ulong, &number_of_daemons},  /* -n */
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   {'O', "output", "DOT_OUTPUT",
-	 gettext_noop ("set output file for a dot input file which represents the graph of the connected nodes"),
-	 1, &GNUNET_getopt_configure_set_string, &dotOutFileName},
+   gettext_noop
+   ("set output file for a dot input file which represents the graph of the connected nodes"),
+   1, &GNUNET_getopt_configure_set_string, &dotOutFileName},
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -79,12 +80,11 @@ main (int argc, char *const *argv)
     }
 
   if (dotOutFileName != NULL)
-  {
-  	GNUNET_GC_set_configuration_value_string (hostConfig, NULL,
-  	                                                        "MULTIPLE_SERVER_TESTING",
-  	                                                        "DOT_OUTPUT",
-  	                                                        dotOutFileName);
-  }
+    {
+      GNUNET_GC_set_configuration_value_string (hostConfig, NULL,
+                                                "MULTIPLE_SERVER_TESTING",
+                                                "DOT_OUTPUT", dotOutFileName);
+    }
 
   GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons);
 
