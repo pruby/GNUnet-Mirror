@@ -205,14 +205,16 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 
               neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
               neighbor->cost = cost;
-              neighbor->neighbor =
-                GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+              neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
               memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
               if (referrer == NULL)
                 neighbor->referrer = NULL;
               else
+              {
+              	neighbor->referrer = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
                 memcpy (neighbor->referrer, referrer,
                         sizeof (GNUNET_PeerIdentity));
+              }
 
               GNUNET_multi_hash_map_put (ctx->extended_neighbors,
                                          &peer->hashPubKey, neighbor,
