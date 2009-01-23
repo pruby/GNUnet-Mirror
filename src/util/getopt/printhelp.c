@@ -109,6 +109,9 @@ GNUNET_getopt_format_help_ (GNUNET_CommandLineProcessorContext * ctx,
         printf ("\n");
       i++;
     }
+  printf("Report bugs to gnunet-developers@gnu.org.\n"
+	 "GNUnet home page: http://www.gnu.org/software/gnunet/\n"
+	 "General help using GNU software: http://www.gnu.org/gethelp/\n");
   return GNUNET_SYSERR;
 }
 
