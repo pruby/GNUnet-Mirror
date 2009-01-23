@@ -71,7 +71,8 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
                                                      iter_pos->port, &node1,
                                                      &node2))
             {
-              temp_rand = RANDOM ();
+              temp_rand = ((double) RANDOM () / RAND_MAX);
+              fprintf(stderr, "rand is %f probability is %f\n",temp_rand,probability);
               if (temp_rand < probability)
                 {
                   node1temp =
