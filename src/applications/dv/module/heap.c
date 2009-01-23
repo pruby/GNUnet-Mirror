@@ -34,17 +34,19 @@ void
 printTree (struct GNUNET_dv_heap_node *root)
 {
   if (root->neighbor != NULL)
-    fprintf (stdout, "%d\n", root->neighbor->cost);
-  if (root->left_child != NULL)
-    {
-      fprintf (stdout, "LEFT of %d\n", root->neighbor->cost);
-      printTree (root->left_child);
-    }
-  if (root->right_child != NULL)
-    {
-      fprintf (stdout, "RIGHT of %d\n", root->neighbor->cost);
-      printTree (root->right_child);
-    }
+	  {
+	    fprintf (stdout, "%d\n", root->neighbor->cost);
+	  if (root->left_child != NULL)
+	    {
+	      fprintf (stdout, "LEFT of %d\n", root->neighbor->cost);
+	      printTree (root->left_child);
+	    }
+	  if (root->right_child != NULL)
+	    {
+	      fprintf (stdout, "RIGHT of %d\n", root->neighbor->cost);
+	      printTree (root->right_child);
+	    }
+	  }
 }
 
 static struct GNUNET_dv_heap_node *
@@ -56,7 +58,7 @@ getNextPos (struct GNUNET_dv_heap *root)
   int depth;
   int i;
 
-  ret = malloc (sizeof (struct GNUNET_dv_heap_node));
+  ret = GNUNET_malloc (sizeof (struct GNUNET_dv_heap_node));
   pos = root->size + 1;
   depth = (int) log2 (pos);
   ret->left_child = NULL;

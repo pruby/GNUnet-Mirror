@@ -101,7 +101,6 @@ print_tables ()
                  GNUNET_GE_BULK, "Printing extended neighbors:\n");
   GNUNET_multi_hash_map_iterate (ctx->extended_neighbors, &printTableEntry,
                                  "EXTENDED");
-
   return;
 }
 
@@ -204,15 +203,18 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
         {
           GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
           GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
+
           GNUNET_free (neighbor->neighbor);
           if (neighbor->referrer != NULL)
             GNUNET_free (neighbor->referrer);
           GNUNET_free (neighbor);
+          GNUNET_multi_hash_map_remove_all(ctx->extended_neighbors, &peer->hashPubKey);
 
           neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
           neighbor->cost = cost;
           neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
           memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+
           if (referrer == NULL)
             neighbor->referrer = NULL;
           else
@@ -293,12 +295,15 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "Entering peer_connect_handler:\n");
+  GNUNET_mutex_lock (ctx->dvMutex);
   print_tables ();
+  GNUNET_mutex_unlock (ctx->dvMutex);
 
 #endif
   struct GNUNET_dv_neighbor *neighbor;
   unsigned int cost = GNUNET_DV_LEAST_COST;
 
+  GNUNET_mutex_lock (ctx->dvMutex);
   if (GNUNET_YES !=
       GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
                                       &peer->hashPubKey))
@@ -315,22 +320,22 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       neighbor =
         GNUNET_multi_hash_map_get (ctx->direct_neighbors, &peer->hashPubKey);
 
-
       if (neighbor->cost != cost)
         {
-          GNUNET_mutex_lock (ctx->dvMutex);
-          GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
+					neighbor->cost = cost;
+          /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
                                      neighbor,
-                                     GNUNET_MultiHashMapOption_REPLACE);
-          GNUNET_mutex_unlock (ctx->dvMutex);
+                                     GNUNET_MultiHashMapOption_REPLACE);*/
         }
 
     }
-
+  GNUNET_mutex_unlock (ctx->dvMutex);
   addUpdateNeighbor (peer, NULL, cost);
 
 #ifdef DEBUG_DV
-  print_tables ();
+  GNUNET_mutex_lock (ctx->dvMutex);
+	print_tables ();
+	GNUNET_mutex_unlock (ctx->dvMutex);
 #endif
   return;
 
@@ -403,7 +408,9 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "disconnected peer: %s\n", (char *) &myself);
-  print_tables ();
+  GNUNET_mutex_lock (ctx->dvMutex);
+	print_tables ();
+	GNUNET_mutex_unlock (ctx->dvMutex);
 #endif
 
   GNUNET_mutex_lock (ctx->dvMutex);
@@ -414,17 +421,17 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
     {
       neighbor =
         GNUNET_multi_hash_map_get (ctx->direct_neighbors, &peer->hashPubKey);
+
+      GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
+                                                  &peer->hashPubKey);
       if (neighbor != NULL)
         {
-          GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
-                                            &peer->hashPubKey);
-
           GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
                                    ctx->neighbor_max_heap.root,
                                    &delete_callback, (void *) peer);
 
           GNUNET_free (neighbor->neighbor);
-          if (neighbor->referrer)
+          if (neighbor->referrer != NULL)
             GNUNET_free (neighbor->referrer);
 
           GNUNET_free (neighbor);
@@ -434,7 +441,9 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 
   GNUNET_mutex_unlock (ctx->dvMutex);
 #ifdef DEBUG_DV
-  print_tables ();
+  GNUNET_mutex_lock (ctx->dvMutex);
+	print_tables ();
+	GNUNET_mutex_unlock (ctx->dvMutex);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "Exiting peer_disconnect_handler\n");
