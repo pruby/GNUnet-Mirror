@@ -409,7 +409,7 @@ struct FPPClosure
 /**
  * Any response that we get should be passed
  * back to the client.  If the response is unique,
- * we should about the iteration (return GNUNET_SYSERR).
+ * we should abort the iteration (return GNUNET_SYSERR).
  */
 static int
 fast_path_processor (const GNUNET_HashCode * key,
