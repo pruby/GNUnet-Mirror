@@ -1,0 +1,276 @@
+                      Willkommen im GNUnet
+
+
+Was ist GNUnet?
+===============
+
+GNUnet ist ein auf Sicherheit fokussierendes Peer-to-Peer Framework.
+Die erste und primäre Applikation für GNUnet ist anonymer Daten-
+austausch. GNUnet wird momentan von einer weltweiten Gruppe von frei-
+willig arbeitenden Entwicklern für Freie Software weiterentwickelt.
+GNUnet ist ein Teil des GNU-Projekts (http://www.gnu.org/).
+
+Dies ist eine BETA-Veröffentlichung. Während keine signifikanten
+Fehler bekannt sind, verändern wir immer noch große Teile des Systems
+in anderen Versionen. Obwohl wir glauben, dass das System benutzbar
+ist, sind einige Funktionen -- die die Performance steigern würde und
+das Leben der Benutzer erleichtern -- noch nicht implementiert. Außer-
+dem könnte die Dokumentation für unerfahrene Benutzer nicht adequat
+sein.
+
+Für eine längere Beschreibung vom GNUnet-System werfen Sie einen Blick
+auf unsere Webseiten http://www.gnu.org/software/gnunet/ und
+http://gnunet.org/.
+
+Abhängigkeiten:
+=============
+
+Für Ungeduldige hier eine Liste von direkten Abhängigkeiten, um GNUnet
+zu betreiben:
+
+- libextractor  >= 0.5.20b
+- libgcrypt     >= 1.2
+- libgmp        >= 4.0
+- libcurl       >= 7.15.4
+- libltdl       >= 1.5 (Teil von GNU libtool)
+- libguile      >= 1.8 (benötigt für gnunet-setup)
+- GNU adns      >= 1.0 (dringend empfohlen)
+- mysql         >= 5.0 (dringend empfohlen)
+- sqlite        >= 3.0 (Alternative zu MySQL)
+
+Bestimmte gnunet-setup Plugins möchten auch dies haben:
+- GTK          >= 2.6.0
+- Qt           >= 4.0
+- dialog       >= 1.0-20051207
+- ncurses
+
+Bestimmte Transports möchten außerdem:
+- libmicrohttpd >= 0.3.1
+- libcurl       >= 7.15.4
+- libesmtp      >= 1.0.4
+
+
+Empfohlene autotools zum Kompilieren der SVN-Version sind:
+- autoconf >= 2.59
+- automake >= 1.9.4
+- libtool  >= 1.5.8
+
+Sehen Sie auch in README.debian für eine Liste der Debian-Pakete nach.
+
+
+Installation
+===============
+
+Der schnellste Weg ist es, ein Binär-Paket zu nutzen, wenn es für Ihr
+System verfügbar ist. Für eine detaillierte Beschreibung lesen Sie die
+Installations-Anleitung auf der Webseite
+http://gnunet.org/documentation.php3.
+
+Wenn Sie aus den Quellen installieren möchten, müssen Sie zuerst
+libextractor installiern (Download von
+from http://gnunet.org/libextractor/). Dann können Sie die eigentliche
+GNUnet-Kompilierung auf diesem Weg starten:
+
+$ ./configure --prefix=$HOME --with-extractor=$HOME
+$ make
+# make install
+# gnunet-setup -d
+# gnunetd
+
+Dies wird GNUnet kompilieren und es in die Pfade ~/bin/, ~/lib/ und
+~/man/ installieren. gnunet-setup wird die Daemon-Konfiguration
+erstellen (-d); dieser Schritt ist interaktiv. Sie können gnunet-setup
+als Root für eine systemweite Installation starten oder als einzelner
+Nutzer, um eine persönliche Installation zu erstellen. Wenn Sie
+gnunetd nicht als Root laufen lassen möchten, kann gnunet-setup be-
+nutzt werden, um den Benutzer "gnunet" hinzuzufügen. Daten werden dann
+in /var/lib/GNUnet gespeichert und gnunetd wird als dieser Benutzer
+laufen. Beachten Sie, dass außerdem benutzerspezifische Konfigurations-
+Dateien (~/.gnunet/gnunet.conf) von jedem Benutzer erstellt werden
+müssen, indem gnunet-setup ohne die -d Option gestartet wird. Abhängig
+von Ihrem Betriebssystem können die Assistenten von gnunet-setup auch
+benutzt werden, um Init-Skripte zu kreieren, die gnunetd bei jedem
+System-Start mitstarten. Für allgemeinere Informationen über den
+GNU build-Prozess lesen Sie die INSTALL-Datei.
+
+GNUnet benötigt die GNU MP Bibliothek (http://www.gnu.org/software/gmp/)
+und libgcrypt. Sie können den Pfad zu libgcrypt bestimmen, indem Sie
+"--with-gcrypt=PATH" zu configure hinzufügen. Sie benötigen außerdem
+noch entweder Sqlite (Version 3 oder neuer) oder MySQL (Version 5.0
+oder neuer)
+
+Wenn Sie den Quelltext von Subversion kompilieren, müssen Sie
+". bootstrap" vor ./configure ausführen. Sollten Sie hierbei einen
+Fehler bekommen, der ähnlich aussieht wie "macro `AM_PATH_GTK' not
+found in library", so müssen Sie wahrscheinlich aclocal von Hand
+mit der -I Option ausführen, die zu Ihren aclocal m4 Makros zeigt, z.B.
+
+$ aclocal -I /usr/local/share/aclocal
+
+
+Konfiguration
+=============
+
+GNUnet benutzt zwei Typen Konfigurationsdateien: Eine für den Daemon
+(gnunetd.conf) und eine für jeden Nutzer (gnunet.conf). Sie können
+diese Konfigurationsdateien mit dem Tool gnunet-setup erstellen und
+bearbeiten. Um gnunetd.conf zu bearbeiten, müssen Sie die Option -d
+an gnunet-setup anhängen (ansonsten wird gnunet-setup standardmäßig
+gnunet.conf bearbeiten). Die Standard-Einstellungen, die beim ersten
+Starten von gnunet-setup erstellt werden, sind normalerweise in
+Ordnung, Sie sollten jedoch die Beschränkungen (Speicherplatz, Band-
+breite, etc.) anpassen. Die Konfigurationsdateien sind
+"menschenlesbar"; die Konfiguration von gnunetd ist im Normalfall in
+"/etc/gnunetd.conf" zu finden. Die nutzerspezifischen Konfigurations-
+dateien sollten in "~/.gnunet/gnunet.conf" liegen. Eine Standard-
+Version der nutzerspezifischen Konfiguration wird automatisch
+erstellt, sobald Sie ein Programm nutzen, das eine der Konfigurations-
+Dateien benötigt.
+
+Sie MÜSSEN /etc/gnunetd.conf explizit erstellen, bevor Sie gnunetd
+starten. Der empfohlene Weg, dies zu tun, ist es gnunet-setup -d
+(plus mögliche Optionen, um festzulegen, welche Oberfläche Sie bevor-
+zugen).
+
+Wenn Sie eine andere Konfigurations-Datei verwenden wollen, hängen
+Sie den Namen der Datei als ein Argument mit der Option "-c" an
+eine beliebige GNUnet-Applikation. Das Senden eines SIGHUP an den
+gnunetd-Prozess wird gnunetd veranlassen, die Konfigurationsdatei
+neu einzulesen. Beachten Sie, dass nicht alle Optionen zur Lauftzeit
+auf diese Art geändert werden können (z.B. müssen Sie gnunetd
+komplett neustarten, um eine Port-Nummer zu ändern).
+
+Nach dem Verändern von Optionen (oder dem Aktualisieren von GNUnet)
+müssen Sie gnunet-update erneut ausführen.
+
+
+Benutzung
+=========
+
+Zuerst müssen Sie eine Liste von GNUnet Hosts holen. Da GNUnet
+Informationen über andere Peers verbreitet, genügt es einen einzigen
+Peer zu kennen. Beachten Sie, dass die standardmäßig angelegte
+"gnunetd.conf" URLs enthält, aus denen gnunetd eine
+Initial-Hostliste herunterlädt, sobald es gestartet wird. Wenn Sie
+eine alternative URL für andere erstellen wollen, kann die Datei
+auf jeder Maschine mit gnunetd generiert werden, indem folgendes
+periodisch ausgeführt wird:
+
+$ cat $GNUNETD_HOME/data/hosts/* > the_file
+
+Wenn die Lösung mit der URL für Ihre Situation nicht praktikabel ist,
+können Sie auch Hosts manuell hinzufügen. Die GNUnet Webseite
+enthält ein Verzeichnis von Host-Schlüsseln unter
+http://gnunet.org/hosts/. Sie können natürlich auch jede andere
+Quelle für diese Dateien verwenden. Kopieren Sie die Host-Schlüssel
+nach "$GNUNETD_HOME/data/hosts/" (wobei $GNUNETD_HOME das in der
+Konfigurationsdatei /etc/gnunetd.conf festgelegte Verzeichnis ist).
+
+Nun starten Sie den lokalen Knoten mit "gnunetd". gnunetd sollte
+24/7 laufen, wenn Sie Ihre Anonymität maximieren wollen. Sie können
+ihn als einen Dienst mit "/etc/initd./gnunetd start" ausführen. Um
+Dateien ins GNUnet einzufügen, benutzen Sie den "gnunet-insert"-
+Befehl.
+
+Die GTK-Benutzeroberfläche wird separat von GNUnet geliefert. Nach
+dem Herunterladen und Installieren von gnunet-gtk können Sie die
+GUI durch diesen Befehl anstoßen:
+
+$ gnunet-gtk
+
+Für Qt/KDE-Benutzer gibt es außerdem eine QT-Oberfläche (auch separat
+geliefert). Nach dem Installieren von gnunet-qt stoßen Sie die GUI
+an mit:
+
+$ gnunet-qt
+
+Wenn Sie die Shell benutzen möchten (Teil dieser Distribution),
+benutzen Sie
+
+$ gnunet-search SCHLÜSSELWORT
+
+Dies wird eine Liste an Resultaten auf der Konsole erzeugen.
+Danach führen Sie
+
+$ gnunet-download -o DATEINAME GNUNET_URI
+
+aus, um eine Datei herunterzuladen. Die GNUNET_URI wird von
+gnunet-search zusammen mit einer Beschreibung ausgegeben.
+
+Um Dateien zu teilen, ist es der einfachste Weg, ein Verzeichnis
+mit den Dateien (und Verzeichnissen), die sie teilen wollen
+zu erstellen und danach dies auszuführen:
+
+$ nohup gnunet-auto-share NAME-DES-VERZEICHNISSES &
+
+Für weiter Dokumentation werfen Sie einen Blick auf unsere Webseite.
+
+
+Hacking GNUnet
+==============
+
+Mitwirkungen sind immer willkommen! Senden Sie Bugs an
+https://gnunet.org/mantis/. Bitte stellen Sie sicher, contrib/report.sh
+auszuführen und die Ausgabe davon an den Fehlerbericht anzuhängen.
+Patches senden Sie per E-Mail an gnunet-developors@gnu.org.
+
+Um Unit Tests mit "make check" auszuführen, müssen Sie eine
+Umgebungsvariable ("GNUNET_PREFIX") zum Verzeichnis, wo GNUnet
+installiert ist, festlegen (normalerweise wird GNUnet OS-spezifische
+Tricks benutzen, um den PREFIX herauszufinden, aber da die Testcase-
+Binaries nicht installiert sind, funktioniert der Trick für sie nicht).
+Außerdem müssen Sie vor dem Ausführen von Testfällen die Installation
+zu Ende führen. Schnellzusammenfassung:
+
+$ ./configure --prefix=$SOMEWHERE
+$ make
+$ make install
+$ export GNUNET_PREFIX=$SOMEWHERE
+$ make check
+
+Wenn Testfälle auf Ihrem System nicht durchlaufen konnten, führen Sie
+"contrib/report.sh" aus und berichten Sie die Ausgabe zusammen mit
+den Information über den fehlgeschlagenen Testfall an das Mantis
+Bugverfolgungs-System auf https://gnunet.org/mantis/.
+
+
+http auf Port 80 betreiben
+==========================
+
+Um GNUnets HTTP-Verkehr perfekt zu verstecken können Sie in Erwägung
+ziehen, GNUnets HTTP-Transport auf Port 80 laufen zu lassen. Dabei
+sollten Sie GNUnet nicht als Root ausführen. Stattdessen leiten Sie
+Port 80 weiter zu z.B. 8080 mit diesem Befehl (als Root in den Startup-
+Skripten):
+
+# iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
+
+Dann setzen Sie in der HTTP-Sektion von gnunetd.conf den
+"ADVERTISED-PORT" auf "80" und "PORT" auf "8080". Sie können den
+gleichen Trick für die TCP- und UDP-Transporte benutzen, wenn Sie
+diese auf einen privilegierten Port mappen wollen (aus der Sicht
+des Netzwerks).
+
+
+SMTP-Transport betreiben
+========================
+
+GNUnet über SMTP (E-Mail) laufen zu lassen, ist ein wenig aufwändiger.
+Beachten Sie, dass Sie nicht alle Transporte laufen lassen müssen
+(abgesehen vom NAT-Transport, der nicht allein laufen kann). Wenn
+Sie wirklich P2P über SMTP möchten, lesen Sie die Anleitung auf
+http://gnunet.org/smtp.php3
+
+
+Bleiben Sie dran!
+=================
+
+* http://www.gnu.org/software/gnunet/
+* http://gnunet.org/
+* https://gnunet.org/mantis/
+* https://gnunet.org/drupal/
+* http://mail.gnu.org/mailman/listinfo/gnunet-developers
+* http://mail.gnu.org/mailman/listinfo/help-gnunet
+* http://mail.gnu.org/mailman/listinfo/info-gnunet
+* http://mail.gnu.org/mailman/listinfo/gnunet-svn
+
