@@ -122,7 +122,7 @@ main (int argc, const char **argv)
   printf ("Starting %u peers...\n", NUM_PEERS);
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "advertising dht stats",
-                                        "/tmp/gnunet-dht-test",
+                                        "/tmp/gnunet-dht-multi-test",
                                         2087, 10, NUM_PEERS);
   if (peers == NULL)
     {
