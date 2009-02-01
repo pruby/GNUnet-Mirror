@@ -578,7 +578,7 @@ d_get (const GNUNET_HashCode * key,
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                      GNUNET_GE_DEVELOPER,
-                     "dstore found result for get: `%.*s\n", size, dat);
+                     "dstore found result for get: `%.*s'\n", size, dat);
 #endif
       if ((handler != NULL) &&
           (GNUNET_OK != handler (key, type, size, dat, closure)))
