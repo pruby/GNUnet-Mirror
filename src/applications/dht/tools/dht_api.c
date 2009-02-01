@@ -27,6 +27,7 @@
 #include "gnunet_protocols.h"
 #include "dht.h"
 #include "gnunet_dht_lib.h"
+#include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
 
 #define DEBUG_DHT_API GNUNET_NO
@@ -299,6 +300,7 @@ GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;
   int ret;
+  int ret2;
 
 #if DEBUG_DHT_API
   GNUNET_GE_LOG (ectx,
@@ -315,9 +317,41 @@ GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
   req->type = htonl (type);
   memcpy (&req[1], value, size);
   ret = GNUNET_client_connection_write (sock, &req->header);
+  if ( (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret2)) ||
+       (ret2 != GNUNET_OK) )    
+    ret = GNUNET_SYSERR;
   GNUNET_client_connection_destroy (sock);
   GNUNET_free (req);
   return ret;
 }
+
+static int
+waitForConnect (const char *name, unsigned long long value, void *cls)
+{
+  unsigned long long * ok = cls;
+  if ((value > 0) && (0 == strcmp (_("# dht connections"), name)))
+    {
+      *ok = value;
+      return GNUNET_SYSERR;
+    }
+  return GNUNET_OK;
+}
+
+/**
+ * Check if this peer has DHT connections to 
+ * any other peer.
+ *
+ * @param sock connection to gnunetd
+ * @return number of connections
+ */
+unsigned long long
+GNUNET_DHT_test_connected(struct GNUNET_ClientServerConnection *sock)
+{
+  unsigned long long ret;
+
+  GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, &ret);
+  return ret; 
+}
+
 
 /* end of dht_api.c */

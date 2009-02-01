@@ -15,6 +15,7 @@ libgnunetdht_api_la_SOURCES = \
 libgnunetdht_api_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 libgnunetdht_api_la_LIBADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 

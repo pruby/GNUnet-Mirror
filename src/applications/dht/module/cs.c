@@ -90,7 +90,7 @@ csPut (struct GNUNET_ClientHandle *client,
   size = ntohs (req->header.size) - sizeof (CS_dht_request_put_MESSAGE);
   GNUNET_GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
   dhtAPI->put (&req->key, ntohl (req->type), size, (const char *) &req[1]);
-  return GNUNET_OK;
+  return  coreAPI->cs_send_value (client, GNUNET_OK);
 }
 
 static int
