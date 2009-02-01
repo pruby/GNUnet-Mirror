@@ -1,3 +1,7 @@
+Sun Feb  1 00:37:16 MST 2009
+	Fixed problem in DHT client protocol that could cause
+	PUT requests from clients to be (frequently) lost.
+
 Sun Nov  2 16:06:47 MST 2008
 	Fixed problem with MySQL disconnects in one module
 	impacting MySQL correctness in another module (caused
