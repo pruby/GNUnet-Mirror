@@ -108,6 +108,18 @@ int GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                     const GNUNET_HashCode * key,
                     unsigned int type, unsigned int size, const char *value);
 
+
+
+/**
+ * Check if this peer has DHT connections to 
+ * any other peer.
+ *
+ * @param sock connection to gnunetd
+ * @return number of connections
+ */
+unsigned long long
+GNUNET_DHT_test_connected(struct GNUNET_ClientServerConnection *sock);
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
