@@ -31,6 +31,10 @@
  * Statistics message. Contains the timestamp and an aribtrary
  * (bounded by the maximum CS message size!) number of statistical
  * numbers. If needed, several messages are used.
+ *
+ * The struct is followed by statCounters 64-bit 
+ * integers which are then followed by 0-terminated
+ * strings.
  */
 typedef struct
 {
@@ -38,33 +42,24 @@ typedef struct
   /**
    * For 64-bit alignment...
    */
-  int reserved;
-  /* timestamp  (network byte order) */
-  GNUNET_CronTime startTime;
-  /* total number of statistical counters */
-  int totalCounters;
-  /* number of statistical counters in this message */
-  int statCounters;
+  int reserved GNUNET_PACKED;
+
+  /**
+   * timestamp  (network byte order) 
+   */
+  GNUNET_CronTime startTime GNUNET_PACKED;
+
+  /**
+   * total number of statistical counters 
+   */
+  unsigned int totalCounters GNUNET_PACKED;
+
+  /**
+   * number of statistical counters in this message 
+   */
+  unsigned int statCounters GNUNET_PACKED;
 
 } CS_stats_reply_MESSAGE;
-
-/**
- * Generic version of CS_stats_reply_MESSAGE with field for finding the end
- * of the struct. Use the other version for allocation.
- */
-typedef struct
-{
-  CS_stats_reply_MESSAGE stats_cs_message;
-
-  /* values[statCounters] */
-  unsigned long long values[1];
-
-  /* description for each of the values,
-     separated by '\0'-terminators; the
-     last description is also terminated
-     by a '\0'; again statCounters entries */
-  /* char descriptions[0]; */
-} CS_stats_reply_MESSAGE_GENERIC;
 
 /**
  * Query protocol supported message.  Contains the type of
@@ -78,7 +73,7 @@ typedef struct
    * The type of the message (XX_CS_PROTO_XXXX)
    * we want to know the status of.
    */
-  unsigned short type;
+  unsigned short type GNUNET_PACKED;
 
   /**
    * 0 for plaintext P2P,
@@ -86,7 +81,7 @@ typedef struct
    * 2 for either plaintext or ciphertext P2P,
    * 3 for client-server
    */
-  unsigned short handlerType;
+  unsigned short handlerType GNUNET_PACKED;
 
 } CS_stats_get_supported_MESSAGE;
 

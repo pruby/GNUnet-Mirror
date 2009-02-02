@@ -40,13 +40,13 @@ typedef struct
   /**
    * Message options, see GNUNET_CHAT_MSG_OPTIONS.
    */
-  unsigned int msg_options;
+  unsigned int msg_options GNUNET_PACKED;
 
   /**
    * Hash of the public key of the pseudonym of the
    * sender of the message (all zeros for anonymous).
    */
-  GNUNET_HashCode sender;
+  GNUNET_HashCode sender GNUNET_PACKED;
 
 } CS_chat_MESSAGE_ReceiveNotification;
 
@@ -61,23 +61,23 @@ typedef struct
   /**
    * Desired message options, see GNUNET_CHAT_MSG_OPTIONS.
    */
-  unsigned int msg_options;
+  unsigned int msg_options GNUNET_PACKED;
 
   /**
    * Sequence number of the message (unique per sender).
    */
-  unsigned int sequence_number;
+  unsigned int sequence_number GNUNET_PACKED;
 
   /**
    * Reserved (for alignment).
    */
-  unsigned int reserved;
+  unsigned int reserved GNUNET_PACKED;
 
   /**
    * Who should receive this message?  Set to all zeros
    * for "everyone".
    */
-  GNUNET_HashCode target;
+  GNUNET_HashCode target GNUNET_PACKED;
 
 } CS_chat_MESSAGE_TransmitRequest;
 
@@ -93,22 +93,22 @@ typedef struct
   /**
    * Sequence number of the original message.
    */
-  unsigned int sequence_number;
+  unsigned int sequence_number GNUNET_PACKED;
 
   /**
    * Time of receipt.
    */
-  GNUNET_CronTime timestamp;
+  GNUNET_CronTime timestamp GNUNET_PACKED;
 
   /**
    * Who is confirming the receipt?
    */
-  GNUNET_HashCode target;
+  GNUNET_HashCode target GNUNET_PACKED;
 
   /**
    * Hash of the (possibly encrypted) content.
    */
-  GNUNET_HashCode content;
+  GNUNET_HashCode content GNUNET_PACKED;
 
   /**
    * Signature confirming receipt.  Signature
@@ -134,17 +134,17 @@ typedef struct
    * receive private messages, this should be set to
    * GNUNET_CHAT_MSG_PRIVATE | GNUNET_CHAT_MSG_ACKNOWLEDGED.
    */
-  unsigned int msg_options;
+  unsigned int msg_options GNUNET_PACKED;
 
   /**
    * Length of the room name.
    */
-  unsigned short room_name_len;
+  unsigned short room_name_len GNUNET_PACKED;
 
   /**
    * Reserved (should be zero).
    */
-  unsigned short reserved;
+  unsigned short reserved GNUNET_PACKED;
 
   /**
    * Private key of the joining member.
@@ -170,7 +170,7 @@ typedef struct
    * acknowledgements and receive private messages, this should be set
    * to GNUNET_CHAT_MSG_PRIVATE | GNUNET_CHAT_MSG_ACKNOWLEDGED.
    */
-  unsigned int msg_options;
+  unsigned int msg_options GNUNET_PACKED;
 
   /**
    * Public key of the new user.
@@ -191,7 +191,7 @@ typedef struct
   /**
    * Reserved (for alignment).
    */
-  unsigned int reserved;
+  unsigned int reserved GNUNET_PACKED;
 
   /**
    * Who is leaving?

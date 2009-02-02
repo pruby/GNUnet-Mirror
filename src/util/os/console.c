@@ -301,7 +301,9 @@ GNUNET_terminal_detach (struct GNUNET_GE_Context *ectx,
    * close usual incoming fds, but redirect them somewhere
    * useful so the fds don't get reallocated elsewhere.
    */
-  if (dup2 (nullfd, 0) < 0 || dup2 (nullfd, 1) < 0 || dup2 (nullfd, 2) < 0)
+  if ( (dup2 (nullfd, 0) < 0) || 
+       (dup2 (nullfd, 1) < 0) || 
+       (dup2 (nullfd, 2) < 0) )
     {
       GNUNET_GE_LOG_STRERROR (ectx,
                               GNUNET_GE_FATAL | GNUNET_GE_USER |

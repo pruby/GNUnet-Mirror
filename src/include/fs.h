@@ -44,20 +44,20 @@ typedef struct
   /**
    * Should be zero.
    */
-  int reserved;
+  int reserved GNUNET_PACKED;
 
   /**
    * Type of the content that we're looking for.
    * 0 for any.
    */
-  unsigned int type;
+  unsigned int type GNUNET_PACKED;
 
   /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
-  unsigned int anonymity_level;
+  unsigned int anonymity_level GNUNET_PACKED;
 
   /**
    * Identity of the peer that is known to have the
@@ -69,7 +69,7 @@ typedef struct
   /**
    * What are the queries?
    */
-  GNUNET_HashCode query[1];
+  GNUNET_HashCode query[1] GNUNET_PACKED;
 
 } CS_fs_request_search_MESSAGE;
 
@@ -86,12 +86,12 @@ typedef struct
    * Anonymity level for the content, maybe
    * 0 if not known.
    */
-  unsigned int anonymity_level;
+  unsigned int anonymity_level GNUNET_PACKED;
 
   /**
    * Expiration time of the response (relative to now).
    */
-  GNUNET_CronTime expiration_time;
+  GNUNET_CronTime expiration_time GNUNET_PACKED;
 
 } CS_fs_reply_content_MESSAGE;
 
@@ -108,24 +108,24 @@ typedef struct
   /**
    * Reserved (should be zero).  For alignment.
    */
-  int reserved;
+  int reserved GNUNET_PACKED;
 
   /**
    * Priority for the on-demand encoded entry.
    */
-  unsigned int priority;
+  unsigned int priority GNUNET_PACKED;
 
   /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
-  unsigned int anonymity_level;
+  unsigned int anonymity_level GNUNET_PACKED;
 
   /**
    * At what time does the entry expire?
    */
-  GNUNET_CronTime expiration;
+  GNUNET_CronTime expiration GNUNET_PACKED;
 
 } CS_fs_request_insert_MESSAGE;
 
@@ -138,13 +138,13 @@ typedef struct
 {
   GNUNET_MessageHeader header;
 
-  unsigned int reserved;
+  unsigned int reserved GNUNET_PACKED;
 
   /**
    * What is the GNUNET_hash of the file that contains
    * this block?
    */
-  GNUNET_HashCode fileId;
+  GNUNET_HashCode fileId GNUNET_PACKED;
 
 } CS_fs_request_init_index_MESSAGE;
 
@@ -160,37 +160,37 @@ typedef struct
   /**
    * Reserved (should be zero).  For alignment.
    */
-  int reserved;
+  int reserved GNUNET_PACKED;
 
   /**
    * Priority for the on-demand encoded entry.
    */
-  unsigned int priority;
+  unsigned int priority GNUNET_PACKED;
 
   /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
-  unsigned int anonymity_level;
+  unsigned int anonymity_level GNUNET_PACKED;
 
   /**
    * At what time does the entry expire?
    */
-  GNUNET_CronTime expiration;
+  GNUNET_CronTime expiration GNUNET_PACKED;
 
   /**
    * At what offset in the plaintext file is
    * this content stored?
    */
-  unsigned long long fileOffset;
+  unsigned long long fileOffset GNUNET_PACKED;
 
   /**
    * What is the GNUNET_hash of the file that contains
    * this block?  Used by gnunetd for the name
    * of the file in the on-demand datastore.
    */
-  GNUNET_HashCode fileId;
+  GNUNET_HashCode fileId GNUNET_PACKED;
 
 } CS_fs_request_index_MESSAGE;
 
@@ -205,7 +205,7 @@ typedef struct
   /**
    * Reserved (should be zero).  For alignment.
    */
-  int reserved;
+  int reserved GNUNET_PACKED;
 
 } CS_fs_request_delete_MESSAGE;
 
@@ -219,13 +219,13 @@ typedef struct
   /**
    * Size of each block of the file.
    */
-  unsigned int blocksize;
+  unsigned int blocksize GNUNET_PACKED;
 
   /**
    * What is the GNUNET_hash of the file that should be
    * unindexed?
    */
-  GNUNET_HashCode fileId;
+  GNUNET_HashCode fileId GNUNET_PACKED;
 
 } CS_fs_request_unindex_MESSAGE;
 
@@ -236,13 +236,13 @@ typedef struct
 {
   GNUNET_MessageHeader header;
 
-  unsigned int reserved;
+  unsigned int reserved GNUNET_PACKED;
 
   /**
    * What is the GNUNET_hash of the file that should be
    * unindexed?
    */
-  GNUNET_HashCode fileId;
+  GNUNET_HashCode fileId GNUNET_PACKED;
 
 } CS_fs_request_test_index_MESSAGE;
 
@@ -263,30 +263,30 @@ typedef struct
   /**
    * Type of the query (block type).
    */
-  unsigned int type;
+  unsigned int type GNUNET_PACKED;
 
   /**
    * How important is this request (network byte order)
    */
-  unsigned int priority;
+  unsigned int priority GNUNET_PACKED;
 
   /**
    * Relative time to live in GNUNET_CRON_MILLISECONDS (network byte order)
    */
-  int ttl;
+  int ttl GNUNET_PACKED;
 
   /**
    * The content hash should be mutated using this value
    * before checking against the bloomfilter (used to
    * get many different filters for the same hash codes).
    */
-  int filter_mutator;
+  int filter_mutator GNUNET_PACKED;
 
   /**
    * How many queries do we have (should be
    * greater than zero).
    */
-  unsigned int number_of_queries;
+  unsigned int number_of_queries GNUNET_PACKED;
 
   /**
    * To whom to return results?
@@ -297,7 +297,7 @@ typedef struct
    * Hashcodes of the file(s) we're looking for.
    * Details depend on the query type.
    */
-  GNUNET_HashCode queries[1];
+  GNUNET_HashCode queries[1] GNUNET_PACKED;
 
 } P2P_gap_query_MESSAGE;
 
@@ -314,13 +314,13 @@ typedef struct
   /**
    * Always zero (for now).
    */
-  unsigned int reserved;        /* for 64-bit alignment */
+  unsigned int reserved GNUNET_PACKED;        /* for 64-bit alignment */
 
   /**
    * When does this result expire?  The given time
    * is relative (and in big-endian).
    */
-  unsigned long long expiration;
+  unsigned long long expiration GNUNET_PACKED;
 
 } P2P_gap_reply_MESSAGE;
 

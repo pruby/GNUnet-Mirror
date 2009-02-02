@@ -92,14 +92,14 @@ typedef struct
   /**
    * Total size of the structure, in bytes, in big-endian!
    */
-  unsigned short len;
-  unsigned short sizen;         /*  in big-endian! */
-  unsigned short sizee;         /*  in big-endian! */
-  unsigned short sized;         /*  in big-endian! */
-  unsigned short sizep;         /*  in big-endian! */
-  unsigned short sizeq;         /*  in big-endian! */
-  unsigned short sizedmp1;      /*  in big-endian! */
-  unsigned short sizedmq1;      /*  in big-endian! */
+  unsigned short len GNUNET_PACKED;
+  unsigned short sizen GNUNET_PACKED;         /*  in big-endian! */
+  unsigned short sizee GNUNET_PACKED;         /*  in big-endian! */
+  unsigned short sized GNUNET_PACKED;         /*  in big-endian! */
+  unsigned short sizep GNUNET_PACKED;         /*  in big-endian! */
+  unsigned short sizeq GNUNET_PACKED;         /*  in big-endian! */
+  unsigned short sizedmp1 GNUNET_PACKED;      /*  in big-endian! */
+  unsigned short sizedmq1 GNUNET_PACKED;      /*  in big-endian! */
   /* followed by the actual values */
 } GNUNET_RSA_PrivateKeyEncoded;
 
@@ -119,11 +119,11 @@ typedef struct
   /**
    * In big-endian, must be GNUNET_RSA_KEY_LEN+4
    */
-  unsigned short len;
+  unsigned short len GNUNET_PACKED;
   /**
    * Size of n in key; in big-endian!
    */
-  unsigned short sizen;
+  unsigned short sizen GNUNET_PACKED;
   /**
    * The key itself, contains n followed by e.
    */
@@ -131,7 +131,7 @@ typedef struct
   /**
    * Padding (must be 0)
    */
-  unsigned short padding;
+  unsigned short padding GNUNET_PACKED;
 } GNUNET_RSA_PublicKey;
 
 /**

@@ -55,9 +55,9 @@ typedef struct
 
   GNUNET_MessageHeader header;
 
-  unsigned int type;            /* nbo */
+  unsigned int type GNUNET_PACKED;            /* nbo */
 
-  GNUNET_HashCode key;
+  GNUNET_HashCode key GNUNET_PACKED;
 
 } CS_dht_request_put_MESSAGE;
 
@@ -71,9 +71,9 @@ typedef struct
 
   GNUNET_MessageHeader header;
 
-  unsigned int type;            /* nbo */
+  unsigned int type GNUNET_PACKED;            /* nbo */
 
-  GNUNET_HashCode key;
+  GNUNET_HashCode key GNUNET_PACKED;
 
 } CS_dht_request_get_MESSAGE;
 

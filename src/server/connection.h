@@ -43,13 +43,13 @@ typedef struct
 {
   /* GNUNET_hash of the plaintext, used to verify message integrity;
      ALSO used as the IV for the symmetric cipher! */
-  GNUNET_HashCode hash;
+  GNUNET_HashCode hash GNUNET_PACKED;
   /* sequence number, in network byte order, 0 for plaintext messages! */
-  unsigned int sequenceNumber;
+  unsigned int sequenceNumber GNUNET_PACKED;
   /* timestamp  (network byte order), 0 for plaintext messages! */
-  GNUNET_Int32Time timeStamp;
+  GNUNET_Int32Time timeStamp GNUNET_PACKED;
   /* desired bandwidth, 0 for plaintext messages! */
-  unsigned int bandwidth;
+  unsigned int bandwidth GNUNET_PACKED;
 } GNUNET_TransportPacket_HEADER;        /* 76 bytes */
 
 /* ***************** GNUnet core internals ************ */

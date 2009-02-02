@@ -294,17 +294,24 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
                              void *cls)
 {
   CS_stats_reply_MESSAGE *statMsg;
+  const unsigned long long * values;
+  const char * text;
   GNUNET_MessageHeader csHdr;
   unsigned int count;
   unsigned int i;
-  int mpos;
+  unsigned int mcnt;
+  unsigned int moff;
   int ret;
+  size_t slen;
+  unsigned short mlen;
 
   ret = GNUNET_OK;
   csHdr.size = htons (sizeof (GNUNET_MessageHeader));
   csHdr.type = htons (GNUNET_CS_PROTO_STATS_GET_STATISTICS);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
-    return GNUNET_SYSERR;
+    {
+      return GNUNET_SYSERR;
+    }
   statMsg = GNUNET_malloc (sizeof (CS_stats_reply_MESSAGE));
   statMsg->totalCounters = htonl (1);   /* to ensure we enter the loop */
   count = 0;
@@ -316,16 +323,24 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
          count, ntohl(statMsg->totalCounters) ); */
       if (GNUNET_SYSERR ==
           GNUNET_client_connection_read (sock,
-                                         (GNUNET_MessageHeader **) & statMsg))
+                                         (GNUNET_MessageHeader **) &statMsg))
         return GNUNET_SYSERR;
-      if ((ntohs (statMsg->header.size) < sizeof (CS_stats_reply_MESSAGE)) ||
-          (((char *) statMsg)[ntohs (statMsg->header.size) - 1] != '\0'))
+      mlen = ntohs(statMsg->header.size);
+      if ((mlen < sizeof (CS_stats_reply_MESSAGE)) ||
+          (((const char *) statMsg)[mlen - 1] != '\0'))
         {
           GNUNET_GE_BREAK (ectx, 0);
           ret = GNUNET_SYSERR;
           break;
         }
-      mpos = sizeof (unsigned long long) * ntohl (statMsg->statCounters);
+      mcnt = ntohl (statMsg->statCounters);
+      if ( (sizeof(CS_stats_reply_MESSAGE) + mcnt * sizeof(unsigned long long) + mcnt
+	    > mlen) )
+	{
+          GNUNET_GE_BREAK (ectx, 0);
+          ret = GNUNET_SYSERR;
+          break;
+	}
       if (count == 0)
         {
           ret = processor (_("Uptime (seconds)"),
@@ -334,14 +349,14 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
                              GNUNET_ntohll (statMsg->startTime)) /
                             GNUNET_CRON_SECONDS), cls);
         }
-      for (i = 0; i < ntohl (statMsg->statCounters); i++)
+      moff = 0;
+      values = (const unsigned long long*) &statMsg[1];
+      text = (const char*) &values[mcnt];
+      for (i = 0; i < mcnt; i++)
         {
-          if (mpos +
-              strlen (&
-                      ((char
-                        *) (((CS_stats_reply_MESSAGE_GENERIC *)
-                             statMsg)->values))[mpos]) + 1 >
-              ntohs (statMsg->header.size) - sizeof (CS_stats_reply_MESSAGE))
+	  slen = strlen(&text[moff]) + 1;
+          if (moff + slen >
+              mlen - sizeof (CS_stats_reply_MESSAGE) - sizeof(unsigned long long) * mcnt)
             {
               GNUNET_GE_BREAK (ectx, 0);
               ret = GNUNET_SYSERR;
@@ -350,20 +365,12 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
           if (ret != GNUNET_SYSERR)
             {
               ret =
-                processor (&
-                           ((char
-                             *) (((CS_stats_reply_MESSAGE_GENERIC *)
-                                  statMsg)->values))[mpos],
-                           GNUNET_ntohll (((CS_stats_reply_MESSAGE_GENERIC *)
-                                           statMsg)->values[i]), cls);
+                processor (&text[moff],
+                           GNUNET_ntohll (values[i]), cls);
             }
-          mpos +=
-            strlen (&
-                    ((char
-                      *) (((CS_stats_reply_MESSAGE_GENERIC *)
-                           statMsg)->values))[mpos]) + 1;
+          moff += strlen (&text[moff]) + 1;
         }
-      count += ntohl (statMsg->statCounters);
+      count += mcnt;
     }                           /* end while */
   GNUNET_free (statMsg);
   return ret;

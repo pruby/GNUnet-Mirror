@@ -37,16 +37,16 @@ typedef struct
    * How big is each message (plus headers).
    * Note that GNUnet is limited to 64k messages.
    */
-  unsigned int msgSize;
+  unsigned int msgSize GNUNET_PACKED;
   /**
    * How many messages should be transmitted in
    * each iteration?
    */
-  unsigned int msgCnt;
+  unsigned int msgCnt GNUNET_PACKED;
   /**
    * How many iterations should be performed?
    */
-  unsigned int iterations;
+  unsigned int iterations GNUNET_PACKED;
   /**
    * Which peer should receive the messages?
    */
@@ -55,21 +55,21 @@ typedef struct
    * Inter packet space in milliseconds (delay
    * introduced when sending messages).
    */
-  GNUNET_CronTime intPktSpace;
+  GNUNET_CronTime intPktSpace GNUNET_PACKED;
   /**
    * Time to wait for the arrival of all repies
    * in one iteration.
    */
-  GNUNET_CronTime timeOut;
+  GNUNET_CronTime timeOut GNUNET_PACKED;
   /**
    * intPktSpace delay is only introduced every
    * trainSize messages.
    */
-  unsigned int trainSize;
+  unsigned int trainSize GNUNET_PACKED;
   /**
    * Which priority should be used?
    */
-  unsigned int priority;
+  unsigned int priority GNUNET_PACKED;
 } CS_tbench_request_MESSAGE;
 
 /**
@@ -78,15 +78,15 @@ typedef struct
 typedef struct
 {
   GNUNET_MessageHeader header;
-  unsigned int max_loss;
-  unsigned int min_loss;
-  float mean_loss;
-  float variance_loss;
+  unsigned int max_loss GNUNET_PACKED;
+  unsigned int min_loss GNUNET_PACKED;
+  float mean_loss GNUNET_PACKED;
+  float variance_loss GNUNET_PACKED;
 
-  GNUNET_CronTime max_time;
-  GNUNET_CronTime min_time;
-  float mean_time;
-  float variance_time;
+  GNUNET_CronTime max_time GNUNET_PACKED;
+  GNUNET_CronTime min_time GNUNET_PACKED;
+  float mean_time GNUNET_PACKED;
+  float variance_time GNUNET_PACKED;
 } CS_tbench_reply_MESSAGE;
 
 #endif

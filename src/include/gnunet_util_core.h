@@ -80,18 +80,18 @@ typedef struct
   /**
    * time this address expires  (network byte order)
    */
-  GNUNET_Int32Time expiration_time;
+  GNUNET_Int32Time expiration_time GNUNET_PACKED;
 
   /**
    * advertised MTU for sending (replies can have a different
    * MTU!)
    */
-  unsigned int MTU;
+  unsigned int MTU GNUNET_PACKED;
 
   /**
    * size of the sender address
    */
-  unsigned short senderAddressSize;
+  unsigned short senderAddressSize GNUNET_PACKED;
 
   /**
    * protocol supported by the node (only one protocol
@@ -99,7 +99,7 @@ typedef struct
    * Examples are UDP, TCP, etc. This field is
    * in network byte order
    */
-  unsigned short protocol;
+  unsigned short protocol GNUNET_PACKED;
 
 } GNUNET_MessageHello;
 

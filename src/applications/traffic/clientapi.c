@@ -54,6 +54,7 @@ GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
 {
   CS_traffic_info_MESSAGE *info;
   CS_traffic_request_MESSAGE req;
+  const TRAFFIC_COUNTER *tc;
   int i;
 
   req.header.size = htons (sizeof (CS_traffic_request_MESSAGE));
@@ -75,16 +76,15 @@ GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
       return GNUNET_SYSERR;
     }
 
+  tc = (const TRAFFIC_COUNTER*) &info[1];
   for (i = ntohl (info->count) - 1; i >= 0; i--)
     {
-      const TRAFFIC_COUNTER *tc =
-        &((CS_traffic_info_MESSAGE_GENERIC *) info)->counters[i];
-      if ((tc->flags & GNUNET_TRAFFIC_TYPE_MASK) == direction)
+      if ((tc[i].flags & GNUNET_TRAFFIC_TYPE_MASK) == direction)
         {
-          *count = ntohl (tc->count);
-          *avg_size = ntohl (tc->avrg_size);
-          *peers = ntohs (tc->flags) & GNUNET_TRAFFIC_DIVERSITY_MASK;
-          *time = ntohl (tc->time_slots);
+          *count = ntohl (tc[i].count);
+          *avg_size = ntohl (tc[i].avrg_size);
+          *peers = ntohs (tc[i].flags) & GNUNET_TRAFFIC_DIVERSITY_MASK;
+          *time = ntohl (tc[i].time_slots);
         }                       /* end if received */
     }                           /* end for all counters */
   GNUNET_free (info);

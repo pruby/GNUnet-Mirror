@@ -303,18 +303,22 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
                 const GNUNET_MessageHeader * originalRequestMessage)
 {
   CS_stats_reply_MESSAGE *statMsg;
-  int pos;                      /* position in the values-descriptions */
-  int start;
-  int end;
-  int mpos;                     /* postion in the message */
+  unsigned long long * values;
+  char * text;
+  unsigned int pos;
+  unsigned int start;
+  unsigned int end;
+  unsigned int mpos;
+  unsigned int moff;
+  unsigned int mcnt;
+  unsigned int msize;
 
   immediateUpdates ();
   statMsg = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
   statMsg->header.type = htons (GNUNET_CS_PROTO_STATS_STATISTICS);
   statMsg->totalCounters = htonl (statCounters);
-  statMsg->statCounters = htons (0);
   statMsg->startTime = GNUNET_htonll (startTime);
-
+  values = (unsigned long long*) &statMsg[1];
   start = 0;
   while (start < statCounters)
     {
@@ -322,40 +326,36 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
       /* first pass: gauge how many statistic numbers
          and their descriptions we can send in one message */
       mpos = 0;
-      while ((pos < statCounters) &&
-             (mpos + sizeof (unsigned long long)
-              + entries[pos].descStrLen + 1
-              < GNUNET_MAX_BUFFER_SIZE - sizeof (CS_stats_reply_MESSAGE)))
+      moff = 0;
+      while ( (pos < statCounters) &&
+	      (moff + sizeof (unsigned long long)
+	       + entries[pos].descStrLen + 1
+	       < GNUNET_MAX_BUFFER_SIZE - sizeof (CS_stats_reply_MESSAGE)))
         {
-          mpos += sizeof (unsigned long long);  /* value */
-          mpos += entries[pos].descStrLen + 1;
+          moff += sizeof (unsigned long long);  /* value */
+	  values[pos - start] = GNUNET_htonll (entries[pos].value);
+          moff += entries[pos].descStrLen + 1;
           pos++;
         }
       end = pos;
-      /* second pass: copy values and messages to message */
-      for (pos = start; pos < end; pos++)
-        ((CS_stats_reply_MESSAGE_GENERIC *) statMsg)->values[pos -
-                                                             start] =
-          GNUNET_htonll (entries[pos].value);
-      mpos = sizeof (unsigned long long) * (end - start);
+      mcnt = end - start;
+      statMsg->statCounters = htonl (mcnt);
+      /* second pass: copy messages to message */      
+      text = (char* ) &values[mcnt];
+      moff = 0;
       for (pos = start; pos < end; pos++)
         {
-          memcpy (&
-                  ((char
-                    *) (((CS_stats_reply_MESSAGE_GENERIC *)
-                         statMsg))->values)[mpos], entries[pos].description,
+          memcpy (&text[moff], 
+		  entries[pos].description,
                   entries[pos].descStrLen + 1);
-          mpos += entries[pos].descStrLen + 1;
+          moff += entries[pos].descStrLen + 1;
         }
-      statMsg->statCounters = htonl (end - start);
+      msize = moff 
+	+ sizeof(unsigned long long) * mcnt 
+	+ sizeof (CS_stats_reply_MESSAGE);
       GNUNET_GE_ASSERT (NULL,
-                        mpos + sizeof (CS_stats_reply_MESSAGE) <
-                        GNUNET_MAX_BUFFER_SIZE);
-
-      statMsg->header.size = htons (mpos + sizeof (CS_stats_reply_MESSAGE));
-      /* printf("writing message of size %d with stats %d to %d out of %d to socket\n",
-         ntohs(statMsg->header.size),
-         start, end, statCounters); */
+                        msize < GNUNET_MAX_BUFFER_SIZE);
+      statMsg->header.size = htons (msize);
       if (GNUNET_SYSERR ==
           coreAPI->cs_send_message (sock, &statMsg->header, GNUNET_YES))
         break;                  /* abort, socket error! */

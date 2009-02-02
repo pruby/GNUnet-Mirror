@@ -36,24 +36,24 @@ typedef struct
   /**
    * Flags. See TC_XXXX definitions.
    */
-  unsigned short flags;
+  unsigned short flags GNUNET_PACKED;
 
   /**
    * What is the message type that this counter is concerned with?
    */
-  unsigned short type;
+  unsigned short type GNUNET_PACKED;
 
   /**
    * What was the number of messages of this type that the peer
    * processed in the last n time units?
    */
-  unsigned int count;
+  unsigned int count GNUNET_PACKED;
 
   /**
    * What is the average size of the last "count" messages that
    * the peer processed?
    */
-  unsigned int avrg_size;
+  unsigned int avrg_size GNUNET_PACKED;
 
   /**
    * In which of the last 32 time units did the peer receive or send a
@@ -61,14 +61,15 @@ typedef struct
    * seconds ago, the highest bit (2^31) corresponds to the current
    * second.
    */
-  unsigned int time_slots;
+  unsigned int time_slots GNUNET_PACKED;
 } TRAFFIC_COUNTER;
 
 
 /**
  * Format of the reply-message to a CS_TRAFFIC_QUERY.
  * A message of this format is send back to the client
- * if it sends a CS_TRAFFIC_QUERY to gnunetd.
+ * if it sends a CS_TRAFFIC_QUERY to gnunetd.  This
+ * struct is followed by count TRAFFIC_COUNTERs.
  */
 typedef struct
 {
@@ -78,24 +79,9 @@ typedef struct
    * The number of different message types we have seen
    * in the last time.
    */
-  unsigned int count;
+  unsigned int count GNUNET_PACKED;
 
 } CS_traffic_info_MESSAGE;
-
-/**
- * Generic version of CS_traffic_info_MESSAGE with field for accessing end of struct
- * (use the other version for allocation).
- */
-typedef struct
-{
-  CS_traffic_info_MESSAGE cs_traffic_info;
-
-  /**
-   * "count" traffic counters.
-   */
-  TRAFFIC_COUNTER counters[1];
-
-} CS_traffic_info_MESSAGE_GENERIC;
 
 /**
  * Request for CS_traffic_info_MESSAGE.
@@ -108,7 +94,7 @@ typedef struct
    * How many time units back should the statistics returned contain?
    * (in network byte order) Must be smaller or equal to HISTORY_SIZE.
    */
-  unsigned int timePeriod;
+  unsigned int timePeriod GNUNET_PACKED;
 
 } CS_traffic_request_MESSAGE;
 

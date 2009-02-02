@@ -300,6 +300,7 @@ buildReply (unsigned int countTimeUnits)
   CS_traffic_info_MESSAGE *reply;
   unsigned int count;
   unsigned int i;
+  TRAFFIC_COUNTER * tc;
 
   GNUNET_mutex_lock (lock);
   count = 0;
@@ -318,19 +319,18 @@ buildReply (unsigned int countTimeUnits)
                               count * sizeof (TRAFFIC_COUNTER));
   reply->count = htonl (count);
   count = 0;
+  tc = (TRAFFIC_COUNTER*) &reply[1];
   for (i = 0; i < max_message_type; i++)
     if (counters[i] != NULL)
       {
         if (counters[i]->send.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->counters
-                        [count++], &counters[i]->send,
+          buildSummary (&tc[count++], &counters[i]->send,
                         GNUNET_TRAFFIC_TYPE_SENT, countTimeUnits, i);
         if (counters[i]->receive.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->counters
-                        [count++], &counters[i]->receive,
+          buildSummary (&tc[count++],
+                        &counters[i]->receive,
                         GNUNET_TRAFFIC_TYPE_RECEIVED, countTimeUnits, i);
       }
-
   GNUNET_mutex_unlock (lock);
   return reply;
 }

@@ -39,17 +39,17 @@
  */
 typedef struct
 {
-  GNUNET_MessageHeader header;
+  GNUNET_MessageHeader header GNUNET_PACKED;
 
   /**
    * Cost from received from node to neighbor node, takes distance into account
    */
-  unsigned int cost;
+  unsigned int cost GNUNET_PACKED;
 
   /**
    * Identity of neighbor of received from node
    */
-  GNUNET_PeerIdentity neighbor;
+  GNUNET_PeerIdentity neighbor GNUNET_PACKED;
 
 } p2p_dv_MESSAGE_NeighborInfo;
 

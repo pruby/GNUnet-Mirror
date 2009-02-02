@@ -40,6 +40,12 @@
 #define GNUNET_NO      0
 
 /**
+ * gcc-ism to get packed structs.
+ */
+#define GNUNET_PACKED __attribute__((packed))
+
+
+/**
  * Function called with a filename.
  *
  * @param filename complete filename (absolute path)

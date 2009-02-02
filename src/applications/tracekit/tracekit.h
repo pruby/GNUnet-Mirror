@@ -35,22 +35,22 @@ typedef struct
   /**
    * When was this probe started? (NBO)
    */
-  GNUNET_Int32Time timestamp;
+  GNUNET_Int32Time timestamp GNUNET_PACKED;
 
   /**
    * How many more hops should this probe go (NBO)
    */
-  unsigned int hopsToGo;
+  unsigned int hopsToGo GNUNET_PACKED;
 
   /**
    * How important is the probe for the sender? (NBO)
    */
-  unsigned int priority;
+  unsigned int priority GNUNET_PACKED;
 
   /**
    * Internal client id of the sender.
    */
-  unsigned int clientId;
+  unsigned int clientId GNUNET_PACKED;
 
   /**
    * Which peer is the ultimate receiver of this
@@ -80,12 +80,12 @@ typedef struct
    * At what time was the initator sending the
    * request?
    */
-  GNUNET_Int32Time initiatorTimestamp;
+  GNUNET_Int32Time initiatorTimestamp GNUNET_PACKED;
 
   /**
    * Internal client Id of the sender.
    */
-  unsigned int clientId;
+  unsigned int clientId GNUNET_PACKED;
 
 } P2P_tracekit_reply_MESSAGE;
 
@@ -96,12 +96,12 @@ typedef struct
   /**
    * How many more hops should this probe go (NBO)
    */
-  unsigned int hops;
+  unsigned int hops GNUNET_PACKED;
 
   /**
    * How important is the probe for the sender? (NBO)
    */
-  unsigned int priority;
+  unsigned int priority GNUNET_PACKED;
 } CS_tracekit_probe_MESSAGE;
 
 typedef struct

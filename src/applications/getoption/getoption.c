@@ -41,6 +41,7 @@ handleGetOption (struct GNUNET_ClientHandle *sock,
   CS_getoption_reply_MESSAGE *rep;
   char *val;
   int ret;
+  size_t vlen;
 
   if (ntohs (message->size) != sizeof (CS_getoption_request_MESSAGE))
     return GNUNET_SYSERR;
@@ -58,10 +59,10 @@ handleGetOption (struct GNUNET_ClientHandle *sock,
                                                       NULL, &val))
       || (val == NULL))
     return GNUNET_SYSERR;       /* signal error: option not set */
-
-  rep = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + strlen (val) + 1);
-  rep->header.size = htons (sizeof (GNUNET_MessageHeader) + strlen (val) + 1);
-  memcpy (rep->value, val, strlen (val) + 1);
+  vlen = strlen(val) + 1;
+  rep = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + vlen);
+  rep->header.size = htons (sizeof (GNUNET_MessageHeader) + vlen);
+  memcpy (rep->value, val, vlen);
   rep->header.type = htons (GNUNET_CS_PROTO_GET_OPTION_REPLY);
   ret = coreAPI->cs_send_message (sock, &rep->header, GNUNET_YES);
   GNUNET_free (rep);

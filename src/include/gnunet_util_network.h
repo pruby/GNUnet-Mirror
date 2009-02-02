@@ -96,7 +96,7 @@ typedef struct
  */
 typedef struct
 {
-  GNUNET_HashCode hashPubKey;
+  GNUNET_HashCode hashPubKey GNUNET_PACKED;
 } GNUNET_PeerIdentity;
 
 /**
@@ -108,12 +108,12 @@ typedef struct
   /**
    * The length of the struct (in bytes, including the length field itself)
    */
-  unsigned short size;
+  unsigned short size GNUNET_PACKED;
 
   /**
    * The type of the message (XX_CS_PROTO_XXXX)
    */
-  unsigned short type;
+  unsigned short type GNUNET_PACKED;
 
 } GNUNET_MessageHeader;
 
@@ -131,7 +131,7 @@ typedef struct
   /**
    * The return value (network byte order)
    */
-  int return_value;
+  int return_value GNUNET_PACKED;
 
 } GNUNET_MessageReturnValue;
 
@@ -149,7 +149,7 @@ typedef struct
   /**
    * The return value (network byte order)
    */
-  GNUNET_GE_KIND kind;
+  GNUNET_GE_KIND kind GNUNET_PACKED;
 
 } GNUNET_MessageReturnErrorMessage;
 

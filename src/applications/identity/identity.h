@@ -57,13 +57,13 @@ typedef struct
 {
   GNUNET_MessageHeader header;
 
-  unsigned int trust;
+  unsigned int trust GNUNET_PACKED;
 
   GNUNET_PeerIdentity peer;
 
-  GNUNET_CronTime last_message;
+  GNUNET_CronTime last_message GNUNET_PACKED;
 
-  unsigned int bpm;
+  unsigned int bpm GNUNET_PACKED;
 } CS_identity_peer_info_MESSAGE;
 
 
