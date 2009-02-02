@@ -203,7 +203,7 @@ infoCallback (void *data,
 }
 
 /**
- * Testcase to test gap routing (2 peers only).
+ * Testcase to test gap routing.
  * @return 0: ok, -1: error
  */
 int
@@ -221,6 +221,8 @@ main (int argc, char **argv)
 
   ret = 0;
   cfg = GNUNET_GC_create ();
+  fprintf(stderr,
+	  "Setup...\n");
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
       GNUNET_GC_free (cfg);
