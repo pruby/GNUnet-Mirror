@@ -448,13 +448,16 @@ assembleDatum (MYSQL_BIND * result)
   GNUNET_GE_BREAK (NULL, ret <= 1);     /* should only have one result! */
   if (ret > 0)
     ret = GNUNET_OK;
-  if ((ret != GNUNET_OK) ||
-      (rbind[0].buffer_length != contentSize) || (length != contentSize))
+  if ( (ret != GNUNET_OK) ||
+       (rbind[0].buffer_length != contentSize) || 
+       (length != contentSize))
     {
-      GNUNET_GE_BREAK (NULL, (ret != GNUNET_OK));
-      GNUNET_GE_BREAK (NULL, (rbind[0].buffer_length != contentSize));
-      GNUNET_GE_BREAK (NULL, (length != contentSize));
-      do_delete_entry_by_vkey (vkey);
+      GNUNET_GE_BREAK (NULL, ret != 0);     /* should have one result! */
+      GNUNET_GE_BREAK (NULL, length == contentSize);     /* length should match! */
+      GNUNET_GE_BREAK (NULL, rbind[0].buffer_length == contentSize);     /* length should be internally consistent! */
+      do_delete_value (vkey);
+      if (ret != 0)
+	do_delete_entry_by_vkey (vkey);
       content_size -= ntohl (datum->size);
       GNUNET_free (datum);
       return NULL;
