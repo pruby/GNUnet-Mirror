@@ -173,7 +173,7 @@ GNUNET_GNS_wiz_create_group_user (char *group_name, char *user_name)
 {
   int ret;
 
-  ret = GNUNET_configure_user_account (0, 1, user_name, group_name);
+  ret = GNUNET_configure_user_account (0, 1, group_name, user_name);
 
   if (ret != GNUNET_OK)
     {
