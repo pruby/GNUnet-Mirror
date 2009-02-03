@@ -263,11 +263,13 @@ GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
       /* good, strip of '/bin'! */
       execpath[n - 3] = '\0';
       n -= 3;
+      if (execpath[n - 1] == DIR_SEPARATOR)
+        execpath[--n] = '\0';
     }
   switch (dirkind)
     {
     case GNUNET_IPK_PREFIX:
-      dirname = "";
+      dirname = DIR_SEPARATOR_STR;
       break;
     case GNUNET_IPK_BINDIR:
       dirname = DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR;
