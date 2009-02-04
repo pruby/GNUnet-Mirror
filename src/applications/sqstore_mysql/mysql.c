@@ -975,7 +975,7 @@ get (const GNUNET_HashCode * query,
                  &limit_off, GNUNET_YES, -1);
             }
         }
-      if (ret == GNUNET_SYSERR)
+      if (ret != GNUNET_OK)
         break;
       last_vkey = vkey;
       datum = assembleDatum (rbind);
