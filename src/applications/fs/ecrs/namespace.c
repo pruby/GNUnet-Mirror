@@ -253,9 +253,14 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   value->anonymity_level = htonl (anonymityLevel);
   value->expiration_time = GNUNET_htonll (expiration);
   sock = GNUNET_client_connection_create (ectx, cfg);
+  if (sock == NULL)
+    {
+      GNUNET_free (value);
+      GNUNET_RSA_free_key (namespace_priv_key);
+      return NULL;
+    }
   if (GNUNET_OK != GNUNET_FS_insert (sock, value))
     {
-      GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free (value);
       GNUNET_client_connection_destroy (sock);
       GNUNET_RSA_free_key (namespace_priv_key);
