@@ -32,7 +32,7 @@ zu betreiben:
 - libgcrypt     >= 1.2
 - libgmp        >= 4.0
 - libcurl       >= 7.15.4
-- libltdl       >= 1.5 (Teil von GNU libtool)
+- libltdl       >= 2.2 (Teil von GNU libtool)
 - libguile      >= 1.8 (benötigt für gnunet-setup)
 - GNU adns      >= 1.0 (dringend empfohlen)
 - mysql         >= 5.0 (dringend empfohlen)

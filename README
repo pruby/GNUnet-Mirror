@@ -30,7 +30,7 @@ running GNUnet:
 - libgcrypt     >= 1.2
 - libgmp        >= 4.0
 - libcurl       >= 7.15.4
-- libltdl       >= 1.5 (part of GNU libtool)
+- libltdl       >= 2.2 (part of GNU libtool)
 - libguile      >= 1.8 (required for gnunet-setup)
 - GNU adns      >= 1.0 (strongly recommended)
 - mysql         >= 5.0 (strongly recommended)
@@ -51,7 +51,8 @@ Certain transports would also like to have:
 Recommended autotools for compiling the SVN version are:
 - autoconf >= 2.59
 - automake >= 1.9.4
-- libtool  >= 1.5.8
+- libtool  >= 1.5
+- libltdl  >= 2.2.0 (only in Debian experimental)
 
 See also README.debian for a list of Debian packages.
 

@@ -19,8 +19,8 @@ GNUnet library dependencies:
 libadns1-dev
 libgcrypt11-dev
 libgmp3-dev
-libltdl3-dev
-libtool
+libltdl7-dev (experimental only)
+libtool (1.5 is sufficient)
 guile-1.8-dev (etch or higher!)
 libextractor-dev (etch or higher!)
 libcurl3-gnutls-dev or libcurl4-gnutls-dev
@@ -75,7 +75,7 @@ glade
 In short, if you want to install everything you may need, just type this in a root terminal from a recent Debian:
 - for GNUnet and gnunet-gtk:
 
-# apt-get install libtool gcc make intltool libadns1-dev libgcrypt11-dev libgmp3-dev libltdl3-dev libtool guile-1.8-dev libextractor-dev libcurl4-gnutls-dev libsqlite3-dev libmysqlclient15-dev libncursesw5-dev dialog libglade2-dev libgtk2.0-dev libxml2-dev libesmtp-dev librsvg2-common libnotify-dev libgksu2-dev mysql-server-5.0 mysql-client-5.0 subversion autoconf automake cvs gettext glade libmicrohttpd-dev
+# apt-get install libtool gcc make intltool libadns1-dev libgcrypt11-dev libgmp3-dev libltdl7-dev libtool guile-1.8-dev libextractor-dev libcurl4-gnutls-dev libsqlite3-dev libmysqlclient15-dev libncursesw5-dev dialog libglade2-dev libgtk2.0-dev libxml2-dev libesmtp-dev librsvg2-common libnotify-dev libgksu2-dev mysql-server-5.0 mysql-client-5.0 subversion autoconf automake cvs gettext glade libmicrohttpd-dev
 
 - for libextractor:
 
