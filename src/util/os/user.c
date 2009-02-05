@@ -22,11 +22,177 @@
  * @file util/os/user.c
  * @brief wrappers for UID functions
  * @author Christian Grothoff
+ * @author Heikki Lindholm
  */
 
 #include "platform.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
+
+#ifdef OSX
+static int
+parse_dscl_user_list_line (FILE * f, char *name, size_t name_len, int *id)
+{
+  int c;
+  int state;
+  int64_t tmp_id = 0LL;
+  int tmp_sign = 0;
+  int len = 0;
+  int retval;
+
+  retval = 2;
+  state = 1;
+  while ((retval == 2) && ((c = fgetc (f)) != EOF))
+    {
+      switch (state)
+        {
+        case 1:                /* skip leading ws */
+          tmp_id = 0;
+          tmp_sign = 1;
+          len = 0;
+          if (c != ' ' || c != '\t' || c != '\n')
+            {
+              if (len < name_len)
+                name[len++] = (char) c;
+              else
+                retval = -1;
+              state = 2;
+            }
+          break;
+        case 2:                /* user/group name */
+          if (c == ' ' || c == '\t')
+            {
+              name[len] = '\0';
+              state = 3;
+            }
+          else if (c == '\n')
+            state = 1;          /* error? */
+          else
+            {
+              if (len < name_len)
+                name[len++] = (char) c;
+              else
+                retval = -1;
+            }
+          break;
+        case 3:                /* skip ws */
+          if ((c >= '0' && c <= '9') || c == '-')
+            {
+              state = 4;
+              if (c == '-')
+                tmp_sign = -1;
+              else
+                tmp_id = c - '0';
+            }
+          else if (c == '\n')
+            state = 1;
+          else if (c != ' ' && c != '\t')
+            retval = -1;
+          break;
+        case 4:                /* user/group id */
+          if (c >= '0' && c <= '9')
+            {
+              state = 4;
+              tmp_id = (tmp_id * 10) + (c - '0');
+              if (tmp_id > INT32_MAX)
+                retval = -1;
+            }
+          else if (c == '\n')
+            {
+              *id = tmp_sign * (int) tmp_id;
+              state = 1;
+              retval = 0;
+            }
+          else
+            {
+              state = 1;
+              retval = -1;
+            }
+          break;
+        }
+    }
+  return retval;
+}
+
+static int
+run_dscl_command (const char *dir, const char *name, const char *attr_tmpl,
+                  const char *attr_val)
+{
+  char *cmd;
+  static const char *prefix = "/usr/bin/dscl .";
+  size_t len;
+  int ret = 0;
+
+  if ((!dir || !name) || (attr_tmpl && !attr_val))
+    return -1;
+
+  len = strlen (prefix) + 1 + 6 + 1 + strlen (dir) + 1 + (1 + strlen (name));
+  if (attr_tmpl != NULL)
+    len += 1 + strlen (attr_tmpl);      /* space + len */
+  else
+    len += 1 + strlen ("RecordName") + 1 + strlen (name);
+  if (attr_val != NULL)
+    len += 1 + strlen (attr_val);       /* space + len */
+  len++;                        /* terminating nil */
+  cmd = GNUNET_malloc (len);
+  if (attr_tmpl)
+    {
+      char *s;
+      snprintf (cmd, len, "%s %s %s/_%s %s", prefix, "create", dir, name,
+                attr_tmpl);
+      s = GNUNET_strdup (cmd);
+      snprintf (cmd, len, s, attr_val);
+      GNUNET_free (s);
+      ret = system (cmd);
+    }
+  else
+    {
+      snprintf (cmd, len, "%s %s %s/_%s", prefix, "create", dir, name);
+      ret = system (cmd);
+      if (ret == 0)
+        {
+          snprintf (cmd, len, "%s %s %s/_%s RecordName %s", prefix, "append",
+                    dir, name, name);
+          ret = system (cmd);
+        }
+    }
+
+  if (ret == -1)
+    GNUNET_GE_LOG_STRERROR (NULL,
+                            GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                            GNUNET_GE_ADMIN, "system");
+  else if (WEXITSTATUS (ret) != 0)
+    GNUNET_GE_LOG (NULL,
+                   GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                   _("`%s' returned with error code %u"),
+                   cmd, WEXITSTATUS (ret));
+
+
+  GNUNET_free (cmd);
+  return ret;
+}
+
+static int
+check_name (const char *name)
+{
+  static const char *allowed_chars =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+  int i, j;
+
+  for (i = 0; i < strlen (name); i++)
+    {
+      int found = 0;
+      for (j = 0; j < strlen (allowed_chars); j++)
+        {
+          if (name[i] == allowed_chars[j])
+            found = 1;
+        }
+      if (!found)
+        return -1;
+    }
+  return 0;
+}
+#endif /* OSX */
 
 int
 GNUNET_configure_user_account (int testCapability,
@@ -71,6 +237,13 @@ GNUNET_configure_user_account (int testCapability,
           return GNUNET_SYSERR;
         }
 #endif
+#ifdef OSX
+      if (geteuid () != 0)
+        return GNUNET_SYSERR;
+      if (ACCESS ("/usr/bin/dscl", X_OK) == 0)
+        return GNUNET_OK;
+      return GNUNET_SYSERR;
+#endif
       return GNUNET_SYSERR;
     }
   if ((user_name == NULL) || (0 == strlen (user_name)))
@@ -79,8 +252,209 @@ GNUNET_configure_user_account (int testCapability,
 #ifdef WINDOWS
   if (IsWinNT ())
     return CreateServiceAccount (user_name, "GNUnet service account");
-#elif OSX
-  return GNUNET_SYSERR;         /* TODO */
+#elif defined(OSX)
+  if (ACCESS ("/usr/bin/dscl", X_OK) == 0)
+    {
+      const char *real_user_name = "\"GNUnet daemon\"";
+      const char *real_group_name = "\"GNUnet administrators\"";
+      int id, uid, gid;
+      int user_found, group_found;
+      char *s;
+      FILE *f;
+      int ret;
+
+      haveGroup = group_name && strlen (group_name) > 0;
+
+      if (check_name (user_name) != 0)
+        return GNUNET_SYSERR;
+      if (haveGroup && check_name (group_name) != 0)
+        return GNUNET_SYSERR;
+
+      s = GNUNET_malloc (256);
+
+      if (!haveGroup)
+        group_name = "nogroup";
+
+      f = popen ("/usr/bin/dscl . -list /Groups PrimaryGroupID 2> /dev/null",
+                 "r");
+      if (f == NULL)
+        {
+          GNUNET_GE_LOG_STRERROR_FILE (NULL,
+                                       GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                       GNUNET_GE_ADMIN, "popen", "dscl");
+          GNUNET_free (s);
+          return GNUNET_SYSERR;
+        }
+      gid = -100;
+      group_found = 0;
+      while (!feof (f))
+        {
+          ret = parse_dscl_user_list_line (f, s, 256, &id);
+          if (ret < 0)
+            {
+              GNUNET_GE_LOG (NULL,
+                             GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _("Error while parsing dscl output.\n"));
+              pclose (f);
+              GNUNET_free (s);
+              return GNUNET_SYSERR;
+            }
+          if (ret == 2)
+            break;
+          if (!group_found && id > gid && id < 500)
+            gid = id;
+          if (strcmp (s, group_name) == 0 ||
+              (s[0] == '_' && strcmp (s + 1, group_name) == 0))
+            {
+              gid = id;
+              group_found = 1;
+            }
+        }
+      pclose (f);
+      if (!haveGroup && !group_found)
+        {
+          GNUNET_GE_LOG (NULL,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                         _
+                         ("Couldn't find a group (`%s') for the new user and none was specified.\n"),
+                         group_name);
+          GNUNET_free (s);
+          return GNUNET_SYSERR;
+        }
+
+      f = popen ("/usr/bin/dscl . -list /Users UniqueID 2> /dev/null", "r");
+      if (f == NULL)
+        {
+          GNUNET_GE_LOG_STRERROR_FILE (NULL,
+                                       GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                       GNUNET_GE_ADMIN, "popen", "dscl");
+          GNUNET_free (s);
+          return GNUNET_SYSERR;
+        }
+      uid = -100;
+      user_found = 0;
+      while (!feof (f))
+        {
+          ret = parse_dscl_user_list_line (f, s, 256, &id);
+          if (ret < 0)
+            {
+              GNUNET_GE_LOG (NULL,
+                             GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _("Error while parsing dscl output.\n"));
+              pclose (f);
+              GNUNET_free (s);
+              return GNUNET_SYSERR;
+            }
+          if (ret == 2)
+            break;
+          if (!user_found && id > uid && id < 500)
+            uid = id;
+          if (strcmp (s, user_name) == 0 ||
+              (s[0] == '_' && strcmp (s + 1, user_name) == 0))
+            {
+              uid = id;
+              user_found = 1;
+            }
+        }
+      pclose (f);
+
+      if (haveGroup && !group_found)
+        {
+          if (gid > 400)
+            gid++;
+          else
+            gid = 400;
+          if (gid >= 500)
+            {
+              GNUNET_GE_LOG (NULL,
+                             GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _
+                             ("Failed to find a free system id for the new group.\n"));
+              GNUNET_free (s);
+              return GNUNET_SYSERR;
+            }
+        }
+      if (!user_found)
+        {
+          if (uid > 400)
+            uid++;
+          else
+            uid = 400;
+          if (uid >= 500)
+            {
+              GNUNET_GE_LOG (NULL,
+                             GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _
+                             ("Failed to find a free system id for the new user.\n"));
+              GNUNET_free (s);
+              return GNUNET_SYSERR;
+            }
+        }
+
+      ret = 0;
+      if (haveGroup && !group_found)
+        {
+          ret = run_dscl_command ("/Groups", group_name, NULL, NULL);
+
+          if (ret == 0)
+            ret =
+              run_dscl_command ("/Groups", group_name, "Password %s",
+                                "\"*\"");
+          if (ret == 0)
+            {
+              snprintf (s, 12, "%d", gid);
+              ret =
+                run_dscl_command ("/Groups", group_name, "PrimaryGroupID %s",
+                                  s);
+            }
+          if (ret == 0)
+            ret =
+              run_dscl_command ("/Groups", group_name, "RealName %s",
+                                real_group_name);
+        }
+
+      if (!user_found)
+        {
+          if (ret == 0)
+            ret = run_dscl_command ("/Users", user_name, NULL, NULL);
+          if (ret == 0)
+            ret =
+              run_dscl_command ("/Users", user_name, "UserShell %s",
+                                "/usr/bin/false");
+          if (ret == 0)
+            ret =
+              run_dscl_command ("/Users", user_name, "RealName %s",
+                                real_user_name);
+          if (ret == 0)
+            {
+              snprintf (s, 12, "%d", uid);
+              ret = run_dscl_command ("/Users", user_name, "UniqueID %s", s);
+            }
+          if (ret == 0)
+            {
+              snprintf (s, 12, "%d", gid);
+              ret =
+                run_dscl_command ("/Users", user_name, "PrimaryGroupID %s",
+                                  s);
+            }
+          if (ret == 0)
+            ret =
+              run_dscl_command ("/Users", user_name, "NFSHomeDirectory %s",
+                                "/var/empty");
+          if (ret == 0)
+            ret =
+              run_dscl_command ("/Users", user_name, "passwd %s", "\"*\"");
+        }
+
+      GNUNET_free (s);
+      return ret == 0 ? GNUNET_OK : GNUNET_SYSERR;
+    }
+  else
+    return GNUNET_SYSERR;
 #else
   if (ACCESS ("/usr/sbin/adduser", X_OK) == 0)
     {
