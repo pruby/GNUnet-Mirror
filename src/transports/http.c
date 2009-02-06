@@ -30,6 +30,7 @@
 #include "gnunet_transport.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_upnp_service.h"
+#include <stdint.h>
 #include <microhttpd.h>
 #include <curl/curl.h>
 #include "ip.h"
@@ -694,7 +695,7 @@ addTSession (GNUNET_TSession * tsession)
  * @return number of bytes written, 0 is allowed!
  */
 static int
-contentReaderCallback (void *cls, size_t pos, char *buf, int max)
+contentReaderCallback (void *cls, uint64_t pos, char *buf, int max)
 {
   struct MHDGetData *mgd = cls;
 
@@ -754,7 +755,7 @@ accessHandlerCallback (void *cls,
                        const char *method,
                        const char *version,
                        const char *upload_data,
-                       unsigned int *upload_data_size,
+                       size_t *upload_data_size,
                        void **httpSessionCache)
 {
   GNUNET_TSession *tsession;
