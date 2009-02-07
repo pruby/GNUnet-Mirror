@@ -840,6 +840,7 @@ do
 done
 for tfn in include/GNUnet/*
 do
+	sed -e "s/<extractor.h>/<Extractor\/extractor.h>/g" -i "" "$tfn"
 	install_file_to_framework "$tfn"
 done
 for tfn in share/GNUnet/*
