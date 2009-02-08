@@ -525,11 +525,25 @@ build_gnunet()
 		find ./ -type f -name "Makefile" |	\
 			xargs perl -pi -w -e "s#-lintl#-lintl -liconv#g;"
 		if ! ( test $build_retval = 0 && make clean &&		\
-			make DESTDIR="${SDK_PATH}" install &&		\
+			make DESTDIR="${SDK_PATH}" install )
+		then
+			build_retval=1
+		fi
+		if ! ( test $build_retval = 0 && \
+			gcc -dynamiclib -install_name "${FW_DIR}/GNUnet" \
+			-compatibility_version 1 -current_version 1.0 \
+			-o "${SDK_PATH}/${FW_DIR}/GNUnet" \
+			${LDFLAGS} \
+			-L"${SDK_PATH}/${FW_DIR}/lib" \
+			-sub_library libgnunetutil \
+			-sub_library libgnunetsetup \
+			-lgnunetutil \
+			-lgnunetsetup && \
 			touch "${BUILD_DIR}/built-GNUnet-${ARCH_NAME}" )
 		then
 			build_retval=1
 		fi
+			
 		cp -v config.log "${BUILD_DIR}/config.log-GNUnet-${ARCH_NAME}"
 		cp -v config.h "${BUILD_DIR}/config.h-GNUnet-${ARCH_NAME}"
 		unset CPPFLAGS
@@ -834,6 +848,7 @@ for tfn in lib/libgnunet*dylib
 do
 	install_executable_to_framework "$tfn"
 done
+install_executable_to_framework "GNUnet"
 for tfn in lib/GNUnet/libgnunet*so
 do
 	install_executable_to_framework "$tfn"
@@ -875,7 +890,6 @@ do
 	install_message_catalog_to_framework "$tfn"
 done
 install_en_message_catalog_to_framework "./po/GNUnet.pot"
-make_framework_link "lib/libgnunet.dylib" "GNUnet"
 make_framework_link "lib" "Libraries"
 make_framework_link "lib/GNUnet" "PlugIns"
 make_framework_link "include/GNUnet" "Headers"
