@@ -574,10 +574,16 @@ AC_ARG_WITH(qt,
     esac
    ],
   [AC_MSG_RESULT([--with-qt not specified])
-    QTLIBS="$QTLIBS -L/usr/lib"
-    LDFLAGS="$QTLIBS $LDFLAGS"
     QTINC="$QTINC -I/usr/include -I/usr/include/qt4"
+    QTLIBS="$QTLIBS -L/usr/lib"
+    if ( pkg-config --help > /dev/null 2> /dev/null ) ; then
+      if ( pkg-config --cflags QtGui && pkg-config --libs QtGui ) ; then
+        QTINC=`pkg-config --cflags QtGui`
+        QTLIBS=`pkg-config --libs QtGui`
+      fi
+    fi
     CPPFLAGS="$QTINC $CPPFLAGS"
+    LDFLAGS="$QTLIBS $LDFLAGS"
     AC_CHECK_HEADERS([Qt/qpixmap.h],
        	  AC_SEARCH_LIBS([_ZN7QPixmap12defaultDepthEv], [QtGui QtGui4],
            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"

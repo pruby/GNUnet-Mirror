@@ -24,7 +24,9 @@
  */
 
 #include <QtCore/QByteArray>
+#ifndef __APPLE__
 #include <malloc.h>
+#endif
 #include "gstring.h"
 
 GString::GString(const char *str) : QString(str)
