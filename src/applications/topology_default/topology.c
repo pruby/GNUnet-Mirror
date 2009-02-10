@@ -86,36 +86,36 @@ static double saturation = 0.0;
 
 typedef struct
 {
-	/**
+        /**
 	 * Array of our friends.
 	 */
-	GNUNET_PeerIdentity *friends;
+  GNUNET_PeerIdentity *friends;
 
-	/**
+        /**
 	 * Number of friends that we have.
 	 */
-	unsigned int friendCount;
+  unsigned int friendCount;
 
-	/**
+        /**
 	 * Minimum number of friends to have in the
 	 * connection set.
 	 */
-	unsigned int minimum_friend_count;
+  unsigned int minimum_friend_count;
 
-	/**
+        /**
 	 * Flag to disallow non-friend connections (pure F2F mode).
 	 */
-	int friends_only;
+  int friends_only;
 
-	/**
+        /**
 	 * Last modification of friends file
 	 */
-	time_t friends_mtime;
+  time_t friends_mtime;
 
-	/**
+        /**
 	 * Last size of friends file
 	 */
-	unsigned int friends_size;
+  unsigned int friends_size;
 } FriendListInfo;
 
 static FriendListInfo fInfo;
@@ -442,9 +442,9 @@ rereadConfiguration (void *ctx,
   if (0 != strcmp (section, "F2F"))
     return 0;
   fInfo.friends_only = GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                          "F2F",
-                                                          "FRIENDS-ONLY",
-                                                          GNUNET_NO);
+                                                                "F2F",
+                                                                "FRIENDS-ONLY",
+                                                                GNUNET_NO);
   if (fInfo.friends_only == GNUNET_SYSERR)
     return GNUNET_SYSERR;       /* invalid */
   opt = 0;
@@ -476,11 +476,12 @@ rereadConfiguration (void *ctx,
           return GNUNET_SYSERR;
         }
     }
-  if ((frstat.st_mtime != fInfo.friends_mtime) || (frstat.st_size != fInfo.friends_size))
-  {
-    fInfo.friends_mtime = frstat.st_mtime;
-    fInfo.friends_size = frstat.st_size;
-  }
+  if ((frstat.st_mtime != fInfo.friends_mtime)
+      || (frstat.st_size != fInfo.friends_size))
+    {
+      fInfo.friends_mtime = frstat.st_mtime;
+      fInfo.friends_size = frstat.st_size;
+    }
   else
     {
       GNUNET_free_non_null (fn);
@@ -524,7 +525,8 @@ rereadConfiguration (void *ctx,
           enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
           if (GNUNET_OK == GNUNET_enc_to_hash ((char *) &enc, &hc))
             {
-              GNUNET_array_grow (fInfo.friends, fInfo.friendCount, fInfo.friendCount + 1);
+              GNUNET_array_grow (fInfo.friends, fInfo.friendCount,
+                                 fInfo.friendCount + 1);
               fInfo.friends[fInfo.friendCount - 1].hashPubKey = hc;
             }
           else
@@ -540,7 +542,8 @@ rereadConfiguration (void *ctx,
           while ((pos < frstat.st_size) && isspace (data[pos]))
             pos++;
         }
-      if ((fInfo.minimum_friend_count > fInfo.friendCount) && (fInfo.friends_only == GNUNET_NO))
+      if ((fInfo.minimum_friend_count > fInfo.friendCount)
+          && (fInfo.friends_only == GNUNET_NO))
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
@@ -611,7 +614,8 @@ allowConnection (const GNUNET_PeerIdentity * peer)
     return GNUNET_OK;
   if (fInfo.friends_only)
     return GNUNET_SYSERR;
-  if (count_connected_friends (&core_wrapper, NULL) >= fInfo.minimum_friend_count)
+  if (count_connected_friends (&core_wrapper, NULL) >=
+      fInfo.minimum_friend_count)
     return GNUNET_OK;
   return GNUNET_SYSERR;
 }
