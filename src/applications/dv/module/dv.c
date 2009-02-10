@@ -322,8 +322,8 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 
       if (neighbor->cost != cost)
         {
-					neighbor->cost = cost;
-          /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
+          neighbor->cost = cost;
+        /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
                                      neighbor,
                                      GNUNET_MultiHashMapOption_REPLACE);*/
         }
@@ -367,8 +367,8 @@ delete_callback (struct GNUNET_dv_neighbor *neighbor,
            (char *) &encNeighbor);
 #endif
 
-  if ((memcmp (neighbor->neighbor, toMatch, sizeof (GNUNET_PeerIdentity)) ==
-       0) || ((neighbor->referrer != NULL)
+  if (((memcmp (neighbor->neighbor, toMatch, sizeof (GNUNET_PeerIdentity)) ==
+       0) && (neighbor->referrer == NULL)) || ((neighbor->referrer != NULL)
               &&
               (memcmp
                (neighbor->referrer, toMatch,
