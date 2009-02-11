@@ -48,7 +48,7 @@ GUILE_NAME=guile-1.8.6
 CURL_URL=http://curl.haxx.se/download
 CURL_NAME=curl-7.19.2
 LIBMICROHTTPD_URL=ftp://ftp.cs.tu-berlin.de/pub/gnu/libmicrohttpd
-LIBMICROHTTPD_NAME=libmicrohttpd-0.3.1
+LIBMICROHTTPD_NAME=libmicrohttpd-0.4.0
 LIBESMTP_URL=http://www.stafford.uklinux.net/libesmtp
 LIBESMTP_NAME=libesmtp-1.0.4
 MYSQL_URL=http://mysql.mirrors.webname.dk/Downloads/MySQL-5.0
@@ -435,7 +435,10 @@ build_dependencies()
 			--prefix="${FW_DIR}"		\
 			--with-pic			\
 			--disable-shared		\
-			--enable-static"
+			--enable-static			\
+			--disable-messages		\
+			--enable-https			\
+			--disable-client-side"
 
 	prepare_package "${LIBESMTP_NAME}"
 	build_package "${LIBESMTP_NAME}"		\
