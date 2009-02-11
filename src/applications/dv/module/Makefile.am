@@ -9,7 +9,7 @@ endif
 
 plugindir = $(libdir)/GNUnet
 
-noinst_LTLIBRARIES = libheap.la
+noinst_LTLIBRARIES = libheap.la 
 
 libheap_la_SOURCES = \
   dv.c heap.c
@@ -26,7 +26,8 @@ libgnunetmodule_dv_la_LIBADD = \
   $(GN_LIBINTL)
   
 check_PROGRAMS = \
- heaptest
+ heaptest \
+ dv_heaptest
  
 TESTS = $(check_PROGRAMS)
 
@@ -35,3 +36,10 @@ heaptest_SOURCES = \
 heaptest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/applications/dv/module/libheap.la
+
+dv_heaptest_SOURCES = \
+ dv_heaptest.c
+dv_heaptest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/applications/dv/module/libheap.la
+

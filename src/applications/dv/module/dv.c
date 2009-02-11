@@ -548,6 +548,8 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   ctx->neighbor_max_heap.type = GNUNET_DV_MAX_HEAP;
   ctx->neighbor_min_heap.max_size = GNUNET_DV_MAX_TABLE_SIZE;
   ctx->neighbor_max_heap.max_size = GNUNET_DV_MAX_TABLE_SIZE;
+  ctx->neighbor_max_heap.traversal_pos = NULL;
+  ctx->neighbor_min_heap.traversal_pos = NULL;
   ctx->send_interval = GNUNET_DV_DEFAULT_SEND_INTERVAL;
   ctx->dvMutex = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;

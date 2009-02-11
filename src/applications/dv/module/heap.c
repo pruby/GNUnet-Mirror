@@ -137,7 +137,7 @@ swapNodes (struct GNUNET_dv_heap_node *first,
       first->neighbor->max_loc = first;
       second->neighbor->max_loc = second;
     }
-  else if ((root->type == GNUNET_DV_MAX_HEAP))
+  else if ((root->type == GNUNET_DV_MIN_HEAP))
     {
       first->neighbor->min_loc = first;
       second->neighbor->min_loc = second;
@@ -234,6 +234,11 @@ GNUNET_DV_Heap_removeNode (struct GNUNET_dv_heap *root,
 
   ret = del_node->neighbor;
   last = getPos (root, root->size);
+  if (root->type == GNUNET_DV_MAX_HEAP)
+    last->neighbor->max_loc = del_node->neighbor->max_loc;
+  else if (root->type == GNUNET_DV_MIN_HEAP)
+    last->neighbor->min_loc = del_node->neighbor->min_loc;
+
   del_node->neighbor = last->neighbor;
 
   if (last->parent->left_child == last)
