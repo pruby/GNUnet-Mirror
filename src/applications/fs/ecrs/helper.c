@@ -160,6 +160,13 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
 
   if (num_keywords == 0)
     return NULL;
+  /* allow URI to be given as one and only keyword and
+     handle accordingly */
+  if ( (num_keywords == 1) &&
+       (strlen(keywords[0]) > strlen(GNUNET_ECRS_URI_PREFIX)) &&
+       (strncmp(keywords[0], GNUNET_ECRS_URI_PREFIX, strlen(GNUNET_ECRS_URI_PREFIX)) ) &&
+       (NULL != (uri = GNUNET_ECRS_string_to_uri(ectx, keywords[0])) ) )
+    return uri;
   uri = GNUNET_malloc (sizeof (URI));
   uri->type = ksk;
   uri->data.ksk.keywordCount = num_keywords;
