@@ -537,8 +537,40 @@ build_gnunet()
 			-L"${SDK_PATH}/${FW_DIR}/lib" \
 			-sub_library libgnunetutil \
 			-sub_library libgnunetsetup \
+			-sub_library libgnunetfs \
+			-sub_library libgnunetrpc \
+			-sub_library libgnunetidentity \
+			-sub_library libgnunetgetoption \
+			-sub_library libgnunetdht \
+			-sub_library libgnunetstats \
+			-sub_library libgnunettracekit \
+			-sub_library libgnunettraffic \
+			-sub_library libgnunetchat \
+			-sub_library libgnunetremote \
+			-sub_library libgnunettesting \
+			-sub_library libgnunetecrs \
+			-sub_library libgnuneturitrack \
+			-sub_library libgnunetnamespace \
+			-sub_library libgnunetfsui \
+			-sub_library libgnunetcollection \
 			-lgnunetutil \
-			-lgnunetsetup && \
+			-lgnunetsetup \
+			-lgnunetfs \
+			-lgnunetrpc_util \
+			-lgnunetidentity_api \
+			-lgnunetgetoption_api \
+			-lgnunetdht_api \
+			-lgnunetstats_api \
+			-lgnunettracekit_api \
+			-lgnunettraffic_api \
+			-lgnunetchat_api \
+			-lgnunetremote_api \
+			-lgnunettesting_api \
+			-lgnunetecrs \
+			-lgnuneturitrack \
+			-lgnunetnamespace \
+			-lgnunetfsui \
+			-lgnunetcollection && \
 			touch "${BUILD_DIR}/built-GNUnet-${ARCH_NAME}" )
 		then
 			build_retval=1
