@@ -26,6 +26,7 @@ FINAL_FW_BASE_DIR="${BUILD_DIR}/${FW_NAME}"
 SDK_PATH="${BUILD_DIR}/${SDK}"
 OPT_FLAGS="-O2 -force_cpusubtype_ALL"
 
+USE_INTERNAL_LIBCURL=1
 BUILD_ARCHS_LIST="ppc i386"
 export MACOSX_DEPLOYMENT_TARGET=10.4
 
@@ -94,7 +95,9 @@ fetch_all_packages()
 	fetch_package "${LIBGPG_ERROR_NAME}" "${LIBGPG_ERROR_URL}"
 	fetch_package "${LIBGCRYPT_NAME}" "${LIBGCRYPT_URL}"
 	fetch_package "${GUILE_NAME}" "${GUILE_URL}"
+if test x"${USE_INTERNAL_LIBCURL}" = x1 ; then
 	fetch_package "${CURL_NAME}" "${CURL_URL}"
+fi
 	fetch_package "${LIBMICROHTTPD_NAME}" "${LIBMICROHTTPD_URL}"
 	fetch_package "${LIBESMTP_NAME}" "${LIBESMTP_URL}"
 	fetch_package "${MYSQL_NAME}" "${MYSQL_URL}"
@@ -356,6 +359,7 @@ build_dependencies()
 			--disable-debug			\
 			--with-random=/dev/urandom"
 
+if test x"${USE_INTERNAL_LIBCURL}" = x1 ; then
 	prepare_package "${CURL_NAME}"
 	build_package "${CURL_NAME}"			\
 			"${ARCH_HOSTSETTING}		\
@@ -376,6 +380,7 @@ build_dependencies()
 			--enable-ipv6			\
 			--disable-ares			\
 			--with-random=/dev/urandom"
+fi
 
 #	prepare_package "${GETTEXT_NAME}"
 #	build_package "${GETTEXT_NAME}"			\
@@ -485,6 +490,11 @@ build_gnunet()
 		CPPFLAGS="${ARCH_CPPFLAGS}"
 		CXXFLAGS="${CFLAGS}"
 		LDFLAGS="${ARCH_LDFLAGS}"
+		if test x"${USE_INTERNAL_LIBCURL}" = x1 ; then
+			LIBCURL="${SDK_PATH}/${FW_DIR}/lib/libcurl.a -lssl -lcrypto -lz"
+		else
+			LIBCURL=
+		fi
 		if ! ( CC="${ARCH_CC}"				\
 			CXX="${ARCH_CXX}"			\
 			OBJC="${ARCH_CC}"			\
@@ -501,7 +511,7 @@ build_gnunet()
 			ac_cv_unaligned_64_access=yes		\
 			lt_cv_dlopen_self=yes			\
 			lt_cv_dlopen_self_static=yes		\
-			LIBCURL="${SDK_PATH}/${FW_DIR}/lib/libcurl.a -lssl -lcrypto -lz"	\
+			LIBCURL="${LIBCURL}"			\
 			./configure "${ARCH_HOSTSETTING}"	\
 			--prefix="${FW_DIR}"			\
 			--with-user-home-dir="~/Library/GNUnet"	\
