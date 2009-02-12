@@ -17,6 +17,6 @@ libgnunetmodule_dht_la_SOURCES = \
 libgnunetmodule_dht_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_dht_la_LIBADD = -lm \
-  $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la \
+  $(top_builddir)/src/applications/rpc/libgnunetrpcutil.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
