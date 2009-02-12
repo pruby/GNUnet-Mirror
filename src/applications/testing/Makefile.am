@@ -6,24 +6,24 @@ endif
 plugindir = $(libdir)/GNUnet
 
 lib_LTLIBRARIES = \
-  libgnunettesting_api.la \
-  libgnunetremote_api.la
+  libgnunettestingapi.la \
+  libgnunetremoteapi.la
 
-libgnunettesting_api_la_SOURCES = \
+libgnunettestingapi_la_SOURCES = \
   testing.c 
-libgnunettesting_api_la_LDFLAGS = \
+libgnunettestingapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunettesting_api_la_LIBADD = \
-  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+libgnunettestingapi_la_LIBADD = \
+  $(top_builddir)/src/applications/identity/libgnunetidentityapi.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) 
 
-libgnunetremote_api_la_SOURCES = \
+libgnunetremoteapi_la_SOURCES = \
   remote.c remote.h
-libgnunetremote_api_la_LDFLAGS = \
+libgnunetremoteapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunetremote_api_la_LIBADD = \
-  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+libgnunetremoteapi_la_LIBADD = \
+  $(top_builddir)/src/applications/identity/libgnunetidentityapi.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) 
 
@@ -40,20 +40,20 @@ testingtest_SOURCES = \
  testingtest.c 
 testingtest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/applications/testing/libgnunettesting_api.la
+ $(top_builddir)/src/applications/testing/libgnunettestingapi.la
 
 remotetest_SOURCES = \
  remotetest.c
 remotetest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/applications/testing/libgnunetremote_api.la
+ $(top_builddir)/src/applications/testing/libgnunetremoteapi.la
 
 
 testingtest_loop_SOURCES = \
  testingtest_loop.c 
 testingtest_loop_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/applications/testing/libgnunettesting_api.la
+ $(top_builddir)/src/applications/testing/libgnunettestingapi.la
 
 
 pkgdata_DATA = \

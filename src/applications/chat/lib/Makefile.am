@@ -5,16 +5,16 @@ if USE_COVERAGE
 endif
 
 lib_LTLIBRARIES = \
-  libgnunetchat_api.la
+  libgnunetchatapi.la
 
 LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
-libgnunetchat_api_la_SOURCES = \
+libgnunetchatapi_la_SOURCES = \
   messaging.c 
-libgnunetchat_api_la_LDFLAGS = \
+libgnunetchatapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunetchat_api_la_LIBADD = \
+libgnunetchatapi_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
@@ -26,7 +26,7 @@ TESTS = $(check_PROGRAMS)
 loopback_test_SOURCES = \
   loopback_test.c 
 loopback_test_LDADD = \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/chat/lib/libgnunetchat_api.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/chat/lib/libgnunetchatapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 

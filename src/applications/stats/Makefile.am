@@ -10,7 +10,7 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_stats.la
 
 lib_LTLIBRARIES = \
-  libgnunetstats_api.la
+  libgnunetstatsapi.la
 
 bin_PROGRAMS = \
  gnunet-stats
@@ -21,15 +21,15 @@ EXTRA_DIST = \
 gnunet_stats_SOURCES = \
  gnunet-stats.c 	
 gnunet_stats_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
-libgnunetstats_api_la_SOURCES = \
+libgnunetstatsapi_la_SOURCES = \
   clientapi.c 
-libgnunetstats_api_la_LDFLAGS = \
+libgnunetstatsapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunetstats_api_la_LIBADD = \
+libgnunetstatsapi_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) 
 

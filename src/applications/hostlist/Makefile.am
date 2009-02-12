@@ -31,8 +31,8 @@ TESTS = $(check_PROGRAMS)
 hostlisttest_SOURCES = \
   hostlisttest.c 
 hostlisttest_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

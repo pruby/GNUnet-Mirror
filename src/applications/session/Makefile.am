@@ -31,37 +31,37 @@ TESTS = $(check_PROGRAMS)
 sessiontest_tcp_SOURCES = \
   sessiontest.c 
 sessiontest_tcp_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 sessiontest_udp_SOURCES = \
   sessiontest.c 
 sessiontest_udp_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 sessiontest_http_SOURCES = \
   sessiontest.c 
 sessiontest_http_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 sessiontest_nat_SOURCES = \
   sessiontest_nat.c 
 sessiontest_nat_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/identity/libgnunetidentityapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 
 sessiontest_nat_http_SOURCES = \
   sessiontest_nat_http.c 
 sessiontest_nat_http_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/identity/libgnunetidentityapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

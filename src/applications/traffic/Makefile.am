@@ -3,17 +3,17 @@ INCLUDES = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/GNUnet
 
 lib_LTLIBRARIES = \
-  libgnunettraffic_api.la
+  libgnunettrafficapi.la
 
 plugin_LTLIBRARIES = \
   libgnunetmodule_traffic.la
 
 
-libgnunettraffic_api_la_SOURCES = \
+libgnunettrafficapi_la_SOURCES = \
   clientapi.c 
-libgnunettraffic_api_la_LDFLAGS = \
+libgnunettrafficapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunettraffic_api_la_LIBADD = \
+libgnunettrafficapi_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) 
 

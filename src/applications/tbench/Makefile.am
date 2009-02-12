@@ -43,22 +43,22 @@ TESTS = $(check_PROGRAMS)
 tbenchtest_tcp_SOURCES = \
   tbenchtest.c 
 tbenchtest_tcp_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 tbenchtest_udp_SOURCES = \
   tbenchtest.c 
 tbenchtest_udp_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 tbenchtest_http_SOURCES = \
   tbenchtest.c 
 tbenchtest_http_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

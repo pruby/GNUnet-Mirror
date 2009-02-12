@@ -7,7 +7,7 @@ endif
 plugindir = $(libdir)/GNUnet
 
 lib_LTLIBRARIES = \
-  libgnunetidentity_api.la
+  libgnunetidentityapi.la
 
 plugin_LTLIBRARIES = \
   libgnunetmodule_identity.la 
@@ -25,11 +25,11 @@ libgnunetmodule_identity_la_LIBADD = \
   $(GN_LIBINTL)
 
 
-libgnunetidentity_api_la_SOURCES = \
+libgnunetidentityapi_la_SOURCES = \
   clientapi.c 
-libgnunetidentity_api_la_LDFLAGS = \
+libgnunetidentityapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunetidentity_api_la_LIBADD = \
+libgnunetidentityapi_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) 
 
@@ -44,5 +44,5 @@ identitytest_SOURCES = \
  identitytest.c 
 identitytest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+ $(top_builddir)/src/applications/identity/libgnunetidentityapi.la \
  $(top_builddir)/src/server/libgnunetcore.la  

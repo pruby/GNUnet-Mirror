@@ -34,22 +34,22 @@ TESTS = $(check_PROGRAMS)
 advertisingtest_tcp_SOURCES = \
   advertising_test.c 
 advertisingtest_tcp_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 advertisingtest_udp_SOURCES = \
   advertising_test.c 
 advertisingtest_udp_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 advertisingtest_http_SOURCES = \
   advertising_test.c 
 advertisingtest_http_LDADD = \
-  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 

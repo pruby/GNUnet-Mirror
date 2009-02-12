@@ -551,16 +551,16 @@ build_gnunet()
 			-sub_library libgnunetutil \
 			-sub_library libgnunetsetup \
 			-sub_library libgnunetfs \
-			-sub_library libgnunetrpc \
-			-sub_library libgnunetidentity \
-			-sub_library libgnunetgetoption \
-			-sub_library libgnunetdht \
-			-sub_library libgnunetstats \
-			-sub_library libgnunettracekit \
-			-sub_library libgnunettraffic \
-			-sub_library libgnunetchat \
-			-sub_library libgnunetremote \
-			-sub_library libgnunettesting \
+			-sub_library libgnunetrpcutil \
+			-sub_library libgnunetidentityapi \
+			-sub_library libgnunetgetoptionapi \
+			-sub_library libgnunetdhtapi \
+			-sub_library libgnunetstatsapi \
+			-sub_library libgnunettracekitapi \
+			-sub_library libgnunettrafficapi \
+			-sub_library libgnunetchatapi \
+			-sub_library libgnunetremoteapi \
+			-sub_library libgnunettestingapi \
 			-sub_library libgnunetecrs \
 			-sub_library libgnuneturitrack \
 			-sub_library libgnunetnamespace \
@@ -569,16 +569,16 @@ build_gnunet()
 			-lgnunetutil \
 			-lgnunetsetup \
 			-lgnunetfs \
-			-lgnunetrpc_util \
-			-lgnunetidentity_api \
-			-lgnunetgetoption_api \
-			-lgnunetdht_api \
-			-lgnunetstats_api \
-			-lgnunettracekit_api \
-			-lgnunettraffic_api \
-			-lgnunetchat_api \
-			-lgnunetremote_api \
-			-lgnunettesting_api \
+			-lgnunetrpcutil \
+			-lgnunetidentityapi \
+			-lgnunetgetoptionapi \
+			-lgnunetdhtapi \
+			-lgnunetstatsapi \
+			-lgnunettracekitapi \
+			-lgnunettrafficapi \
+			-lgnunetchatapi \
+			-lgnunetremoteapi \
+			-lgnunettestingapi \
 			-lgnunetecrs \
 			-lgnuneturitrack \
 			-lgnunetnamespace \
