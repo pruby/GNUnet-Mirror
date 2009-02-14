@@ -103,6 +103,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         printf ("gnunet-download %s\n", uri);
       printMeta (event->data.SearchResult.fi.meta);
       printf ("\n");
+      fflush(stdout);
       GNUNET_free_non_null (filename);
       GNUNET_free (uri);
       break;
