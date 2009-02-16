@@ -42,8 +42,47 @@ extern "C"
 #include "gnunet_util_config.h"
 #include "gnunet_util_disk.h"
 #include "gnunet_util_os.h"
+#if OSX
+#include <mach-o/ldsyms.h>
+#include <mach-o/dyld.h>
+#endif
 
 #if LINUX
+/**
+ * Try to determine path by reading /proc/PID/exe
+ */
+static char *
+get_path_from_proc_maps ()
+{
+  char fn[64];
+  char *line;
+  char *dir;
+  FILE * f;
+
+  GNUNET_snprintf (fn, 64, "/proc/%u/maps", getpid());
+  line = GNUNET_malloc (1024);
+  dir = GNUNET_malloc (1024);
+  f = fopen(fn, "r");
+  if (f != NULL) {
+    while (NULL != fgets(line, 1024, f)) {
+      if ( (1 == sscanf(line,
+			"%*x-%*x %*c%*c%*c%*c %*x %*2u:%*2u %*u%*[ ]%s",
+			dir)) &&
+	   (NULL != strstr(dir,
+			   "libgnunetutil")) ) {
+	strstr(dir, "libgnunetutil")[0] = '\0';
+	fclose(f);
+        GNUNET_free (line);
+	return dir;
+      }
+    }
+    fclose(f);
+  }
+  GNUNET_free (dir);
+  GNUNET_free (line);
+  return NULL;
+}
+
 /**
  * Try to determine path by reading /proc/PID/exe
  */
@@ -136,6 +175,31 @@ get_path_from_NSGetExecutablePath ()
   path[len] = '\0';
   return path;
 }
+
+static char * get_path_from_dyld_image() {
+  const char * path;
+  char * p, * s;
+  int i;
+  int c;
+
+  p = NULL;
+  c = _dyld_image_count();
+  for (i = 0; i < c; i++) {
+    if (_dyld_get_image_header(i) == &_mh_dylib_header) {
+      path = _dyld_get_image_name(i);
+      if (path != NULL && strlen(path) > 0) {
+        p = strdup(path);
+        s = p + strlen(p);
+        while ( (s > p) && (*s != '/') )
+          s--;
+        s++;
+        *s = '\0';
+      }
+      break;
+    }
+  }
+  return p;
+}
 #endif
 
 static char *
@@ -194,7 +258,49 @@ get_path_from_GNUNET_PREFIX ()
 }
 
 /*
- * @brief get the path to the executable, including the binary itself
+ * @brief get the path to GNUnet bin/ or lib/, prefering the lib/ path
+ * @author Milan
+ *
+ * @return a pointer to the executable path, or NULL on error
+ */
+static char *
+os_get_gnunet_path ()
+{
+  char *ret;
+
+  ret = get_path_from_GNUNET_PREFIX ();
+  if (ret != NULL)
+    return ret;
+#if LINUX
+  ret = get_path_from_proc_maps ();
+  if (ret != NULL)
+    return ret;
+  ret = get_path_from_proc_exe ();
+  if (ret != NULL)
+    return ret;
+#endif
+#if WINDOWS
+  ret = get_path_from_module_filename ();
+  if (ret != NULL)
+    return ret;
+#endif
+#if OSX
+  ret = get_path_from_dyld_image ();
+  if (ret != NULL)
+    return ret;
+  ret = get_path_from_NSGetExecutablePath ();
+  if (ret != NULL)
+    return ret;
+#endif
+  ret = get_path_from_PATH ();
+  if (ret != NULL)
+    return ret;
+  /* other attempts here */
+  return NULL;
+}
+
+/*
+ * @brief get the path to current app's bin/
  * @author Milan
  *
  * @return a pointer to the executable path, or NULL on error
@@ -204,9 +310,6 @@ os_get_exec_path ()
 {
   char *ret;
 
-  ret = get_path_from_GNUNET_PREFIX ();
-  if (ret != NULL)
-    return ret;
 #if LINUX
   ret = get_path_from_proc_exe ();
   if (ret != NULL)
@@ -222,9 +325,6 @@ os_get_exec_path ()
   if (ret != NULL)
     return ret;
 #endif
-  ret = get_path_from_PATH ();
-  if (ret != NULL)
-    return ret;
   /* other attempts here */
   return NULL;
 }
@@ -232,7 +332,8 @@ os_get_exec_path ()
 
 
 /*
- * @brief get the path to a specific app dir
+ * @brief get the path to a specific GNUnet installation directory or,
+ * with GNUNET_IPK_SELF_PREFIX, the current running apps installation directory
  * @author Milan
  * @return a pointer to the dir path (to be freed by the caller)
  */
@@ -241,10 +342,18 @@ GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
 {
   size_t n;
   const char *dirname;
-  char *execpath;
+  char *execpath = NULL;
   char *tmp;
 
-  execpath = os_get_exec_path ();
+  /* if wanted, try to get the current app's bin/ */
+  if (dirkind == GNUNET_IPK_SELF_PREFIX)
+    execpath = os_get_exec_path ();
+  
+  /* try to get GNUnet's bin/ or lib/, or if previous was unsuccessful some
+   * guess for the current app */
+  if (execpath == NULL)
+    execpath = os_get_gnunet_path ();
+
   if (execpath == NULL)
     return NULL;
 
@@ -255,20 +364,22 @@ GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
       GNUNET_free (execpath);
       return NULL;
     }
-  if (execpath[n - 1] == DIR_SEPARATOR)
+  while (n > 1 && execpath[n - 1] == DIR_SEPARATOR)
     execpath[--n] = '\0';
 
-  if ((n > 3) && (0 == strcasecmp (&execpath[n - 3], "bin")))
+  if ((n > 3) && ((0 == strcasecmp (&execpath[n - 3], "bin")) ||
+                  (0 == strcasecmp (&execpath[n - 3], "lib"))))
     {
-      /* good, strip of '/bin'! */
+      /* strip '/bin/' or '/lib/' */
       execpath[n - 3] = '\0';
       n -= 3;
-      if (execpath[n - 1] == DIR_SEPARATOR)
+      while (n > 1 && execpath[n - 1] == DIR_SEPARATOR)
         execpath[--n] = '\0';
     }
   switch (dirkind)
     {
     case GNUNET_IPK_PREFIX:
+    case GNUNET_IPK_SELF_PREFIX:
       dirname = DIR_SEPARATOR_STR;
       break;
     case GNUNET_IPK_BINDIR:
