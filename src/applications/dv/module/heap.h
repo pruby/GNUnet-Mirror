@@ -87,10 +87,8 @@ struct GNUNET_dv_heap_node
 };
 
 /** FIXME:
- * Smart heap iterator and iterate functions are literal
- * prototypes, they are not yet implemented!!!  Heap needs
- * to be de-DV-ified.  Just here to remind me (nate) that
- * it still needs done!!!!!!!!!!!!!!
+ * Heap needs to be de-DV-ified.  Just here to remind me
+ * (nate) that it still needs done!!!!!!!!!!!!!!
  */
 
 /**
@@ -120,6 +118,7 @@ int GNUNET_DV_heap_iterate (const struct GNUNET_dv_heap *heap,
 
 /**
  * Simple stupid tree print.  Prints in depth first order.
+ * To stdout.
  */
 void printTree (struct GNUNET_dv_heap_node *root);
 
@@ -138,7 +137,7 @@ struct GNUNET_dv_neighbor *GNUNET_DV_Heap_removeRoot (struct GNUNET_dv_heap
                                                       *root);
 
 /**
- * Returns data stored at root of tree, doesn't affect anything
+ * Returns data stored at root of tree, doesn't effect anything
  */
 struct GNUNET_dv_neighbor *GNUNET_DV_Heap_peekRoot (struct GNUNET_dv_heap
                                                     *root);

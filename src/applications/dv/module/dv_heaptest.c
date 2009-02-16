@@ -39,7 +39,7 @@ static int heapverify;
 
 static int
 count_max_callback (struct GNUNET_dv_neighbor *neighbor,
-                 struct GNUNET_dv_heap *root, void *cls)
+                    struct GNUNET_dv_heap *root, void *cls)
 {
   tempmaxsize++;
   return 1;
@@ -47,41 +47,48 @@ count_max_callback (struct GNUNET_dv_neighbor *neighbor,
 
 static int
 count_min_callback (struct GNUNET_dv_neighbor *neighbor,
-                 struct GNUNET_dv_heap *root, void *cls)
+                    struct GNUNET_dv_heap *root, void *cls)
 {
   tempminsize++;
   return 1;
 }
 
-static int heap_verify_callback(struct GNUNET_dv_neighbor *neighbor,
-    struct GNUNET_dv_heap *root, void *cls)
+static int
+heap_verify_callback (struct GNUNET_dv_neighbor *neighbor,
+                      struct GNUNET_dv_heap *root, void *cls)
 {
   int ret;
   ret = heapverify;
   if (root->type == GNUNET_DV_MAX_HEAP)
-  {
-    if ((neighbor->max_loc->left_child != NULL) && (neighbor->cost < neighbor->max_loc->left_child->neighbor->cost))
     {
-      ret = GNUNET_SYSERR;
-    }
+      if ((neighbor->max_loc->left_child != NULL)
+          && (neighbor->cost < neighbor->max_loc->left_child->neighbor->cost))
+        {
+          ret = GNUNET_SYSERR;
+        }
 
-    if ((neighbor->max_loc->right_child != NULL) && (neighbor->cost < neighbor->max_loc->right_child->neighbor->cost))
-    {
-      ret = GNUNET_SYSERR;
+      if ((neighbor->max_loc->right_child != NULL)
+          && (neighbor->cost <
+              neighbor->max_loc->right_child->neighbor->cost))
+        {
+          ret = GNUNET_SYSERR;
+        }
     }
-  }
   else if (root->type == GNUNET_DV_MIN_HEAP)
-  {
-    if ((neighbor->min_loc->left_child != NULL) && (neighbor->cost > neighbor->min_loc->left_child->neighbor->cost))
     {
-      ret = GNUNET_SYSERR;
-    }
+      if ((neighbor->min_loc->left_child != NULL)
+          && (neighbor->cost > neighbor->min_loc->left_child->neighbor->cost))
+        {
+          ret = GNUNET_SYSERR;
+        }
 
-    if ((neighbor->min_loc->right_child != NULL) && (neighbor->cost > neighbor->min_loc->right_child->neighbor->cost))
-    {
-      ret = GNUNET_SYSERR;
+      if ((neighbor->min_loc->right_child != NULL)
+          && (neighbor->cost >
+              neighbor->min_loc->right_child->neighbor->cost))
+        {
+          ret = GNUNET_SYSERR;
+        }
     }
-  }
 
   heapverify = ret;
   return ret;
@@ -97,9 +104,11 @@ iterator_callback (struct GNUNET_dv_neighbor *neighbor,
   return GNUNET_OK;
 }
 
-static int check_node(struct GNUNET_dv_neighbor *neighbor)
+static int
+check_node (struct GNUNET_dv_neighbor *neighbor)
 {
-  if ((neighbor->max_loc->neighbor == neighbor) && (neighbor->min_loc->neighbor == neighbor))
+  if ((neighbor->max_loc->neighbor == neighbor)
+      && (neighbor->min_loc->neighbor == neighbor))
     return GNUNET_OK;
   else
     return GNUNET_SYSERR;
@@ -136,102 +145,114 @@ main (int argc, char **argv)
   minHeap->size = 0;
   minHeap->traversal_pos = NULL;
 
-  for (i = 0;i<TESTS;i++)
-  {
-    neighbors[i] = NULL;
-  }
+  for (i = 0; i < TESTS; i++)
+    {
+      neighbors[i] = NULL;
+    }
 
-  for (i = 0;i<TESTS;i++)
-  //for (i = 0;i<6;i++)
-  {
-    temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
-    while((cur_pos <= 1) && (temp_rand != 0))
+  for (i = 0; i < TESTS; i++)
+    //for (i = 0;i<6;i++)
+    {
       temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
-    //temp_rand = seq[i];
-    switch(temp_rand)
-    {
-      case 0:
-      case 1:
-        temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
-        fprintf(stderr, "Adding node with cost %d\n", temp_rand);
-        neighbors[cur_pos] = malloc(sizeof (struct GNUNET_dv_neighbor));
-        neighbors[cur_pos]->neighbor = malloc(sizeof(GNUNET_PeerIdentity));
-        hostkey = GNUNET_RSA_create_key();
-        GNUNET_RSA_get_public_key (hostkey, &pubkey);
-        GNUNET_hash (&pubkey, sizeof (GNUNET_RSA_PublicKey), &neighbors[cur_pos]->neighbor->hashPubKey);
-        //neighbors[cur_pos]->cost = temp_rand;
-        neighbors[cur_pos]->cost = temp_rand;
-        GNUNET_DV_Heap_insert (maxHeap, neighbors[cur_pos]);
-        GNUNET_DV_Heap_insert (minHeap, neighbors[cur_pos]);
-        cur_pos++;
-        break;
-
-      case 2:
-        temp_node = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, cur_pos);
-        temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
-        fprintf(stderr, "Updating node %d (cost %d) with new cost %d\n", temp_node + 1, neighbors[temp_node]->cost ,temp_rand);
-        GNUNET_DV_Heap_updateCost(maxHeap, neighbors[temp_node], temp_rand);
-        GNUNET_DV_Heap_updatedCost(minHeap, neighbors[temp_node]);
-        break;
-      case 3:
-        fprintf(stderr, "Removing node %d with cost %d\n", cur_pos, neighbors[cur_pos - 1]->cost);
-        GNUNET_DV_Heap_removeNode(maxHeap, neighbors[cur_pos - 1]);
-        GNUNET_DV_Heap_removeNode(minHeap, neighbors[cur_pos - 1]);
-        GNUNET_free(neighbors[cur_pos - 1]->neighbor);
-        GNUNET_free(neighbors[cur_pos - 1]);
-        neighbors[cur_pos - 1] = NULL;
-        cur_pos--;
-        break;
-      case 4:
-        //fprintf(stderr, "Removing matching nodes\n");
-        break;
-    }
-
-    for (j = 0;j<cur_pos;j++)
-    {
-      if(check_node(neighbors[j]) != GNUNET_OK)
-      {
-        fprintf(stderr, "\n\n\tEPIC FAIL\n\n");
-        if ((neighbors[j]->max_loc->neighbor != neighbors[j]))
+      while ((cur_pos <= 1) && (temp_rand != 0))
+        temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
+      //temp_rand = seq[i];
+      switch (temp_rand)
         {
-          fprintf(stderr, "node at position %d has bad max_loc\n", j);
+        case 0:
+        case 1:
+          temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
+          fprintf (stderr, "Adding node with cost %d\n", temp_rand);
+          neighbors[cur_pos] = malloc (sizeof (struct GNUNET_dv_neighbor));
+          neighbors[cur_pos]->neighbor =
+            malloc (sizeof (GNUNET_PeerIdentity));
+          hostkey = GNUNET_RSA_create_key ();
+          GNUNET_RSA_get_public_key (hostkey, &pubkey);
+          GNUNET_hash (&pubkey, sizeof (GNUNET_RSA_PublicKey),
+                       &neighbors[cur_pos]->neighbor->hashPubKey);
+          //neighbors[cur_pos]->cost = temp_rand;
+          neighbors[cur_pos]->cost = temp_rand;
+          GNUNET_DV_Heap_insert (maxHeap, neighbors[cur_pos]);
+          GNUNET_DV_Heap_insert (minHeap, neighbors[cur_pos]);
+          cur_pos++;
+          break;
+
+        case 2:
+          temp_node = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, cur_pos);
+          temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
+          fprintf (stderr, "Updating node %d (cost %d) with new cost %d\n",
+                   temp_node + 1, neighbors[temp_node]->cost, temp_rand);
+          GNUNET_DV_Heap_updateCost (maxHeap, neighbors[temp_node],
+                                     temp_rand);
+          GNUNET_DV_Heap_updatedCost (minHeap, neighbors[temp_node]);
+          break;
+        case 3:
+          fprintf (stderr, "Removing node %d with cost %d\n", cur_pos,
+                   neighbors[cur_pos - 1]->cost);
+          GNUNET_DV_Heap_removeNode (maxHeap, neighbors[cur_pos - 1]);
+          GNUNET_DV_Heap_removeNode (minHeap, neighbors[cur_pos - 1]);
+          GNUNET_free (neighbors[cur_pos - 1]->neighbor);
+          GNUNET_free (neighbors[cur_pos - 1]);
+          neighbors[cur_pos - 1] = NULL;
+          cur_pos--;
+          break;
+        case 4:
+          //fprintf(stderr, "Removing matching nodes\n");
+          break;
         }
-        if (neighbors[j]->min_loc->neighbor != neighbors[j])
+
+      for (j = 0; j < cur_pos; j++)
         {
-          fprintf(stderr, "node at position %d has bad min_loc\n", j);
+          if (check_node (neighbors[j]) != GNUNET_OK)
+            {
+              fprintf (stderr, "\n\n\tEPIC FAIL\n\n");
+              if ((neighbors[j]->max_loc->neighbor != neighbors[j]))
+                {
+                  fprintf (stderr, "node at position %d has bad max_loc\n",
+                           j);
+                }
+              if (neighbors[j]->min_loc->neighbor != neighbors[j])
+                {
+                  fprintf (stderr, "node at position %d has bad min_loc\n",
+                           j);
+                }
+              ret = GNUNET_SYSERR;
+            }
         }
-        ret = GNUNET_SYSERR;
-      }
-    }
-    heapverify = GNUNET_OK;
-    GNUNET_DV_Heap_Iterator(minHeap, minHeap->root, &heap_verify_callback, NULL);
-    if (heapverify != GNUNET_OK)
-    {
-      fprintf(stderr, "Min heap property broken!\n");
-      return GNUNET_SYSERR;
-    }
+      heapverify = GNUNET_OK;
+      GNUNET_DV_Heap_Iterator (minHeap, minHeap->root, &heap_verify_callback,
+                               NULL);
+      if (heapverify != GNUNET_OK)
+        {
+          fprintf (stderr, "Min heap property broken!\n");
+          return GNUNET_SYSERR;
+        }
 
-    GNUNET_DV_Heap_Iterator(maxHeap, maxHeap->root, &heap_verify_callback, NULL);
-    if (heapverify != GNUNET_OK)
-    {
-      fprintf(stderr, "Max heap property broken!\n");
-      return GNUNET_SYSERR;
+      GNUNET_DV_Heap_Iterator (maxHeap, maxHeap->root, &heap_verify_callback,
+                               NULL);
+      if (heapverify != GNUNET_OK)
+        {
+          fprintf (stderr, "Max heap property broken!\n");
+          return GNUNET_SYSERR;
+        }
+
+      if (ret != GNUNET_OK)
+        return GNUNET_SYSERR;
+
+      tempmaxsize = 0;
+      tempminsize = 0;
+      GNUNET_DV_Heap_Iterator (maxHeap, maxHeap->root, &count_max_callback,
+                               NULL);
+      GNUNET_DV_Heap_Iterator (minHeap, minHeap->root, &count_min_callback,
+                               NULL);
+
+      if ((tempmaxsize != cur_pos) || (tempminsize != cur_pos)
+          || (maxHeap->size != cur_pos) || (minHeap->size != cur_pos))
+        {
+          fprintf (stderr, "Incorrect heap sizes!\n");
+          return GNUNET_SYSERR;
+        }
     }
-
-    if (ret != GNUNET_OK)
-      return GNUNET_SYSERR;
-
-    tempmaxsize = 0;
-    tempminsize = 0;
-    GNUNET_DV_Heap_Iterator(maxHeap, maxHeap->root, &count_max_callback, NULL);
-    GNUNET_DV_Heap_Iterator(minHeap, minHeap->root, &count_min_callback, NULL);
-
-    if ((tempmaxsize != cur_pos) || (tempminsize != cur_pos) || (maxHeap->size != cur_pos) || (minHeap->size != cur_pos))
-    {
-      fprintf(stderr, "Incorrect heap sizes!\n");
-      return GNUNET_SYSERR;
-    }
-  }
 
   return 0;
 }

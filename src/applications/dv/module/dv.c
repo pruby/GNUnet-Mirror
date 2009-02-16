@@ -29,12 +29,17 @@
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
 #include "gnunet_core.h"
+#include "gnunet_dv_lib.h"
 #include "dv.h"
 #include "heap.h"
 
 #define DEBUG_DV
+/* How long to allow a message to be delayed */
+#define DV_DELAY (100 * GNUNET_CRON_MILLISECONDS)
 
-
+/*
+ * Global construct
+ */
 struct GNUNET_DV_Context
 {
   unsigned long long fisheye_depth;
@@ -104,15 +109,103 @@ print_tables ()
   return;
 }
 
-/*
-static int
-p2pHandleDVRouteMessage (const GNUNET_PeerIdentity * sender,
-                            const GNUNET_MessageHeader * message)
-{
 
-	return GNUNET_OK;
+/*
+ * Handle a message receipt, if recipient matches ident message is
+ * for this peer, otherwise check if we know of the intended
+ * recipient and send onwards
+ */
+static int
+p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
+                        const GNUNET_MessageHeader * message)
+{
+  p2p_dv_MESSAGE_Data *incoming;
+  incoming = (p2p_dv_MESSAGE_Data *) message;
+  char *message_content;
+  unsigned int message_length;
+  int ret;
+
+  ret = GNUNET_OK;
+  if (ntohs (incoming->header.size) < sizeof (p2p_dv_MESSAGE_Data))
+    {
+      return GNUNET_SYSERR;
+    }
+
+  message_length =
+    ntohs (incoming->header.size) - sizeof (p2p_dv_MESSAGE_Data);
+  message_content = GNUNET_malloc (message_length + 1);
+  memcpy (message_content, &incoming[1], message_length);
+  message_content[message_length] = '\0';
+
+  if (memcmp
+      (coreAPI->my_identity, &incoming->recipient,
+       sizeof (GNUNET_PeerIdentity)) == 0)
+    {
+      /*FIXME: Deliver message up to ???  Handle arbitrary messages? */
+#ifdef DEBUG_DV
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Received message %s intended for this node!\n",
+                     message_content);
+#endif
+    }
+  else
+    {
+#ifdef DEBUG_DV
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Received message %s for some other node!\n",
+                     message_content);
+#endif
+      ret = GNUNET_DV_send_message (&incoming->recipient, message_content);
+    }
+  GNUNET_free (message_content);
+  return ret;
 }
-*/
+
+
+int
+GNUNET_DV_send_message (const GNUNET_PeerIdentity * recipient, char *message)
+{
+  p2p_dv_MESSAGE_Data *toSend;
+  int ret = GNUNET_OK;
+  unsigned int msg_size;
+  struct GNUNET_dv_neighbor *neighbor;
+
+  if (GNUNET_YES ==
+      GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                      &recipient->hashPubKey))
+    {
+      neighbor =
+        GNUNET_multi_hash_map_get (ctx->extended_neighbors,
+                                   &recipient->hashPubKey);
+      msg_size = strlen (message) + sizeof (p2p_dv_MESSAGE_Data);
+      if (msg_size > GNUNET_MAX_BUFFER_SIZE - 8)
+        return GNUNET_SYSERR;
+      toSend = GNUNET_malloc (msg_size);
+      toSend->header.size = htons (msg_size);
+      toSend->header.type = htons (GNUNET_P2P_PROTO_DV_DATA_MESSAGE);
+      memcpy (&toSend->recipient, recipient, sizeof (GNUNET_PeerIdentity));
+      memcpy (&toSend[1], message, strlen (message));
+      coreAPI->ciphertext_send (neighbor->neighbor, &toSend->header, 0,
+                                DV_DELAY);
+      GNUNET_free (toSend);
+      return ret;
+    }
+  else
+    {
+#ifdef DEBUG_DV
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Attempted to send a message to an unknown peer!\n");
+#endif
+      return GNUNET_NO;
+    }
+
+}
 
 /*
  * Handles when a peer is either added due to being newly connected
@@ -208,7 +301,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
           if (neighbor->referrer != NULL)
             GNUNET_free (neighbor->referrer);
           GNUNET_free (neighbor);
-          GNUNET_multi_hash_map_remove_all(ctx->extended_neighbors, &peer->hashPubKey);
+          GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
+                                            &peer->hashPubKey);
 
           neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
           neighbor->cost = cost;
@@ -323,9 +417,9 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       if (neighbor->cost != cost)
         {
           neighbor->cost = cost;
-        /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
-                                     neighbor,
-                                     GNUNET_MultiHashMapOption_REPLACE);*/
+          /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
+             neighbor,
+             GNUNET_MultiHashMapOption_REPLACE); */
         }
 
     }
@@ -334,8 +428,8 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 
 #ifdef DEBUG_DV
   GNUNET_mutex_lock (ctx->dvMutex);
-	print_tables ();
-	GNUNET_mutex_unlock (ctx->dvMutex);
+  print_tables ();
+  GNUNET_mutex_unlock (ctx->dvMutex);
 #endif
   return;
 
@@ -368,11 +462,13 @@ delete_callback (struct GNUNET_dv_neighbor *neighbor,
 #endif
 
   if (((memcmp (neighbor->neighbor, toMatch, sizeof (GNUNET_PeerIdentity)) ==
-       0) && (neighbor->referrer == NULL)) || ((neighbor->referrer != NULL)
-              &&
-              (memcmp
-               (neighbor->referrer, toMatch,
-                sizeof (GNUNET_PeerIdentity)) == 0)))
+        0) && (neighbor->referrer == NULL)) || ((neighbor->referrer != NULL)
+                                                &&
+                                                (memcmp
+                                                 (neighbor->referrer, toMatch,
+                                                  sizeof
+                                                  (GNUNET_PeerIdentity)) ==
+                                                 0)))
     {
       GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
       GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
@@ -409,8 +505,8 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "disconnected peer: %s\n", (char *) &myself);
   GNUNET_mutex_lock (ctx->dvMutex);
-	print_tables ();
-	GNUNET_mutex_unlock (ctx->dvMutex);
+  print_tables ();
+  GNUNET_mutex_unlock (ctx->dvMutex);
 #endif
 
   GNUNET_mutex_lock (ctx->dvMutex);
@@ -423,7 +519,7 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
         GNUNET_multi_hash_map_get (ctx->direct_neighbors, &peer->hashPubKey);
 
       GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
-                                                  &peer->hashPubKey);
+                                        &peer->hashPubKey);
       if (neighbor != NULL)
         {
           GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
@@ -442,8 +538,8 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_unlock (ctx->dvMutex);
 #ifdef DEBUG_DV
   GNUNET_mutex_lock (ctx->dvMutex);
-	print_tables ();
-	GNUNET_mutex_unlock (ctx->dvMutex);
+  print_tables ();
+  GNUNET_mutex_unlock (ctx->dvMutex);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "Exiting peer_disconnect_handler\n");
@@ -609,6 +705,11 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       coreAPI->p2p_ciphertext_handler_register
       (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE, &p2pHandleDVNeighborMessage))
+    ok = GNUNET_SYSERR;
+
+  if (GNUNET_SYSERR ==
+      coreAPI->p2p_ciphertext_handler_register
+      (GNUNET_P2P_PROTO_DV_DATA_MESSAGE, &p2pHandleDVDataMessage))
     ok = GNUNET_SYSERR;
 
 
