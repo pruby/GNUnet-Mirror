@@ -21,8 +21,8 @@
 /**
  * @author Nathan Evans
  * @file include/dv.h
- * @brief Structs necessary for the distance vector service providing
- * distance vector type routing.
+ * @brief Structs necessary for the dv service providing
+ * fisheye distance vector type routing.
  */
 #ifndef DV_H
 #define DV_H
@@ -47,11 +47,25 @@ typedef struct
   unsigned int cost GNUNET_PACKED;
 
   /**
-   * Identity of neighbor of received from node
+   * Identity of neighbor we learned information about
    */
   GNUNET_PeerIdentity neighbor GNUNET_PACKED;
 
 } p2p_dv_MESSAGE_NeighborInfo;
+
+/**
+ * Message that gets sent between nodes carrying information
+ */
+typedef struct
+{
+  GNUNET_MessageHeader header GNUNET_PACKED;
+
+  /**
+   * Identity of neighbor this message is going to
+   */
+  GNUNET_PeerIdentity recipient GNUNET_PACKED;
+
+} p2p_dv_MESSAGE_Data;
 
 /*
  * Struct where actual neighbor information is stored,
@@ -85,7 +99,6 @@ struct GNUNET_dv_neighbor
    */
   unsigned int cost;
 };
-
 
 #endif
 

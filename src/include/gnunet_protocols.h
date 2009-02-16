@@ -411,10 +411,11 @@ extern "C"
 /* ************* p2p Distance Vector Messages ************* */
 
 #define GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE 75
+#define GNUNET_P2P_PROTO_DV_DATA_MESSAGE 76
 
 /* ************* end p2p DV Messages ***************** */
 
-#define GNUNET_P2P_PROTO_MAX_USED 76
+#define GNUNET_P2P_PROTO_MAX_USED 77
 
 
 /* ************** Block types (libecrs) ************************ */
