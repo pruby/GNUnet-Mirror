@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2009 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,7 +28,7 @@
 #include "gnunet_protocols.h"
 #include "tbench.h"
 
-#define DEBUG_TBENCH GNUNET_NO
+#define DEBUG_TBENCH GNUNET_YES
 
 typedef struct
 {
@@ -59,6 +59,8 @@ typedef struct
 static struct GNUNET_Mutex *lock;
 
 static struct GNUNET_Semaphore *postsem;
+
+static struct GNUNET_CronManager * cron;
 
 /**
  * What is the current iteration counter? (Used to verify
@@ -277,6 +279,13 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
 
   for (iteration = 0; iteration < iterations; iteration++)
     {
+      if (GNUNET_YES == GNUNET_shutdown_test())
+	{
+	  GNUNET_free (p2p);
+	  GNUNET_free (results);
+	  GNUNET_mutex_unlock (lock);
+	  return GNUNET_SYSERR;
+	}
       results[iteration].maxPacketNumber = msgCnt;
       results[iteration].packetsReceived = GNUNET_malloc (msgCnt);
       memset (results[iteration].packetsReceived, 0, msgCnt);
@@ -300,12 +309,18 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
       endTime = startTime + GNUNET_ntohll (msg->timeOut);
 
       timeoutOccured = GNUNET_NO;
-      GNUNET_cron_add_job (coreAPI->cron,
+      GNUNET_cron_add_job (cron,
                            &semaUp,
                            GNUNET_ntohll (msg->timeOut) *
                            GNUNET_CRON_MILLISECONDS, 0, postsem);
       for (packetNum = 0; packetNum < msgCnt; packetNum++)
         {
+	  if (GNUNET_YES == GNUNET_shutdown_test())
+	    {
+	      GNUNET_free(p2p);
+	      GNUNET_free (results);
+	      return GNUNET_SYSERR;
+	    }
           now = GNUNET_get_time ();
           p2p->packetNum = htonl (packetNum);
 #if DEBUG_TBENCH
@@ -412,7 +427,8 @@ initialize_module_tbench (GNUNET_CoreAPIForPlugins * capi)
       capi->cs_handler_register (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                  &csHandleTBenchRequest))
     ok = GNUNET_SYSERR;
-
+  cron = GNUNET_cron_create(capi->ectx);
+  GNUNET_cron_start(cron);
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
@@ -434,6 +450,9 @@ done_module_tbench ()
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                   &csHandleTBenchRequest);
   GNUNET_mutex_destroy (lock);
+  GNUNET_cron_stop(cron);
+  GNUNET_cron_destroy (cron);
+  cron = NULL;
   lock = NULL;
   coreAPI = NULL;
 }
