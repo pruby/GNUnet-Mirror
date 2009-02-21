@@ -28,7 +28,7 @@
 #include "gnunet_protocols.h"
 #include "tbench.h"
 
-#define DEBUG_TBENCH GNUNET_YES
+#define DEBUG_TBENCH GNUNET_NO
 
 typedef struct
 {
