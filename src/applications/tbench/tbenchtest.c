@@ -136,8 +136,8 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-  peer1 = peers->peer;
-  peer2 = peers->next->peer;
+  peer2 = peers->peer;
+  peer1 = peers->next->peer;
   if (GNUNET_OK != GNUNET_TESTING_connect_daemons (2087, 12087))
     {
       GNUNET_TESTING_stop_daemons (peers);
