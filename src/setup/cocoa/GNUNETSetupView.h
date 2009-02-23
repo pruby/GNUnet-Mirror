@@ -25,11 +25,11 @@
 
 #include "gnunet_setup_lib.h"
 #import <Cocoa/Cocoa.h>
-#import "PackingBoxContainer.h"
 
 struct P2W;
 
 @class GNUNETSetupTreeNode;
+@class PackingBoxContainer;
 
 @interface GNUNETSetupView:NSView
 {

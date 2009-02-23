@@ -1,5 +1,9 @@
 INCLUDES = -I$(top_srcdir)/src/include -I$(top_srcdir)/src/setup/lib
 
+gnunetincludedir = $(includedir)/GNUnet
+
+gnunetinclude_HEADERS = GNUNETSetupView.h
+
 plugindir = $(libdir)/GNUnet
 
 plugin_LTLIBRARIES = \
