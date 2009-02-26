@@ -663,7 +663,16 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
             struct GNUNET_FSUI_UploadList *parent)
 {
   GNUNET_FSUI_UploadList *utc;
+  int ret;
 
+  ret = GNUNET_disk_file_test (shared->ctx->ectx, filename);
+  if(GNUNET_SYSERR == ret)
+    {
+      GNUNET_GE_LOG (shared->ctx->ectx,
+                     GNUNET_GE_FATAL | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     "Unable to access file: %s\n", filename);
+      return NULL;
+    }
   utc = GNUNET_malloc (sizeof (GNUNET_FSUI_UploadList));
   utc->completed = 0;
   utc->total = 0;               /* to be set later */
@@ -675,7 +684,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
   utc->uri = NULL;
   utc->cctx = NULL;             /* to be set later */
   utc->state = GNUNET_FSUI_ACTIVE;
-  if (GNUNET_YES == GNUNET_disk_file_test (shared->ctx->ectx, filename))
+  if (GNUNET_YES == ret)
     {
       utc->is_directory = GNUNET_NO;
       /* add this file */
