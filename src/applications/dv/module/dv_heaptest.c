@@ -32,7 +32,7 @@
 #include "../../../util/crypto/hostkey_gcrypt.c"
 
 #define MAX_SIZE 100
-#define TESTS 100
+#define TESTS 10
 static int tempmaxsize;
 static int tempminsize;
 static int heapverify;
