@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.8.0b"
+!define PRODUCT_VERSION "0.8.0b-1"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -43,9 +43,9 @@ var ICONS_GROUP
 ; Finish page
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README"
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
-!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN "$INSTDIR\bin\gnunet-setup.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "GNUnet Setup"
-!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchSetup"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "-d wizard-qt"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -76,6 +76,7 @@ InstallDir "$PROGRAMFILES\GNU\GNUnet"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
+RequestExecutionLevel user
 
 Var LANGCODE
 Var USR_PROF
@@ -86,10 +87,6 @@ InstType "User"
 InstType "GNUnet Server"
 InstType "GNUnet Client"
 InstType "Everything"
-
-Function LaunchSetup
-  ExecShell "" "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk"
-FunctionEnd
 
 SetOverwrite ifnewer
 
