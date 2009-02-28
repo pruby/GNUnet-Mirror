@@ -309,6 +309,16 @@ struct GNUNET_SocketHandle *GNUNET_socket_create (struct GNUNET_GE_Context
                                                   *mon, int osSocket);
 
 /**
+ * Create a socket handle by boxing an OS socket.
+ * The OS socket should henceforth be no longer used
+ * directly.  GNUNET_socket_destroy will close it.
+ */
+struct GNUNET_SocketHandle *
+GNUNET_socket_create_connect_to_host (struct GNUNET_LoadMonitor *mon, 
+				      const char *hostname,
+				      unsigned short port);
+
+/**
  * Close the socket (does NOT destroy it)
  */
 void GNUNET_socket_close (struct GNUNET_SocketHandle *s);

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnunet 0.8.0a\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2009-01-08 10:55-0700\n"
+"POT-Creation-Date: 2009-02-27 22:04-0700\n"
 "PO-Revision-Date: 2008-09-10 22:05+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
@@ -831,7 +831,7 @@ msgstr "Gặp lỗi cú pháp trong mục nhập cấu hình MÁY trong phần M
 msgid "Error connecting to %s:%u. Is the daemon running?\n"
 msgstr "Gặp lỗi khi kết nối tới %s:%u. Trình nền đang chạy không?\n"
 
-#: src/util/network_client/tcpio.c:398
+#: src/util/network_client/tcpio.c:398 src/util/network/io.c:164
 #, c-format
 msgid "Cannot connect to %s:%u: %s\n"
 msgstr "Không thể kết nối tới %s:%u: %s\n"
@@ -1069,21 +1069,38 @@ msgstr "« %s » bị lỗi tại %s:%d với lỗi: %s\n"
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr "Lỗi thẩm tra chữ ký RSA tại %s:%d: %s\n"
 
-#: src/util/os/user.c:108 src/util/os/user.c:125
+#: src/util/os/user.c:167 src/util/os/user.c:482 src/util/os/user.c:499
 #, c-format
 msgid "`%s' returned with error code %u"
 msgstr "« %s » trả lại với mã lỗi %u"
 
-#: src/util/os/user.c:155 src/util/os/user.c:200
+#: src/util/os/user.c:298 src/util/os/user.c:345
+msgid "Error while parsing dscl output.\n"
+msgstr ""
+
+#: src/util/os/user.c:320
+#, c-format
+msgid "Couldn't find a group (`%s') for the new user and none was specified.\n"
+msgstr ""
+
+#: src/util/os/user.c:375
+msgid "Failed to find a free system id for the new group.\n"
+msgstr ""
+
+#: src/util/os/user.c:392
+msgid "Failed to find a free system id for the new user.\n"
+msgstr ""
+
+#: src/util/os/user.c:529 src/util/os/user.c:574
 #, c-format
 msgid "Cannot obtain information about user `%s': %s\n"
 msgstr "Không thể lấy thông tin về người dùng « %s »: %s\n"
 
-#: src/util/os/user.c:156
+#: src/util/os/user.c:530
 msgid "No such user"
 msgstr "Không có người dùng như vậy"
 
-#: src/util/os/user.c:171
+#: src/util/os/user.c:545
 #, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Không thể thay đổi người dùng/nhóm thành « %s »: %s\n"
@@ -1132,7 +1149,8 @@ msgstr ""
 msgid "Setting open descriptor limit not supported.\n"
 msgstr "Không hỗ trợ chức năng đặt giới hạn bộ mô tả còn mở.\n"
 
-#: src/util/os/osconfig.c:463 src/util/os/osconfig.c:492
+#: src/util/os/osconfig.c:453 src/util/os/osconfig.c:631
+#: src/util/os/osconfig.c:660
 #, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr "Câu lệnh « %s » đã thất bại với mã lỗi %u\n"
@@ -1340,7 +1358,7 @@ msgstr ""
 msgid "Running benchmark...\n"
 msgstr "Đang chạy tiến trình kiểm chuẩn...\n"
 
-#: src/applications/tbench/tbench.c:422
+#: src/applications/tbench/tbench.c:438
 msgid "allows profiling of direct peer-to-peer connections"
 msgstr "cho phép đo hiệu năng sử dụng của kết nối đồng đẳng trực tiếp"
 
@@ -1501,7 +1519,7 @@ msgid "sqlite datastore"
 msgstr "kho dữ liệu sqlite"
 
 #: src/applications/sqstore_sqlite/sqlite.c:1474
-#: src/applications/sqstore_mysql/mysql.c:1078
+#: src/applications/sqstore_mysql/mysql.c:1081
 msgid "# bytes in datastore"
 msgstr "# các byte trong kho dữ liệu"
 
@@ -1510,8 +1528,8 @@ msgstr "# các byte trong kho dữ liệu"
 msgid "# bytes allocated by SQLite"
 msgstr "# các byte được phép trong kho dữ liệu"
 
-#: src/applications/sqstore_mysql/mysql.c:1085
-#: src/applications/sqstore_mysql/mysql.c:1160
+#: src/applications/sqstore_mysql/mysql.c:1088
+#: src/applications/sqstore_mysql/mysql.c:1163
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
@@ -1685,39 +1703,39 @@ msgstr "# các mảnh bị loại bỏ"
 msgid "`%s' registering handler %d\n"
 msgstr "« %s » đang đăng ký trình điều khiển %d\n"
 
-#: src/applications/topology_default/topology.c:466
+#: src/applications/topology_default/topology.c:475
 #, c-format
 msgid "Could not read friends list `%s'\n"
 msgstr "Không thể đọc danh sách bạn bè « %s »\n"
 
-#: src/applications/topology_default/topology.c:485
+#: src/applications/topology_default/topology.c:499
 #, c-format
 msgid "Failed to read friends list from `%s'\n"
 msgstr "Lỗi đọc danh sách bạn bè từ « %s »\n"
 
-#: src/applications/topology_default/topology.c:505
+#: src/applications/topology_default/topology.c:519
 msgid "Syntax error in topology specification, skipping bytes.\n"
 msgstr "Lỗi cú pháp trong sự xác định địa hình học, đang bỏ qua các byte.\n"
 
-#: src/applications/topology_default/topology.c:523
+#: src/applications/topology_default/topology.c:538
 #, c-format
 msgid "Syntax error in topology specification, skipping bytes `%s'.\n"
 msgstr ""
 "Lỗi cú pháp trong sự xác định địa hình học, đang bỏ qua các byte « %s ».\n"
 
-#: src/applications/topology_default/topology.c:535
+#: src/applications/topology_default/topology.c:551
 msgid ""
 "Fewer friends specified than required by minimum friend count. Will only "
 "connect to friends.\n"
 msgstr ""
 "Xác định quá ít bạn bè (dưới số tối thiểu). Sẽ chỉ kết nối tới bạn bè.\n"
 
-#: src/applications/topology_default/topology.c:543
+#: src/applications/topology_default/topology.c:559
 msgid ""
 "More friendly connections required than target total number of connections.\n"
 msgstr "Cần thiết nhiều kết nối bạn bè hơn tổng số kết nối đích.\n"
 
-#: src/applications/topology_default/topology.c:726
+#: src/applications/topology_default/topology.c:743
 msgid "maintains GNUnet default mesh topology"
 msgstr "bảo quản định hình mắc lưới mặc định của GNUnet"
 
@@ -2005,7 +2023,7 @@ msgid "I am peer `%s'.\n"
 msgstr "Tôi là đồng đẳng « %s ».\n"
 
 #: src/applications/dht/tools/dht_multipeer_test.c:80
-#: src/applications/dht/tools/dht_twopeer_test.c:47
+#: src/applications/dht/tools/dht_api.c:332
 #: src/applications/dht/module/table.c:783
 msgid "# dht connections"
 msgstr "# các kết nối dht"
@@ -2308,7 +2326,7 @@ msgstr "# các phiên chạy được thiết lập"
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
 #: src/applications/fs/tools/gnunet-auto-share.c:199
 #: src/applications/fs/tools/gnunet-insert.c:246
-#: src/applications/fs/tools/gnunet-search.c:125
+#: src/applications/fs/tools/gnunet-search.c:126
 #: src/applications/fs/tools/gnunet-download.c:77
 msgid "set the desired LEVEL of sender-anonymity"
 msgstr "đặt CẤP mong muốn của tình trạng nặc danh của người gửi"
@@ -2714,8 +2732,9 @@ msgstr ""
 "công bố các tập tin dưới biệt hiệu TÊN (đặt tập tin vào không gian tên)"
 
 #: src/applications/fs/tools/gnunet-insert.c:297
+#, fuzzy
 msgid ""
-"only simulte the process but do not do any actual publishing (useful to "
+"only simulate the process but do not do any actual publishing (useful to "
 "compute URIs)"
 msgstr ""
 "chỉ mô phỏng tiến trình, không thật công bố (có ích để tính địa chỉ URI)"
@@ -2765,15 +2784,15 @@ msgstr "Tùy chọn « %s » cần thiết khi dùng tùy chọn « %s ».\n"
 msgid "Option `%s' makes no sense without option `%s'.\n"
 msgstr "Tùy chọn « %s » không có nghĩa khi không có tùy chọn « %s ».\n"
 
-#: src/applications/fs/tools/gnunet-search.c:128
+#: src/applications/fs/tools/gnunet-search.c:129
 msgid "Search GNUnet for files."
 msgstr "Tìm tập tin trong GNUnet."
 
-#: src/applications/fs/tools/gnunet-search.c:132
+#: src/applications/fs/tools/gnunet-search.c:133
 msgid "write encountered (decrypted) search results to FILENAME"
 msgstr "ghi kết quả tìm kiếm tìm thấy (đã giải mã) vào tập tin TÊN_TẬP_TIN"
 
-#: src/applications/fs/tools/gnunet-search.c:169
+#: src/applications/fs/tools/gnunet-search.c:170
 #, c-format
 msgid "Error converting arguments to URI!\n"
 msgstr "Gặp lỗi khi chuyển đổi các đối số sang URI.\n"
@@ -2968,12 +2987,12 @@ msgstr "Chưa ghi rõ từ khoá.\n"
 msgid "Number of double-quotes not balanced!\n"
 msgstr "Có dấu nháy kép thừa hay thiếu.\n"
 
-#: src/applications/fs/ecrs/helper.c:398
+#: src/applications/fs/ecrs/helper.c:405
 #, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr "Lỗi thay đổi tên của tập tin « %s » thành « %s »: %s\n"
 
-#: src/applications/fs/ecrs/helper.c:408
+#: src/applications/fs/ecrs/helper.c:415
 #, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr "Không thể thay đổi tên tập tin « %s » thành « %s »: tập tin đã có\n"
@@ -2995,19 +3014,19 @@ msgstr "Không cho phép địa chỉ URI CHK khi tìm kiếm.\n"
 msgid "LOC URI not allowed for search.\n"
 msgstr "Không cho phép địa chỉ URI LOC khi tìm kiếm.\n"
 
-#: src/applications/fs/ecrs/namespace.c:365
+#: src/applications/fs/ecrs/namespace.c:370
 #, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
 msgstr "Tập tin « %s » không chứa biệt hiệu.\n"
 
-#: src/applications/fs/ecrs/namespace.c:376
+#: src/applications/fs/ecrs/namespace.c:381
 #, c-format
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr "Định dạng của biệt hiệu « %s » là không hợp lệ.\n"
 
-#: src/applications/fs/ecrs/namespace.c:535
-#: src/applications/fs/ecrs/namespace.c:547
-#: src/applications/fs/ecrs/namespace.c:559
+#: src/applications/fs/ecrs/namespace.c:540
+#: src/applications/fs/ecrs/namespace.c:552
+#: src/applications/fs/ecrs/namespace.c:564
 #, c-format
 msgid "Format of file `%s' is invalid, trying to remove.\n"
 msgstr "Định dạng của tập tin « %s » là không hợp lệ nên thử gỡ bỏ.\n"
@@ -3201,43 +3220,54 @@ msgstr "Lỗi lấy thông kê về truyền tải.\n"
 msgid "scp command is : %s \n"
 msgstr "Câu lệnh scp là: %s\n"
 
-#: src/applications/testing/remote.c:491
+#: src/applications/testing/remote.c:80 src/applications/testing/remote.c:92
+#, fuzzy, c-format
+msgid "ssh command is : %s \n"
+msgstr "Câu lệnh scp là: %s\n"
+
+#: src/applications/testing/remote.c:554
 #, c-format
 msgid "Friend list of %s:%d\n"
 msgstr "Danh sách bạn bè của %s:%d\n"
 
-#: src/applications/testing/remote.c:513
+#: src/applications/testing/remote.c:576
 #, c-format
 msgid "scp command for friend file copy is : %s \n"
 msgstr "Câu lệnh scp cho bản sao tập tin bạn bè là: %s\n"
 
-#: src/applications/testing/remote.c:535
+#: src/applications/testing/remote.c:598
 #, c-format
 msgid "connecting peer %s:%d to peer %s:%d\n"
 msgstr "đang kết nối đồng đẳng %s:%d tới đồng đẳng %s:%d\n"
 
-#: src/applications/testing/remotetest.c:38
+#: src/applications/testing/remotetest.c:39
 msgid "Set up multiple gnunetd daemons across multiple hosts."
 msgstr "Thiết lập nhiều trình nền gnunetd qua nhiều máy khác nhau."
 
-#: src/applications/testing/remotetest.c:43
+#: src/applications/testing/remotetest.c:44
 msgid "set number of daemons to start"
 msgstr "đặt số trình nền cần khởi chạy"
 
+#: src/applications/testing/remotetest.c:49
+msgid ""
+"set output file for a dot input file which represents the graph of the "
+"connected nodes"
+msgstr ""
+
 #: src/applications/testing/testing.c:268
-#: src/applications/testing/remotetopologies.c:367
+#: src/applications/testing/remotetopologies.c:437
 #, c-format
 msgid "Waiting for peers to connect"
 msgstr "Đang đợi các đồng đẳng kết nối"
 
-#: src/applications/testing/remotetopologies.c:213
+#: src/applications/testing/remotetopologies.c:281
 #, c-format
 msgid "Connecting nodes in 2d torus topology: %u rows %u columns\n"
 msgstr ""
 "Đang kết nối các điểm nút theo địa hình học hình xuyến hai chiều: %u hàng, %"
 "u cột\n"
 
-#: src/applications/testing/remotetopologies.c:491
+#: src/applications/testing/remotetopologies.c:572
 #, c-format
 msgid "Failed to establish connection with peers.\n"
 msgstr "Lỗi thiết lập kết nối với đồng đẳng.\n"
@@ -3255,9 +3285,9 @@ msgstr "Sai dữ liệu nạp và khởi động được lấy từ « %s ».\n
 #: src/applications/bootstrap_http/http.c:365
 #: src/applications/bootstrap_http/http.c:375
 #: src/applications/bootstrap_http/http.c:385 src/transports/upnp/upnp.c:356
-#: src/transports/upnp/upnp.c:541 src/transports/http.c:1085
-#: src/transports/http.c:1209 src/transports/http.c:1377
-#: src/transports/http.c:1777 src/transports/http.c:1827
+#: src/transports/upnp/upnp.c:541 src/transports/http.c:1086
+#: src/transports/http.c:1210 src/transports/http.c:1378
+#: src/transports/http.c:1778 src/transports/http.c:1828
 #, c-format
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr "%s bị lỗi tại %s:%d: « %s »\n"
@@ -3286,12 +3316,12 @@ msgstr "Đã tải %llu byte xuống « %s ».\n"
 msgid "# HELLOs downloaded via http"
 msgstr "# các HELLO tải xuống qua HTTP"
 
-#: src/applications/getoption/getoption.c:78
+#: src/applications/getoption/getoption.c:79
 #, c-format
 msgid "`%s' registering client handler %d\n"
 msgstr "« %s » đang đăng ký trình điều khiển máy khách %d\n"
 
-#: src/applications/getoption/getoption.c:88
+#: src/applications/getoption/getoption.c:89
 msgid "allows clients to determine gnunetd's configuration"
 msgstr "cho phép máy khách quyết định cấu hình của trình nền gnunetd."
 
@@ -3304,7 +3334,7 @@ msgstr "« %s » đang đăng ký trình điều khiển máy khách %d và %d\n
 msgid "Template description."
 msgstr "Mô tả mẫu."
 
-#: src/applications/stats/clientapi.c:331
+#: src/applications/stats/clientapi.c:346
 msgid "Uptime (seconds)"
 msgstr "Thời gian chạy (giây)"
 
@@ -3737,7 +3767,7 @@ msgstr "Đang cập nhật dữ liệu cho mô-đun « %s »\n"
 msgid "Failed to update data for module `%s'\n"
 msgstr "Lỗi cập nhật dữ liệu cho mô-đun « %s »\n"
 
-#: src/server/gnunet-update.c:225 src/server/gnunetd.c:124
+#: src/server/gnunet-update.c:225 src/server/gnunetd.c:126
 msgid "Core initialization failed.\n"
 msgstr "Lỗi sơ khởi lõi.\n"
 
@@ -3759,17 +3789,21 @@ msgid ""
 msgstr ""
 "Lỗi quyết định tên tập tin được dùng để chứa thông tin về phiên bản GNUnet.\n"
 
-#: src/server/gnunetd.c:85
+#: src/server/gnunetd.c:87
 #, c-format
 msgid "`%s' startup complete.\n"
 msgstr "Hoàn thành khởi chạy « %s ».\n"
 
-#: src/server/gnunetd.c:89
+#: src/server/gnunetd.c:91
 #, c-format
 msgid "`%s' is shutting down.\n"
 msgstr "« %s » đang tắt.\n"
 
-#: src/server/gnunetd.c:179
+#: src/server/gnunetd.c:181
+msgid "do not daemonize (run gnunetd as a foreground process)"
+msgstr ""
+
+#: src/server/gnunetd.c:184
 msgid ""
 "run in debug mode; gnunetd will not daemonize and error messages will be "
 "written to stderr instead of a logfile"
@@ -3777,25 +3811,25 @@ msgstr ""
 "chạy trong chế độ tìm sửa lỗi; gnunetd sẽ không trở thành trình nền và sẽ "
 "ghi thông báo lỗi ra đầu lỗi tiêu chuẩn thay vì vào một tập tin ghi sự kiện."
 
-#: src/server/gnunetd.c:183
+#: src/server/gnunetd.c:188
 msgid "Starts the gnunetd daemon."
 msgstr "Khởi chạy trình nền gnunetd."
 
-#: src/server/gnunetd.c:186
+#: src/server/gnunetd.c:191
 msgid "disable padding with random data (experimental)"
 msgstr "tắt đệm lót với dữ liệu ngẫu nhiên (vẫn thực nghiệm !)"
 
-#: src/server/gnunetd.c:190
+#: src/server/gnunetd.c:195
 msgid "print all log messages to the console (only works together with -d)"
 msgstr ""
 "in mọi thông điệp ghi sự kiện ra bàn giao tiếp (chỉ hoạt động tổ hợp với « -d "
 "»)"
 
-#: src/server/gnunetd.c:194
+#: src/server/gnunetd.c:199
 msgid "specify username as which gnunetd should run"
 msgstr "chỉ ra tên người dùng dưới đó cần chạy gnunetd"
 
-#: src/server/gnunetd.c:275
+#: src/server/gnunetd.c:280
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
@@ -4181,7 +4215,7 @@ msgstr ""
 msgid "upnp: NAT Returned IP: %s\n"
 msgstr "upnp: địa chỉ IP được NAT trả về: %s\n"
 
-#: src/transports/http.c:2019 src/transports/tcp.c:811
+#: src/transports/http.c:2020 src/transports/tcp.c:811
 #, c-format
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
@@ -4190,63 +4224,63 @@ msgstr ""
 "Dịch vụ UPnP không thể nạp được. Để tắt UPnP, đặt tùy chọn cấu hình « UPNP » "
 "trong phần « %s » thành « NO » (không).\n"
 
-#: src/transports/http.c:2028
+#: src/transports/http.c:2029
 msgid "# bytes received via HTTP"
 msgstr "# các byte đã nhận qua HTTP"
 
-#: src/transports/http.c:2029
+#: src/transports/http.c:2030
 msgid "# bytes sent via HTTP"
 msgstr "# các byte đã gửi qua HTTP"
 
-#: src/transports/http.c:2031
+#: src/transports/http.c:2032
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# các byte loại bỏ bởi HTTP (đi ra)"
 
-#: src/transports/http.c:2032
+#: src/transports/http.c:2033
 msgid "# HTTP GET issued"
 msgstr "# Tín hiệu HTTP GET được gửi"
 
-#: src/transports/http.c:2034
+#: src/transports/http.c:2035
 msgid "# HTTP GET received"
 msgstr "# Tín hiệu HTTP GET được nhận"
 
-#: src/transports/http.c:2035
+#: src/transports/http.c:2036
 msgid "# HTTP PUT issued"
 msgstr "# Tín hiệu HTTP PUT được gửi"
 
-#: src/transports/http.c:2037
+#: src/transports/http.c:2038
 msgid "# HTTP PUT received"
 msgstr "# Tín hiệu HTTP PUT được nhận"
 
-#: src/transports/http.c:2039
+#: src/transports/http.c:2040
 msgid "# HTTP select calls"
 msgstr "# các cuộc gọi HTTP select (lựa chọn)"
 
-#: src/transports/http.c:2041
+#: src/transports/http.c:2042
 msgid "# HTTP send calls"
 msgstr "# các cuộc gọi HTTP send (gửi)"
 
-#: src/transports/http.c:2044
+#: src/transports/http.c:2045
 msgid "# HTTP curl send callbacks"
 msgstr "# các cuộc gọi ngược HTTP curl send (hàm curl gửi)"
 
-#: src/transports/http.c:2046
+#: src/transports/http.c:2047
 msgid "# HTTP curl receive callbacks"
 msgstr "# các cuộc gọi ngược HTTP curl receive (hàm curl nhận)"
 
-#: src/transports/http.c:2048
+#: src/transports/http.c:2049
 msgid "# HTTP mhd access callbacks"
 msgstr "# các cuộc gọi ngược HTTP mhd access (hàm mhd truy cập)"
 
-#: src/transports/http.c:2050
+#: src/transports/http.c:2051
 msgid "# HTTP mhd read callbacks"
 msgstr "# các cuộc gọi ngược HTTP mhd read (hàm mhd đọc)"
 
-#: src/transports/http.c:2052
+#: src/transports/http.c:2053
 msgid "# HTTP mhd close callbacks"
 msgstr "# các cuộc gọi ngược HTTP mhd close (hàm mhd đóng)"
 
-#: src/transports/http.c:2054
+#: src/transports/http.c:2055
 msgid "# HTTP connect calls"
 msgstr "# các cuộc gọi HTTP connect (kết nối)"
 

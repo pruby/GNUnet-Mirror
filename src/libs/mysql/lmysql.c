@@ -641,6 +641,7 @@ GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
   mysql_thread_init ();
   if (GNUNET_OK != prepare_statement (s))
     {
+      GNUNET_GE_BREAK (NULL, 0);
       GNUNET_mutex_unlock (lock);
       mysql_thread_end ();
       return GNUNET_SYSERR;
@@ -648,6 +649,7 @@ GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
   va_start (ap, processor_cls);
   if (GNUNET_OK != init_params (s, ap))
     {
+      GNUNET_GE_BREAK (NULL, 0);
       va_end (ap);
       mysql_thread_end ();
       GNUNET_mutex_unlock (lock);
@@ -679,7 +681,7 @@ GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
     {
       ret = mysql_stmt_fetch (s->statement);
       if (ret == MYSQL_NO_DATA)
-        break;
+	break;	
       if (ret != 0)
         {
           GNUNET_GE_LOG (s->db->ectx,

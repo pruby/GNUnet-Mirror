@@ -73,6 +73,165 @@ GNUNET_socket_create (struct GNUNET_GE_Context *ectx,
   return ret;
 }
 
+struct GNUNET_SocketHandle *
+GNUNET_socket_create_connect_to_host (struct GNUNET_LoadMonitor *mon, 
+				      const char *host,
+				      unsigned short port)
+{
+  static int addr_families[] = {
+#ifdef AF_UNSPEC
+    AF_UNSPEC,
+#endif
+#ifdef AF_INET6
+    AF_INET6,
+#endif
+    AF_INET,
+    -1
+  };
+  struct sockaddr *soaddr;
+  socklen_t socklen;
+  int af_index;
+  int soerr;
+  socklen_t soerrlen;
+  int tries;
+  struct timeval timeout;
+  GNUNET_CronTime select_start;
+  int osock;
+  int iret;
+  struct GNUNET_SocketHandle *ret;
+  fd_set wset;
+ 
+  af_index = 0;
+  /* we immediately advance if there is a DNS lookup error
+   * (which would likely persist) or a socket API error
+   * (which would equally likely persist).  We retry a
+   * few times with a small delay if we may just be having
+   * a connection issue.
+   */
+#define TRIES_PER_AF 2
+#ifdef WINDOWS
+#define DELAY_PER_RETRY (5000 * GNUNET_CRON_MILLISECONDS)
+#else
+#define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
+#endif
+#define ADVANCE() do { af_index++; tries = TRIES_PER_AF; } while(0)
+#define RETRY() do { tries--; if (tries == 0) { ADVANCE(); } else { GNUNET_thread_sleep(DELAY_PER_RETRY); } } while (0)
+  tries = TRIES_PER_AF;
+  /* loop over all possible address families */
+  while (1)
+    {
+      if (addr_families[af_index] == -1)
+	return NULL; // FIXME: return never-ready socket instead!       
+      soaddr = NULL;
+      socklen = 0;
+      if (GNUNET_SYSERR ==
+          GNUNET_get_ip_from_hostname (NULL, host,
+                                       addr_families[af_index], &soaddr,
+                                       &socklen))
+        {
+          ADVANCE ();
+          continue;
+        }
+      if (soaddr->sa_family == AF_INET)
+        {
+          ((struct sockaddr_in *) soaddr)->sin_port = htons (port);
+          osock = SOCKET (PF_INET, SOCK_STREAM, 0);
+        }
+      else
+        {
+#ifdef PF_INET6
+          ((struct sockaddr_in6 *) soaddr)->sin6_port = htons (port);
+          osock = SOCKET (PF_INET6, SOCK_STREAM, 0);
+#else
+          osock = -1;
+          errno = EAFNOSUPPORT;
+#endif
+        }
+      if (osock == -1)
+        {
+          GNUNET_free (soaddr);
+          ADVANCE ();
+          continue;
+        }
+      ret = GNUNET_socket_create(NULL, mon, osock);
+      GNUNET_socket_set_blocking (ret, GNUNET_NO);
+      iret = CONNECT (osock, soaddr, socklen);
+      GNUNET_free (soaddr);
+      if ((ret != 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
+        {
+          GNUNET_GE_LOG (NULL,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Cannot connect to %s:%u: %s\n"),
+                         host, port, STRERROR (errno));
+          GNUNET_socket_destroy (ret);
+          ret = NULL;
+          if (errno == ECONNREFUSED)
+            RETRY ();           /* service may just be restarting */
+          else
+            ADVANCE ();
+          continue;
+        }
+      /* we call select() first with a timeout of WAIT_SECONDS to
+         avoid blocking on a later write indefinitely;
+         Important if a local firewall decides to just drop
+         the TCP handshake... */
+      FD_ZERO (&wset);
+      FD_SET (osock, &wset);
+      timeout.tv_sec = 0;
+      timeout.tv_usec = DELAY_PER_RETRY * TRIES_PER_AF * 1000;
+      errno = 0;
+      select_start = GNUNET_get_time ();
+      iret = SELECT (osock + 1, NULL, &wset, NULL, &timeout);
+      if (iret == -1)
+        {
+          if (errno != EINTR)
+            GNUNET_GE_LOG_STRERROR (NULL,
+                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                    GNUNET_GE_BULK, "select");
+          GNUNET_socket_destroy (ret);
+          ret = NULL;
+          if ((GNUNET_get_time () - select_start >
+               TRIES_PER_AF * DELAY_PER_RETRY) || (errno != EINTR))
+            ADVANCE ();         /* spend enough time trying here */
+          else
+            RETRY ();
+          continue;
+        }
+      if (! FD_ISSET (osock, &wset))
+        {
+          GNUNET_socket_destroy (ret);
+          ret = NULL;
+          if (GNUNET_get_time () - select_start >
+              TRIES_PER_AF * DELAY_PER_RETRY)
+            ADVANCE ();         /* spend enough time trying here */
+          else
+            RETRY ();
+          continue;
+        }
+      soerr = 0;
+      soerrlen = sizeof (soerr);
+      iret = GETSOCKOPT (osock, SOL_SOCKET, SO_ERROR, &soerr, &soerrlen);
+      if (iret != 0)
+        GNUNET_GE_LOG_STRERROR (NULL,
+                                GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                GNUNET_GE_BULK, "getsockopt");
+      if ((soerr != 0) || (iret != 0 && (errno == ENOTSOCK || errno == EBADF)))
+        {
+          GNUNET_socket_destroy (ret);
+          ret = NULL;
+          if (GNUNET_get_time () - select_start >
+              TRIES_PER_AF * DELAY_PER_RETRY)
+            ADVANCE ();         /* spend enough time trying here */
+          else
+            RETRY ();
+          continue;
+        }
+      /* yayh! connected! */
+      break;
+    }     
+  return ret;
+}
+
 void
 GNUNET_socket_close (struct GNUNET_SocketHandle *s)
 {

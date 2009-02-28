@@ -33,6 +33,7 @@ gnunetinclude_HEADERS = \
   gnunet_identity_lib.h \
   gnunet_identity_service.h \
   gnunet_kvstore_service.h \
+  gnunet_mysql.h \
   gnunet_namespace_lib.h \
   gnunet_pingpong_service.h \
   gnunet_protocols.h \

@@ -23,6 +23,8 @@ check_PROGRAMS = \
 
 TESTS = $(check_PROGRAMS)
 
+EXTRA_DIST = check.conf
+
 loopback_test_SOURCES = \
   loopback_test.c 
 loopback_test_LDADD = \
