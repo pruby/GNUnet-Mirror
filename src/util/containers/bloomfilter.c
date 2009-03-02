@@ -520,8 +520,11 @@ GNUNET_bloomfilter_init (struct GNUNET_GE_Context
   ui = 1;
   while (ui < size)
     ui *= 2;
-  size = ui;                    /* make sure it's a power of 2 */
-
+  if (size != ui)
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return NULL;
+    }
   bf = GNUNET_malloc (sizeof (Bloomfilter));
   bf->ectx = ectx;
   bf->fd = -1;
@@ -530,7 +533,10 @@ GNUNET_bloomfilter_init (struct GNUNET_GE_Context
   bf->bitArray = GNUNET_malloc_large (size);
   bf->bitArraySize = size;
   bf->addressesPerElement = k;
-  memset (bf->bitArray, 0, bf->bitArraySize);
+  if (data != NULL)
+    memcpy(bf->bitArray, data, size);    
+  else
+    memset (bf->bitArray, 0, bf->bitArraySize);
   return bf;
 }
 
@@ -678,6 +684,8 @@ void
 GNUNET_bloomfilter_remove (Bloomfilter * bf, const GNUNET_HashCode * e)
 {
   if (NULL == bf)
+    return;
+  if (bf->fd == -1)
     return;
   GNUNET_mutex_lock (bf->lock);
   iterateBits (bf, &decrementBitCallback, NULL, e);

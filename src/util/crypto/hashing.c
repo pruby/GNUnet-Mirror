@@ -567,8 +567,9 @@ unsigned int
 GNUNET_hash_distance_u32 (const GNUNET_HashCode * a,
                           const GNUNET_HashCode * b)
 {
-  unsigned int x = (a->bits[1] - b->bits[1]) >> 16;
-  return ((x * x) >> 16);
+  unsigned int x1 = (a->bits[1] - b->bits[1]) >> 16;
+  unsigned int x2 = (b->bits[1] - a->bits[1]) >> 16;
+  return x1*x2;
 }
 
 void
