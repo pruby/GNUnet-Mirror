@@ -70,14 +70,14 @@ static struct GNUNET_Mutex *statusMutex;
  */
 static int currentCPULoad;
 
-static int agedCPULoad = -1;
+static double agedCPULoad = -1;
 
 /**
  * Current IO load, as percentage of CPU cycles blocked on IO.
  */
 static int currentIOLoad;
 
-static int agedIOLoad = -1;
+static double agedIOLoad = -1;
 
 #ifdef OSX
 static int
