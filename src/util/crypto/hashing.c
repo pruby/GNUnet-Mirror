@@ -642,7 +642,7 @@ GNUNET_hash_get_bit (const GNUNET_HashCode * code, unsigned int bit)
       GNUNET_GE_ASSERT (NULL, 0);
       return -1;                /* error */
     }
-  return (((unsigned char *) code)[bit >> 3] & (1 << bit & 7)) > 0;
+  return (((unsigned char *) code)[bit >> 3] & (1 << (bit & 7))) > 0;
 }
 
 /**
