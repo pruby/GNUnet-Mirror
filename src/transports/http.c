@@ -860,7 +860,7 @@ accessHandlerCallback (void *cls,
       get->session = session;
       get->httpsession = httpSession;
       get->last_get_activity = GNUNET_get_time ();
-      get->get = MHD_create_response_from_callback (-1,
+      get->get = MHD_create_response_from_callback (MHD_SIZE_UNKNOWN,
                                                     64 * 1024,
                                                     contentReaderCallback,
                                                     get,
