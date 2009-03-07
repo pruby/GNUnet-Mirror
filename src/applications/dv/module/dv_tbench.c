@@ -129,7 +129,7 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
   reply = GNUNET_malloc (ntohs (message->size));
   memcpy (reply, message, ntohs (message->size));
   reply->type = htons (GNUNET_P2P_PROTO_TBENCH_REPLY);
-  dvAPI->dv_send(sender, reply);
+  dvAPI->dv_send (sender, coreAPI->my_identity, reply);
   //coreAPI->ciphertext_send (sender, reply, ntohl (msg->priority), 0);   /* no delay */
   GNUNET_free (reply);
   return GNUNET_OK;
@@ -319,7 +319,8 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
                          "Sending message %u of size %u in iteration %u\n",
                          packetNum, size, iteration);
 #endif
-          dvAPI->dv_send(&msg->receiverId, &p2p->header);
+          dvAPI->dv_send (&msg->receiverId, coreAPI->my_identity,
+                          &p2p->header);
           //coreAPI->ciphertext_send (&msg->receiverId, &p2p->header, ntohl (msg->priority), 0);  /* no delay */
           if ((delay != 0) &&
               (htonl (msg->trainSize) != 0) &&
@@ -406,18 +407,19 @@ initialize_module_dv_tbench (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
   lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
-  dvAPI = coreAPI->service_request("dv");
+  dvAPI = coreAPI->service_request ("dv");
 
   if (dvAPI == NULL)
-  {
-    GNUNET_GE_BREAK (ectx, 0);
-    return GNUNET_SYSERR;
-  }
+    {
+      GNUNET_GE_BREAK (ectx, 0);
+      return GNUNET_SYSERR;
+    }
   GNUNET_GE_LOG (capi->ectx,
-               GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-               GNUNET_GE_BULK,
-               _("`%s' registering P2P handlers %d, %d\n"),
-               "dv_tbench", GNUNET_P2P_PROTO_TBENCH_REPLY, GNUNET_P2P_PROTO_TBENCH_REQUEST);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _("`%s' registering P2P handlers %d, %d\n"),
+                 "dv_tbench", GNUNET_P2P_PROTO_TBENCH_REPLY,
+                 GNUNET_P2P_PROTO_TBENCH_REQUEST);
 
   if (GNUNET_SYSERR ==
       capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_TBENCH_REPLY,
@@ -429,10 +431,10 @@ initialize_module_dv_tbench (GNUNET_CoreAPIForPlugins * capi)
                                              &handleTBenchReq))
     ok = GNUNET_SYSERR;
   GNUNET_GE_LOG (capi->ectx,
-               GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-               GNUNET_GE_BULK,
-               _("`%s' registering CS handler %d\n"),
-               "dv_tbench", GNUNET_CS_PROTO_TBENCH_REQUEST);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _("`%s' registering CS handler %d\n"),
+                 "dv_tbench", GNUNET_CS_PROTO_TBENCH_REQUEST);
   if (GNUNET_SYSERR ==
       capi->cs_handler_register (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                  &csHandleTBenchRequest))
@@ -458,7 +460,7 @@ done_module_dv_tbench ()
                                               &handleTBenchReply);
   coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                   &csHandleTBenchRequest);
-  coreAPI->service_release(dvAPI);
+  coreAPI->service_release (dvAPI);
   GNUNET_mutex_destroy (lock);
   lock = NULL;
   coreAPI = NULL;

@@ -41,6 +41,17 @@ static struct GNUNET_REMOTE_TESTING_DaemonContext *peer3;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer4;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer5;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer6;
+static struct GNUNET_REMOTE_TESTING_DaemonContext *peer7;
+static struct GNUNET_REMOTE_TESTING_DaemonContext *peer8;
+
+GNUNET_EncName peer1enc;
+GNUNET_EncName peer2enc;
+GNUNET_EncName peer3enc;
+GNUNET_EncName peer4enc;
+GNUNET_EncName peer5enc;
+GNUNET_EncName peer6enc;
+GNUNET_EncName peer7enc;
+GNUNET_EncName peer8enc;
 
 static int
 test (struct GNUNET_ClientServerConnection *sock,
@@ -50,7 +61,7 @@ test (struct GNUNET_ClientServerConnection *sock,
       GNUNET_CronTime messageSpacing,
       unsigned int messageTrainSize,
       GNUNET_CronTime messageTimeOut,
-      GNUNET_PeerIdentity receiver/* in milli-seconds */ )
+      GNUNET_PeerIdentity receiver /* in milli-seconds */ )
 {
   int ret;
   CS_tbench_request_MESSAGE msg;
@@ -134,8 +145,10 @@ main (int argc, char **argv)
       return -1;
     }
 #if START_PEERS
-  peers =
-    GNUNET_REMOTE_start_daemons (cfg, 6);
+  GNUNET_GC_set_configuration_value_string (cfg, NULL,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "DOT_OUTPUT", "topology.dot");
+  peers = GNUNET_REMOTE_start_daemons (cfg, 8);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);
@@ -148,36 +161,85 @@ main (int argc, char **argv)
   peer4 = peer3->next;
   peer5 = peer4->next;
   peer6 = peer5->next;
+  peer7 = peer6->next;
+  peer8 = peer7->next;
+
+  GNUNET_hash_to_enc (&peer1->peer->hashPubKey, &peer1enc);
+  GNUNET_hash_to_enc (&peer2->peer->hashPubKey, &peer2enc);
+  GNUNET_hash_to_enc (&peer3->peer->hashPubKey, &peer3enc);
+  GNUNET_hash_to_enc (&peer4->peer->hashPubKey, &peer4enc);
+  GNUNET_hash_to_enc (&peer5->peer->hashPubKey, &peer5enc);
+  GNUNET_hash_to_enc (&peer6->peer->hashPubKey, &peer6enc);
+  GNUNET_hash_to_enc (&peer7->peer->hashPubKey, &peer7enc);
+  GNUNET_hash_to_enc (&peer8->peer->hashPubKey, &peer8enc);
+
+  ((char *) &peer1enc)[5] = '\0';
+  ((char *) &peer2enc)[5] = '\0';
+  ((char *) &peer3enc)[5] = '\0';
+  ((char *) &peer4enc)[5] = '\0';
+  ((char *) &peer5enc)[5] = '\0';
+  ((char *) &peer6enc)[5] = '\0';
+  ((char *) &peer7enc)[5] = '\0';
+  ((char *) &peer8enc)[5] = '\0';
 
   sock = GNUNET_client_connection_create (NULL, peers->config);
 
   /* 'slow' pass: wait for bandwidth negotiation! */
-  printf (_("Sleeping 5 seconds to let topology stabilize...\n"));
-  sleep(5);
+  printf (_("Sleeping 55 seconds to let topology stabilize...\n"));
+  sleep (55);
   printf (_("Running benchmark...\n"));
-  if (ret == 0)
-    ret =
-      test (sock, 64, 100, 1, 500 * GNUNET_CRON_MILLISECONDS, 1,
-            15 * GNUNET_CRON_SECONDS, *peer2->peer);
-  if (ret == 0)
-    ret =
-      test (sock, 64, 100, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
-            5 * GNUNET_CRON_SECONDS, *peer3->peer);
+  printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
+          (char *) &peer2enc);
 
   if (ret == 0)
     ret =
-      test (sock, 64, 100, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+      test (sock, 64, 1, 1, 500 * GNUNET_CRON_MILLISECONDS, 1,
+            15 * GNUNET_CRON_SECONDS, *peer2->peer);
+
+  printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
+          (char *) &peer3enc);
+  if (ret == 0)
+    ret =
+      test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+            5 * GNUNET_CRON_SECONDS, *peer3->peer);
+
+  printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
+          (char *) &peer4enc);
+  if (ret == 0)
+    ret =
+      test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+            5 * GNUNET_CRON_SECONDS, *peer4->peer);
+
+  printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
+          (char *) &peer5enc);
+  if (ret == 0)
+    ret =
+      test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
             5 * GNUNET_CRON_SECONDS, *peer5->peer);
+
+  printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
+          (char *) &peer6enc);
+  if (ret == 0)
+    ret =
+      test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+            5 * GNUNET_CRON_SECONDS, *peer6->peer);
+
+  printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
+          (char *) &peer7enc);
+  if (ret == 0)
+    ret =
+      test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+            5 * GNUNET_CRON_SECONDS, *peer7->peer);
 
   GNUNET_client_connection_destroy (sock);
 #if START_PEERS
-  /*FIXME: Have GNUNET_REMOTE_TESTING_stop_daemons... GNUNET_TESTING_stop_daemons (peers);*/
+  /*FIXME: Have GNUNET_REMOTE_TESTING_stop_daemons... GNUNET_TESTING_stop_daemons (peers); */
   pos = peers;
-  while(pos != NULL)
-  {
-    GNUNET_REMOTE_kill_daemon(pos);
-    pos = pos->next;
-  }
+  while (pos != NULL)
+    {
+      GNUNET_REMOTE_kill_daemon (pos);
+      pos = pos->next;
+    }
 #endif
 
   GNUNET_GC_free (cfg);
@@ -185,4 +247,3 @@ main (int argc, char **argv)
 }
 
 /* end of dvtest.c */
-
