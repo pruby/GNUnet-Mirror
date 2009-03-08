@@ -516,7 +516,9 @@ build_gnunet()
 			--prefix="${FW_DIR}"			\
 			--with-user-home-dir="~/Library/GNUnet"	\
 			--with-daemon-home-dir="/Library/GNUnet"	\
-			--with-daemon-config-dir="/Library/GNUnet"	\
+			--with-daemon-config-dir="/Library/Preferences"	\
+			--with-user-config-name="org.gnunet.gnunet.conf" \
+			--with-daemon-config-name="org.gnunet.gnunetd.conf" \
 			--with-daemon-pidfile="/Library/GNUnet/gnunetd.pid" \
 			--enable-shared				\
 			--enable-framework			\

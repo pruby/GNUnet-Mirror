@@ -955,6 +955,22 @@ AC_ARG_WITH(daemon-config-dir,
                 [default daemon config directory (/etc)]),
         [gn_daemon_config_dir=$withval])
 AC_SUBST(GN_DAEMON_CONFIG_DIR, $gn_daemon_config_dir)
+gn_user_config_name="gnunet.conf"
+AC_ARG_WITH(user-config-name,
+        AC_HELP_STRING(
+                [--with-user-config-name=DIR],
+                [default user config name (gnunet.conf)]),
+        [gn_user_config_name=$withval])
+AC_SUBST(GN_USER_CONFIG_NAME, $gn_user_config_name)
+gn_daemon_config_name="gnunetd.conf"
+AC_ARG_WITH(daemon-config-name,
+        AC_HELP_STRING(
+                [--with-daemon-config-name=DIR],
+                [default daemon config name (gnunetd.conf)]),
+        [gn_daemon_config_name=$withval])
+AC_SUBST(GN_DAEMON_CONFIG_NAME, $gn_daemon_config_name)
+
+
 gn_daemon_pidfile="/var/run/gnunetd/pid"
 AC_ARG_WITH(daemon-pidfile,
         AC_HELP_STRING(
