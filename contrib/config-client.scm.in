@@ -198,7 +198,7 @@ However, active testing and qualified feedback of these features is always welco
  (_ "This option is used when clients need to start gnunetd.")
  '()
  #t
- "@GN_DAEMON_CONFIG_DIR@/gnunetd.conf"
+ "@GN_DAEMON_CONFIG_DIR@/@GN_DAEMON_CONFIG_NAME@"
  '()
  'always) )
 
