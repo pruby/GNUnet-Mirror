@@ -948,6 +948,13 @@ AC_ARG_WITH(daemon-home-dir,
                 [default daemon home directory (/var/lib/gnunet)]),
         [gn_daemon_home_dir=$withval])
 AC_SUBST(GN_DAEMON_HOME_DIR, $gn_daemon_home_dir)
+gn_user_config_dir="~/.gnunet"
+AC_ARG_WITH(user-config-dir,
+        AC_HELP_STRING(
+                [--with-user-config-dir=DIR],
+                [default user config directory (~/.gnunet)]),
+        [gn_user_config_dir=$withval])
+AC_SUBST(GN_USER_CONFIG_DIR, $gn_user_config_dir)
 gn_daemon_config_dir="/etc"
 AC_ARG_WITH(daemon-config-dir,
         AC_HELP_STRING(

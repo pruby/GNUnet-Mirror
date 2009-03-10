@@ -516,6 +516,7 @@ build_gnunet()
 			--prefix="${FW_DIR}"			\
 			--with-user-home-dir="~/Library/GNUnet"	\
 			--with-daemon-home-dir="/Library/GNUnet"	\
+			--with-user-config-dir="~/Library/Preferences"	\
 			--with-daemon-config-dir="/Library/Preferences"	\
 			--with-user-config-name="org.gnunet.gnunet.conf" \
 			--with-daemon-config-name="org.gnunet.gnunetd.conf" \
