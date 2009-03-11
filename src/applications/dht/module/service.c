@@ -20,13 +20,13 @@
 
 /**
  * @file module/service.c
- * @brief internal GNUnet DHT service
+ * @brief internal GNUnet DV_DHT service
  * @author Christian Grothoff
  */
 #include "platform.h"
 #include "table.h"
 #include "routing.h"
-#include "gnunet_dht_service.h"
+#include "gnunet_dv_dht_service.h"
 #include "service.h"
 
 /**
@@ -35,7 +35,7 @@
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
- * Perform an asynchronous GET operation on the DHT identified by
+ * Perform an asynchronous GET operation on the DV_DHT identified by
  * 'table' using 'key' as the key.  The peer does not have to be part
  * of the table (if so, we will attempt to locate a peer that is!).
  *
@@ -50,19 +50,19 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  * @param cls extra argument to callback
  * @return handle to stop the async get
  */
-static struct GNUNET_DHT_GetHandle *
-dht_get_async_start (unsigned int type,
+static struct GNUNET_DV_DHT_GetHandle *
+dv_dht_get_async_start (unsigned int type,
                      const GNUNET_HashCode * key,
                      GNUNET_ResultProcessor callback, void *cls)
 {
-  struct GNUNET_DHT_GetHandle *ret;
+  struct GNUNET_DV_DHT_GetHandle *ret;
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_DHT_GetHandle));
+  ret = GNUNET_malloc (sizeof (struct GNUNET_DV_DHT_GetHandle));
   ret->key = *key;
   ret->callback = callback;
   ret->cls = cls;
   ret->type = type;
-  if (GNUNET_OK != GNUNET_DHT_get_start (key, type, callback, cls))
+  if (GNUNET_OK != GNUNET_DV_DHT_get_start (key, type, callback, cls))
     {
       GNUNET_free (ret);
       return NULL;
@@ -71,55 +71,55 @@ dht_get_async_start (unsigned int type,
 }
 
 /**
- * Stop async DHT-get.  Frees associated resources.
+ * Stop async DV_DHT-get.  Frees associated resources.
  */
 static int
-dht_get_async_stop (struct GNUNET_DHT_GetHandle *record)
+dv_dht_get_async_stop (struct GNUNET_DV_DHT_GetHandle *record)
 {
-  GNUNET_DHT_get_stop (&record->key, record->type, record->callback,
+  GNUNET_DV_DHT_get_stop (&record->key, record->type, record->callback,
                        record->cls);
   GNUNET_free (record);
   return GNUNET_OK;
 }
 
 /**
- * Provide the DHT service.  The DHT service depends on the RPC
- * service.
+ * Provide the DV DV_DHT service.  The DV DV_DHT service depends on the
+ * RPC and DV services.
  *
  * @param capi the core API
- * @return NULL on errors, DHT_API otherwise
+ * @return NULL on errors, DV_DHT_API otherwise
  */
-GNUNET_DHT_ServiceAPI *
-provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_DV_DHT_ServiceAPI *
+provide_module_dv_dht (GNUNET_CoreAPIForPlugins * capi)
 {
-  static GNUNET_DHT_ServiceAPI api;
+  static GNUNET_DV_DHT_ServiceAPI api;
 
-  if (GNUNET_OK != GNUNET_DHT_table_init (capi))
+  if (GNUNET_OK != GNUNET_DV_DHT_table_init (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       return NULL;
     }
-  if (GNUNET_OK != GNUNET_DHT_init_routing (capi))
+  if (GNUNET_OK != GNUNET_DV_DHT_init_routing (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
-      GNUNET_DHT_table_done ();
+      GNUNET_DV_DHT_table_done ();
       return NULL;
     }
   coreAPI = capi;
-  api.get_start = &dht_get_async_start;
-  api.get_stop = &dht_get_async_stop;
-  api.put = &GNUNET_DHT_put;
+  api.get_start = &dv_dht_get_async_start;
+  api.get_stop = &dv_dht_get_async_stop;
+  api.put = &GNUNET_DV_DHT_put;
   return &api;
 }
 
 /**
- * Shutdown DHT service.
+ * Shutdown DV_DHT service.
  */
 int
-release_module_dht ()
+release_module_dv_dht ()
 {
-  GNUNET_DHT_done_routing ();
-  GNUNET_DHT_table_done ();
+  GNUNET_DV_DHT_done_routing ();
+  GNUNET_DV_DHT_table_done ();
   return GNUNET_OK;
 }
 

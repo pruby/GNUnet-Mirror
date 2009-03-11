@@ -19,8 +19,8 @@
  */
 
 /**
- * @file dht-query.c
- * @brief perform DHT operations (insert, lookup)
+ * @file dv_dht-query.c
+ * @brief perform DV_DHT operations (insert, lookup)
  * @author Christian Grothoff
  */
 
@@ -28,9 +28,9 @@
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
-#include "gnunet_dht_lib.h"
+#include "gnunet_dv_dht_lib.h"
 
-#define DEBUG_DHT_QUERY GNUNET_NO
+#define DEBU_DV_DHT_QUERY GNUNET_NO
 
 /**
  * How long should a "GET" run (or how long should
@@ -44,14 +44,14 @@ static struct GNUNET_GC_Configuration *cfg;
 
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
-struct GNUNET_DHT_Context *ctx;
+struct GNUNET_DV_DHT_Context *ctx;
 
 /**
  * All gnunet-dht-query command line options
  */
 static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DHT table.")), /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DV_DHT table.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'T', "timeout", "TIME",
@@ -74,16 +74,16 @@ printCallback (const GNUNET_HashCode * hash,
 static void
 do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 {
-  struct GNUNET_DHT_GetRequest *ret;
+  struct GNUNET_DV_DHT_GetRequest *ret;
   GNUNET_HashCode hc;
 
   GNUNET_hash (key, strlen (key), &hc);
-#if DEBUG_DHT_QUERY
+#if DEBU_DV_DHT_QUERY
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Issuing `%s(%s)' command.\n", "get", key);
 #endif
-  ret = GNUNET_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+  ret = GNUNET_DV_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &hc);
   if (ret == NULL)
     {
@@ -91,7 +91,7 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
       return;
     }
   GNUNET_thread_sleep (timeout);
-  GNUNET_DHT_get_stop (ctx, ret);
+  GNUNET_DV_DHT_get_stop (ctx, ret);
 }
 
 static void
@@ -101,13 +101,13 @@ do_put (struct GNUNET_ClientServerConnection *sock,
   GNUNET_HashCode hc;
 
   GNUNET_hash (key, strlen (key), &hc);
-#if DEBUG_DHT_QUERY
+#if DEBU_DV_DHT_QUERY
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("Issuing `%s(%s,%s)' command.\n"), "put", key, value);
 #endif
   if (GNUNET_OK ==
-      GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+      GNUNET_DV_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                       strlen (value), value))
     {
       printf ("`%s(%s,%s)' succeeded\n", "put", key, value);
@@ -136,7 +136,7 @@ main (int argc, char *const *argv)
 
   handle = GNUNET_client_connection_create (ectx, cfg);
 
-  ctx = GNUNET_DHT_context_create (cfg, ectx, &printCallback, NULL);
+  ctx = GNUNET_DV_DHT_context_create (cfg, ectx, &printCallback, NULL);
   if (handle == NULL)
     {
       fprintf (stderr, _("Failed to connect to gnunetd.\n"));
@@ -188,4 +188,4 @@ main (int argc, char *const *argv)
   return 0;
 }
 
-/* end of dht-query.c */
+/* end of dv_dht-query.c */

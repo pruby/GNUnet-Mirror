@@ -5,24 +5,24 @@ if USE_COVERAGE
 endif
 
 lib_LTLIBRARIES = \
-  libgnunetdhtapi.la 
+  libgnunetdvdhtapi.la
 
 noinst_PROGRAMS = \
-  gnunet-dht-query 
+  gnunet-dv-dht-query 
 
-libgnunetdhtapi_la_SOURCES = \
-  dht_api.c
-libgnunetdhtapi_la_LDFLAGS = \
+libgnunetdvdhtapi_la_SOURCES = \
+  dv_dht_api.c
+libgnunetdvdhtapi_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-libgnunetdhtapi_la_LIBADD = \
+libgnunetdvdhtapi_la_LIBADD = \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
-gnunet_dht_query_SOURCES = \
-  dht-query.c
-gnunet_dht_query_LDADD =  \
-  $(top_builddir)/src/applications/dht/tools/libgnunetdhtapi.la \
+gnunet_dv_dht_query_SOURCES = \
+  dv_dht-query.c
+gnunet_dv_dht_query_LDADD =  \
+  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
@@ -30,18 +30,18 @@ gnunet_dht_query_LDADD =  \
 
 
 check_PROGRAMS = \
-  dht_loopback_test \
-  dht_twopeer_test \
-  dht_multipeer_test 
+  dv_dht_loopback_test \
+  dv_dht_twopeer_test \
+  dv_dht_multipeer_test 
 
 TESTS = $(check_PROGRAMS)
 
-dht_loopback_test_SOURCES = \
-  dht_loopback_test.c 
-dht_loopback_test_LDADD = \
+dv_dht_loopback_test_SOURCES = \
+  dv_dht_loopback_test.c 
+dv_dht_loopback_test_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
-  $(top_builddir)/src/applications/dht/tools/libgnunetdhtapi.la \
+  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 # This test requires an API change before we can
@@ -51,23 +51,23 @@ dht_loopback_test_LDADD = \
 #dht_expiration_test_LDADD = \
 #  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
 #  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
-#  $(top_builddir)/src/applications/dht/tools/libgnunetdhtapi.la \
+#  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
 #  $(top_builddir)/src/util/libgnunetutil.la 
 
-dht_twopeer_test_SOURCES = \
-  dht_twopeer_test.c 
-dht_twopeer_test_LDADD = \
+dv_dht_twopeer_test_SOURCES = \
+  dv_dht_twopeer_test.c 
+dv_dht_twopeer_test_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
-  $(top_builddir)/src/applications/dht/tools/libgnunetdhtapi.la \
+  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-dht_multipeer_test_SOURCES = \
-  dht_multipeer_test.c 
-dht_multipeer_test_LDADD = \
+dv_dht_multipeer_test_SOURCES = \
+  dv_dht_multipeer_test.c 
+dv_dht_multipeer_test_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
-  $(top_builddir)/src/applications/dht/tools/libgnunetdhtapi.la \
+  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

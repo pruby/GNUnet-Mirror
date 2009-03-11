@@ -20,7 +20,7 @@
 
 /**
  * @file module/service.h
- * @brief internal GNUnet DHT service
+ * @brief internal GNUnet DV_DHT service
  * @author Christian Grothoff
  */
 
@@ -30,7 +30,7 @@
 /**
  * Handle used to track GET activity.
  */
-struct GNUNET_DHT_GetHandle
+struct GNUNET_DV_DHT_GetHandle
 {
   /**
    * Key that we are looking for.

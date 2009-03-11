@@ -19,8 +19,8 @@
 */
 
 /**
- * @file applications/dht/tools/dht_loopback_test.c
- * @brief DHT testcase using only a single peer
+ * @file applications/dht/tools/dht_expiration_test.c
+ * @brief DV_DHT testcase using only a single peer
  * @author Christian Grothoff
  * @author Nathan Evans
  */
@@ -37,35 +37,20 @@
 
 static int err;
 
-static int found;
-
 static int
 result_callback (const GNUNET_HashCode * key,
                  unsigned int type,
                  unsigned int size, const char *data, void *cls)
 {
-  int *i = cls;
-  char expect[8];
-
-#if 0
   fprintf (stderr, "Got %u %u `%.*s'\n", type, size, size, data);
-#endif
-  memset (expect, (*i), sizeof (expect));
-  if ((8 != size) ||
-      (0 != memcmp (expect, data, size)) ||
-      (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
-    {
-      err = 1;
-      return GNUNET_SYSERR;
-    }
-  found = 1;
-  return GNUNET_OK;
+  err = 1;
+  return GNUNET_SYSERR;
 }
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
- * Testcase to test DHT routing (2 peers only).
+ * Testcase to test DV_DHT routing (2 peers only).
  * @return 0: ok, -1: error
  */
 int
@@ -79,11 +64,9 @@ main (int argc, const char **argv)
   char *value;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_DHT_Context *ctx;
-  struct GNUNET_DHT_GetRequest *get1;
-  struct GNUNET_DHT_GetRequest *get2;
-  int left;
-  int i;
+  struct GNUNET_DV_DHT_Context *ctx;
+  void *unused_cls = NULL;
+
 
   ectx = NULL;
   cfg = GNUNET_GC_create ();
@@ -94,8 +77,8 @@ main (int argc, const char **argv)
     }
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("nat",
-                                        "advertising dht stats",
-                                        "/tmp/gnunet-dht-loopback-test",
+                                        "advertising dv dv_dht stats",
+                                        "/tmp/gnunet-dv-dht-loopback-test",
                                         2087, 10000, 1);
   if (peers == NULL)
     {
@@ -107,56 +90,33 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  ctx = GNUNET_DHT_context_create (cfg, ectx, &result_callback, &i);
+  ctx = GNUNET_DV_DHT_context_create (cfg, ectx, &result_callback, unused_cls);
   CHECK (ctx != NULL);
   /* actual test code */
-  GNUNET_hash ("key_for_A", 4, &key);
+  GNUNET_hash ("expired_key", 4, &key);
   value = GNUNET_malloc (8);
   memset (value, 'A', 8);
-  CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
+  CHECK (GNUNET_OK == GNUNET_DV_DHT_put (cfg,
                                       ectx,
                                       &key,
-                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      GNUNET_ECRS_BLOCKTYP_DV_DHT_STRING2STRING,
                                       8, value));
-  i = 'A';
-  CHECK (NULL != (get1 = GNUNET_DHT_get_start (ctx,
-                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                               &key)));
-  GNUNET_hash ("key_for_B", 3, &key);
-  value = GNUNET_malloc (8);
-  memset (value, 'B', 8);
-  CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
-                                      ectx,
-                                      &key,
-                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      8, value));
-  left = 10;
-  while ((found == 0) && (--left >= 0))
-    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-  CHECK (err == 0);
-  CHECK (found != 0);
-  found = 0;
-  GNUNET_DHT_get_stop (ctx, get1);
-  i = 'B';
-  CHECK (NULL != (get2 = GNUNET_DHT_get_start (ctx,
-                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                               &key)));
-  left = 10;
-  while ((found == 0) && (--left >= 0))
-    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-  CHECK (err == 0);
-  CHECK (found != 0);
-  GNUNET_DHT_get_stop (ctx, get2);
-  /* end of actual test code */
+  /* FIXME: this value has to be >> than the expiration
+     time (which is currently fixed to 12h, so we can not
+     really do this test in practice... */
+  GNUNET_thread_sleep (60 * GNUNET_CRON_SECONDS);
+  CHECK (1 == GNUNET_DV_DHT_get_start (ctx,
+                                    GNUNET_ECRS_BLOCKTYP_DV_DHT_STRING2STRING,
+                                    &key));
+  GNUNET_thread_sleep (15 * GNUNET_CRON_SECONDS);
+  GNUNET_DV_DHT_context_destroy (ctx);
 
-  GNUNET_DHT_context_destroy (ctx);
 FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  GNUNET_free (value);
   GNUNET_GC_free (cfg);
-  return ret;
+  return err;
 }
 
-/* end of dht_loopback_test.c */
+/* end of dv_dht_expiration_test.c */
