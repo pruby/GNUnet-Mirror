@@ -19,27 +19,27 @@
  */
 
 /**
- * @file dv_dht/tools/dht_api.c
- * @brief DV_DHT-module's core API's implementation.
+ * @file dht/tools/dht_api.c
+ * @brief DHT-module's core API's implementation.
  * @author Tomi Tukiainen, Christian Grothoff, Nathan Evans
  */
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "dht.h"
-#include "gnunet_dv_dht_lib.h"
+#include "gnunet_dht_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
 
-#define DEBUG_DV_DHT_API GNUNET_NO
+#define DEBUG_DHT_API GNUNET_NO
 
 /**
  * Doubly-linked list of get requests.
  */
-struct GNUNET_DV_DHT_GetRequest
+struct GNUNET_DHT_GetRequest
 {
-  struct GNUNET_DV_DHT_GetRequest *prev;
+  struct GNUNET_DHT_GetRequest *prev;
 
-  struct GNUNET_DV_DHT_GetRequest *next;
+  struct GNUNET_DHT_GetRequest *next;
 
   CS_dht_request_get_MESSAGE request;
 };
@@ -47,7 +47,7 @@ struct GNUNET_DV_DHT_GetRequest
 /**
  * Data exchanged between main thread and GET thread.
  */
-struct GNUNET_DV_DHT_Context
+struct GNUNET_DHT_Context
 {
 
   /**
@@ -78,12 +78,12 @@ struct GNUNET_DV_DHT_Context
   /**
    * Head of our pending requests.
    */
-  struct GNUNET_DV_DHT_GetRequest *head;
+  struct GNUNET_DHT_GetRequest *head;
 
   /**
    * Tail of our pending requests.
    */
-  struct GNUNET_DV_DHT_GetRequest *tail;
+  struct GNUNET_DHT_GetRequest *tail;
 
   /**
    * Are we done (for whichever reason)?
@@ -101,16 +101,16 @@ struct GNUNET_DV_DHT_Context
 /**
  * Main loop of the poll thread.
  *
- * @param cls the DV_DHT context
+ * @param cls the DHT context
  * @return NULL (always)
  */
 static void *
 poll_thread (void *cls)
 {
-  struct GNUNET_DV_DHT_Context *info = cls;
+  struct GNUNET_DHT_Context *info = cls;
   GNUNET_MessageHeader *reply;
   CS_dht_request_put_MESSAGE *put;
-  struct GNUNET_DV_DHT_GetRequest *get;
+  struct GNUNET_DHT_GetRequest *get;
   unsigned int size;
 
   while (info->aborted == GNUNET_NO)
@@ -141,7 +141,7 @@ poll_thread (void *cls)
           continue;
         }
       if ((sizeof (CS_dht_request_put_MESSAGE) > ntohs (reply->size)) ||
-          (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT != ntohs (reply->type)))
+          (GNUNET_CS_PROTO_DHT_REQUEST_PUT != ntohs (reply->type)))
         {
           fprintf (stderr,
                    "Received message of type %u and size %u\n",
@@ -166,28 +166,28 @@ poll_thread (void *cls)
 }
 
 /**
- * Set up a context for performing asynchronous DV_DHT operations.
+ * Set up a context for performing asynchronous DHT operations.
  *
  * @param resultCallback function to call for results,
  *        the operation also aborts if the callback returns
  *        GNUNET_SYSERR
  * @return NULL on error
  */
-struct GNUNET_DV_DHT_Context *
-GNUNET_DV_DHT_context_create (struct GNUNET_GC_Configuration
-                              *cfg,
-                              struct GNUNET_GE_Context
-                              *ectx,
-                              GNUNET_ResultProcessor
-                              resultCallback, void *resCallbackClosure)
+struct GNUNET_DHT_Context *
+GNUNET_DHT_context_create (struct GNUNET_GC_Configuration
+                           *cfg,
+                           struct GNUNET_GE_Context
+                           *ectx,
+                           GNUNET_ResultProcessor
+                           resultCallback, void *resCallbackClosure)
 {
-  struct GNUNET_DV_DHT_Context *ctx;
+  struct GNUNET_DHT_Context *ctx;
   struct GNUNET_ClientServerConnection *sock;
 
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return NULL;
-  ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_DHT_Context));
+  ctx = GNUNET_malloc (sizeof (struct GNUNET_DHT_Context));
   ctx->lock = GNUNET_mutex_create (GNUNET_NO);
   ctx->sock = sock;
   ctx->processor = resultCallback;
@@ -205,22 +205,22 @@ GNUNET_DV_DHT_context_create (struct GNUNET_GC_Configuration
 
 
 /**
- * Start an asynchronous GET operation on the DV_DHT looking for
+ * Start an asynchronous GET operation on the DHT looking for
  * key.
  *
  * @param type the type of key to look up
  * @param key the key to look up
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-struct GNUNET_DV_DHT_GetRequest *
-GNUNET_DV_DHT_get_start (struct GNUNET_DV_DHT_Context *ctx,
-                         unsigned int type, const GNUNET_HashCode * key)
+struct GNUNET_DHT_GetRequest *
+GNUNET_DHT_get_start (struct GNUNET_DHT_Context *ctx,
+                      unsigned int type, const GNUNET_HashCode * key)
 {
-  struct GNUNET_DV_DHT_GetRequest *req;
+  struct GNUNET_DHT_GetRequest *req;
 
-  req = GNUNET_malloc (sizeof (struct GNUNET_DV_DHT_GetRequest));
+  req = GNUNET_malloc (sizeof (struct GNUNET_DHT_GetRequest));
   req->request.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
-  req->request.header.type = htons (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET);
+  req->request.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET);
   req->request.type = htonl (type);
   req->request.key = *key;
   GNUNET_mutex_lock (ctx->lock);
@@ -234,20 +234,20 @@ GNUNET_DV_DHT_get_start (struct GNUNET_DV_DHT_Context *ctx,
 
 
 /**
- * Stop an asynchronous GET operation on the DV_DHT looking for
+ * Stop an asynchronous GET operation on the DHT looking for
  * key.
  *
  * @param req request to stop
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_DV_DHT_get_stop (struct GNUNET_DV_DHT_Context *ctx,
-                        struct GNUNET_DV_DHT_GetRequest *req)
+GNUNET_DHT_get_stop (struct GNUNET_DHT_Context *ctx,
+                     struct GNUNET_DHT_GetRequest *req)
 {
   CS_dht_request_get_MESSAGE creq;
 
   creq.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
-  creq.header.type = htons (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET_END);
+  creq.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET_END);
   creq.type = req->request.type;
   creq.key = req->request.key;
   GNUNET_mutex_lock (ctx->lock);
@@ -260,13 +260,13 @@ GNUNET_DV_DHT_get_stop (struct GNUNET_DV_DHT_Context *ctx,
 }
 
 /**
- * Destroy a previously created context for DV_DHT operations.
+ * Destroy a previously created context for DHT operations.
  *
  * @param ctx context to destroy
  * @return GNUNET_SYSERR on error
  */
 int
-GNUNET_DV_DHT_context_destroy (struct GNUNET_DV_DHT_Context *ctx)
+GNUNET_DHT_context_destroy (struct GNUNET_DHT_Context *ctx)
 {
   void *unused;
 
@@ -292,33 +292,33 @@ GNUNET_DV_DHT_context_destroy (struct GNUNET_DV_DHT_Context *ctx)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_DV_DHT_put (struct GNUNET_GC_Configuration *cfg,
-                   struct GNUNET_GE_Context *ectx,
-                   const GNUNET_HashCode * key,
-                   unsigned int type, unsigned int size, const char *value)
+GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
+                struct GNUNET_GE_Context *ectx,
+                const GNUNET_HashCode * key,
+                unsigned int type, unsigned int size, const char *value)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;
   int ret;
   int ret2;
 
-#if DEBUG_DV_DHT_API
+#if DEBUG_DHT_API
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "DV_DHT_LIB_put called with value '%.*s'\n", size, value);
+                 "DHT_LIB_put called with value '%.*s'\n", size, value);
 #endif
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return GNUNET_SYSERR;
   req = GNUNET_malloc (sizeof (CS_dht_request_put_MESSAGE) + size);
   req->header.size = htons (sizeof (CS_dht_request_put_MESSAGE) + size);
-  req->header.type = htons (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT);
+  req->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   req->key = *key;
   req->type = htonl (type);
   memcpy (&req[1], value, size);
   ret = GNUNET_client_connection_write (sock, &req->header);
-  if ((GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret2)) ||
-      (ret2 != GNUNET_OK))
+  if ( (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret2)) ||
+       (ret2 != GNUNET_OK) )    
     ret = GNUNET_SYSERR;
   GNUNET_client_connection_destroy (sock);
   GNUNET_free (req);
@@ -328,8 +328,8 @@ GNUNET_DV_DHT_put (struct GNUNET_GC_Configuration *cfg,
 static int
 waitForConnect (const char *name, unsigned long long value, void *cls)
 {
-  unsigned long long *ok = cls;
-  if ((value > 0) && (0 == strcmp (_("# dv_dht connections"), name)))
+  unsigned long long * ok = cls;
+  if ((value > 0) && (0 == strcmp (_("# dht connections"), name)))
     {
       *ok = value;
       return GNUNET_SYSERR;
@@ -338,20 +338,20 @@ waitForConnect (const char *name, unsigned long long value, void *cls)
 }
 
 /**
- * Check if this peer has DV_DHT connections to
+ * Check if this peer has DHT connections to 
  * any other peer.
  *
  * @param sock connection to gnunetd
  * @return number of connections
  */
 unsigned long long
-GNUNET_DV_DHT_test_connected (struct GNUNET_ClientServerConnection *sock)
+GNUNET_DHT_test_connected(struct GNUNET_ClientServerConnection *sock)
 {
   unsigned long long ret;
 
   GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, &ret);
-  return ret;
+  return ret; 
 }
 
 
-/* end of dv_dht_api.c */
+/* end of dht_api.c */

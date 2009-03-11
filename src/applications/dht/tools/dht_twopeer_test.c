@@ -20,14 +20,14 @@
 
 /**
  * @file applications/dht/tools/dht_twopeer_test.c
- * @brief DV_DHT testcase
+ * @brief DHT testcase
  * @author Christian Grothoff
  * @author Nathan Evans
  */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
-#include "gnunet_dv_dht_lib.h"
+#include "gnunet_dht_lib.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
@@ -39,24 +39,23 @@
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; } } while(0)
 
-struct PeerData
+struct PeerData 
 {
   struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_DV_DHT_Context *ctx_peer;
+  struct GNUNET_DHT_Context *ctx_peer;
   struct GNUNET_ClientServerConnection *sock;
-  int peercount;
+  int peercount;  
   int expect_i;
 };
 
 static int
-test_connected (struct GNUNET_ClientServerConnection *sock)
+test_connected(struct GNUNET_ClientServerConnection *sock)
 {
   int left = 50;
   unsigned long long have;
-  while (0 == (have = GNUNET_DV_DHT_test_connected (sock)))
+  while (0 == (have = GNUNET_DHT_test_connected(sock)))
     {
-      printf (".");
-      fflush (stdout);
+      printf ("."); fflush (stdout);
       sleep (2);
       left--;
       if (left == 0)
@@ -68,10 +67,10 @@ test_connected (struct GNUNET_ClientServerConnection *sock)
 
 static int
 result_callback (const GNUNET_HashCode * key,
-                 unsigned int type,
-                 unsigned int size, const char *data, void *cls)
+		 unsigned int type,
+		 unsigned int size, const char *data, void *cls)
 {
-  struct PeerData *pd = cls;
+  struct PeerData * pd = cls;
   char expect[8];
 
 #if 0
@@ -87,7 +86,8 @@ result_callback (const GNUNET_HashCode * key,
 }
 
 static int
-setup_peer (struct PeerData *pd, const char *pstr)
+setup_peer(struct PeerData * pd,
+	   const char * pstr)
 {
   int ret = 0;
   pd->cfg = GNUNET_GC_create ();
@@ -98,16 +98,16 @@ setup_peer (struct PeerData *pd, const char *pstr)
                                             "localhost:22087");
   pd->sock = GNUNET_client_connection_create (NULL, pd->cfg);
   pd->ctx_peer =
-    GNUNET_DV_DHT_context_create (pd->cfg, NULL, &result_callback, pd);
-FAILURE:
+    GNUNET_DHT_context_create (pd->cfg, NULL, &result_callback, pd);
+ FAILURE:
   return ret;
 }
 
 static void
-free_peer (struct PeerData *pd)
+free_peer (struct PeerData * pd)
 {
   if (NULL != pd->ctx_peer)
-    GNUNET_DV_DHT_context_destroy (pd->ctx_peer);
+    GNUNET_DHT_context_destroy (pd->ctx_peer);
   if (NULL != pd->sock)
     GNUNET_client_connection_destroy (pd->sock);
   if (NULL != pd->cfg)
@@ -115,7 +115,9 @@ free_peer (struct PeerData *pd)
 }
 
 static int
-put_at_peer (struct PeerData *pd, const char *keys, int val)
+put_at_peer(struct PeerData * pd,
+	    const char * keys,
+	    int val)
 {
   int ret = 0;
   char value[8];
@@ -123,29 +125,31 @@ put_at_peer (struct PeerData *pd, const char *keys, int val)
 
   GNUNET_hash (keys, 5, &key);
   memset (value, val, sizeof (value));
-  CHECK (GNUNET_OK == GNUNET_DV_DHT_put (pd->cfg,
-                                         NULL,
-                                         &key,
-                                         GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                         sizeof (value), value));
-FAILURE:
+  CHECK (GNUNET_OK == GNUNET_DHT_put (pd->cfg,
+                                      NULL,
+                                      &key,
+                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      sizeof (value), value));
+ FAILURE:
   return ret;
 }
 
 static int
-get_at_peer (struct PeerData *pd, const char *keys, int want)
+get_at_peer(struct PeerData * pd,
+	    const char * keys,
+	    int want)
 {
   int ret = 0;
   GNUNET_HashCode key;
-  struct GNUNET_DV_DHT_GetRequest *get;
+  struct GNUNET_DHT_GetRequest *get;
   int k;
 
   GNUNET_hash (keys, 5, &key);
   pd->peercount = 10;
   pd->expect_i = want;
-  CHECK (NULL != (get = GNUNET_DV_DHT_get_start (pd->ctx_peer,
-                                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                                 &key)));
+  CHECK (NULL != (get = GNUNET_DHT_get_start (pd->ctx_peer,
+					      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					      &key)));
   for (k = 0; k < NUM_ROUNDS; k++)
     {
       if (0 == (k % 10))
@@ -155,16 +159,16 @@ get_at_peer (struct PeerData *pd, const char *keys, int want)
       if (pd->peercount < 10)
         break;
     }
-  CHECK (GNUNET_OK == GNUNET_DV_DHT_get_stop (pd->ctx_peer, get));
+  CHECK (GNUNET_OK == GNUNET_DHT_get_stop (pd->ctx_peer, get));
   printf (pd->peercount < 10 ? " OK!\n" : "?\n");
   CHECK (pd->peercount < 10);
-FAILURE:
+ FAILURE:
   return ret;
 }
 
 
 /**
- * Testcase to test DV_DHT routing (2 peers only).
+ * Testcase to test DHT routing (2 peers only).
  * @return 0: ok, -1: error
  */
 int
@@ -177,39 +181,39 @@ main (int argc, const char **argv)
   struct PeerData p1;
   struct PeerData p2;
 
-  memset (&p1, 0, sizeof (struct PeerData));
-  memset (&p2, 0, sizeof (struct PeerData));
+  memset(&p1, 0, sizeof(struct PeerData));
+  memset(&p2, 0, sizeof(struct PeerData));
 #if START_PEERS
   fprintf (stderr, "Starting peers...\n");
   peers = GNUNET_TESTING_start_daemons ("tcp",
-                                        "advertising dv dv_dht stats",
-                                        "/tmp/gnunet-dv-dht-two-test",
+                                        "advertising dht stats",
+                                        "/tmp/gnunet-dht-two-test",
                                         22087, 10, 2);
   CHECK (peers != NULL);
-#endif
-  CHECK (0 == setup_peer (&p1, "localhost:22087"));
-  CHECK (0 == setup_peer (&p2, "localhost:22097"));
+#endif 
+  CHECK(0 == setup_peer(&p1, "localhost:22087"));
+  CHECK(0 == setup_peer(&p2, "localhost:22097"));
   fprintf (stderr, "Connecting peers...\n");
   CHECK (GNUNET_OK == GNUNET_TESTING_connect_daemons (22087, 22097));
 
 
-  /* wait for DV_DHT's to find each other! */
-  /* verify that peer2 also sees the other DV_DHT! */
-  printf ("Waiting for peers to DV_DHT-connect (1->2)");
-  CHECK (test_connected (p1.sock));
-  printf ("Waiting for peers to DV_DHT-connect (2->1)");
-  CHECK (test_connected (p2.sock));
+  /* wait for DHT's to find each other! */
+  /* verify that peer2 also sees the other DHT! */
+  printf ("Waiting for peers to DHT-connect (1->2)");
+  CHECK (test_connected(p1.sock));
+  printf ("Waiting for peers to DHT-connect (2->1)");
+  CHECK (test_connected(p2.sock));
 
   /* actual test code */
   CHECK (0 == put_at_peer (&p1, "key 1", 'A'));
   CHECK (0 == put_at_peer (&p2, "key 2", 'B'));
-  printf ("DV_DHT get (1->1)");
+  printf ("DHT get (1->1)");
   CHECK (0 == get_at_peer (&p1, "key 1", 'A'));
-  printf ("DV_DHT get (2->2");
+  printf ("DHT get (2->2");
   CHECK (0 == get_at_peer (&p2, "key 2", 'B'));
-  printf ("DV_DHT get (1->2)");
+  printf ("DHT get (1->2)");
   CHECK (0 == get_at_peer (&p1, "key 2", 'B'));
-  printf ("DV_DHT get (2->1)");
+  printf ("DHT get (2->1)");
   CHECK (0 == get_at_peer (&p2, "key 1", 'A'));
   /* end of actual test code */
 
@@ -217,9 +221,9 @@ FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  free_peer (&p1);
-  free_peer (&p2);
+  free_peer(&p1);
+  free_peer(&p2);
   return ret;
 }
 
-/* end of dv_dht_twopeer_test.c */
+/* end of dht_twopeer_test.c */

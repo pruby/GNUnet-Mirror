@@ -20,12 +20,12 @@
 
 /**
  * @file module/table.h
- * @brief DV_DHT connection table internal API
+ * @brief DHT connection table internal API
  * @author Christian Grothoff
  */
 
-#ifndef DV_DHT_TABLE_H
-#define DV_DHT_TABLE_H
+#ifndef DHT_TABLE_H
+#define DHT_TABLE_H
 
 #include "gnunet_util.h"
 #include "gnunet_core.h"
@@ -42,31 +42,31 @@
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
-                               const GNUNET_HashCode * target,
-                               const GNUNET_PeerIdentity * blocked,
-                               unsigned int blocked_size);
+int GNUNET_DHT_select_peer (GNUNET_PeerIdentity * set,
+                            const GNUNET_HashCode * target,
+                            const GNUNET_PeerIdentity * blocked,
+                            unsigned int blocked_size);
 
 /**
  * Compute a (rough) estimate of the networks diameter.
  *
  * @return estimated network diameter
  */
-unsigned int GNUNET_DV_DHT_estimate_network_diameter (void);
+unsigned int GNUNET_DHT_estimate_network_diameter (void);
 
 /**
- * Initialize table DV_DHT component.
+ * Initialize table DHT component.
  *
  * @param capi the core API
  * @return GNUNET_OK on success
  */
-int GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi);
 
 /**
- * Shutdown table DV_DHT component.
+ * Shutdown table DHT component.
  *
  * @return GNUNET_OK on success
  */
-int GNUNET_DV_DHT_table_done (void);
+int GNUNET_DHT_table_done (void);
 
 #endif

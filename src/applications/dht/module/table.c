@@ -20,10 +20,10 @@
 
 /**
  * @file module/table.c
- * @brief maintains table of DV_DHT connections of this peer
+ * @brief maintains table of DHT connections of this peer
  * @author Christian Grothoff
  *
- * New DV_DHT infrastructure plan:
+ * New DHT infrastructure plan:
  * - no RPC, pure async messaging
  * - stateful routing; needed for retry and reply routing
  * - no per-table storage; instead global,
@@ -31,18 +31,18 @@
  * - no delete operation, just get/put + expiration
  * - no "put" confirmation, try a get to confirm important put!
  * - modules:
- *   + table.c: DV_DHT-peer table, peer discovery cron jobs;
+ *   + table.c: DHT-peer table, peer discovery cron jobs;
  *     code tries to fill table "as much as possible" over time;
  *     TODO: expose and improve reliabily metrics (to be added later)???
- *     TODO: better randomized neighbor selection in DV_DHT_select_peer???
+ *     TODO: better randomized neighbor selection in DHT_select_peer???
  *     TODO: add callback for discovery-message padding (use core callback
  *           for extra-available bandwidth)
  *     TODO: add LAN tunnels for increased connectivity choices
  *   + routing.c: tracking of get/put operations, retry, reply handling
  *     code tries best-match routing among entries in table
- *   + service.c: provide DV_DHT services to rest of GNUnet process
+ *   + service.c: provide DHT services to rest of GNUnet process
  *     (i.e. register datastore with shared data, get/put operations)
- *   + cs.c: services to out-of-process DV_DHT clients (via dv_dht-lib)
+ *   + cs.c: services to out-of-process DHT clients (via dht-lib)
  */
 
 #include "platform.h"
@@ -50,15 +50,14 @@
 #include "table.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
-#include "gnunet_dv_dht_service.h"
+#include "gnunet_dht_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_identity_service.h"
 #include "gnunet_pingpong_service.h"
-#include "gnunet_dv_service.h"
 
 
 /**
- * How often should the cron job for maintaining the DV_DHT
+ * How often should the cron job for maintaining the DHT
  * run?
  */
 #define MAINTAIN_FREQUENCY 1500 * GNUNET_CRON_MILLISECONDS
@@ -75,7 +74,7 @@
 #define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4
 
 /**
- * What is the maximum number of known DV_DHT-enabled peers
+ * What is the maximum number of known DHT-enabled peers
  * advertised for each DISCOVERY message?
  */
 #define MAINTAIN_ADV_CAP 8
@@ -156,8 +155,6 @@ typedef struct
  */
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static GNUNET_DV_ServiceAPI *dvapi;
-
 /**
  * The buckets (Kademlia style routing table).
  */
@@ -204,7 +201,7 @@ static int stat_dht_advertisements;
 /**
  * The struct is followed by zero or more
  * PeerIdentities that the sender knows to
- * be participating in the DV_DHT.
+ * be participating in the DHT.
  */
 typedef struct
 {
@@ -213,11 +210,11 @@ typedef struct
 
   unsigned int space_available;
 
-} P2P_DV_DHT_Discovery;
+} P2P_DHT_Discovery;
 
 /**
  * Request for a HELLO for another peer that is participating in the
- * DV_DHT.  Receiver is expected to send back a HELLO for the peer that
+ * DHT.  Receiver is expected to send back a HELLO for the peer that
  * is being requested.
  */
 typedef struct
@@ -229,7 +226,7 @@ typedef struct
 
   GNUNET_PeerIdentity peer;
 
-} P2P_DV_DHT_ASK_HELLO;
+} P2P_DHT_ASK_HELLO;
 
 /**
  * Compute a (rough) estimate of the networks diameter.
@@ -237,7 +234,7 @@ typedef struct
  * @return estimated network diameter
  */
 unsigned int
-GNUNET_DV_DHT_estimate_network_diameter ()
+GNUNET_DHT_estimate_network_diameter ()
 {
   unsigned int i;
   for (i = bucketCount - 1; i > 0; i--)
@@ -291,7 +288,7 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
 
 /**
  * Find the PeerInfo for the given peer. Returns NULL if peer is not
- * in our DV_DHT routing table.
+ * in our DHT routing table.
  */
 static PeerInfo *
 findPeerEntryInBucket (PeerBucket * bucket, const GNUNET_PeerIdentity * peer)
@@ -309,7 +306,7 @@ findPeerEntryInBucket (PeerBucket * bucket, const GNUNET_PeerIdentity * peer)
 
 /**
  * Find the PeerInfo for the given peer. Returns NULL if peer is not
- * in our DV_DHT routing table.
+ * in our DHT routing table.
  */
 static PeerInfo *
 findPeerEntry (const GNUNET_PeerIdentity * peer)
@@ -355,10 +352,10 @@ inverse_distance (const GNUNET_HashCode * target,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
-                           const GNUNET_HashCode * target,
-                           const GNUNET_PeerIdentity * blocked,
-                           unsigned int blocked_size)
+GNUNET_DHT_select_peer (GNUNET_PeerIdentity * set,
+                        const GNUNET_HashCode * target,
+                        const GNUNET_PeerIdentity * blocked,
+                        unsigned int blocked_size)
 {
   unsigned long long total_distance;
   unsigned long long selected;
@@ -437,12 +434,12 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
 /**
  * Send a discovery message to the other peer.
  *
- * @param cls NULL or pre-built discovery message
+ * @param cls NULL or pre-build discovery message
  */
 static void
 broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
 {
-  P2P_DV_DHT_Discovery *disco = cls;
+  P2P_DHT_Discovery *disco = cls;
   unsigned int pc;
   unsigned int i;
   GNUNET_PeerIdentity *pos;
@@ -451,10 +448,10 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     stats->change (stat_dht_advertisements, 1);
   if (disco != NULL)
     {
-      dvapi->dv_send (other,
-                      &disco->header,
-                      GNUNET_EXTREME_PRIORITY / 4,
-                      MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+      coreAPI->ciphertext_send (other,
+                                &disco->header,
+                                GNUNET_EXTREME_PRIORITY / 4,
+                                MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
       return;
     }
   pc = total_peers;
@@ -464,7 +461,7 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     pc = 1;
   disco =
     GNUNET_malloc (pc * sizeof (GNUNET_PeerIdentity) +
-                   sizeof (P2P_DV_DHT_Discovery));
+                   sizeof (P2P_DHT_Discovery));
   disco->header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
   disco->space_available = -1;  /* FIXME */
   pos = (GNUNET_PeerIdentity *) & disco[1];
@@ -479,15 +476,15 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
   while (i < pc)
     {
       if (GNUNET_OK !=
-          GNUNET_DV_DHT_select_peer (&pos[i], &other->hashPubKey, pos, i))
+          GNUNET_DHT_select_peer (&pos[i], &other->hashPubKey, pos, i))
         pc--;
       else
         i++;
     }
   disco->header.size =
-    htons (pc * sizeof (GNUNET_PeerIdentity) + sizeof (P2P_DV_DHT_Discovery));
-  dvapi->dv_send (other, &disco->header, 0,
-                  MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+    htons (pc * sizeof (GNUNET_PeerIdentity) + sizeof (P2P_DHT_Discovery));
+  coreAPI->ciphertext_send (other, &disco->header, 0,
+                            MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
   GNUNET_free (disco);
 }
 
@@ -500,25 +497,23 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 }
 
 /**
- * Cron job to maintain DV_DHT routing table.
+ * Cron job to maintain DHT routing table.
  */
 static void
 maintain_dht_job (void *unused)
 {
-  P2P_DV_DHT_Discovery disc;
+  P2P_DHT_Discovery disc;
 
   if (total_peers == 0)
     {
-      disc.header.size = htons (sizeof (P2P_DV_DHT_Discovery));
+      disc.header.size = htons (sizeof (P2P_DHT_Discovery));
       disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
       disc.space_available = -1;        /* FIXME */
-      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, &disc);
-      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, &disc); */
+      coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, &disc);
     }
   else
     {
-      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
-      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, NULL); */
+      coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, NULL);
     }
 }
 
@@ -564,7 +559,7 @@ pingPeer (PeerInfo * pi)
  * Check if pi is still up and running.  May also try
  * to confirm that the peer is still live.
  *
- * @return GNUNET_YES if the peer should be removed from the DV_DHT table
+ * @return GNUNET_YES if the peer should be removed from the DHT table
  */
 static int
 checkExpired (PeerInfo * pi)
@@ -608,7 +603,7 @@ checkExpiration (PeerBucket * bucket)
 }
 
 /**
- * Consider adding the given peer to the DV_DHT.
+ * Consider adding the given peer to the DHT.
  */
 static void
 considerPeer (const GNUNET_PeerIdentity * sender,
@@ -616,7 +611,7 @@ considerPeer (const GNUNET_PeerIdentity * sender,
 {
   PeerInfo *pi;
   PeerBucket *bucket;
-  P2P_DV_DHT_ASK_HELLO ask;
+  P2P_DHT_ASK_HELLO ask;
   GNUNET_MessageHello *hello;
 
   bucket = findBucketFor (peer);
@@ -635,12 +630,12 @@ considerPeer (const GNUNET_PeerIdentity * sender,
   if (hello == NULL)
     {
       /* if identity not known, ask sender for HELLO of other peer */
-      ask.header.size = htons (sizeof (P2P_DV_DHT_ASK_HELLO));
+      ask.header.size = htons (sizeof (P2P_DHT_ASK_HELLO));
       ask.header.type = htons (sizeof (GNUNET_P2P_PROTO_DHT_ASK_HELLO));
       ask.reserved = 0;
       ask.peer = *peer;
-      dvapi->dv_send (sender, &ask.header, 0,   /* FIXME: priority */
-                      5 * GNUNET_CRON_SECONDS);
+      coreAPI->ciphertext_send (sender, &ask.header, 0, /* FIXME: priority */
+                                5 * GNUNET_CRON_SECONDS);
       return;
     }
   GNUNET_free (hello);
@@ -673,24 +668,24 @@ handleDiscovery (const GNUNET_PeerIdentity * sender,
 {
   unsigned int pc;
   unsigned int i;
-  const P2P_DV_DHT_Discovery *disco;
+  const P2P_DHT_Discovery *disco;
   const GNUNET_PeerIdentity *peers;
 
   pc =
     (ntohs (msg->size) -
-     sizeof (P2P_DV_DHT_Discovery)) / sizeof (GNUNET_PeerIdentity);
+     sizeof (P2P_DHT_Discovery)) / sizeof (GNUNET_PeerIdentity);
   if (pc > MAINTAIN_ADV_CAP * 8)
     {
       GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
       return GNUNET_SYSERR;     /* far too big */
     }
   if (ntohs (msg->size) !=
-      sizeof (P2P_DV_DHT_Discovery) + pc * sizeof (GNUNET_PeerIdentity))
+      sizeof (P2P_DHT_Discovery) + pc * sizeof (GNUNET_PeerIdentity))
     {
       GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
       return GNUNET_SYSERR;     /* malformed */
     }
-  disco = (const P2P_DV_DHT_Discovery *) msg;
+  disco = (const P2P_DHT_Discovery *) msg;
   if (stats != NULL)
     stats->change (stat_dht_discoveries, 1);
   if (pc == 0)
@@ -714,15 +709,15 @@ static int
 handleAskHello (const GNUNET_PeerIdentity * sender,
                 const GNUNET_MessageHeader * msg)
 {
-  const P2P_DV_DHT_ASK_HELLO *ask;
+  const P2P_DHT_ASK_HELLO *ask;
   GNUNET_MessageHello *hello;
 
-  if (ntohs (msg->size) != sizeof (P2P_DV_DHT_ASK_HELLO))
+  if (ntohs (msg->size) != sizeof (P2P_DHT_ASK_HELLO))
     {
       GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
       return GNUNET_SYSERR;
     }
-  ask = (const P2P_DV_DHT_ASK_HELLO *) msg;
+  ask = (const P2P_DHT_ASK_HELLO *) msg;
   if (NULL == findBucketFor (&ask->peer))
     return GNUNET_OK;
   hello =
@@ -731,7 +726,8 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
                               GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
-  dvapi->dv_send (sender, &hello->header, 0, 5 * GNUNET_CRON_SECONDS);
+  coreAPI->ciphertext_send (sender, &hello->header, 0,
+                            5 * GNUNET_CRON_SECONDS);
   GNUNET_free (hello);
   return GNUNET_OK;
 }
@@ -757,19 +753,19 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 }
 
 /**
- * Initialize table DV_DHT component.
+ * Initialize table DHT component.
  *
  * @param capi the core API
  * @return GNUNET_OK on success
  */
 int
-GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
 {
   unsigned long long i;
 
   coreAPI = capi;
   /* use less than 50% of peer's ideal number of
-     connections for DV_DHT table size */
+     connections for DHT table size */
   i = coreAPI->core_slots_count () / MAINTAIN_BUCKET_SIZE / 2;
   if (i < 4)
     i = 4;
@@ -781,19 +777,16 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
     }
   lock = capi->global_lock_get ();
   stats = capi->service_request ("stats");
-  dvapi = capi->service_request ("dv");
-  GNUNET_GE_ASSERT (coreAPI->ectx, dvapi != NULL);
   if (stats != NULL)
     {
       stat_dht_total_peers =
-        stats->create (gettext_noop ("# dv_dht connections"));
+        stats->create (gettext_noop ("# dht connections"));
       stat_dht_discoveries =
-        stats->create (gettext_noop ("# dv_dht discovery messages received"));
+        stats->create (gettext_noop ("# dht discovery messages received"));
       stat_dht_route_looks =
-        stats->
-        create (gettext_noop ("# dv_dht route host lookups performed"));
+        stats->create (gettext_noop ("# dht route host lookups performed"));
       stat_dht_advertisements =
-        stats->create (gettext_noop ("# dv_dht discovery messages sent"));
+        stats->create (gettext_noop ("# dht discovery messages sent"));
     }
   identity = coreAPI->service_request ("identity");
   GNUNET_GE_ASSERT (coreAPI->ectx, identity != NULL);
@@ -811,12 +804,12 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
 }
 
 /**
- * Shutdown table DV_DHT component.
+ * Shutdown table DHT component.
  *
  * @return GNUNET_OK on success
  */
 int
-GNUNET_DV_DHT_table_done ()
+GNUNET_DHT_table_done ()
 {
   unsigned int i;
   unsigned int j;

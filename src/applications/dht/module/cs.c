@@ -20,17 +20,17 @@
 
 /**
  * @file module/cs.c
- * @brief DV_DHT application protocol using the DV_DHT service.
- *   This is merely for the dv_dht-client library.  The code
+ * @brief DHT application protocol using the DHT service.
+ *   This is merely for the dht-client library.  The code
  *   of this file is mostly converting from and to TCP messages.
- * @author Marko R., Christian Grothoff, Nathan Evans
+ * @author Marko Räihä, Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "dht.h"
-#include "gnunet_dv_dht_service.h"
+#include "gnunet_dht_service.h"
 #include "service.h"
 
 #define DEBUG_CS GNUNET_NO
@@ -41,30 +41,30 @@
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
- * Reference to the DV_DHT service API.
+ * Reference to the DHT service API.
  */
-static GNUNET_DV_DHT_ServiceAPI *dv_dhtAPI;
+static GNUNET_DHT_ServiceAPI *dhtAPI;
 
 /**
  * Type of the linked list that is used by CS to
  * keep track of clients and their pending GET
  * requests.
  */
-struct DV_DHT_CLIENT_GET_RECORD
+struct DHT_CLIENT_GET_RECORD
 {
 
-  struct DV_DHT_CLIENT_GET_RECORD *next;
+  struct DHT_CLIENT_GET_RECORD *next;
 
   struct GNUNET_ClientHandle *client;
 
-  struct GNUNET_DV_DHT_GetHandle *get_record;
+  struct GNUNET_DHT_GetHandle *get_record;
 
 };
 
 /**
  * Linked list of active GET requests.
  */
-static struct DV_DHT_CLIENT_GET_RECORD *getRecords;
+static struct DHT_CLIENT_GET_RECORD *getRecords;
 
 /**
  * Lock.
@@ -72,7 +72,7 @@ static struct DV_DHT_CLIENT_GET_RECORD *getRecords;
 static struct GNUNET_Mutex *lock;
 
 /**
- * CS handler for inserting <key,value>-pair into DV_DHT-table.
+ * CS handler for inserting <key,value>-pair into DHT-table.
  */
 static int
 csPut (struct GNUNET_ClientHandle *client,
@@ -89,8 +89,8 @@ csPut (struct GNUNET_ClientHandle *client,
   req = (const CS_dht_request_put_MESSAGE *) message;
   size = ntohs (req->header.size) - sizeof (CS_dht_request_put_MESSAGE);
   GNUNET_GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
-  dv_dhtAPI->put (&req->key, ntohl (req->type), size, (const char *) &req[1]);
-  return coreAPI->cs_send_value (client, GNUNET_OK);
+  dhtAPI->put (&req->key, ntohl (req->type), size, (const char *) &req[1]);
+  return  coreAPI->cs_send_value (client, GNUNET_OK);
 }
 
 static int
@@ -98,7 +98,7 @@ get_result (const GNUNET_HashCode * key,
             unsigned int type,
             unsigned int size, const char *value, void *cls)
 {
-  struct DV_DHT_CLIENT_GET_RECORD *record = cls;
+  struct DHT_CLIENT_GET_RECORD *record = cls;
   CS_dht_request_put_MESSAGE *msg;
   size_t n;
 
@@ -110,7 +110,7 @@ get_result (const GNUNET_HashCode * key,
     }
   msg = GNUNET_malloc (n);
   msg->header.size = htons (n);
-  msg->header.type = htons (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT);
+  msg->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   msg->type = htonl (type);
   msg->key = *key;
   memcpy (&msg[1], value, size);
@@ -128,14 +128,14 @@ get_result (const GNUNET_HashCode * key,
 }
 
 /**
- * CS handler for getting key from DV_DHT.
+ * CS handler for getting key from DHT.
  */
 static int
 csGet (struct GNUNET_ClientHandle *client,
        const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_get_MESSAGE *get;
-  struct DV_DHT_CLIENT_GET_RECORD *cpc;
+  struct DHT_CLIENT_GET_RECORD *cpc;
 
   if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
     {
@@ -143,10 +143,10 @@ csGet (struct GNUNET_ClientHandle *client,
       return GNUNET_SYSERR;
     }
   get = (const CS_dht_request_get_MESSAGE *) message;
-  cpc = GNUNET_malloc (sizeof (struct DV_DHT_CLIENT_GET_RECORD));
+  cpc = GNUNET_malloc (sizeof (struct DHT_CLIENT_GET_RECORD));
   cpc->client = client;
-  cpc->get_record = dv_dhtAPI->get_start (ntohl (get->type),
-                                          &get->key, &get_result, cpc);
+  cpc->get_record = dhtAPI->get_start (ntohl (get->type),
+                                       &get->key, &get_result, cpc);
   GNUNET_mutex_lock (lock);
   cpc->next = getRecords;
   getRecords = cpc;
@@ -155,15 +155,15 @@ csGet (struct GNUNET_ClientHandle *client,
 }
 
 /**
- * CS handler for stopping existing get from DV_DHT.
+ * CS handler for stopping existing get from DHT.
  */
 static int
 csGetEnd (struct GNUNET_ClientHandle *client,
           const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_get_MESSAGE *get;
-  struct DV_DHT_CLIENT_GET_RECORD *pos;
-  struct DV_DHT_CLIENT_GET_RECORD *prev;
+  struct DHT_CLIENT_GET_RECORD *pos;
+  struct DHT_CLIENT_GET_RECORD *prev;
 
   if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
     {
@@ -194,7 +194,7 @@ csGetEnd (struct GNUNET_ClientHandle *client,
   else
     prev->next = pos->next;
   GNUNET_mutex_unlock (lock);
-  dv_dhtAPI->get_stop (pos->get_record);
+  dhtAPI->get_stop (pos->get_record);
   GNUNET_free (pos);
 
   return GNUNET_OK;
@@ -207,9 +207,9 @@ csGetEnd (struct GNUNET_ClientHandle *client,
 static void
 csClientExit (struct GNUNET_ClientHandle *client)
 {
-  struct GNUNET_DV_DHT_GetHandle *gr;
-  struct DV_DHT_CLIENT_GET_RECORD *pos;
-  struct DV_DHT_CLIENT_GET_RECORD *prev;
+  struct GNUNET_DHT_GetHandle *gr;
+  struct DHT_CLIENT_GET_RECORD *pos;
+  struct DHT_CLIENT_GET_RECORD *prev;
 
   GNUNET_mutex_lock (lock);
   pos = getRecords;
@@ -224,7 +224,7 @@ csClientExit (struct GNUNET_ClientHandle *client)
           else
             prev->next = pos->next;
           GNUNET_mutex_unlock (lock);
-          dv_dhtAPI->get_stop (gr);
+          dhtAPI->get_stop (gr);
           GNUNET_free (pos);
           GNUNET_mutex_lock (lock);
           pos = getRecords;
@@ -237,29 +237,29 @@ csClientExit (struct GNUNET_ClientHandle *client)
 }
 
 int
-initialize_module_dv_dht (GNUNET_CoreAPIForPlugins * capi)
+initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   int status;
 
-  dv_dhtAPI = capi->service_request ("dv_dht");
-  if (dv_dhtAPI == NULL)
+  dhtAPI = capi->service_request ("dht");
+  if (dhtAPI == NULL)
     return GNUNET_SYSERR;
   coreAPI = capi;
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering client handlers: %d %d\n"),
-                 "dv_dht", GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT,
-                 GNUNET_CS_PROTO_DV_DHT_REQUEST_GET);
+                 "dht", GNUNET_CS_PROTO_DHT_REQUEST_PUT,
+                 GNUNET_CS_PROTO_DHT_REQUEST_GET);
   status = GNUNET_OK;
   lock = GNUNET_mutex_create (GNUNET_NO);
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT, &csPut))
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_PUT, &csPut))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET, &csGet))
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET_END,
+      capi->cs_handler_register (GNUNET_CS_PROTO_DHT_REQUEST_GET_END,
                                  &csGetEnd))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->cs_disconnect_handler_register (&csClientExit))
@@ -268,22 +268,22 @@ initialize_module_dv_dht (GNUNET_CoreAPIForPlugins * capi)
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
                                                                    "ABOUT",
-                                                                   "dv_dht",
+                                                                   "dht",
                                                                    gettext_noop
-                                                                   ("Enables distance vector dht operation")));
+                                                                   ("Enables efficient non-anonymous routing")));
   return status;
 }
 
 /**
  * Find the record, remove it from the linked list
- * and cancel the operation with the DV_DHT API.
+ * and cancel the operation with the DHT API.
  */
 static void
 kill_record (void *cls)
 {
-  struct DV_DHT_CLIENT_GET_RECORD *record = cls;
-  struct DV_DHT_CLIENT_GET_RECORD *pos;
-  struct DV_DHT_CLIENT_GET_RECORD *prev;
+  struct DHT_CLIENT_GET_RECORD *record = cls;
+  struct DHT_CLIENT_GET_RECORD *pos;
+  struct DHT_CLIENT_GET_RECORD *prev;
 
   GNUNET_mutex_lock (lock);
   pos = getRecords;
@@ -305,7 +305,7 @@ kill_record (void *cls)
   else
     prev->next = pos->next;
   GNUNET_mutex_unlock (lock);
-  dv_dhtAPI->get_stop (record->get_record);
+  dhtAPI->get_stop (record->get_record);
   GNUNET_free (record);
 }
 
@@ -313,20 +313,20 @@ kill_record (void *cls)
  * Unregisters handlers, cleans memory structures etc when node exits.
  */
 int
-done_module_dv_dht ()
+done_module_dht ()
 {
   int status;
 
   status = GNUNET_OK;
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "DV_DHT: shutdown\n");
+                 "DHT: shutdown\n");
   if (GNUNET_OK !=
-      coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT,
+      coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_DHT_REQUEST_PUT,
                                       &csPut))
     status = GNUNET_SYSERR;
   if (GNUNET_OK !=
-      coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET,
+      coreAPI->cs_handler_unregister (GNUNET_CS_PROTO_DHT_REQUEST_GET,
                                       &csGet))
     status = GNUNET_SYSERR;
   if (GNUNET_OK != coreAPI->cs_disconnect_handler_unregister (&csClientExit))
@@ -334,8 +334,8 @@ done_module_dv_dht ()
 
   while (getRecords != NULL)
     kill_record (getRecords);
-  coreAPI->service_release (dv_dhtAPI);
-  dv_dhtAPI = NULL;
+  coreAPI->service_release (dhtAPI);
+  dhtAPI = NULL;
   coreAPI = NULL;
   GNUNET_mutex_destroy (lock);
   return status;

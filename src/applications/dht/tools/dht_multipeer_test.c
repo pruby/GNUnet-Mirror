@@ -20,14 +20,14 @@
 
 /**
  * @file applications/dht/tools/dht_multipeer_test.c
- * @brief DV_DHT testcase
+ * @brief DHT testcase
  * @author Christian Grothoff
  * @author Nathan Evans
  */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
-#include "gnunet_dv_dht_lib.h"
+#include "gnunet_dht_lib.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
@@ -39,7 +39,7 @@
 #define NUM_PEERS 8
 
 /**
- * How many times will we try the DV_DHT-GET operation before
+ * How many times will we try the DHT-GET operation before
  * giving up for good?
  */
 #define NUM_ROUNDS 20
@@ -77,7 +77,7 @@ result_callback (const GNUNET_HashCode * key,
 static int
 waitForConnect (const char *name, unsigned long long value, void *cls)
 {
-  if ((value > 0) && (0 == strcmp (_("# dv_dht connections"), name)))
+  if ((value > 0) && (0 == strcmp (_("# dht connections"), name)))
     {
       ok = 1;
       return GNUNET_SYSERR;
@@ -88,7 +88,7 @@ waitForConnect (const char *name, unsigned long long value, void *cls)
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
- * Testcase to test DV_DHT routing (many peers).
+ * Testcase to test DHT routing (many peers).
  * @return 0: ok, -1: error
  */
 int
@@ -101,8 +101,8 @@ main (int argc, const char **argv)
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
-  struct GNUNET_DV_DHT_Context *dctx;
-  struct GNUNET_DV_DHT_GetRequest *get1;
+  struct GNUNET_DHT_Context *dctx;
+  struct GNUNET_DHT_GetRequest *get1;
   int left;
   int i;
   int j;
@@ -121,8 +121,8 @@ main (int argc, const char **argv)
     }
   printf ("Starting %u peers...\n", NUM_PEERS);
   peers = GNUNET_TESTING_start_daemons ("tcp",
-                                        "advertising dv dv_dht stats",
-                                        "/tmp/gnunet-dv-dht-multi-test",
+                                        "advertising dht stats",
+                                        "/tmp/gnunet-dht-multi-test",
                                         2087, 10, NUM_PEERS);
   if (peers == NULL)
     {
@@ -156,7 +156,7 @@ main (int argc, const char **argv)
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
       /* put loop */
-      printf ("Waiting for DV_DHT connections of peer");
+      printf ("Waiting for DHT connections of peer");
       for (i = 0; i < NUM_PEERS; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
@@ -167,7 +167,7 @@ main (int argc, const char **argv)
           GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);
           GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK",
                                                     "HOST", buf);
-          /* wait for some DV_DHT's to find each other! */
+          /* wait for some DHT's to find each other! */
           sock = GNUNET_client_connection_create (NULL, cfg);
           left = 30;            /* how many iterations should we wait? */
           while (GNUNET_OK ==
@@ -190,17 +190,17 @@ main (int argc, const char **argv)
               printf ("ERROR!\n");
               fflush (stdout);
               GNUNET_TESTING_stop_daemons (peers);
-              fprintf (stderr, "Peers' DV_DHTs failed to DV_DHT-connect!\n");
+              fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
               GNUNET_GC_free (cfg);
               return -1;
             }
           GNUNET_hash (buf, strlen (buf), &key);
           memset (value, 'A' + i, sizeof (value));
-          CHECK (GNUNET_OK == GNUNET_DV_DHT_put (cfg,
-                                                 ectx,
-                                                 &key,
-                                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                                 sizeof (value), value));
+          CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
+                                              ectx,
+                                              &key,
+                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                              sizeof (value), value));
         }
       printf ("\n");
       /* get loop */
@@ -212,8 +212,7 @@ main (int argc, const char **argv)
           GNUNET_GC_set_configuration_value_string (cfg,
                                                     ectx, "NETWORK", "HOST",
                                                     buf);
-          dctx =
-            GNUNET_DV_DHT_context_create (cfg, ectx, &result_callback, &c);
+          dctx = GNUNET_DHT_context_create (cfg, ectx, &result_callback, &c);
           printf ("Peer %d gets key", i);
           fflush (stdout);
           for (j = 0; j < NUM_PEERS; j++)
@@ -227,9 +226,9 @@ main (int argc, const char **argv)
               printf (" %d", j);
               fflush (stdout);
               last = found;
-              get1 = GNUNET_DV_DHT_get_start (dctx,
-                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                              &key);
+              get1 = GNUNET_DHT_get_start (dctx,
+                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                           &key);
               GNUNET_GE_ASSERT (NULL, get1 != NULL);
               for (k = 0; k < NUM_ROUNDS; k++)
                 {
@@ -245,14 +244,14 @@ main (int argc, const char **argv)
                   if (last < found)
                     break;
                 }
-              GNUNET_DV_DHT_get_stop (dctx, get1);
+              GNUNET_DHT_get_stop (dctx, get1);
               if (k == NUM_ROUNDS)
                 {
                   printf ("?");
                   fflush (stdout);
                 }
             }
-          GNUNET_DV_DHT_context_destroy (dctx);
+          GNUNET_DHT_context_destroy (dctx);
           printf ("\n");
         }
     }
@@ -272,4 +271,4 @@ FAILURE:
   return ret;
 }
 
-/* end of dv_dht_multipeer_test.c */
+/* end of dht_multipeer_test.c */
