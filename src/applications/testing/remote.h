@@ -98,6 +98,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                int number_of_daemons, FILE * dotOufFile,
                                double percentage);
 
+GNUNET_PeerIdentity *GNUNET_REMOTE_get_daemon_information (char *hostname,
+                                                           unsigned short
+                                                           port);
+
 
 #endif /*REMOTE_H_ */
 

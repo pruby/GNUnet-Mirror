@@ -53,43 +53,87 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 {
   char *cmd;
   int length;
+  unsigned int is_local = 0;
 
-  length =
-    snprintf (NULL, 0, "scp %s%s %s@%s:%s", localConfigPath, configFileName,
-              username, hostname, remote_config_path);
-  cmd = GNUNET_malloc (length + 1);
-  GNUNET_snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
-                   configFileName, username, hostname, remote_config_path);
+  if (strcmp (hostname, "localhost") == 0)
+    {
+      is_local = 1;
+    }
 
+  if (is_local)
+    {
+      length =
+        snprintf (NULL, 0, "cp %s%s %s", localConfigPath, configFileName,
+                  remote_config_path);
+      cmd = GNUNET_malloc (length + 1);
+      GNUNET_snprintf (cmd, length + 1, "cp %s%s %s", localConfigPath,
+                       configFileName, remote_config_path);
+    }
+  else
+    {
+      length =
+        snprintf (NULL, 0, "scp %s%s %s@%s:%s", localConfigPath,
+                  configFileName, username, hostname, remote_config_path);
+      cmd = GNUNET_malloc (length + 1);
+      GNUNET_snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
+                       configFileName, username, hostname,
+                       remote_config_path);
+    }
   /* To me this seems like information that will always be appreciated by the user
    * if this is contested by anyone, please mark it here as well as how it should be
    * done, and I can change it everywhere else by example! NE
    */
-  fprintf (stderr, _("scp command is : %s \n"), cmd);
+  fprintf (stderr, _("cp command is : %s \n"), cmd);
   system (cmd);
 
   GNUNET_free (cmd);
 
-  length =
-    snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username,
-              hostname, gnunetd_home, remote_config_path, configFileName);
-  cmd = GNUNET_malloc (length + 1);
-  snprintf (cmd, length + 1, "ssh %s@%s %sgnunet-update -c %s%s", username,
-            hostname, gnunetd_home, remote_config_path, configFileName);
-
-  fprintf (stderr, _("ssh command is : %s \n"), cmd);
+  if (is_local)
+    {
+      length =
+        snprintf (NULL, 0, "%sgnunet-update -c %s%s", gnunetd_home,
+                  remote_config_path, configFileName);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "%sgnunet-update -c %s%s", gnunetd_home,
+                remote_config_path, configFileName);
+    }
+  else
+    {
+      length =
+        snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username,
+                  hostname, gnunetd_home, remote_config_path, configFileName);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "ssh %s@%s %sgnunet-update -c %s%s",
+                username, hostname, gnunetd_home, remote_config_path,
+                configFileName);
+    }
+  fprintf (stderr, _("exec command is : %s \n"), cmd);
 
   system (cmd);
   GNUNET_free (cmd);
 
-  length =
-    snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s", username, hostname,
-              gnunetd_home, remote_config_path, configFileName);
-  cmd = GNUNET_malloc (length + 1);
-  snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s", username,
-            hostname, gnunetd_home, remote_config_path, configFileName);
+  if (is_local)
+    {
+      length =
+        snprintf (NULL, 0, "%sgnunetd -d -c %s%s &",
+                  gnunetd_home, remote_config_path, configFileName);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "%sgnunetd -d -c %s%s &", gnunetd_home,
+                remote_config_path, configFileName);
+    }
+  else
+    {
+      length =
+        snprintf (NULL, 0, "ssh %s@%s %sgnunetd -d -c %s%s &", username,
+                  hostname, gnunetd_home, remote_config_path, configFileName);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -d -c %s%s &",
+                username, hostname, gnunetd_home, remote_config_path,
+                configFileName);
 
-  fprintf (stderr, _("ssh command is : %s \n"), cmd);
+    }
+
+  fprintf (stderr, _("exec command is : %s \n"), cmd);
 
   system (cmd);
 
@@ -100,16 +144,92 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 }
 
 int
+GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
+{
+  char *cmd;
+  int length;
+  unsigned int is_local = 0;
+  FILE *output;
+  pid_t pid;
+
+  if (strcmp (tokill->hostname, "localhost") == 0)
+    {
+      is_local = 1;
+    }
+
+  if (is_local)
+    {
+      length = snprintf (NULL, 0, "cat %s", tokill->pid);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "cat %s", tokill->pid);
+    }
+  else
+    {
+      length =
+        snprintf (NULL, 0, "ssh %s@%s cat %s", tokill->username,
+                  tokill->hostname, tokill->pid);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "ssh %s@%s cat %s", tokill->username,
+                tokill->hostname, tokill->pid);
+    }
+  fprintf (stderr, _("exec command is : %s \n"), cmd);
+
+  output = popen (cmd, "r");
+  GNUNET_free (cmd);
+  if (fscanf (output, "%d", &pid) == 1)
+    {
+      fprintf (stderr, "Got pid %d\n", pid);
+    }
+  else
+    {
+      return -1;
+    }
+
+  if (is_local)
+    {
+      length = snprintf (NULL, 0, "kill %d", pid);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "kill %d", pid);
+    }
+  else
+    {
+      length =
+        snprintf (NULL, 0, "ssh %s@%s kill %d", tokill->username,
+                  tokill->hostname, pid);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "ssh %s@%s kill %d",
+                tokill->username, tokill->hostname, pid);
+
+    }
+
+  fprintf (stderr, _("exec command is : %s \n"), cmd);
+
+  system (cmd);
+
+  GNUNET_free (cmd);
+
+
+  return GNUNET_OK;
+}
+
+
+struct GNUNET_REMOTE_TESTING_DaemonContext *
 GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                              unsigned long long number_of_daemons)
 {
   struct GNUNET_GC_Configuration *basecfg;
+  struct GNUNET_GC_Configuration *tempcfg;
   struct GNUNET_REMOTE_host_list *array_of_pointers[number_of_daemons];
   struct GNUNET_REMOTE_host_list *temp_pos;
   GNUNET_REMOTE_TOPOLOGIES type_of_topology;
+  struct GNUNET_REMOTE_TESTING_DaemonContext *ret_peers;
+  struct GNUNET_REMOTE_TESTING_DaemonContext *next_peer;
+
+  ret_peers = NULL;
   list_as_array = &array_of_pointers[0];
   FILE *dotOutFile;
 
+  char host[128];
   char *ssh_username;
   char *control_host;
   char *percentage_string;
@@ -281,7 +401,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                     "GNUNETD", "PIDFILE",
                                                     temp_pid_file);
 
-          GNUNET_free (temp_pid_file);
+
 
           temp_remote_config_path_length =
             snprintf (NULL, 0, "%s%d", remote_config_path, j);
@@ -350,6 +470,27 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                           curr_host, ssh_username,
                                           temp_pos->remote_friend_file_path);
 
+              next_peer =
+                GNUNET_malloc (sizeof
+                               (struct GNUNET_REMOTE_TESTING_DaemonContext));
+              next_peer->next = ret_peers;
+              next_peer->hostname = GNUNET_strdup (curr_host);
+              next_peer->username = GNUNET_strdup (ssh_username);
+              next_peer->port = starting_port + (j * port_increment);
+              next_peer->pid = GNUNET_strdup (temp_pid_file);
+              tempcfg = GNUNET_GC_create ();
+              GNUNET_snprintf (host, 128, "%s:%u", next_peer->hostname,
+                               next_peer->port);
+              GNUNET_GC_set_configuration_value_string (tempcfg, NULL,
+                                                        "NETWORK", "HOST",
+                                                        host);
+              next_peer->config = tempcfg;
+              next_peer->peer =
+                GNUNET_REMOTE_get_daemon_information (next_peer->hostname,
+                                                      next_peer->port);
+
+              ret_peers = next_peer;
+
               GNUNET_GC_get_configuration_value_number (basecfg,
                                                         "NETWORK",
                                                         "PORT",
@@ -361,7 +502,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               array_of_pointers[count_started] = temp_pos;
               count_started++;
             }
-
+          GNUNET_free (temp_pid_file);
           GNUNET_free (temp_remote_config_path);
           GNUNET_free (temp);
           UNLINK (temp_path);
@@ -369,6 +510,31 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 
           if ((i < extra_daemons) && (j == daemons_per_machine - 1))
             {
+
+              basecfg = GNUNET_GC_create ();
+
+              if (-1 == GNUNET_GC_parse_configuration (basecfg, base_config))
+                {
+                  ret = GNUNET_SYSERR;
+                  break;
+                }
+
+              GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                        "NETWORK", "PORT",
+                                                        starting_port);
+              GNUNET_GC_set_configuration_value_number (basecfg, NULL, "TCP",
+                                                        "PORT",
+                                                        starting_port + 1);
+              GNUNET_GC_set_configuration_value_number (basecfg, NULL, "UDP",
+                                                        "PORT",
+                                                        starting_port + 1);
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "NETWORK", "TRUSTED",
+                                                        control_host);
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "PATHS",
+                                                        "GNUNETD_HOME",
+                                                        remote_config_path);
               length_temp =
                 snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j + 1);
               temp_pid_file = GNUNET_malloc (length_temp + 1);
@@ -379,7 +545,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                         "GNUNETD",
                                                         "PIDFILE",
                                                         temp_pid_file);
-              GNUNET_free (temp_pid_file);
 
               temp_remote_config_path_length =
                 snprintf (NULL, 0, "%s%d", remote_config_path, j);
@@ -457,6 +622,28 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                               temp_pos->
                                               remote_friend_file_path);
 
+                  next_peer =
+                    GNUNET_malloc (sizeof
+                                   (struct
+                                    GNUNET_REMOTE_TESTING_DaemonContext));
+                  next_peer->next = ret_peers;
+                  next_peer->hostname = GNUNET_strdup (curr_host);
+                  next_peer->port =
+                    starting_port + ((j + 1) * port_increment);
+                  next_peer->username = GNUNET_strdup (ssh_username);
+                  next_peer->pid = GNUNET_strdup (temp_pid_file);
+                  tempcfg = GNUNET_GC_create ();
+                  GNUNET_snprintf (host, 128, "%s:%u", next_peer->hostname,
+                                   next_peer->port);
+                  GNUNET_GC_set_configuration_value_string (tempcfg, NULL,
+                                                            "NETWORK", "HOST",
+                                                            host);
+                  next_peer->config = tempcfg;
+                  next_peer->peer =
+                    GNUNET_REMOTE_get_daemon_information (next_peer->hostname,
+                                                          next_peer->port);
+                  ret_peers = next_peer;
+
                   GNUNET_GC_get_configuration_value_number (basecfg,
                                                             "NETWORK",
                                                             "PORT",
@@ -469,6 +656,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                   array_of_pointers[count_started] = temp_pos;
                   count_started++;
                 }
+
+              GNUNET_free (temp_pid_file);
               GNUNET_free (temp_remote_config_path);
               UNLINK (temp_path);
               GNUNET_free (temp_path);
@@ -499,7 +688,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   GNUNET_free (remote_config_path);
   GNUNET_free (remote_gnunetd_path);
 
-  return ret;
+  return ret_peers;
 }
 
 int
@@ -540,6 +729,9 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       fprintf (stderr, "Creating Erdos-Renyi topology\n");
       ret = GNUNET_REMOTE_connect_erdos_renyi (percentage, head, dotOutFile);
       break;
+    case GNUNET_REMOTE_NONE:
+      return ret;
+      break;
     default:
       ret = GNUNET_SYSERR;
       break;
@@ -564,14 +756,26 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
             }
 
           fclose (temp_friend_handle);
-          length =
-            snprintf (NULL, 0, "scp %s %s@%s:%s", "friend.temp",
-                      pos->username, pos->hostname,
-                      pos->remote_friend_file_path);
-          cmd = GNUNET_malloc (length + 1);
-          snprintf (cmd, length + 1, "scp %s %s@%s:%s", "friend.temp",
-                    pos->username, pos->hostname,
-                    pos->remote_friend_file_path);
+          if (strcmp (pos->hostname, "localhost") == 0)
+            {
+              length =
+                snprintf (NULL, 0, "cp %s %s", "friend.temp",
+                          pos->remote_friend_file_path);
+              cmd = GNUNET_malloc (length + 1);
+              snprintf (cmd, length + 1, "cp %s %s", "friend.temp",
+                        pos->remote_friend_file_path);
+            }
+          else
+            {
+              length =
+                snprintf (NULL, 0, "scp %s %s@%s:%s", "friend.temp",
+                          pos->username, pos->hostname,
+                          pos->remote_friend_file_path);
+              cmd = GNUNET_malloc (length + 1);
+              snprintf (cmd, length + 1, "scp %s %s@%s:%s", "friend.temp",
+                        pos->username, pos->hostname,
+                        pos->remote_friend_file_path);
+            }
 
           fprintf (stderr, _("scp command for friend file copy is : %s \n"),
                    cmd);

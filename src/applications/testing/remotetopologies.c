@@ -72,7 +72,8 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
                                                      &node2))
             {
               temp_rand = ((double) RANDOM () / RAND_MAX);
-              fprintf(stderr, "rand is %f probability is %f\n",temp_rand,probability);
+              fprintf (stderr, "rand is %f probability is %f\n", temp_rand,
+                       probability);
               if (temp_rand < probability)
                 {
                   node1temp =
@@ -384,6 +385,7 @@ GNUNET_REMOTE_connect_small_world (int number_of_daemons,
 * @param port2 client port of the second daemon
 * @param ip1 client ip or hostname for the first daemon
 * @param ip2 client ip or hostname for the second daemon
+* @param dotOutFile file to write dot style graph info to
 * @return GNUNET_OK on success, GNUNET_SYSERR on failure
 */
 
@@ -576,6 +578,60 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
   return ret;
 }
 
+GNUNET_PeerIdentity *
+GNUNET_REMOTE_get_daemon_information (char *hostname, unsigned short port)
+{
+  char host[128];
+  struct GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
+  struct GNUNET_ClientServerConnection *sock1;
+  GNUNET_PeerIdentity *retval;
+  int ret;
+  GNUNET_MessageHello *h1;
+
+  ret = GNUNET_SYSERR;
+  GNUNET_snprintf (host, 128, "%s:%u", hostname, port);
+  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
+                                            host);
+
+  retval = NULL;
+  if (GNUNET_OK ==
+      GNUNET_wait_for_daemon_running (NULL, cfg1, 30 * GNUNET_CRON_SECONDS))
+    {
+      sock1 = GNUNET_client_connection_create (NULL, cfg1);
+
+      ret = -20;
+      while ((ret++ < -1) && (GNUNET_shutdown_test () == GNUNET_NO))
+        {
+          h1 = NULL;
+
+          if (GNUNET_OK == GNUNET_IDENTITY_get_self (sock1, &h1))
+            {
+              ret = GNUNET_OK;
+              break;
+            }
+
+          GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
+        }
+      if (ret == GNUNET_OK)
+        {
+          retval = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+          memcpy (retval, &h1->senderIdentity, sizeof (GNUNET_PeerIdentity));
+        }
+
+      GNUNET_free_non_null (h1);
+
+      GNUNET_client_connection_destroy (sock1);
+    }
+  else
+    {
+      fprintf (stderr, _("Failed to establish connection with peers.\n"));
+    }
+  GNUNET_GC_free (cfg1);
+  if (ret != GNUNET_SYSERR)
+    return retval;
+  else
+    return NULL;
+}
 
 
 /* end of remotetopologies.c */
