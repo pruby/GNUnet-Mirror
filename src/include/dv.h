@@ -61,6 +61,11 @@ typedef struct
   GNUNET_MessageHeader header GNUNET_PACKED;
 
   /**
+   * Identity of peer that sent the message
+   */
+  GNUNET_PeerIdentity sender GNUNET_PACKED;
+
+  /**
    * Identity of neighbor this message is going to
    */
   GNUNET_PeerIdentity recipient GNUNET_PACKED;

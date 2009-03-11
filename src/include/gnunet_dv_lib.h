@@ -36,8 +36,19 @@
  * @message the message being sent
  */
 int GNUNET_DV_send_message (const GNUNET_PeerIdentity * recipient,
-                            char *message);
+                            const GNUNET_MessageHeader * message,
+                            unsigned int importance, unsigned int maxdelay);
 
+/**
+ * Calls a given method for each dv connected host.
+ *
+ * @param method method to call for each connected peer
+ * @param arg second argument to method
+ * @return number of connected nodes
+ */
+int
+GNUNET_DV_connection_iterate_peers (GNUNET_NodeIteratorCallback method,
+                                    void *arg);
 
 #endif
 
