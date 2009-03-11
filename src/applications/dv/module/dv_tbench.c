@@ -129,7 +129,7 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
   reply = GNUNET_malloc (ntohs (message->size));
   memcpy (reply, message, ntohs (message->size));
   reply->type = htons (GNUNET_P2P_PROTO_TBENCH_REPLY);
-  dvAPI->dv_send (sender, coreAPI->my_identity, reply);
+  dvAPI->dv_send (sender, reply, ntohl (msg->priority), 0);
   //coreAPI->ciphertext_send (sender, reply, ntohl (msg->priority), 0);   /* no delay */
   GNUNET_free (reply);
   return GNUNET_OK;
@@ -319,8 +319,8 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
                          "Sending message %u of size %u in iteration %u\n",
                          packetNum, size, iteration);
 #endif
-          dvAPI->dv_send (&msg->receiverId, coreAPI->my_identity,
-                          &p2p->header);
+          dvAPI->dv_send (&msg->receiverId, &p2p->header,
+                          ntohl (msg->priority), 0);
           //coreAPI->ciphertext_send (&msg->receiverId, &p2p->header, ntohl (msg->priority), 0);  /* no delay */
           if ((delay != 0) &&
               (htonl (msg->trainSize) != 0) &&

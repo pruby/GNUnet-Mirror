@@ -37,7 +37,7 @@
 #define DEBUG_DV_FORWARD GNUNET_NO
 /* How long to allow a message to be delayed */
 #define DV_DELAY (100 * GNUNET_CRON_MILLISECONDS)
-
+#define DV_PRIORITY 0
 /*
  * Global construct
  */
@@ -58,6 +58,13 @@ struct GNUNET_DV_Context
 
 
 };
+
+struct callbackWrapper
+{
+  GNUNET_NodeIteratorCallback method;
+  void *arg;
+};
+
 static char shortID[5];
 static struct GNUNET_DV_Context *ctx;
 static struct GNUNET_ThreadHandle *sendingThread;
@@ -113,6 +120,134 @@ print_tables ()
 }
 
 /*
+ * A callback for iterating over all known nodes.
+ */
+static int
+connection_iterate_callback (const GNUNET_HashCode * key, void *value,
+                             void *cls)
+{
+  struct GNUNET_dv_neighbor *neighbor = (struct GNUNET_dv_neighbor *) value;
+  struct callbackWrapper *wrap = (struct callbackWrapper *) cls;
+  wrap->method (neighbor->neighbor, wrap->arg);
+  return GNUNET_OK;
+}
+
+
+/**
+ * Calls a given method for each dv connected host.
+ *
+ * @param method method to call for each connected peer
+ * @param arg second argument to method
+ * @return number of connected nodes
+ */
+int
+GNUNET_DV_connection_iterate_peers (GNUNET_NodeIteratorCallback method,
+                                    void *arg)
+{
+  struct callbackWrapper wrap;
+  int ret;
+  wrap.method = method;
+  wrap.arg = arg;
+
+  GNUNET_mutex_lock (ctx->dvMutex);
+  ret =
+    GNUNET_multi_hash_map_iterate (ctx->extended_neighbors,
+                                   &connection_iterate_callback, &wrap);
+  GNUNET_mutex_unlock (ctx->dvMutex);
+  return ret;
+}
+
+static int
+send_message (const GNUNET_PeerIdentity * recipient,
+              const GNUNET_PeerIdentity * original_sender,
+              const GNUNET_MessageHeader * message,
+              unsigned int importance, unsigned int maxdelay)
+{
+  p2p_dv_MESSAGE_Data *toSend;
+  int ret = GNUNET_OK;
+  unsigned int msg_size;
+  struct GNUNET_dv_neighbor *neighbor;
+#if DEBUG_DV_FORWARD
+  GNUNET_EncName encVia;
+  GNUNET_EncName encRecipient;
+  GNUNET_EncName encMe;
+
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s: Entered send_message!\n", &shortID);
+#endif
+  if (GNUNET_YES ==
+      GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                      &recipient->hashPubKey))
+    {
+      neighbor =
+        GNUNET_multi_hash_map_get (ctx->extended_neighbors,
+                                   &recipient->hashPubKey);
+      msg_size = ntohs (message->size) + sizeof (p2p_dv_MESSAGE_Data);
+      if (msg_size > GNUNET_MAX_BUFFER_SIZE - 8)
+        return GNUNET_SYSERR;
+      toSend = GNUNET_malloc (msg_size);
+      toSend->header.size = htons (msg_size);
+      toSend->header.type = htons (GNUNET_P2P_PROTO_DV_DATA_MESSAGE);
+      memcpy (&toSend->sender, original_sender, sizeof (GNUNET_PeerIdentity));
+      memcpy (&toSend->recipient, recipient, sizeof (GNUNET_PeerIdentity));
+      memcpy (&toSend[1], message, ntohs (message->size));
+#if DEBUG_DV_FORWARD
+      GNUNET_hash_to_enc (&toSend->sender.hashPubKey, &encMe);
+      GNUNET_hash_to_enc (&toSend->recipient.hashPubKey, &encRecipient);
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, "%s: Cost to intended peer is %d\n",
+                     &shortID, neighbor->cost);
+      if (neighbor->referrer != NULL)
+        {
+          GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encVia);
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
+                         "%s: Original Sender:\n%s\nMessage intended for:\n%s\nSending via:\n%s\n\n",
+                         &shortID, (char *) &encMe, (char *) &encRecipient,
+                         (char *) &encVia);
+        }
+      else
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
+                         "%s: Original Sender:\n%s\nMessage intended for:\n%s\nSending Direct.\n",
+                         &shortID, (char *) &encMe, (char *) &encRecipient);
+        }
+#endif
+      if (neighbor->referrer != NULL)
+        {
+          coreAPI->ciphertext_send (neighbor->referrer, &toSend->header,
+                                    importance, maxdelay);
+        }
+      else
+        {
+          coreAPI->ciphertext_send (neighbor->neighbor, &toSend->header,
+                                    importance, maxdelay);
+        }
+      GNUNET_free (toSend);
+      return ret;
+    }
+  else
+    {
+#if DEBUG_DV_FORWARD
+      GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
+      GNUNET_hash_to_enc (&recipient->hashPubKey, &encRecipient);
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "%s: I AM:\n%s\nAsked to send message to unknown peer:\n%s\n\n",
+                     &shortID, (char *) &encMe, (char *) &encRecipient);
+#endif
+      return GNUNET_NO;
+    }
+
+}
+
+/*
  * Forward a received message that was not intended
  * for us.
  *
@@ -122,7 +257,6 @@ print_tables ()
 static int
 forward_message (const p2p_dv_MESSAGE_Data * message)
 {
-  p2p_dv_MESSAGE_Data *toSend;
   const GNUNET_MessageHeader *packed_message =
     (GNUNET_MessageHeader *) & message[1];
 
@@ -142,8 +276,8 @@ forward_message (const p2p_dv_MESSAGE_Data * message)
       return GNUNET_SYSERR;
     }
 
-  return GNUNET_DV_send_message (&message->recipient, &message->sender,
-                                 packed_message);
+  return send_message (&message->recipient, &message->sender,
+                       packed_message, DV_PRIORITY, DV_DELAY);
 }
 
 /*
@@ -259,13 +393,10 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
  */
 int
 GNUNET_DV_send_message (const GNUNET_PeerIdentity * recipient,
-                        const GNUNET_PeerIdentity * original_sender,
-                        const GNUNET_MessageHeader * message)
+                        const GNUNET_MessageHeader * message,
+                        unsigned int importance, unsigned int maxdelay)
 {
-  p2p_dv_MESSAGE_Data *toSend;
-  int ret = GNUNET_OK;
-  unsigned int msg_size;
-  struct GNUNET_dv_neighbor *neighbor;
+
 #if DEBUG_DV_FORWARD
   GNUNET_EncName encVia;
   GNUNET_EncName encRecipient;
@@ -276,75 +407,9 @@ GNUNET_DV_send_message (const GNUNET_PeerIdentity * recipient,
                  GNUNET_GE_BULK,
                  "%s: Entered GNUNET_DV_send_message!\n", &shortID);
 #endif
-  if (GNUNET_YES ==
-      GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
-                                      &recipient->hashPubKey))
-    {
-      neighbor =
-        GNUNET_multi_hash_map_get (ctx->extended_neighbors,
-                                   &recipient->hashPubKey);
-      msg_size = ntohs (message->size) + sizeof (p2p_dv_MESSAGE_Data);
-      if (msg_size > GNUNET_MAX_BUFFER_SIZE - 8)
-        return GNUNET_SYSERR;
-      toSend = GNUNET_malloc (msg_size);
-      toSend->header.size = htons (msg_size);
-      toSend->header.type = htons (GNUNET_P2P_PROTO_DV_DATA_MESSAGE);
-      memcpy (&toSend->sender, original_sender, sizeof (GNUNET_PeerIdentity));
-      memcpy (&toSend->recipient, recipient, sizeof (GNUNET_PeerIdentity));
-      memcpy (&toSend[1], message, ntohs (message->size));
-#if DEBUG_DV_FORWARD
-      GNUNET_hash_to_enc (&toSend->sender.hashPubKey, &encMe);
-      GNUNET_hash_to_enc (&toSend->recipient.hashPubKey, &encRecipient);
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK, "%s: Cost to intended peer is %d\n",
-                     &shortID, neighbor->cost);
-      if (neighbor->referrer != NULL)
-        {
-          GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encVia);
-          GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
-                         | GNUNET_GE_BULK,
-                         "%s: Original Sender:\n%s\nMessage intended for:\n%s\nSending via:\n%s\n\n",
-                         &shortID, (char *) &encMe, (char *) &encRecipient,
-                         (char *) &encVia);
-        }
-      else
-        {
-          GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
-                         | GNUNET_GE_BULK,
-                         "%s: Original Sender:\n%s\nMessage intended for:\n%s\nSending Direct.\n",
-                         &shortID, (char *) &encMe, (char *) &encRecipient);
-        }
-#endif
-      if (neighbor->referrer != NULL)
-        {
-          coreAPI->ciphertext_send (neighbor->referrer, &toSend->header, 0,
-                                    0);
-        }
-      else
-        {
-          coreAPI->ciphertext_send (neighbor->neighbor, &toSend->header, 0,
-                                    0);
-        }
-      GNUNET_free (toSend);
-      return ret;
-    }
-  else
-    {
-#if DEBUG_DV_FORWARD
-      GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
-      GNUNET_hash_to_enc (&recipient->hashPubKey, &encRecipient);
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "%s: I AM:\n%s\nAsked to send message to unknown peer:\n%s\n\n",
-                     &shortID, (char *) &encMe, (char *) &encRecipient);
-#endif
-      return GNUNET_NO;
-    }
 
+  return send_message (recipient, coreAPI->my_identity, message, importance,
+                       maxdelay);
 }
 
 /*
