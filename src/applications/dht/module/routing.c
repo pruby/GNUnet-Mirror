@@ -288,7 +288,8 @@ route_result (const GNUNET_HashCode * key,
       result->header.type = htons (GNUNET_P2P_PROTO_DHT_RESULT);
       result->type = htonl (type);
       result->hop_count = htonl (0);
-      result->network_size = htonl (GNUNET_DV_DHT_estimate_network_diameter ());
+      result->network_size =
+        htonl (GNUNET_DV_DHT_estimate_network_diameter ());
       result->key = *key;
       memcpy (&result[1], data, size);
     }
@@ -360,9 +361,8 @@ route_result (const GNUNET_HashCode * key,
                              GNUNET_GE_DEVELOPER,
                              "Routing result to `%s'\n", &enc);
 #endif
-              dvapi->dv_send(&pos->source,
-                             &result->header, DV_DHT_PRIORITY,
-                             DV_DHT_DELAY);
+              dvapi->dv_send (&pos->source,
+                              &result->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
 
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
@@ -402,7 +402,8 @@ route_result (const GNUNET_HashCode * key,
  */
 static int
 add_route (const GNUNET_PeerIdentity * sender,
-           GNUNET_ResultProcessor handler, void *cls, const DV_DHT_MESSAGE * get)
+           GNUNET_ResultProcessor handler, void *cls,
+           const DV_DHT_MESSAGE * get)
 {
   DV_DHTQueryRecord *q;
   unsigned int i;
@@ -575,8 +576,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_DEVELOPER,
                      "Forwarding DV_DHT GET request to peer `%s'.\n", &enc);
 #endif
-      dvapi->dv_send(&next[j], &aget.header, DV_DHT_PRIORITY,
-                     DV_DHT_DELAY);
+      dvapi->dv_send (&next[j], &aget.header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       j++;
     }
   return GNUNET_OK;
@@ -656,8 +656,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_DEVELOPER,
                      "Forwarding DV_DHT PUT request to peer `%s'.\n", &enc);
 #endif
-      dvapi->dv_send (&next[j], &aput->header, DV_DHT_PRIORITY,
-                                DV_DHT_DELAY);
+      dvapi->dv_send (&next[j], &aput->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       j++;
     }
   GNUNET_free (aput);
@@ -730,8 +729,8 @@ handle_result (const GNUNET_PeerIdentity * sender,
  */
 int
 GNUNET_DV_DHT_get_start (const GNUNET_HashCode * key,
-                      unsigned int type, GNUNET_ResultProcessor handler,
-                      void *cls)
+                         unsigned int type, GNUNET_ResultProcessor handler,
+                         void *cls)
 {
   DV_DHT_MESSAGE get;
 #if DEBUG_ROUTING
@@ -763,8 +762,8 @@ GNUNET_DV_DHT_get_start (const GNUNET_HashCode * key,
  */
 int
 GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
-                     unsigned int type, GNUNET_ResultProcessor handler,
-                     void *cls)
+                        unsigned int type, GNUNET_ResultProcessor handler,
+                        void *cls)
 {
   unsigned int i;
   struct DV_DHT_Source_Route *pos;
@@ -820,7 +819,7 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
  */
 int
 GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
-                unsigned int type, unsigned int size, const char *data)
+                   unsigned int type, unsigned int size, const char *data)
 {
   DV_DHT_MESSAGE *put;
 

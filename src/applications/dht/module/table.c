@@ -356,9 +356,9 @@ inverse_distance (const GNUNET_HashCode * target,
  */
 int
 GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
-                        const GNUNET_HashCode * target,
-                        const GNUNET_PeerIdentity * blocked,
-                        unsigned int blocked_size)
+                           const GNUNET_HashCode * target,
+                           const GNUNET_PeerIdentity * blocked,
+                           unsigned int blocked_size)
 {
   unsigned long long total_distance;
   unsigned long long selected;
@@ -452,9 +452,9 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
   if (disco != NULL)
     {
       dvapi->dv_send (other,
-                                &disco->header,
-                                GNUNET_EXTREME_PRIORITY / 4,
-                                MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+                      &disco->header,
+                      GNUNET_EXTREME_PRIORITY / 4,
+                      MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
       return;
     }
   pc = total_peers;
@@ -487,7 +487,7 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
   disco->header.size =
     htons (pc * sizeof (GNUNET_PeerIdentity) + sizeof (P2P_DV_DHT_Discovery));
   dvapi->dv_send (other, &disco->header, 0,
-                            MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+                  MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
   GNUNET_free (disco);
 }
 
@@ -512,13 +512,13 @@ maintain_dht_job (void *unused)
       disc.header.size = htons (sizeof (P2P_DV_DHT_Discovery));
       disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
       disc.space_available = -1;        /* FIXME */
-      dvapi->dv_connections_iterate(&broadcast_dht_discovery_prob, &disc);
-      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, &disc);*/
+      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, &disc);
+      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, &disc); */
     }
   else
     {
-      dvapi->dv_connections_iterate(&broadcast_dht_discovery_prob, NULL);
-      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, NULL);*/
+      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
+      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, NULL); */
     }
 }
 
@@ -639,8 +639,8 @@ considerPeer (const GNUNET_PeerIdentity * sender,
       ask.header.type = htons (sizeof (GNUNET_P2P_PROTO_DHT_ASK_HELLO));
       ask.reserved = 0;
       ask.peer = *peer;
-      dvapi->dv_send (sender, &ask.header, 0, /* FIXME: priority */
-                                5 * GNUNET_CRON_SECONDS);
+      dvapi->dv_send (sender, &ask.header, 0,   /* FIXME: priority */
+                      5 * GNUNET_CRON_SECONDS);
       return;
     }
   GNUNET_free (hello);
@@ -731,8 +731,7 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
                               GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
-  dvapi->dv_send (sender, &hello->header, 0,
-                            5 * GNUNET_CRON_SECONDS);
+  dvapi->dv_send (sender, &hello->header, 0, 5 * GNUNET_CRON_SECONDS);
   GNUNET_free (hello);
   return GNUNET_OK;
 }
@@ -791,7 +790,8 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
       stat_dht_discoveries =
         stats->create (gettext_noop ("# dv_dht discovery messages received"));
       stat_dht_route_looks =
-        stats->create (gettext_noop ("# dv_dht route host lookups performed"));
+        stats->
+        create (gettext_noop ("# dv_dht route host lookups performed"));
       stat_dht_advertisements =
         stats->create (gettext_noop ("# dv_dht discovery messages sent"));
     }

@@ -52,8 +52,8 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  */
 static struct GNUNET_DV_DHT_GetHandle *
 dv_dht_get_async_start (unsigned int type,
-                     const GNUNET_HashCode * key,
-                     GNUNET_ResultProcessor callback, void *cls)
+                        const GNUNET_HashCode * key,
+                        GNUNET_ResultProcessor callback, void *cls)
 {
   struct GNUNET_DV_DHT_GetHandle *ret;
 
@@ -77,7 +77,7 @@ static int
 dv_dht_get_async_stop (struct GNUNET_DV_DHT_GetHandle *record)
 {
   GNUNET_DV_DHT_get_stop (&record->key, record->type, record->callback,
-                       record->cls);
+                          record->cls);
   GNUNET_free (record);
   return GNUNET_OK;
 }

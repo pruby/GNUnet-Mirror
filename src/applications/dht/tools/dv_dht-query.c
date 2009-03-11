@@ -51,7 +51,7 @@ struct GNUNET_DV_DHT_Context *ctx;
  */
 static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DV_DHT table.")), /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DV_DHT table.")),      /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'T', "timeout", "TIME",
@@ -84,7 +84,7 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
                  "Issuing `%s(%s)' command.\n", "get", key);
 #endif
   ret = GNUNET_DV_DHT_get_start (ctx, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &hc);
+                                 &hc);
   if (ret == NULL)
     {
       printf ("`%s(%s)' failed.\n", "get", key);
@@ -107,8 +107,9 @@ do_put (struct GNUNET_ClientServerConnection *sock,
                  _("Issuing `%s(%s,%s)' command.\n"), "put", key, value);
 #endif
   if (GNUNET_OK ==
-      GNUNET_DV_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                      strlen (value), value))
+      GNUNET_DV_DHT_put (cfg, ectx, &hc,
+                         GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                         strlen (value), value))
     {
       printf ("`%s(%s,%s)' succeeded\n", "put", key, value);
     }

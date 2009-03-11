@@ -35,16 +35,16 @@
  * Start a DV_DHT get operation.
  */
 int GNUNET_DV_DHT_get_start (const GNUNET_HashCode * key,
-                          unsigned int type, GNUNET_ResultProcessor handler,
-                          void *cls);
+                             unsigned int type,
+                             GNUNET_ResultProcessor handler, void *cls);
 
 /**
  * Stop a DV_DHT get operation (prevents calls to
  * the given iterator).
  */
 int GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
-                         unsigned int type, GNUNET_ResultProcessor handler,
-                         void *cls);
+                            unsigned int type, GNUNET_ResultProcessor handler,
+                            void *cls);
 
 /**
  * Perform a DV_DHT put operation.  Note that PUT operations always
@@ -54,7 +54,8 @@ int GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
  * @param expiration_time absolute expiration time
  */
 int GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
-                    unsigned int type, unsigned int size, const char *data);
+                       unsigned int type, unsigned int size,
+                       const char *data);
 
 /**
  * Initialize routing DV_DHT component.

@@ -197,10 +197,10 @@ main (int argc, const char **argv)
           GNUNET_hash (buf, strlen (buf), &key);
           memset (value, 'A' + i, sizeof (value));
           CHECK (GNUNET_OK == GNUNET_DV_DHT_put (cfg,
-                                              ectx,
-                                              &key,
-                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                              sizeof (value), value));
+                                                 ectx,
+                                                 &key,
+                                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                                 sizeof (value), value));
         }
       printf ("\n");
       /* get loop */
@@ -212,7 +212,8 @@ main (int argc, const char **argv)
           GNUNET_GC_set_configuration_value_string (cfg,
                                                     ectx, "NETWORK", "HOST",
                                                     buf);
-          dctx = GNUNET_DV_DHT_context_create (cfg, ectx, &result_callback, &c);
+          dctx =
+            GNUNET_DV_DHT_context_create (cfg, ectx, &result_callback, &c);
           printf ("Peer %d gets key", i);
           fflush (stdout);
           for (j = 0; j < NUM_PEERS; j++)
@@ -227,8 +228,8 @@ main (int argc, const char **argv)
               fflush (stdout);
               last = found;
               get1 = GNUNET_DV_DHT_get_start (dctx,
-                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                           &key);
+                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                              &key);
               GNUNET_GE_ASSERT (NULL, get1 != NULL);
               for (k = 0; k < NUM_ROUNDS; k++)
                 {

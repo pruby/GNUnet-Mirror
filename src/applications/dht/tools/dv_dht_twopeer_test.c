@@ -124,10 +124,10 @@ put_at_peer (struct PeerData *pd, const char *keys, int val)
   GNUNET_hash (keys, 5, &key);
   memset (value, val, sizeof (value));
   CHECK (GNUNET_OK == GNUNET_DV_DHT_put (pd->cfg,
-                                      NULL,
-                                      &key,
-                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      sizeof (value), value));
+                                         NULL,
+                                         &key,
+                                         GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                         sizeof (value), value));
 FAILURE:
   return ret;
 }
@@ -144,8 +144,8 @@ get_at_peer (struct PeerData *pd, const char *keys, int want)
   pd->peercount = 10;
   pd->expect_i = want;
   CHECK (NULL != (get = GNUNET_DV_DHT_get_start (pd->ctx_peer,
-                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                              &key)));
+                                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                                 &key)));
   for (k = 0; k < NUM_ROUNDS; k++)
     {
       if (0 == (k % 10))
