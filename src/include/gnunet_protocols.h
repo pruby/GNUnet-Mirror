@@ -307,6 +307,23 @@ extern "C"
 #define GNUNET_CS_PROTO_VPN_TRUST 71
 
 
+/* ********** CS DV DHT application messages ********** */
+
+/**
+ * Client to CS or CS to client: get from table (starts request)
+ */
+#define GNUNET_CS_PROTO_DV_DHT_REQUEST_GET      75
+
+/**
+ * Client to CS or CS to client: put into table
+ */
+#define GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT      76
+/**
+ * Client to CS: end get from table (ends request)
+ */
+#define GNUNET_CS_PROTO_DV_DHT_REQUEST_GET_END      77
+
+
 #define GNUNET_CS_PROTO_MAX_USED 80
 
 /* ******** node-to-node (p2p) messages (over anything) ********* */
