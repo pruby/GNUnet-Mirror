@@ -28,6 +28,12 @@ SUBDIRS = lib $(textdir) . $(curses_dir) $(gtk_dir) $(qt_dir) $(cocoa_dir) .
 
 plugindir = $(libdir)/GNUnet
 
+if MACOSX
+if WANT_FRAMEWORK
+ MACOSXTOOL = gnunet-macosx-tool
+endif
+endif
+
 if MINGW
  WINTOOL = gnunet-win-tool
 endif
@@ -36,12 +42,20 @@ bin_PROGRAMS = \
  gnunet-setup \
  $(WINTOOL)
 
+libexec_PROGRAMS = \
+  $(MACOSXTOOL)
+
 gnunet_setup_SOURCES = \
  gnunet-setup.c
 gnunet_setup_LDADD = \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(GN_LIBINTL)
+
+gnunet_macosx_tool_SOURCES = \
+ gnunet-macosx-tool.c
+gnunet_macosx_tool_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 gnunet_win_tool_SOURCE = \
  gnunet-win-tool.c

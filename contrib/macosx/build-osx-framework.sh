@@ -514,6 +514,7 @@ build_gnunet()
 			LIBCURL="${LIBCURL}"			\
 			./configure "${ARCH_HOSTSETTING}"	\
 			--prefix="${FW_DIR}"			\
+			--libexecdir="${FW_DIR}/Resources"	\
 			--with-user-home-dir="~/Library/GNUnet"	\
 			--with-daemon-home-dir="/Library/GNUnet"	\
 			--with-user-config-dir="~/Library/Preferences"	\
@@ -891,6 +892,10 @@ done
 for tfn in $(find ./bin -name 'gnunet*.scm')
 do
 	install_file_to_framework "$tfn"
+done
+for tfn in Resources/gnunet-macosx-tool
+do
+	install_executable_to_framework "$tfn"
 done
 for tfn in lib/libgnunet*dylib
 do
