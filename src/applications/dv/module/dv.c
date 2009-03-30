@@ -133,6 +133,54 @@ connection_iterate_callback (const GNUNET_HashCode * key, void *value,
 }
 
 
+/*
+ * A callback for deleting expired nodes from heaps...
+ *
+ * neighbor - the peer we may delete
+ * root - the root of the heap
+ * cls - unused
+ */
+static int
+delete_expired_callback (struct GNUNET_dv_neighbor *neighbor,
+                 struct GNUNET_dv_heap *root, void *cls)
+{
+  GNUNET_CronTime now;
+
+  now = GNUNET_get_time();
+
+  if (now - neighbor->last_activity > GNUNET_DV_PEER_EXPIRATION_TIME)
+  {
+    GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
+    GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
+    GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
+                                      &neighbor->neighbor->hashPubKey);
+    GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
+                                      &neighbor->neighbor->hashPubKey);
+
+    GNUNET_free (neighbor->neighbor);
+    if (neighbor->referrer != NULL)
+      GNUNET_free (neighbor->referrer);
+    GNUNET_free (neighbor);
+  }
+
+  return GNUNET_OK;
+}
+
+
+/**
+ * Cron job to maintain dv routing table.
+ */
+static void
+maintain_dv_job (void *unused)
+{
+  GNUNET_mutex_lock (ctx->dvMutex);
+  GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
+                           ctx->neighbor_max_heap.root,
+                           &delete_expired_callback, NULL);
+
+  GNUNET_mutex_lock (ctx->dvMutex);
+}
+
 /**
  * Calls a given method for each dv connected host.
  *
@@ -428,6 +476,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 {
   int ret;
   struct GNUNET_dv_neighbor *neighbor;
+  GNUNET_CronTime now;
 #if DEBUG_DV
   GNUNET_EncName encPeer;
   GNUNET_EncName encReferrer;
@@ -453,7 +502,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
     }
 #endif
   ret = GNUNET_OK;
-
+  now = GNUNET_get_time();
   GNUNET_mutex_lock (ctx->dvMutex);
   if (cost > ctx->fisheye_depth)
     {
@@ -492,6 +541,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
     {
       neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
       neighbor->cost = cost;
+      neighbor->last_activity = now;
       neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
 
@@ -525,6 +575,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
               sizeof (GNUNET_PeerIdentity)) == 0))))
         {
           neighbor->cost = cost;
+          neighbor->last_activity = now;
           GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
           GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
         }
@@ -542,6 +593,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
 
           neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
           neighbor->cost = cost;
+          neighbor->last_activity = now;
           neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
           memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
 
@@ -642,6 +694,7 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
     {
       neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
       neighbor->cost = cost;
+      neighbor->last_activity = GNUNET_get_time();
       neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
       GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
@@ -654,6 +707,7 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 
       if (neighbor->cost != cost)
         {
+          neighbor->last_activity = GNUNET_get_time();
           neighbor->cost = cost;
           /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
              neighbor,
@@ -673,8 +727,13 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 
 }
 
+
 /*
- * A callback for deleting nodes from heaps...
+ * A callback for deleting matching nodes from heaps...
+ *
+ * neighbor - the peer we may delete
+ * root - the root of the heap
+ * cls - the peer identity to compare neighbor's identity to
  */
 static int
 delete_callback (struct GNUNET_dv_neighbor *neighbor,
@@ -958,6 +1017,9 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   sendingThread =
     GNUNET_thread_create (&neighbor_send_thread, &coreAPI, 1024 * 1);
 
+  GNUNET_cron_add_job (coreAPI->cron, &maintain_dv_job, GNUNET_DV_MAINTAIN_FREQUENCY,
+                       GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
+
   return ok;
 }
 
@@ -976,6 +1038,8 @@ done_module_dv ()
                                                     NULL);
   coreAPI->peer_disconnect_notification_unregister (&peer_connect_handler,
                                                     NULL);
+
+  GNUNET_cron_del_job(coreAPI->cron, &maintain_dv_job, GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
 
   GNUNET_mutex_destroy (ctx->dvMutex);
   coreAPI = NULL;
