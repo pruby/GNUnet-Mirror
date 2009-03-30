@@ -27,8 +27,6 @@
 #include "remote.h"
 #include "remotetopologies.c"
 
-#define VERBOSE GNUNET_NO
-
 /* Yes this is ugly, but for now it is nice to
  * have a linked list and an array
  */
@@ -83,7 +81,9 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
    * if this is contested by anyone, please mark it here as well as how it should be
    * done, and I can change it everywhere else by example! NE
    */
+#if VERBOSE
   fprintf (stderr, _("cp command is : %s \n"), cmd);
+#endif
   system (cmd);
 
   GNUNET_free (cmd);
@@ -107,7 +107,9 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                 username, hostname, gnunetd_home, remote_config_path,
                 configFileName);
     }
+#if VERBOSE
   fprintf (stderr, _("exec command is : %s \n"), cmd);
+#endif
 
   system (cmd);
   GNUNET_free (cmd);
@@ -132,8 +134,9 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                 configFileName);
 
     }
-
+#if VERBOSE
   fprintf (stderr, _("exec command is : %s \n"), cmd);
+#endif
 
   system (cmd);
 
@@ -172,13 +175,17 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
       snprintf (cmd, length + 1, "ssh %s@%s cat %s", tokill->username,
                 tokill->hostname, tokill->pid);
     }
+#if VERBOSE
   fprintf (stderr, _("exec command is : %s \n"), cmd);
+#endif
 
   output = popen (cmd, "r");
   GNUNET_free (cmd);
   if (fscanf (output, "%d", &pid) == 1)
     {
-      fprintf (stderr, "Got pid %d\n", pid);
+#if VERBOSE
+      fprintf (stderr, _("Got pid %d\n"), pid);
+#endif
     }
   else
     {
@@ -201,8 +208,9 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
                 tokill->username, tokill->hostname, pid);
 
     }
-
+#if VERBOSE
   fprintf (stderr, _("exec command is : %s \n"), cmd);
+#endif
 
   system (cmd);
 
@@ -708,25 +716,35 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   switch (type)
     {
     case GNUNET_REMOTE_CLIQUE:
-      fprintf (stderr, "Creating clique topology\n");
+#if VERBOSE
+      fprintf (stderr, _("Creating clique topology\n"));
+#endif
       ret = GNUNET_REMOTE_connect_clique (head, dotOutFile);
       break;
     case GNUNET_REMOTE_SMALL_WORLD:
-      fprintf (stderr, "Creating small world topology\n");
+#if VERBOSE
+      fprintf (stderr, _("Creating small world topology\n"));
+#endif
       ret = GNUNET_SYSERR;
       break;
     case GNUNET_REMOTE_RING:
-      fprintf (stderr, "Creating ring topology\n");
+#if VERBOSE
+      fprintf (stderr, _("Creating ring topology\n"));
+#endif
       ret = GNUNET_REMOTE_connect_ring (head, dotOutFile);
       break;
     case GNUNET_REMOTE_2D_TORUS:
-      fprintf (stderr, "Creating 2d torus topology\n");
+#if VERBOSE
+      fprintf (stderr, _("Creating 2d torus topology\n"));
+#endif
       ret =
         GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array,
                                         dotOutFile);
       break;
     case GNUNET_REMOTE_ERDOS_RENYI:
-      fprintf (stderr, "Creating Erdos-Renyi topology\n");
+#if VERBOSE
+      fprintf (stderr, _("Creating Erdos-Renyi topology\n"));
+#endif
       ret = GNUNET_REMOTE_connect_erdos_renyi (percentage, head, dotOutFile);
       break;
     case GNUNET_REMOTE_NONE:
@@ -743,13 +761,17 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       while (pos != NULL)
         {
           /* Printing out the friends isn't necessary, but it's nice */
+          #if VERBOSE
           fprintf (stderr, _("Friend list of %s:%d\n"), pos->hostname,
                    pos->port);
+          #endif
           temp_friend_handle = fopen ("friend.temp", "wt");
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
+            #if VERBOSE
               fprintf (stderr, "\t%s\n", (const char *) friend_pos->nodeid);
+            #endif
               fprintf (temp_friend_handle, "%s\n",
                        (const char *) friend_pos->nodeid);
               friend_pos = friend_pos->next;
@@ -776,9 +798,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                         pos->username, pos->hostname,
                         pos->remote_friend_file_path);
             }
-
+#if VERBOSE
           fprintf (stderr, _("scp command for friend file copy is : %s \n"),
                    cmd);
+#endif
           system (cmd);
           GNUNET_free (cmd);
           pos = pos->next;
@@ -799,10 +822,12 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
+#if VERBOSE
               fprintf (stderr, _("connecting peer %s:%d to peer %s:%d\n"),
                        pos->hostname, pos->port,
                        friend_pos->hostentry->hostname,
                        friend_pos->hostentry->port);
+#endif
               ret = GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
                                                    friend_pos->hostentry->
                                                    hostname,
@@ -818,7 +843,9 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
     }
   else
     {
-      fprintf (stderr, "connect didn't return well!\n");
+#if VERBOSE
+      fprintf (stderr, _("connect didn't return well!\n"));
+#endif
     }
 
 

@@ -25,8 +25,6 @@
  */
 #include "remote.h"
 
-#define DEBUG GNUNET_YES
-
 static int
 printInfo (void *data,
            const GNUNET_PeerIdentity *
@@ -72,8 +70,10 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
                                                      &node2))
             {
               temp_rand = ((double) RANDOM () / RAND_MAX);
-              fprintf (stderr, "rand is %f probability is %f\n", temp_rand,
+#if VERBOSE
+              fprintf (stderr, _("rand is %f probability is %f\n"), temp_rand,
                        probability);
+#endif
               if (temp_rand < probability)
                 {
                   node1temp =
@@ -278,9 +278,11 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
           toggle++;
         }
     }
+#if VERBOSE
   fprintf (stderr,
            _("Connecting nodes in 2d torus topology: %u rows %u columns\n"),
            rows, cols);
+#endif
   /* Rows and columns are all sorted out, now iterate over all nodes and connect each
    * to the node to its right and above.  Once this is over, we'll have our torus!
    * Special case for the last node (if the rows and columns are not equal), connect
@@ -295,8 +297,9 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
         nodeToConnect = rows * cols - cols;
       else
         nodeToConnect = i - cols + 1;
-
-      fprintf (stderr, "connecting node %u to %u\n", i, nodeToConnect);
+#if VERBOSE
+      fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
+#endif
       GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname,
                                              list_as_array[i]->port,
                                              list_as_array
@@ -332,7 +335,9 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
 
       if (nodeToConnect < number_of_daemons)
         {
-          fprintf (stderr, "connecting node %u to %u\n", i, nodeToConnect);
+#if VERBOSE
+          fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
+#endif
           GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname,
                                                  list_as_array[i]->port,
                                                  list_as_array
@@ -414,18 +419,16 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
   GNUNET_snprintf (host, 128, "%s:%u", hostname1, port1);
   GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
                                             host);
-  if (DEBUG == GNUNET_YES)
-    {
-      fprintf (stderr, "Setting config 1 to host %s\n", host);
-    }
+#if VERBOSE
+  fprintf (stderr, _("Setting config 1 to host %s\n"), host);
+#endif
   GNUNET_snprintf (host, 128, "%s:%u", hostname2, port2);
   GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
                                             host);
 
-  if (DEBUG == GNUNET_YES)
-    {
-      fprintf (stderr, "Setting config 2 to host %s\n", host);
-    }
+#if VERBOSE
+      fprintf (stderr, _("Setting config 2 to host %s\n"), host);
+#endif
 
   if ((GNUNET_OK ==
        GNUNET_wait_for_daemon_running (NULL, cfg1, 30 * GNUNET_CRON_SECONDS))
@@ -436,7 +439,9 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
       sock1 = GNUNET_client_connection_create (NULL, cfg1);
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
       ret = -20;
+#if VERBOSE
       fprintf (stderr, _("Waiting for peers to connect"));
+#endif
       h1 = NULL;
       h2 = NULL;
       while ((ret++ < -1) && (GNUNET_shutdown_test () == GNUNET_NO))
@@ -478,16 +483,17 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
 
       if (ret != GNUNET_OK)
         {
+#if VERBOSE
           fprintf (stderr,
-                   "\nFailed to connect `%s' and `%s'\n",
+                   _("\nFailed to connect `%s' and `%s'\n"),
                    (const char *) host1entry, (const char *) host2entry);
-          fprintf (stderr, "Connections of `%s':\n",
+          fprintf (stderr, _("Connections of `%s':\n"),
                    (const char *) host1entry);
           GNUNET_IDENTITY_request_peer_infos (sock1, &printInfo, NULL);
-          fprintf (stderr, "Connections of `%s':\n",
+          fprintf (stderr, _("Connections of `%s':\n"),
                    (const char *) host2entry);
           GNUNET_IDENTITY_request_peer_infos (sock2, &printInfo, NULL);
-
+#endif
         }
       if (dotOutFile != NULL)
         {
@@ -498,13 +504,17 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
           fprintf (dotOutFile, "%s;\n", buf);
           GNUNET_free (buf);
         }
+#if VERBOSE
       fprintf (stderr, "%s\n", ret == GNUNET_OK ? "Connected nodes." : "?");
+#endif
       GNUNET_client_connection_destroy (sock1);
       GNUNET_client_connection_destroy (sock2);
     }
   else
     {
-      fprintf (stderr, "Failed to establish connection with peers.\n");
+#if VERBOSE
+      fprintf (stderr, _("Failed to establish connection with peers.\n"));
+#endif
     }
   GNUNET_GC_free (cfg1);
   GNUNET_GC_free (cfg2);
@@ -571,7 +581,9 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
     }
   else
     {
+#if VERBOSE
       fprintf (stderr, _("Failed to establish connection with peers.\n"));
+#endif
     }
   GNUNET_GC_free (cfg1);
   GNUNET_GC_free (cfg2);
@@ -624,7 +636,9 @@ GNUNET_REMOTE_get_daemon_information (char *hostname, unsigned short port)
     }
   else
     {
+#if VERBOSE
       fprintf (stderr, _("Failed to establish connection with peers.\n"));
+#endif
     }
   GNUNET_GC_free (cfg1);
   if (ret != GNUNET_SYSERR)
