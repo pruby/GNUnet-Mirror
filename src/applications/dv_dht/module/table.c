@@ -443,7 +443,7 @@ find_closest_peer (GNUNET_PeerIdentity * set,
                         const GNUNET_HashCode * target)
 {
   unsigned int largest_distance;
-  unsigned int distance;
+  unsigned int total_distance;
   unsigned int bc;
   unsigned int ec;
 
