@@ -32,7 +32,8 @@ gnunet_dvdht_query_LDADD =  \
 check_PROGRAMS = \
   dv_dht_loopback_test \
   dv_dht_twopeer_test \
-  dv_dht_multipeer_test 
+  dv_dht_multipeer_test \
+  dv_dht_multi_topology_test
 
 TESTS = $(check_PROGRAMS)
 
@@ -59,6 +60,17 @@ dv_dht_multipeer_test_LDADD = \
   $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
   $(top_builddir)/src/util/libgnunetutil.la 
+  
+dv_dht_multi_topology_test_SOURCES = \
+  dv_dht_multi_topology_test.c 
+dv_dht_multi_topology_test_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
+  $(top_builddir)/src/applications/testing/libgnunetremoteapi.la \
+  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
-  check.conf 
+  check.conf \
+  dv_test.conf \
+  gnunetd_dv.conf

@@ -33,7 +33,7 @@
  * - modules:
  *   + table.c: DV_DHT-peer table, peer discovery cron jobs;
  *     code tries to fill table "as much as possible" over time;
- *     TODO: expose and improve reliabily metrics (to be added later)???
+ *     TODO: expose and improve reliability metrics (to be added later)???
  *     TODO: better randomized neighbor selection in DV_DHT_select_peer???
  *     TODO: add callback for discovery-message padding (use core callback
  *           for extra-available bandwidth)
@@ -434,6 +434,47 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
   return GNUNET_SYSERR;
 }
 
+
+/*
+ * Find the actual, closest peer in our buckets to target
+ */
+int
+find_closest_peer (GNUNET_PeerIdentity * set,
+                        const GNUNET_HashCode * target)
+{
+  unsigned int largest_distance;
+  unsigned int distance;
+  unsigned int bc;
+  unsigned int ec;
+
+  const PeerBucket *bucket;
+  const PeerInfo *pi;
+  const PeerInfo *chosen;
+  chosen = NULL;
+  GNUNET_mutex_lock (lock);
+  largest_distance = 0;
+  total_distance = 0;
+  for (bc = 0; bc < bucketCount; bc++)
+    {
+      bucket = &buckets[bc];
+      for (ec = 0; ec < bucket->peers_size; ec++)
+        {
+          pi = bucket->peers[ec];
+          if (inverse_distance (target, &pi->id.hashPubKey) > largest_distance)
+            chosen = bucket->peers[ec];
+        }
+    }
+
+  GNUNET_mutex_unlock (lock);
+  if ((largest_distance > 0) && (chosen != NULL))
+  {
+    *set = chosen->id;
+    return GNUNET_OK;
+  }
+  else
+    return GNUNET_SYSERR;
+}
+
 /**
  * Send a discovery message to the other peer.
  *
@@ -513,12 +554,10 @@ maintain_dht_job (void *unused)
       disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
       disc.space_available = -1;        /* FIXME */
       dvapi->dv_connections_iterate(&broadcast_dht_discovery_prob, &disc);
-      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, &disc);*/
     }
   else
     {
       dvapi->dv_connections_iterate(&broadcast_dht_discovery_prob, NULL);
-      /*coreAPI->p2p_connections_iterate (&broadcast_dht_discovery_prob, NULL);*/
     }
 }
 

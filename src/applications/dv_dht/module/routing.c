@@ -172,7 +172,7 @@ typedef struct DV_DHTQueryRecord
   DV_DHT_MESSAGE get;
 
   /**
-   * Hashcodes of the results that we have send back
+   * Hashcodes of the results that we have sent back
    * so far.
    */
   GNUNET_HashCode *results;
@@ -812,7 +812,7 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
 /**
  * Perform a DV_DHT put operation.  Note that PUT operations always
  * expire after a period of time and the client is responsible for
- * doing periodic refreshs.  The given expiration time is ONLY used to
+ * doing periodic refreshes.  The given expiration time is ONLY used to
  * ensure that the datum is certainly deleted by that time (it maybe
  * deleted earlier).
  *
