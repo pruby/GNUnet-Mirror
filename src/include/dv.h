@@ -33,6 +33,8 @@
 #define GNUNET_DV_MAX_COST -1
 #define GNUNET_DV_MAX_TABLE_SIZE -1
 #define GNUNET_DV_DEFAULT_SEND_INTERVAL 2000
+#define GNUNET_DV_PEER_EXPIRATION_TIME 60 * GNUNET_CRON_SECONDS
+#define GNUNET_DV_MAINTAIN_FREQUENCY 20 * GNUNET_CRON_SECONDS
 
 /**
  * Message that gets sent between nodes updating dv infos
@@ -103,6 +105,11 @@ struct GNUNET_dv_neighbor
    * Cost to neighbor, used for actual distance vector computations
    */
   unsigned int cost;
+
+  /**
+   * Last time we received routing information from this peer
+   */
+  GNUNET_CronTime last_activity;
 };
 
 #endif
