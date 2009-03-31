@@ -185,8 +185,8 @@ main (int argc, char **argv)
   sock = GNUNET_client_connection_create (NULL, peers->config);
 
   /* 'slow' pass: wait for bandwidth negotiation! */
-  printf (_("Sleeping 55 seconds to let topology stabilize...\n"));
-  sleep (55);
+  printf (_("Sleeping 15 seconds to let topology stabilize...\n"));
+  sleep (15);
   printf (_("Running benchmark...\n"));
   printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
           (char *) &peer2enc);

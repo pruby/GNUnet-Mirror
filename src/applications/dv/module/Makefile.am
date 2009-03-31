@@ -19,8 +19,7 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_dv_tbench.la
 
 libgnunetmodule_dv_la_SOURCES = \
-  dv.c heap.c \
-  service.c
+  dv.c heap.c 
 libgnunetmodule_dv_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunetmodule_dv_la_LIBADD = \

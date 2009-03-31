@@ -29,7 +29,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
 #include "gnunet_core.h"
-#include "gnunet_dv_lib.h"
+#include "gnunet_dv_service.h"
 #include "dv.h"
 #include "heap.h"
 
@@ -103,6 +103,28 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 }
 
 /*
+ * Deletes a neighbor from the max and min heaps and
+ * from the extended neighbor hash map.  Does not delete
+ * from the directly connected neighbor list, because
+ * we like to keep those around.
+ */
+static int
+delete_neighbor(struct GNUNET_dv_neighbor *neighbor)
+{
+    GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
+    GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
+    GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
+                                      &neighbor->neighbor->hashPubKey);
+
+    GNUNET_free (neighbor->neighbor);
+    if (neighbor->referrer != NULL)
+      GNUNET_free (neighbor->referrer);
+    GNUNET_free (neighbor);
+
+    return GNUNET_OK;
+}
+
+/*
  * Prints out the known neighbor routing tables.
  */
 static void
@@ -163,20 +185,11 @@ delete_expired_callback (struct GNUNET_dv_neighbor *neighbor,
                  "%s: Entering delete_expired_callback, now is %llu, last_activity is %llu\nDifference is %llu, Max is %llu\nNode to remove is %s\n",
                  &shortID, now, neighbor->last_activity,now - neighbor->last_activity, GNUNET_DV_PEER_EXPIRATION_TIME, (char *)&encToDel);
 #endif
-    GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
-    GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
-    GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
-                                      &neighbor->neighbor->hashPubKey);
-
-    GNUNET_free (neighbor->neighbor);
-    if (neighbor->referrer != NULL)
-      GNUNET_free (neighbor->referrer);
-    GNUNET_free (neighbor);
+    delete_neighbor(neighbor);
   }
 
   return GNUNET_OK;
 }
-
 
 /**
  * Cron job to maintain dv routing table.
@@ -536,15 +549,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
                 (neighbor->referrer, referrer,
                  sizeof (GNUNET_PeerIdentity)) == 0)))
             {
-              GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
-              GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
-
-              GNUNET_free (neighbor->neighbor);
-              if (neighbor->referrer != NULL)
-                GNUNET_free (neighbor->referrer);
-              GNUNET_free (neighbor);
-              GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
-                                                &peer->hashPubKey);
+              delete_neighbor(neighbor);
             }
         }
       ret = GNUNET_NO;
@@ -595,16 +600,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
         }
       else if (neighbor->cost > cost)
         {
-          GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
-          GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
-
-          GNUNET_free (neighbor->neighbor);
-          if (neighbor->referrer != NULL)
-            GNUNET_free (neighbor->referrer);
-          GNUNET_free (neighbor);
-          GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
-                                            &peer->hashPubKey);
-
+          delete_neighbor(neighbor);
           neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
           neighbor->cost = cost;
           neighbor->last_activity = now;
@@ -734,9 +730,6 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
         {
           neighbor->last_activity = GNUNET_get_time();
           neighbor->cost = cost;
-          /*GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
-             neighbor,
-             GNUNET_MultiHashMapOption_REPLACE); */
         }
 
     }
@@ -792,15 +785,7 @@ delete_callback (struct GNUNET_dv_neighbor *neighbor,
                                                   (GNUNET_PeerIdentity)) ==
                                                  0)))
     {
-      GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
-      GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
-      GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
-                                        &neighbor->neighbor->hashPubKey);
-
-      GNUNET_free (neighbor->neighbor);
-      if (neighbor->referrer != NULL)
-        GNUNET_free (neighbor->referrer);
-      GNUNET_free (neighbor);
+      delete_neighbor(neighbor);
     }
   return GNUNET_OK;
 }
@@ -849,7 +834,8 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
           GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
                                    ctx->neighbor_max_heap.root,
                                    &delete_callback, (void *) peer);
-
+          /* Note that we do not use delete_neighbor here because
+           * we are deleting from the direct neighbor list! */
           GNUNET_free (neighbor->neighbor);
           if (neighbor->referrer != NULL)
             GNUNET_free (neighbor->referrer);
@@ -972,15 +958,21 @@ neighbor_send_thread (void *rcls)
 }
 
 /*
- * Initializes the DV module
+ * Initializes and provides the fisheye DV service
+ *
+ * @param capi the core API
+ * @return NULL on errors, DV_API otherwise
  */
-int
-initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_DV_ServiceAPI *
+provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
   unsigned long long max_hosts;
   GNUNET_EncName encMe;
+  static GNUNET_DV_ServiceAPI api;
 
+  api.dv_send = &GNUNET_DV_send_message;
+  api.dv_connections_iterate = &GNUNET_DV_connection_iterate_peers;
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
 
   ctx->neighbor_min_heap.type = GNUNET_DV_MIN_HEAP;
@@ -1065,14 +1057,14 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_cron_add_job (coreAPI->cron, &maintain_dv_job, GNUNET_DV_MAINTAIN_FREQUENCY,
                        GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
 
-  return ok;
+  return &api;
 }
 
 /*
  * Shuts down and cleans up the DV module
  */
 void
-done_module_dv ()
+release_module_dv ()
 {
   void *unused;
   ctx->closing = 1;
