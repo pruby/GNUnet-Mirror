@@ -33,6 +33,7 @@
 #include "dv.h"
 #include "heap.h"
 
+#define DEBUG_DV_MAINTAIN GNUNET_YES
 #define DEBUG_DV GNUNET_NO
 #define DEBUG_DV_FORWARD GNUNET_NO
 /* How long to allow a message to be delayed */
@@ -70,9 +71,10 @@ static struct GNUNET_DV_Context *ctx;
 static struct GNUNET_ThreadHandle *sendingThread;
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
-// CG: unless defined in a header and used by
-//     other C source files (or used with dlsym),'
-//     make sure all of your functions are declared "static"
+/*
+ * Callback for printing a single entry in one of the
+ * DV routing tables
+ */
 static int
 printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 {
@@ -100,6 +102,9 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
   return GNUNET_OK;
 }
 
+/*
+ * Prints out the known neighbor routing tables.
+ */
 static void
 print_tables ()
 {
@@ -145,16 +150,22 @@ delete_expired_callback (struct GNUNET_dv_neighbor *neighbor,
                  struct GNUNET_dv_heap *root, void *cls)
 {
   GNUNET_CronTime now;
-
   now = GNUNET_get_time();
 
-  if (now - neighbor->last_activity > GNUNET_DV_PEER_EXPIRATION_TIME)
+  if ((GNUNET_NO == GNUNET_multi_hash_map_contains(ctx->direct_neighbors, &neighbor->neighbor->hashPubKey)) && (now - neighbor->last_activity > GNUNET_DV_PEER_EXPIRATION_TIME))
   {
+#if DEBUG_DV_MAINTAIN
+  GNUNET_EncName encToDel;
+  GNUNET_hash_to_enc (&neighbor->neighbor->hashPubKey, &encToDel);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "%s: Entering delete_expired_callback, now is %llu, last_activity is %llu\nDifference is %llu, Max is %llu\nNode to remove is %s\n",
+                 &shortID, now, neighbor->last_activity,now - neighbor->last_activity, GNUNET_DV_PEER_EXPIRATION_TIME, (char *)&encToDel);
+#endif
     GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
     GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
     GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
-                                      &neighbor->neighbor->hashPubKey);
-    GNUNET_multi_hash_map_remove_all (ctx->direct_neighbors,
                                       &neighbor->neighbor->hashPubKey);
 
     GNUNET_free (neighbor->neighbor);
@@ -178,7 +189,7 @@ maintain_dv_job (void *unused)
                            ctx->neighbor_max_heap.root,
                            &delete_expired_callback, NULL);
 
-  GNUNET_mutex_lock (ctx->dvMutex);
+  GNUNET_mutex_unlock (ctx->dvMutex);
 }
 
 /**
@@ -205,6 +216,9 @@ GNUNET_DV_connection_iterate_peers (GNUNET_NodeIteratorCallback method,
   return ret;
 }
 
+/*
+ * Low level sending of a DV message
+ */
 static int
 send_message (const GNUNET_PeerIdentity * recipient,
               const GNUNET_PeerIdentity * original_sender,
@@ -297,7 +311,8 @@ send_message (const GNUNET_PeerIdentity * recipient,
 
 /*
  * Forward a received message that was not intended
- * for us.
+ * for us.  Does not verify that destination peer
+ * is known to us.
  *
  * @recipient for which peer is this message intended
  * @message message being forwarded
@@ -329,9 +344,9 @@ forward_message (const p2p_dv_MESSAGE_Data * message)
 }
 
 /*
- * Handle a message receipt, if recipient matches ident message is
- * for this peer, otherwise check if we know of the intended
- * recipient and send onwards
+ * Handle a DATA message receipt, if recipient matches our identity
+ * message is for this peer, otherwise check if we know of the
+ * intended recipient and send onwards
  */
 static int
 p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
@@ -391,7 +406,6 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
       (coreAPI->my_identity, &incoming->recipient,
        sizeof (GNUNET_PeerIdentity)) == 0)
     {
-      /*FIXME: Deliver message up to ???  Handle arbitrary messages? */
 #if DEBUG_DV_FORWARD
 
       GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
@@ -614,6 +628,10 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
           GNUNET_DV_Heap_insert (&ctx->neighbor_max_heap, neighbor);
           GNUNET_DV_Heap_insert (&ctx->neighbor_min_heap, neighbor);
         }
+        else if(neighbor->cost == cost)
+        {
+          neighbor->last_activity = now;
+        }
     }
 
 
@@ -628,6 +646,11 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
   return ret;
 }
 
+/*
+ * Handles a gossip message from another peer.  Basically
+ * just check the message size, cast to the correct type
+ * and call addUpdateNeighbor to do the real work.
+ */
 static int
 p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
                             const GNUNET_MessageHeader * message)
@@ -667,7 +690,9 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
 }
 
 /*
- * Handles a peer connect notification, eliminates any need for polling.
+ * Handles a peer connect notification, indicating a peer should
+ * be added to the direct neighbor table.
+ *
  * @param peer - ident of the connected peer
  * @param unused - unused closure arg
  */
@@ -847,6 +872,10 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   return;
 }
 
+/*
+ * Chooses a neighbor at random to gossip peer information
+ * to
+ */
 static struct GNUNET_dv_neighbor *
 chooseToNeighbor ()
 {
@@ -857,6 +886,10 @@ chooseToNeighbor ()
     GNUNET_multi_hash_map_get_random (ctx->direct_neighbors);
 }
 
+/*
+ * Chooses a neighbor to send information about
+ * by walking through the neighbor heap
+ */
 static struct GNUNET_dv_neighbor *
 chooseAboutNeighbor ()
 {
@@ -875,6 +908,12 @@ chooseAboutNeighbor ()
 
 }
 
+/*
+ * Thread which chooses a peer to gossip about and
+ * a peer to gossip to, then constructs the message
+ * and sends it out.  Will run until done_module_dv
+ * is called.
+ */
 static void *
 neighbor_send_thread (void *rcls)
 {
@@ -897,7 +936,10 @@ neighbor_send_thread (void *rcls)
 
   while (!ctx->closing)
     {
-      //updateSendInterval();
+      /*updateSendInterval();
+       * TODO: Once we have more information about how to
+       * control the sending interval change this.
+       */
       about = chooseAboutNeighbor ();
       to = chooseToNeighbor ();
 
@@ -929,6 +971,9 @@ neighbor_send_thread (void *rcls)
   return NULL;
 }
 
+/*
+ * Initializes the DV module
+ */
 int
 initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
 {
@@ -1023,6 +1068,9 @@ initialize_module_dv (GNUNET_CoreAPIForPlugins * capi)
   return ok;
 }
 
+/*
+ * Shuts down and cleans up the DV module
+ */
 void
 done_module_dv ()
 {
