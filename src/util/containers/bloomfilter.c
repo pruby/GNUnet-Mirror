@@ -534,7 +534,7 @@ GNUNET_bloomfilter_init (struct GNUNET_GE_Context
   bf->bitArraySize = size;
   bf->addressesPerElement = k;
   if (data != NULL)
-    memcpy(bf->bitArray, data, size);    
+    memcpy (bf->bitArray, data, size);
   else
     memset (bf->bitArray, 0, bf->bitArraySize);
   return bf;

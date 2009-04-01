@@ -11,7 +11,8 @@ noinst_LTLIBRARIES = libcontainers.la
 libcontainers_la_SOURCES = \
  bloomfilter.c \
  meta.c \
- multihashmap.c 
+ multihashmap.c \
+ heap.c
 
 libcontainers_la_LIBADD = \
  -lz \
@@ -20,7 +21,8 @@ libcontainers_la_LIBADD = \
 check_PROGRAMS = \
  bloomtest \
  maptest \
- metatest 
+ metatest \
+ heaptest
 
 TESTS = $(check_PROGRAMS)
 
@@ -37,4 +39,9 @@ maptest_LDADD = \
 metatest_SOURCES = \
  metatest.c
 metatest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la 
+ 
+heaptest_SOURCES = \
+ heaptest.c
+heaptest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
