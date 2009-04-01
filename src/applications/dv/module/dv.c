@@ -31,7 +31,6 @@
 #include "gnunet_core.h"
 #include "gnunet_dv_service.h"
 #include "dv.h"
-#include "heap.h"
 
 #define DEBUG_DV_MAINTAIN GNUNET_YES
 #define DEBUG_DV GNUNET_NO
@@ -54,8 +53,8 @@ struct GNUNET_DV_Context
   struct GNUNET_MultiHashMap *direct_neighbors;
 
   struct GNUNET_MultiHashMap *extended_neighbors;
-  struct GNUNET_dv_heap neighbor_min_heap;
-  struct GNUNET_dv_heap neighbor_max_heap;
+  struct GNUNET_CONTAINER_Heap *neighbor_min_heap;
+  struct GNUNET_CONTAINER_Heap *neighbor_max_heap;
 
 
 };
@@ -111,8 +110,8 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 static int
 delete_neighbor(struct GNUNET_dv_neighbor *neighbor)
 {
-    GNUNET_DV_Heap_removeNode (&ctx->neighbor_max_heap, neighbor);
-    GNUNET_DV_Heap_removeNode (&ctx->neighbor_min_heap, neighbor);
+    GNUNET_CONTAINER_heap_remove_node (ctx->neighbor_max_heap, neighbor);
+    GNUNET_CONTAINER_heap_remove_node (ctx->neighbor_min_heap, neighbor);
     GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
                                       &neighbor->neighbor->hashPubKey);
 
@@ -168,12 +167,13 @@ connection_iterate_callback (const GNUNET_HashCode * key, void *value,
  * cls - unused
  */
 static int
-delete_expired_callback (struct GNUNET_dv_neighbor *neighbor,
-                 struct GNUNET_dv_heap *root, void *cls)
+delete_expired_callback (void * element, GNUNET_CostType cost,
+                 struct GNUNET_CONTAINER_Heap *root, void *cls)
 {
   GNUNET_CronTime now;
   now = GNUNET_get_time();
-
+  struct GNUNET_dv_neighbor *neighbor;
+  neighbor = (struct GNUNET_dv_neighbor *)element;
   if ((GNUNET_NO == GNUNET_multi_hash_map_contains(ctx->direct_neighbors, &neighbor->neighbor->hashPubKey)) && (now - neighbor->last_activity > GNUNET_DV_PEER_EXPIRATION_TIME))
   {
 #if DEBUG_DV_MAINTAIN
@@ -198,8 +198,7 @@ static void
 maintain_dv_job (void *unused)
 {
   GNUNET_mutex_lock (ctx->dvMutex);
-  GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
-                           ctx->neighbor_max_heap.root,
+  GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                            &delete_expired_callback, NULL);
 
   GNUNET_mutex_unlock (ctx->dvMutex);
@@ -575,8 +574,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
       GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
                                  neighbor, GNUNET_MultiHashMapOption_REPLACE);
 
-      GNUNET_DV_Heap_insert (&ctx->neighbor_max_heap, neighbor);
-      GNUNET_DV_Heap_insert (&ctx->neighbor_min_heap, neighbor);
+      GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor, cost);
+      GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor, cost);
 
     }
   else
@@ -595,8 +594,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
         {
           neighbor->cost = cost;
           neighbor->last_activity = now;
-          GNUNET_DV_Heap_updatedCost (&ctx->neighbor_max_heap, neighbor);
-          GNUNET_DV_Heap_updatedCost (&ctx->neighbor_min_heap, neighbor);
+          GNUNET_CONTAINER_heap_update_cost (ctx->neighbor_max_heap, neighbor, cost);
+          GNUNET_CONTAINER_heap_update_cost (ctx->neighbor_min_heap, neighbor, cost);
         }
       else if (neighbor->cost > cost)
         {
@@ -621,8 +620,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
                                      &peer->hashPubKey, neighbor,
                                      GNUNET_MultiHashMapOption_REPLACE);
 
-          GNUNET_DV_Heap_insert (&ctx->neighbor_max_heap, neighbor);
-          GNUNET_DV_Heap_insert (&ctx->neighbor_min_heap, neighbor);
+          GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor, cost);
+          GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor, cost);
         }
         else if(neighbor->cost == cost)
         {
@@ -754,9 +753,11 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
  * cls - the peer identity to compare neighbor's identity to
  */
 static int
-delete_callback (struct GNUNET_dv_neighbor *neighbor,
-                 struct GNUNET_dv_heap *root, void *cls)
+delete_callback (void *element, GNUNET_CostType cost,
+                 struct GNUNET_CONTAINER_Heap *root, void *cls)
 {
+  struct GNUNET_dv_neighbor *neighbor;
+  neighbor = (struct GNUNET_dv_neighbor *)element;
   GNUNET_PeerIdentity *toMatch = cls;
 #if DEBUG_DV
   GNUNET_EncName encNeighbor;
@@ -831,8 +832,7 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                                         &peer->hashPubKey);
       if (neighbor != NULL)
         {
-          GNUNET_DV_Heap_Iterator (&ctx->neighbor_max_heap,
-                                   ctx->neighbor_max_heap.root,
+          GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                    &delete_callback, (void *) peer);
           /* Note that we do not use delete_neighbor here because
            * we are deleting from the direct neighbor list! */
@@ -879,7 +879,7 @@ chooseToNeighbor ()
 static struct GNUNET_dv_neighbor *
 chooseAboutNeighbor ()
 {
-  if (ctx->neighbor_min_heap.size == 0)
+  if (GNUNET_CONTAINER_heap_get_size(ctx->neighbor_min_heap) == 0)
     return NULL;
 
 #if DEBUG_DV
@@ -890,7 +890,7 @@ chooseAboutNeighbor ()
                  ctx->neighbor_max_heap.size);
 #endif
 
-  return GNUNET_DV_Heap_Walk_getNext (&ctx->neighbor_min_heap);
+  return GNUNET_CONTAINER_heap_walk_get_next (ctx->neighbor_min_heap);
 
 }
 
@@ -975,12 +975,8 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
   api.dv_connections_iterate = &GNUNET_DV_connection_iterate_peers;
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
 
-  ctx->neighbor_min_heap.type = GNUNET_DV_MIN_HEAP;
-  ctx->neighbor_max_heap.type = GNUNET_DV_MAX_HEAP;
-  ctx->neighbor_min_heap.max_size = GNUNET_DV_MAX_TABLE_SIZE;
-  ctx->neighbor_max_heap.max_size = GNUNET_DV_MAX_TABLE_SIZE;
-  ctx->neighbor_max_heap.traversal_pos = NULL;
-  ctx->neighbor_min_heap.traversal_pos = NULL;
+  ctx->neighbor_min_heap = GNUNET_CONTAINER_heap_create(GNUNET_MIN_HEAP);
+  ctx->neighbor_max_heap = GNUNET_CONTAINER_heap_create(GNUNET_MAX_HEAP);
   ctx->send_interval = GNUNET_DV_DEFAULT_SEND_INTERVAL;
   ctx->dvMutex = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
