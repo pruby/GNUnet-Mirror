@@ -133,8 +133,8 @@ main (int argc, char **argv)
   //int vals[6] = {70, 26, 53, 100, 35, 95};
   struct GNUNET_dv_neighbor *neighbors[TESTS];
   ret = GNUNET_OK;
-  maxHeap = GNUNET_CONTAINER_heap_create(GNUNET_MAX_HEAP);
-  minHeap = GNUNET_CONTAINER_heap_create(GNUNET_MIN_HEAP);
+  maxHeap = GNUNET_CONTAINER_heap_create (GNUNET_MAX_HEAP);
+  minHeap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
 
   for (i = 0; i < TESTS; i++)
     {
@@ -174,9 +174,9 @@ main (int argc, char **argv)
           fprintf (stderr, "Updating node %d (cost %d) with new cost %d\n",
                    temp_node + 1, neighbors[temp_node]->cost, temp_rand);
           GNUNET_CONTAINER_heap_update_cost (maxHeap, neighbors[temp_node],
-                                     temp_rand);
+                                             temp_rand);
           GNUNET_CONTAINER_heap_update_Cost (minHeap, neighbors[temp_node],
-                                     temp_rand);
+                                             temp_rand);
           break;
         case 3:
           fprintf (stderr, "Removing node %d with cost %d\n", cur_pos,
