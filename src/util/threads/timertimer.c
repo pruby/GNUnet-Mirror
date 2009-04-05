@@ -3,6 +3,8 @@
  * Must be linked with "-lrt", only works on 686.
  */
 
+#include "platform.h"
+
 #include <sys/times.h>
 #include <sys/time.h>
 #include <time.h>
@@ -24,8 +26,7 @@ static unsigned long long
 use_gtod ()
 {
   struct timeval tv;
-  struct timezone tz;
-  gettimeofday (&tv, &tz);
+  GETTIMEOFDAY (&tv, NULL);
   return (((unsigned long long) tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
 }
 

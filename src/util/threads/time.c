@@ -36,13 +36,7 @@ GNUNET_CronTime
 GNUNET_get_time ()
 {
   struct timeval tv;
-#ifndef WINDOWS
-  struct timezone tz;           /* man page says it's obsolete, but
-                                   I'd rather not pass a NULL pointer */
 
-  gettimeofday (&tv, &tz);
-#else
-  gettimeofday (&tv, NULL);
-#endif
+  GETTIMEOFDAY (&tv, NULL);
   return (((GNUNET_CronTime) tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
 }
