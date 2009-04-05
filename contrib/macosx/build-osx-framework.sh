@@ -22,7 +22,7 @@ LIBEXTRACTOR_BASE_DIR=${EXTRACTOR_FRAMEWORK}/Versions/2
 FW_NAME=GNUnet.framework
 FW_BASE_DIR=/Library/Frameworks/${FW_NAME}
 BUILD_DIR=/tmp/GNUnet-build
-FINAL_FW_BASE_DIR="${BUILD_DIR}/${FW_NAME}"
+FINAL_FW_BASE_DIR="${BUILD_DIR}/Frameworks/${FW_NAME}"
 SDK_PATH="${BUILD_DIR}/${SDK}"
 OPT_FLAGS="-O2 -force_cpusubtype_ALL"
 
@@ -624,13 +624,13 @@ create_directory_for()
 	if [ ! -e "${dst_dir}" ]
 	then
 		echo "MKDIR ${dst_dir}"
-		if ! ( mkdir -m 755 -p "${dst_dir}" )
+		if ! ( mkdir -m 775 -p "${dst_dir}" )
 		then
 			echo "failed to create directory: ${dst_dir}"
 			exit 1
 		fi
 		# fix dir permissions
-		if ! ( chmod 0755 `find ${FINAL_FW_BASE_DIR} -type d` )
+		if ! ( chmod 0775 `find ${FINAL_FW_BASE_DIR} -type d` )
 		then
 			echo "error setting permissions"
 			exit 1
@@ -674,7 +674,7 @@ install_executable_to_framework()
 				echo "error creating fat binary"
 				exit 1
 			fi
-			if ! ( chmod 0755 "${dst_file}" )
+			if ! ( chmod 0775 "${dst_file}" )
 			then
 				echo "error settings permissions"
 				exit 1
@@ -701,15 +701,10 @@ install_file_to_framework()
 					echo "error copying file"
 					exit 1
 				fi
-				if ! ( chmod 0755 "${dst_file}" )
-				then
-					echo "error setting permissions"
-					exit 1
-				fi
 			elif [ -f "${src_file}" ]
 			then
 				echo "INSTALL ${dst_file}"
-				if ! ( install -m 0644 "${src_file}" "${dst_file}" )
+				if ! ( install -m 0664 "${src_file}" "${dst_file}" )
 				then
 					echo "error installing file"
 					exit 1
@@ -741,7 +736,7 @@ install_message_catalog_to_framework()
 			echo "error creating message catalog: $lang"
 			exit 1
 		fi
-		if ! ( chmod 0755 "${dst_file}" )
+		if ! ( chmod 0664 "${dst_file}" )
 		then
 			echo "error setting permissions"
 			exit 1
@@ -764,7 +759,7 @@ install_en_message_catalog_to_framework()
 			echo "error creating English message catalog"
 			exit 1
 		fi
-		if ! ( chmod 0755 "${dst_file}" )
+		if ! ( chmod 0664 "${dst_file}" )
 		then
 			echo "error setting permissions"
 			exit 1
@@ -780,7 +775,7 @@ copy_file_to_framework()
 	if [ ! -e "$dst_file" ]
 	then
 		create_directory_for "$dst_file"
-		if ! ( install -m 0644 "$src_file" "$dst_file" )
+		if ! ( install -m 0664 "$src_file" "$dst_file" )
 		then
 			echo "error installing file"
 			exit 1
@@ -844,7 +839,7 @@ fi
 
 # prepare build env
 fetch_all_packages
-umask 022
+umask 002
 prepare_sdk
 build_toolchain
 

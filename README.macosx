@@ -1,0 +1,57 @@
+GNUnet on Mac OS X
+==================
+
+GNUnet has two installation methods on Mac OS X: it can be installed
+as a Mac OS X framework or with the standard `./configure; make; make install'
+shell commands. The framework package is self-contained.
+
+Installing and uninstalling the framework
+=========================================
+
+The binary framework is distributed as a disk image (GNUnet-x.x.xx.dmg).
+Installation is done by opening the disk image and clicking GNUnet.pkg
+inside it. The Mac OS X installer application will then run. The framework
+is installed to the root volume's /Library/Frameworks folder and installing
+will require admin privileges.
+
+The framework can be uninstalled by dragging
+/Library/Frameworks/GNUnet.framework to Trash.
+(TODO: config files and other stuff)
+
+Using the framework
+===================
+
+In the framework, the command line tools can be found in the folder
+/Library/Frameworks/GNUnet.framework/Versions/Current/bin/
+
+The framework can be used in software projects as a framework or as a dynamic
+library. 
+>>> hello.c
+#include <GNUnet/gnunet_util.h>
+
+int main()
+{
+	GNUNET_init(...);
+	...
+}
+
+Framework usage:
+
+  gcc -o hello hello.c -framework GNUnet
+
+  Note that all the gnunet client libraries get linked in with the framework.
+
+Dynamic library usage:
+
+  gcc -I/Library/Frameworks/GNUnet.framework/Versions/Current/include \ 
+      -o hello hello.c \
+      -L/Library/Frameworks/GNUnet.framework/Versions/Current/lib \
+      -lgnunet_util
+
+When using the framework as a dynamic library in projects using autotools,
+one would most likely want to add 
+"-I/Library/Frameworks/GNUnet.framework/Versions/Current/include"
+to CPPFLAGS and 
+"-L/Library/Frameworks/GNUnet.framework/Versions/Current/lib"
+to LDFLAGS.
+

@@ -1038,7 +1038,8 @@ AC_ARG_ENABLE([coverage], AS_HELP_STRING([--enable-coverage],
 AM_CONDITIONAL([USE_COVERAGE], [test "x$use_gcov" = "xyes"])
 
 
-
+PACKAGE_VERSION_NOALPHA=`echo $PACKAGE_VERSION | sed "s/@<:@A-Za-z@:>@*//g;"`
+AC_SUBST(PACKAGE_VERSION_NOALPHA)
 
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
@@ -1046,6 +1047,7 @@ contrib/Makefile
 contrib/config-client.scm
 contrib/config-daemon.scm
 contrib/macosx/Info.plist
+contrib/macosx/Pkg-Info.plist
 doc/Makefile
 doc/man/Makefile
 src/Makefile
