@@ -55,6 +55,7 @@ gnunet_setup_LDADD = \
 gnunet_macosx_tool_SOURCES = \
  gnunet-macosx-tool.c
 gnunet_macosx_tool_LDADD = \
+ $(top_builddir)/src/setup/lib/libgnunetsetup.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 gnunet_win_tool_SOURCE = \

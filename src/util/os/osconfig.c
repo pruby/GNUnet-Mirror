@@ -336,7 +336,6 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
 
   return GNUNET_YES;
 #elif defined(OSX)
-/* TODO: has much in common with the linux code */
   struct stat buf;
   int ret;
   int i;
@@ -363,141 +362,104 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
       return GNUNET_SYSERR;
     }
 
-  if (doAutoStart)
+  if (ACCESS (application, X_OK) != 0)
     {
-      if (ACCESS (application, X_OK) != 0)
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                   "access", application);
+    }
+
+  if (STAT (initscript, &buf) == -1)
+    {
+      /* create init file */
+      FILE *f = FOPEN (initscript, "w");
+      if (f == NULL)
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                        GNUNET_GE_ERROR | GNUNET_GE_USER |
-                                       GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                       "access", application);
+                                       GNUNET_GE_ADMIN |
+                                       GNUNET_GE_IMMEDIATE, "fopen",
+                                       initscript);
+          GNUNET_free (initscript);
+          return 2;
         }
-
-      if (STAT (initscript, &buf) == -1)
+      fprintf (f,
+               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+               "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+               "<plist version=\"1.0\">\n"
+               "<dict>\n"
+               "	<key>Disabled</key>\n"
+               "	<%s/>\n"
+               "	<key>OnDemand</key>\n"
+               "	<false/>\n"
+               "	<key>Label</key>\n"
+               "	<string>org.gnunet.%s</string>\n"
+               "	<key>ServiceDescription</key>\n"
+               "	<string>%s</string>\n"
+               "	<key>ProgramArguments</key>\n"
+               "	<array>\n"
+               "		<string>%s</string>\n"
+               "		<string>-n</string>\n"
+               "	</array>\n"
+               "	<key>RunAtLoad</key>\n"
+               "	<true/>\n"
+               "	<key>LowPriorityIO</key>\n"
+               "	<true/>\n"
+               "</dict>\n"
+               "</plist>\n", doAutoStart ? "true"/*"false"*/ : "true", 
+               &application[i], servicename, application);
+      fclose (f);
+      if (0 != CHMOD (initscript, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
         {
-          /* create init file */
-          FILE *f = FOPEN (initscript, "w");
-          if (f == NULL)
-            {
-              GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                           GNUNET_GE_ERROR | GNUNET_GE_USER |
-                                           GNUNET_GE_ADMIN |
-                                           GNUNET_GE_IMMEDIATE, "fopen",
-                                           initscript);
-              GNUNET_free (initscript);
-              return 2;
-            }
-          fprintf (f,
-                   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
-                   "<plist version=\"1.0\">\n"
-                   "<dict>\n"
-                   "	<key>Disabled</key>\n"
-                   "	<false/>\n"
-                   "	<key>OnDemand</key>\n"
-                   "	<false/>\n"
-                   "	<key>Label</key>\n"
-                   "	<string>org.gnunet.%s</string>\n"
-                   "	<key>ServiceDescription</key>\n"
-                   "	<string>%s</string>\n"
-                   "	<key>ProgramArguments</key>\n"
-                   "	<array>\n"
-                   "		<string>%s</string>\n"
-                   "		<string>-n</string>\n"
-                   "	</array>\n"
-                   "	<key>RunAtLoad</key>\n"
-                   "	<true/>\n"
-                   "	<key>LowPriorityIO</key>\n"
-                   "	<true/>\n"
-                   "</dict>\n"
-                   "</plist>\n", &application[i], servicename, application);
-          fclose (f);
-          if (0 != CHMOD (initscript, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
-            {
-              GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                           GNUNET_GE_WARNING | GNUNET_GE_USER
-                                           | GNUNET_GE_ADMIN |
-                                           GNUNET_GE_IMMEDIATE, "chmod",
-                                           initscript);
-              GNUNET_free (initscript);
-              return GNUNET_SYSERR;
-            }
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                       GNUNET_GE_WARNING | GNUNET_GE_USER
+                                       | GNUNET_GE_ADMIN |
+                                       GNUNET_GE_IMMEDIATE, "chmod",
+                                       initscript);
+          GNUNET_free (initscript);
+          return GNUNET_SYSERR;
         }
-      if (STAT (initscript, &buf) != -1)
-        {
-          errno = 0;
-          if (ACCESS ("/bin/launchctl", W_OK) == 0)
-            {
-              char *cmd;
-              cmd = GNUNET_malloc (20 + strlen (initscript) + 1);
-              sprintf (cmd, "/bin/launchctl load %s", initscript);
-              ret = system (cmd);
-              if (ret != 0)
-                {
-                  if (errno != 0)
-                    {
-                      GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                                   GNUNET_GE_WARNING |
-                                                   GNUNET_GE_USER |
-                                                   GNUNET_GE_ADMIN |
-                                                   GNUNET_GE_IMMEDIATE,
-                                                   "system",
-                                                   "/bin/launchctl");
-                    }
-                  else
-                    {
-                      GNUNET_GE_LOG (ectx,
-                                     GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                     GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                     _
-                                     ("Command `%s' failed with error code %u\n"),
-                                     cmd, WEXITSTATUS (ret));
-                    }
-                  GNUNET_free (cmd);
-                  GNUNET_free (initscript);
-                  return GNUNET_SYSERR;
-                }
-              GNUNET_free (cmd);
-            }
-        }
-      GNUNET_free (initscript);
-      return GNUNET_YES;
     }
-  else
+  if (STAT (initscript, &buf) != -1)
     {
       errno = 0;
       if (ACCESS ("/bin/launchctl", W_OK) == 0)
         {
           char *cmd;
-          cmd = GNUNET_malloc (22 + strlen (initscript) + 1);
-          sprintf (cmd, "/bin/launchctl unload %s", initscript);
+          cmd = GNUNET_malloc (20 + strlen (initscript) + 1);
+          sprintf (cmd, "/bin/launchctl load %s", initscript);
           ret = system (cmd);
           if (ret != 0)
             {
-              GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                           GNUNET_GE_WARNING | GNUNET_GE_USER
-                                           | GNUNET_GE_ADMIN |
-                                           GNUNET_GE_IMMEDIATE, "system",
-                                           "/bin/launchctl");
+              if (errno != 0)
+                {
+                  GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                               GNUNET_GE_WARNING |
+                                               GNUNET_GE_USER |
+                                               GNUNET_GE_ADMIN |
+                                               GNUNET_GE_IMMEDIATE,
+                                               "system",
+                                               "/bin/launchctl");
+                }
+              else
+                {
+                  GNUNET_GE_LOG (ectx,
+                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                 GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                 _
+                                 ("Command `%s' failed with error code %u\n"),
+                                 cmd, WEXITSTATUS (ret));
+                }
               GNUNET_free (cmd);
               GNUNET_free (initscript);
               return GNUNET_SYSERR;
             }
           GNUNET_free (cmd);
         }
-      if ((UNLINK (initscript) == -1) && (errno != ENOENT))
-        {
-          GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                       GNUNET_GE_WARNING | GNUNET_GE_USER |
-                                       GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                       "unlink", initscript);
-          GNUNET_free (initscript);
-          return GNUNET_SYSERR;
-        }
-      GNUNET_free (initscript);
-      return GNUNET_YES;
     }
   GNUNET_free (initscript);
+  return GNUNET_YES;
 #else
   struct stat buf;
   int ret;

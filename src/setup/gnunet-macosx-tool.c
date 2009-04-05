@@ -30,7 +30,9 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include <GNUnet/gnunet_util.h>
+#include "gnunet_util.h"
+#include "gnunet_setup_lib.h"
+#include "lib/wizard_util.h"
 
 static char * input_string()
 {
@@ -199,6 +201,49 @@ int create_accounts(int argc, char *argv[])
 	return ret;
 }
 
+int setup_autostart(int argc, char *argv[])
+{
+	struct GNUNET_GE_Context *ectx;
+	struct GNUNET_GE_Memory *ectx_buffer;
+	char *user_name;
+	char *group_name;
+	int do_autostart;
+	int ret;
+
+	if (argc < 4)
+		return -1;
+
+	do_autostart = atoi(argv[2]);
+	user_name = argv[3];
+	if (argc < 5)
+		group_name = NULL;
+	else
+		group_name = argv[4];
+
+	ectx_buffer = GNUNET_GE_memory_create(2);
+	ectx = GNUNET_GE_create_context_memory(GNUNET_GE_ALL, ectx_buffer);
+	GNUNET_os_init(ectx);
+
+	ret = GNUNET_GNS_wiz_autostart_service (ectx, 
+		GNUNET_SERVICE_TYPE_GNUNETD, do_autostart,
+		user_name, group_name);
+	/* TODO: auto-share */	
+
+	if (ret == GNUNET_OK) {
+		output_string("OK");
+		ret = 0;
+	}
+	else {
+		output_string("ERROR");
+		ret = -1;
+	}
+
+	GNUNET_GE_free_context(ectx);
+	GNUNET_GE_memory_free(ectx_buffer);
+
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 	int ret;
@@ -215,6 +260,9 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[1], "createUserGroup") == 0) {
 		ret = create_accounts(argc, argv);
+	}
+	else if (strcmp(argv[1], "setupAutostart") == 0) {
+		ret = setup_autostart(argc, argv);
 	}
  
 	return (ret == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
