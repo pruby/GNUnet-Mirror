@@ -9,7 +9,7 @@
 	<key>CFBundleName</key>
 	<string>GNUnet</string>
 	<key>CFBundleGetInfoString</key>
-	<string>@PACKAGE_STRING@, Copyright 2001-2008 Christian Grothoff (and other contributing authors)</string>
+	<string>@PACKAGE_STRING@, Copyright 2001-2009 Christian Grothoff (and other contributing authors)</string>
         <key>CFBundleIconFile</key>
         <string></string>
 	<key>CFBundleIdentifier</key>
