@@ -6,12 +6,12 @@
 	   modify it under the terms of the GNU Lesser General Public
 	   License as published by the Free Software Foundation; either
 	   version 2.1 of the License, or (at your option) any later version.
-	
+
 	   This library is distributed in the hope that it will be useful,
 	   but WITHOUT ANY WARRANTY; without even the implied warranty of
 	   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 	   Lesser General Public License for more details.
-	
+
 	   You should have received a copy of the GNU Lesser General Public
 	   License along with this library; if not, write to the Free Software
 	   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -463,7 +463,7 @@ extern "C"
 #define BINDTEXTDOMAIN(d, n) bindtextdomain(d, n)
 #endif
 #define CREAT(p, m) creat(p, m)
-#define CTIME(c) ctime(c)
+#define PLIBC_CTIME(c) ctime(c)
 #define CTIME_R(c, b) ctime_r(c, b)
 #undef FOPEN
 #define FOPEN(f, m) fopen(f, m)
@@ -555,7 +555,7 @@ extern "C"
 #define BINDTEXTDOMAIN(d, n) _win_bindtextdomain(d, n)
 #endif
 #define CREAT(p, m) _win_creat(p, m)
-#define CTIME(c) _win_ctime(c)
+#define PLIBC_CTIME(c) _win_ctime(c)
 #define CTIME_R(c, b) _win_ctime_r(c, b)
 #define FOPEN(f, m) _win_fopen(f, m)
 #define FTRUNCATE(f, l) _win_ftruncate(f, l)
