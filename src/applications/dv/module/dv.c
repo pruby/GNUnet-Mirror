@@ -920,8 +920,8 @@ neighbor_send_thread (void *rcls)
   GNUNET_EncName encPeerAbout;
   GNUNET_EncName encPeerTo;
 #endif
-  struct GNUNET_dv_neighbor *about = NULL;
-  struct GNUNET_dv_neighbor *to = NULL;
+  struct GNUNET_dv_neighbor *about;
+  struct GNUNET_dv_neighbor *to;
 
   p2p_dv_MESSAGE_NeighborInfo *message =
     GNUNET_malloc (sizeof (p2p_dv_MESSAGE_NeighborInfo));
