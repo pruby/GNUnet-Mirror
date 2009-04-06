@@ -3,7 +3,7 @@ GNUnet on Mac OS X
 
 GNUnet has two installation methods on Mac OS X: it can be installed
 as a Mac OS X framework or with the standard `./configure; make; make install'
-shell commands. The framework package is self-contained.
+shell commands. The framework depends on Extractor (libextractor) framework.
 
 Installing and uninstalling the framework
 =========================================
