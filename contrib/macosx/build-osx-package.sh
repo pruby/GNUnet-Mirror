@@ -14,6 +14,7 @@ if [ -e "${RESOURCE_DIR}" ] ; then
 fi	
 mkdir -p "${RESOURCE_DIR}"
 cp COPYING "${RESOURCE_DIR}/License.txt"
+cp contrib/macosx/Pkg-IFRequirement.strings "${RESOURCE_DIR}/IFRequirement.strings"
 
 # final permissions
 chown -R root "${COMPONENT_DIR}"/*
