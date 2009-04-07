@@ -42,7 +42,7 @@
 			<key>Level</key>
 			<string>requires</string>
 			<key>TitleKey</key>
-			<string>MssingExtractorTitle</string>
+			<string>MissingExtractorTitle</string>
 			<key>MessageKey</key>
 			<string>MissingExtractorMessage</string>
 			<key>SpecArgument</key>
