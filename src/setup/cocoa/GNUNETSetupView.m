@@ -326,6 +326,7 @@ struct P2W
 			GNUNET_free (val);
 		}
 	}
+	GNUNET_GE_free_context (ectx);
 	GNUNET_GE_memory_free (ectxMemory);
 	[setupView updateVisibility];
 
