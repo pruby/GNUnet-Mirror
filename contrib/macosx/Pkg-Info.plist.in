@@ -23,7 +23,7 @@
 	<key>IFPkgFlagInstalledSize</key>
 	<integer>0</integer>
 	<key>IFPkgFlagIsRequired</key>
-	<false/>
+	<true/>
 	<key>IFPkgFlagOverwritePermissions</key>
 	<true/>
 	<key>IFPkgFlagRelocatable</key>
