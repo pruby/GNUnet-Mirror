@@ -36,24 +36,5 @@
 	<false/>
 	<key>IFPkgFormatVersion</key>
 	<real>0.10000000149011612</real>
-	<key>IFRequirementDicts</key>
-	<array>
-		<dict>
-			<key>Level</key>
-			<string>requires</string>
-			<key>TitleKey</key>
-			<string>MissingExtractorTitle</string>
-			<key>MessageKey</key>
-			<string>MissingExtractorMessage</string>
-			<key>SpecArgument</key>
-			<string>/Library/Frameworks/Extractor.framework</string>
-			<key>SpecType</key>
-			<string>file</string>
-			<key>TestObject</key>
-			<true/>
-			<key>TestOperator</key>
-			<string>eq</string>
-		</dict>
-	</array>
 </dict>
 </plist>
