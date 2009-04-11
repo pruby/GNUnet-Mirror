@@ -407,7 +407,7 @@ GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                "	<key>LowPriorityIO</key>\n"
                "	<true/>\n"
                "</dict>\n"
-               "</plist>\n", doAutoStart ? "true"/*"false"*/ : "true", 
+               "</plist>\n", doAutoStart ? "false" : "true", 
                &application[i], servicename, application);
       fclose (f);
       if (0 != CHMOD (initscript, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
