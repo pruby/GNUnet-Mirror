@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# kill running daemon
+# done here instead of preupgrade, because it's sensible to kill it
+# even before the (potential) extractor upgrade from the metapackage
+/bin/launchctl unload /Library/LaunchDaemons/org.gnunet.gnunetd.plist
+# TODO: wait for the process to die
+/bin/sleep 5s
+
+exit 0
+

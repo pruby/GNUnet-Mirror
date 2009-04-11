@@ -15,6 +15,8 @@ fi
 mkdir -p "${RESOURCE_DIR}"
 cp COPYING "${RESOURCE_DIR}/License.txt"
 cp contrib/macosx/Pkg-IFRequirement.strings "${RESOURCE_DIR}/IFRequirement.strings"
+cp contrib/macosx/Pkg-preflight "${RESOURCE_DIR}/preflight"
+cp contrib/macosx/Pkg-postupgrade "${RESOURCE_DIR}/postupgrade"
 
 # final permissions
 chown -R root "${COMPONENT_DIR}"/*

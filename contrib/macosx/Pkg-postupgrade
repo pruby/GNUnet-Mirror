@@ -1,0 +1,7 @@
+#!/bin/sh
+
+/Library/Frameworks/GNUnet.framework/Versions/Current/bin/gnunet-update
+/bin/launchctl load /Library/LaunchDaemons/org.gnunet.gnunetd.plist
+
+exit 0
+
