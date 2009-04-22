@@ -344,6 +344,7 @@ GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
   const char *dirname;
   char *execpath = NULL;
   char *tmp;
+  int isbasedir;
 
   /* if wanted, try to get the current app's bin/ */
   if (dirkind == GNUNET_IPK_SELF_PREFIX)
@@ -367,15 +368,35 @@ GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
   while (n > 1 && execpath[n - 1] == DIR_SEPARATOR)
     execpath[--n] = '\0';
 
-  if ((n > 3) && ((0 == strcasecmp (&execpath[n - 3], "bin")) ||
+  isbasedir = 1;
+  if ((n > 5) && ((0 == strcasecmp (&execpath[n - 5], "lib32")) ||
+                  (0 == strcasecmp (&execpath[n - 5], "lib64"))))
+    {
+      if (dirkind != GNUNET_IPK_LIBDIR)
+        {
+          /* strip '/lib32/' or '/lib64/' */
+          execpath[n - 5] = '\0';
+          n -= 5;
+        }
+      else
+        isbasedir = 0;
+    }
+  else if ((n > 3) && ((0 == strcasecmp (&execpath[n - 3], "bin")) ||
                   (0 == strcasecmp (&execpath[n - 3], "lib"))))
     {
-      /* strip '/bin/' or '/lib/' */
-      execpath[n - 3] = '\0';
-      n -= 3;
-      while (n > 1 && execpath[n - 1] == DIR_SEPARATOR)
-        execpath[--n] = '\0';
+      if (dirkind != GNUNET_IPK_LIBDIR || 
+          (0 != strcasecmp (&execpath[n - 3], "lib")) )
+        {
+          /* strip '/bin/' or '/lib/' */
+          execpath[n - 3] = '\0';
+          n -= 3;
+        }
+      else
+        isbasedir = 0;
     }
+  while (n > 1 && execpath[n - 1] == DIR_SEPARATOR)
+    execpath[--n] = '\0';
+
   switch (dirkind)
     {
     case GNUNET_IPK_PREFIX:
@@ -386,8 +407,12 @@ GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
       dirname = DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR;
       break;
     case GNUNET_IPK_LIBDIR:
-      dirname =
-        DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
+      if (isbasedir)
+        dirname =
+          DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
+      else
+        dirname =
+          DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
       break;
     case GNUNET_IPK_DATADIR:
       dirname =
