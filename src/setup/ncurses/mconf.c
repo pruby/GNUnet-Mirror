@@ -206,6 +206,7 @@ run_menu (struct GNUNET_GNS_Context *ctx,
               strcpy (fitem.text, pos->value.String.val);
               fitem.text_len = strlen (fitem.text);
               fitem.help = pos->help;
+	      fitem.text_ilen = 65535;
               msel = 0;
               st = dlg_form (pos->option, "", 20, 70, 15, 1, &fitem, &msel);
               switch (st)
