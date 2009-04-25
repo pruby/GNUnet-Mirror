@@ -25,6 +25,7 @@
  */
 #include "remote.h"
 
+#if VERBOSE
 static int
 printInfo (void *data,
            const GNUNET_PeerIdentity *
@@ -40,6 +41,7 @@ printInfo (void *data,
            "%s: %llu - %u\n", (const char *) &oth, last_message, bpmFromPeer);
   return GNUNET_OK;
 }
+#endif
 
 int
 GNUNET_REMOTE_connect_erdos_renyi (double probability,
@@ -427,7 +429,7 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
                                             host);
 
 #if VERBOSE
-      fprintf (stderr, _("Setting config 2 to host %s\n"), host);
+  fprintf (stderr, _("Setting config 2 to host %s\n"), host);
 #endif
 
   if ((GNUNET_OK ==

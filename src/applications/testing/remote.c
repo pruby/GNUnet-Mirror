@@ -52,6 +52,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   char *cmd;
   int length;
   unsigned int is_local = 0;
+  int unused;
 
   if (strcmp (hostname, "localhost") == 0)
     {
@@ -84,7 +85,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 #if VERBOSE
   fprintf (stderr, _("cp command is : %s \n"), cmd);
 #endif
-  system (cmd);
+  unused = system (cmd);
 
   GNUNET_free (cmd);
 
@@ -111,7 +112,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   fprintf (stderr, _("exec command is : %s \n"), cmd);
 #endif
 
-  system (cmd);
+  unused = system (cmd);
   GNUNET_free (cmd);
 
   if (is_local)
@@ -138,7 +139,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   fprintf (stderr, _("exec command is : %s \n"), cmd);
 #endif
 
-  system (cmd);
+  unused = system (cmd);
 
   GNUNET_free (cmd);
 
@@ -152,6 +153,7 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
   char *cmd;
   int length;
   unsigned int is_local = 0;
+  int unused;
   FILE *output;
   pid_t pid;
 
@@ -212,7 +214,7 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
   fprintf (stderr, _("exec command is : %s \n"), cmd);
 #endif
 
-  system (cmd);
+  unused = system (cmd);
 
   GNUNET_free (cmd);
 
@@ -708,7 +710,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int ret;
   struct GNUNET_REMOTE_host_list *pos;
   struct GNUNET_REMOTE_friends_list *friend_pos;
-
+  int unused;
   char *cmd;
   int length;
 
@@ -761,17 +763,17 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       while (pos != NULL)
         {
           /* Printing out the friends isn't necessary, but it's nice */
-          #if VERBOSE
+#if VERBOSE
           fprintf (stderr, _("Friend list of %s:%d\n"), pos->hostname,
                    pos->port);
-          #endif
+#endif
           temp_friend_handle = fopen ("friend.temp", "wt");
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
-            #if VERBOSE
+#if VERBOSE
               fprintf (stderr, "\t%s\n", (const char *) friend_pos->nodeid);
-            #endif
+#endif
               fprintf (temp_friend_handle, "%s\n",
                        (const char *) friend_pos->nodeid);
               friend_pos = friend_pos->next;
@@ -802,12 +804,12 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           fprintf (stderr, _("scp command for friend file copy is : %s \n"),
                    cmd);
 #endif
-          system (cmd);
+          unused = system (cmd);
           GNUNET_free (cmd);
           pos = pos->next;
         }
 
-      system ("rm friend.temp");
+      unused = system ("rm friend.temp");
 
       pos = head;
 
