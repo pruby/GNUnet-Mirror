@@ -175,11 +175,11 @@ poll_thread (void *cls)
  */
 struct GNUNET_DV_DHT_Context *
 GNUNET_DV_DHT_context_create (struct GNUNET_GC_Configuration
-                           *cfg,
-                           struct GNUNET_GE_Context
-                           *ectx,
-                           GNUNET_ResultProcessor
-                           resultCallback, void *resCallbackClosure)
+                              *cfg,
+                              struct GNUNET_GE_Context
+                              *ectx,
+                              GNUNET_ResultProcessor
+                              resultCallback, void *resCallbackClosure)
 {
   struct GNUNET_DV_DHT_Context *ctx;
   struct GNUNET_ClientServerConnection *sock;
@@ -214,7 +214,7 @@ GNUNET_DV_DHT_context_create (struct GNUNET_GC_Configuration
  */
 struct GNUNET_DV_DHT_GetRequest *
 GNUNET_DV_DHT_get_start (struct GNUNET_DV_DHT_Context *ctx,
-                      unsigned int type, const GNUNET_HashCode * key)
+                         unsigned int type, const GNUNET_HashCode * key)
 {
   struct GNUNET_DV_DHT_GetRequest *req;
 
@@ -242,7 +242,7 @@ GNUNET_DV_DHT_get_start (struct GNUNET_DV_DHT_Context *ctx,
  */
 int
 GNUNET_DV_DHT_get_stop (struct GNUNET_DV_DHT_Context *ctx,
-                     struct GNUNET_DV_DHT_GetRequest *req)
+                        struct GNUNET_DV_DHT_GetRequest *req)
 {
   CS_dht_request_get_MESSAGE creq;
 
@@ -293,9 +293,9 @@ GNUNET_DV_DHT_context_destroy (struct GNUNET_DV_DHT_Context *ctx)
  */
 int
 GNUNET_DV_DHT_put (struct GNUNET_GC_Configuration *cfg,
-                struct GNUNET_GE_Context *ectx,
-                const GNUNET_HashCode * key,
-                unsigned int type, unsigned int size, const char *value)
+                   struct GNUNET_GE_Context *ectx,
+                   const GNUNET_HashCode * key,
+                   unsigned int type, unsigned int size, const char *value)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;

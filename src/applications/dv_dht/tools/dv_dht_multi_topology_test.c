@@ -123,8 +123,8 @@ main (int argc, const char **argv)
       return -1;
     }
   GNUNET_GC_set_configuration_value_string (cfg, NULL,
-                                          "MULTIPLE_SERVER_TESTING",
-                                          "DOT_OUTPUT", "topology.dot");
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "DOT_OUTPUT", "topology.dot");
   printf ("Starting %u peers...\n", NUM_PEERS);
   peers = GNUNET_REMOTE_start_daemons (cfg, NUM_PEERS);
   if (peers == NULL)
@@ -134,10 +134,10 @@ main (int argc, const char **argv)
     }
   pos = peers;
   for (i = 0; i < NUM_PEERS; i++)
-  {
-    peer_array[i] = pos;
-    pos = pos->next;
-  }
+    {
+      peer_array[i] = pos;
+      pos = pos->next;
+    }
 
   found = 0;
   for (r = 0; r < NUM_REPEAT; r++)
@@ -162,7 +162,8 @@ main (int argc, const char **argv)
           fflush (stdout);
           GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);
           /* wait for some DV_DHT's to find each other! */
-          sock = GNUNET_client_connection_create (NULL, peer_array[i]->config);
+          sock =
+            GNUNET_client_connection_create (NULL, peer_array[i]->config);
           left = 30;            /* how many iterations should we wait? */
           while (GNUNET_OK ==
                  GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect,
@@ -196,10 +197,10 @@ main (int argc, const char **argv)
           GNUNET_hash (buf, strlen (buf), &key);
           memset (value, 'A' + i, sizeof (value));
           CHECK (GNUNET_OK == GNUNET_DV_DHT_put (peer_array[i]->config,
-                                              ectx,
-                                              &key,
-                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                              sizeof (value), value));
+                                                 ectx,
+                                                 &key,
+                                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                                 sizeof (value), value));
         }
       printf ("\n");
       /* get loop */
@@ -209,7 +210,9 @@ main (int argc, const char **argv)
             break;
           GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);
 
-          dctx = GNUNET_DV_DHT_context_create (peer_array[i]->config, ectx, &result_callback, &c);
+          dctx =
+            GNUNET_DV_DHT_context_create (peer_array[i]->config, ectx,
+                                          &result_callback, &c);
           printf ("Peer %d gets key", i);
           fflush (stdout);
           for (j = 0; j < NUM_PEERS; j++)
@@ -224,8 +227,8 @@ main (int argc, const char **argv)
               fflush (stdout);
               last = found;
               get1 = GNUNET_DV_DHT_get_start (dctx,
-                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                           &key);
+                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                              &key);
               GNUNET_GE_ASSERT (NULL, get1 != NULL);
               for (k = 0; k < NUM_ROUNDS; k++)
                 {

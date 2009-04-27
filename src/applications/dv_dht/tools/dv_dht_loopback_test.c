@@ -114,22 +114,22 @@ main (int argc, const char **argv)
   value = GNUNET_malloc (8);
   memset (value, 'A', 8);
   CHECK (GNUNET_OK == GNUNET_DV_DHT_put (cfg,
-                                      ectx,
-                                      &key,
-                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      8, value));
+                                         ectx,
+                                         &key,
+                                         GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                         8, value));
   i = 'A';
   CHECK (NULL != (get1 = GNUNET_DV_DHT_get_start (ctx,
-                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                               &key)));
+                                                  GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                                  &key)));
   GNUNET_hash ("key_for_B", 3, &key);
   value = GNUNET_malloc (8);
   memset (value, 'B', 8);
   CHECK (GNUNET_OK == GNUNET_DV_DHT_put (cfg,
-                                      ectx,
-                                      &key,
-                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      8, value));
+                                         ectx,
+                                         &key,
+                                         GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                         8, value));
   left = 10;
   while ((found == 0) && (--left >= 0))
     GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
@@ -139,8 +139,8 @@ main (int argc, const char **argv)
   GNUNET_DV_DHT_get_stop (ctx, get1);
   i = 'B';
   CHECK (NULL != (get2 = GNUNET_DV_DHT_get_start (ctx,
-                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                               &key)));
+                                                  GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                                  &key)));
   left = 10;
   while ((found == 0) && (--left >= 0))
     GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);

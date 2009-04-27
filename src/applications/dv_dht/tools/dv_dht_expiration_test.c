@@ -90,24 +90,25 @@ main (int argc, const char **argv)
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
-  ctx = GNUNET_DV_DHT_context_create (cfg, ectx, &result_callback, unused_cls);
+  ctx =
+    GNUNET_DV_DHT_context_create (cfg, ectx, &result_callback, unused_cls);
   CHECK (ctx != NULL);
   /* actual test code */
   GNUNET_hash ("expired_key", 4, &key);
   value = GNUNET_malloc (8);
   memset (value, 'A', 8);
   CHECK (GNUNET_OK == GNUNET_DV_DHT_put (cfg,
-                                      ectx,
-                                      &key,
-                                      GNUNET_ECRS_BLOCKTYP_DV_DHT_STRING2STRING,
-                                      8, value));
+                                         ectx,
+                                         &key,
+                                         GNUNET_ECRS_BLOCKTYP_DV_DHT_STRING2STRING,
+                                         8, value));
   /* FIXME: this value has to be >> than the expiration
      time (which is currently fixed to 12h, so we can not
      really do this test in practice... */
   GNUNET_thread_sleep (60 * GNUNET_CRON_SECONDS);
   CHECK (1 == GNUNET_DV_DHT_get_start (ctx,
-                                    GNUNET_ECRS_BLOCKTYP_DV_DHT_STRING2STRING,
-                                    &key));
+                                       GNUNET_ECRS_BLOCKTYP_DV_DHT_STRING2STRING,
+                                       &key));
   GNUNET_thread_sleep (15 * GNUNET_CRON_SECONDS);
   GNUNET_DV_DHT_context_destroy (ctx);
 

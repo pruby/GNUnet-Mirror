@@ -44,9 +44,9 @@
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
-                            const GNUNET_HashCode * target,
-                            const GNUNET_PeerIdentity * blocked,
-                            unsigned int blocked_size);
+                               const GNUNET_HashCode * target,
+                               const GNUNET_PeerIdentity * blocked,
+                               unsigned int blocked_size);
 
 /**
  * Compute a (rough) estimate of the networks diameter.

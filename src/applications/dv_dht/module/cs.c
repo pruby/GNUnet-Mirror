@@ -146,7 +146,7 @@ csGet (struct GNUNET_ClientHandle *client,
   cpc = GNUNET_malloc (sizeof (struct DV_DHT_CLIENT_GET_RECORD));
   cpc->client = client;
   cpc->get_record = dvdhtAPI->get_start (ntohl (get->type),
-                                       &get->key, &get_result, cpc);
+                                         &get->key, &get_result, cpc);
   GNUNET_mutex_lock (lock);
   cpc->next = getRecords;
   getRecords = cpc;
