@@ -569,6 +569,8 @@ init_params (struct GNUNET_MysqlStatementHandle *s, va_list ap)
           qbind[off].buffer = va_arg (ap, unsigned int *);
           qbind[off].is_unsigned = va_arg (ap, int);
           break;
+        case MYSQL_TYPE_VAR_STRING:
+        case MYSQL_TYPE_STRING:
         case MYSQL_TYPE_BLOB:
           qbind[off].buffer = va_arg (ap, void *);
           qbind[off].buffer_length = va_arg (ap, unsigned long);
@@ -681,7 +683,7 @@ GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
     {
       ret = mysql_stmt_fetch (s->statement);
       if (ret == MYSQL_NO_DATA)
-	break;	
+        break;
       if (ret != 0)
         {
           GNUNET_GE_LOG (s->db->ectx,
