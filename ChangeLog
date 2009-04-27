@@ -1,3 +1,7 @@
+Mon Apr 27 22:18:19 CEST 2009
+  Monitor low-traffic connections over a longer period
+  of time before terminating them.
+
 Fri Feb 27 22:05:50 MST 2009
 	Releasing 0.8.0c.
 

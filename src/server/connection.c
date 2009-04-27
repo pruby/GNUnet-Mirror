@@ -168,6 +168,26 @@
 #define MAX_VIOLATIONS 10
 
 /**
+ * The maximum value for the low-speed counter
+ */
+#define LOW_SPEED_CTR_MAX CHAR_MAX
+
+/**
+ * Kill low-speed connection after x samples
+ */
+#define LOW_SPEED_CTR_THRESHOLD 10
+
+/**
+ * Amount by which we increase the low-speed counter at a time.
+ */
+#define LOW_SPEED_CTR_INCREMENT (LOW_SPEED_CTR_MAX / (LOW_SPEED_CTR_THRESHOLD + 1))
+
+/**
+ * Amount by which we decrease the low-speed counter at a time.
+ */
+#define LOW_SPEED_CTR_DECREMENT (LOW_SPEED_CTR_INCREMENT / 3)
+
+/**
  * Status constants
  *
  * Protocol goes like this:
@@ -548,6 +568,11 @@ typedef struct BufferEntry_
    * recently?
    */
   unsigned int violations;
+
+  /**
+   * How often was the connection considered low-speed recently?
+   */
+  unsigned char low_speed_ctr;
 
   /**
    * are we currently in "sendBuffer" for this entry?
@@ -2814,8 +2839,23 @@ scheduleInboundTraffic ()
   for (u = 0; u < activePeerCount; u++)
     {
       BufferEntry *be = entries[u];
+      double factor;
 
-      if (be->idealized_limit < MIN_BPM_PER_PEER)
+      /* update low-speed counter */
+      factor = timeDifference / (double) GNUNET_CRON_SECONDS;
+      if (factor > 1)
+        factor = 1;
+
+      if (be->idealized_limit < MIN_BPM_PER_PEER && be->max_bpm < MIN_BPM_PER_PEER)
+        be->low_speed_ctr += (LOW_SPEED_CTR_INCREMENT * factor);
+      else if (be->low_speed_ctr > LOW_SPEED_CTR_DECREMENT * factor)
+        be->low_speed_ctr -= (LOW_SPEED_CTR_DECREMENT * factor);
+      else
+        be->low_speed_ctr = 0;
+
+      /* terminate connection if not overly useful */
+      if (be->low_speed_ctr >
+          LOW_SPEED_CTR_THRESHOLD * LOW_SPEED_CTR_INCREMENT)
         {
 #if DEBUG_CONNECTION
           IF_GELOG (ectx,
