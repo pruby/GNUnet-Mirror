@@ -27,7 +27,6 @@
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
 #include "platform.h"
-#include "heap.h"
 #include "dv.h"
 #include "../../../util/crypto/hostkey_gcrypt.c"
 
@@ -37,83 +36,6 @@ static int tempmaxsize;
 static int tempminsize;
 static int heapverify;
 
-static int
-count_max_callback (struct GNUNET_dv_neighbor *neighbor,
-                    struct GNUNET_dv_heap *root, void *cls)
-{
-  tempmaxsize++;
-  return 1;
-}
-
-static int
-count_min_callback (struct GNUNET_dv_neighbor *neighbor,
-                    struct GNUNET_dv_heap *root, void *cls)
-{
-  tempminsize++;
-  return 1;
-}
-
-static int
-heap_verify_callback (struct GNUNET_dv_neighbor *neighbor,
-                      struct GNUNET_dv_heap *root, void *cls)
-{
-  int ret;
-  ret = heapverify;
-  if (root->type == GNUNET_CONTAINER_MAX_HEAP)
-    {
-      if ((neighbor->max_loc->left_child != NULL)
-          && (neighbor->cost < neighbor->max_loc->left_child->neighbor->cost))
-        {
-          ret = GNUNET_SYSERR;
-        }
-
-      if ((neighbor->max_loc->right_child != NULL)
-          && (neighbor->cost <
-              neighbor->max_loc->right_child->neighbor->cost))
-        {
-          ret = GNUNET_SYSERR;
-        }
-    }
-  else if (root->type == GNUNET_CONTAINER_MIN_HEAP)
-    {
-      if ((neighbor->min_loc->left_child != NULL)
-          && (neighbor->cost > neighbor->min_loc->left_child->neighbor->cost))
-        {
-          ret = GNUNET_SYSERR;
-        }
-
-      if ((neighbor->min_loc->right_child != NULL)
-          && (neighbor->cost >
-              neighbor->min_loc->right_child->neighbor->cost))
-        {
-          ret = GNUNET_SYSERR;
-        }
-    }
-
-  heapverify = ret;
-  return ret;
-}
-
-
-static int
-iterator_callback (struct GNUNET_dv_neighbor *neighbor,
-                   struct GNUNET_dv_heap *root, void *cls)
-{
-  fprintf (stdout, "%d\n", neighbor->cost);
-
-  return GNUNET_OK;
-}
-
-static int
-check_node (struct GNUNET_dv_neighbor *neighbor)
-{
-  if ((neighbor->max_loc->neighbor == neighbor)
-      && (neighbor->min_loc->neighbor == neighbor))
-    return GNUNET_OK;
-  else
-    return GNUNET_SYSERR;
-}
-
 
 int
 main (int argc, char **argv)
@@ -121,8 +43,8 @@ main (int argc, char **argv)
   struct GNUNET_RSA_PrivateKey *hostkey;
   GNUNET_RSA_PublicKey pubkey;
 
-  struct GNUNET_dv_heap *minHeap;
-  struct GNUNET_dv_heap *maxHeap;
+  struct GNUNET_CONTAINER_Heap *minHeap;
+  struct GNUNET_CONTAINER_Heap *maxHeap;
   int i;
   int j;
   int ret;
@@ -163,8 +85,10 @@ main (int argc, char **argv)
                        &neighbors[cur_pos]->neighbor->hashPubKey);
           //neighbors[cur_pos]->cost = temp_rand;
           neighbors[cur_pos]->cost = temp_rand;
-          GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos]);
-          GNUNET_CONTAINER_heap_insert (minHeap, neighbors[cur_pos]);
+          GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos],
+                                        temp_rand);
+          GNUNET_CONTAINER_heap_insert (minHeap, neighbors[cur_pos],
+                                        temp_rand);
           cur_pos++;
           break;
 
@@ -175,7 +99,7 @@ main (int argc, char **argv)
                    temp_node + 1, neighbors[temp_node]->cost, temp_rand);
           GNUNET_CONTAINER_heap_update_cost (maxHeap, neighbors[temp_node],
                                              temp_rand);
-          GNUNET_CONTAINER_heap_update_Cost (minHeap, neighbors[temp_node],
+          GNUNET_CONTAINER_heap_update_cost (minHeap, neighbors[temp_node],
                                              temp_rand);
           break;
         case 3:
