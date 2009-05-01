@@ -29,6 +29,7 @@
 #include "network.h"
 
 #define DEBUG_SELECT GNUNET_NO
+#define DEBUG_CONNECT GNUNET_NO
 
 /**
  * Select Session handle.
@@ -292,6 +293,21 @@ readAndProcess (SelectHandle * sh, Session * session)
 #endif
   if (ret != GNUNET_OK)
     {
+#if DEBUG_CONNECT
+        {
+          char *addr;
+
+          if (GNUNET_socket_getpeername_string(session->sock, &addr) != GNUNET_OK)
+            addr = GNUNET_strdup("unknown");
+          GNUNET_GE_LOG (sh->ectx,
+                               GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
+                               GNUNET_GE_USER | GNUNET_GE_BULK,
+                               "Peer `%s' closed connection %u\n",
+                               addr, session->sock->handle);
+          GNUNET_free(addr);
+        }
+#endif
+
       destroySession (sh, session);
       return GNUNET_SYSERR;     /* other side closed connection */
     }
@@ -323,6 +339,7 @@ readAndProcess (SelectHandle * sh, Session * session)
       if (GNUNET_OK != sh->mh (sh->mh_cls,
                                sh, session->sock, session->sock_ctx, pack))
         {
+          GNUNET_GE_BREAK(sh->ectx, 0);
           GNUNET_mutex_lock (sh->lock);
           if (session->locked == 1)
             session->locked = 0;
@@ -332,6 +349,7 @@ readAndProcess (SelectHandle * sh, Session * session)
       GNUNET_mutex_lock (sh->lock);
       if (session->locked == -1)
         {
+          GNUNET_GE_BREAK(sh->ectx, 0);
           session->locked = 0;
           destroySession (sh, session);
           return GNUNET_OK;
@@ -398,9 +416,22 @@ writeAndProcess (SelectHandle * sh, Session * session)
         {
           if (size == 0)
             {
-              /* send only returns 0 on error (happens if
-                 other side closed connection), so close
-                 the session */
+#if DEBUG_CONNECT
+              {
+                char *addr;
+
+                /* send only returns 0 on error (happens if
+                   other side closed connection), so close
+                   the session */
+                if (GNUNET_socket_getpeername_string(session->sock, &addr) != GNUNET_OK)
+                  addr = GNUNET_strdup("unknown");
+                GNUNET_GE_LOG (sh->ectx,
+                               GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                               "Peer `%s' closed connection %u.\n",
+                               addr, session->sock->handle);
+                GNUNET_free(addr);
+              }
+#endif
               destroySession (sh, session);
               return GNUNET_SYSERR;
             }
@@ -508,7 +539,7 @@ selectThread (void *ctx)
 
           if (!GNUNET_socket_test_valid (sock))
             {
-#if DEBUG_SELECT
+#if 1
               GNUNET_GE_LOG (sh->ectx,
                              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
                              GNUNET_GE_BULK,
@@ -810,6 +841,26 @@ selectThread (void *ctx)
             }
           if (FD_ISSET (sock->handle, &errorSet))
             {
+#if DEBUG_CONNECT
+                {
+                  char *addr;
+                  int error, len;
+
+                  if (GNUNET_socket_getpeername_string(session->sock, &addr) != GNUNET_OK)
+                    addr = GNUNET_strdup("");
+                  error = 0;
+                  len = sizeof(error);
+                  if (GETSOCKOPT(sock->handle, SOL_SOCKET, SO_ERROR, &error, &len) != 0)
+                    GNUNET_GE_LOG_STRERROR(sh->ectx,
+                        GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                        "getsocktopt");
+                  GNUNET_GE_LOG (sh->ectx,
+                                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                                 "Closing faulty connection %u to `%s': `%s'.\n",
+                                 session->sock->handle, addr, STRERROR(error));
+                  GNUNET_free(addr);
+                }
+#endif
               destroySession (sh, session);
               i--;
               continue;
@@ -817,6 +868,19 @@ selectThread (void *ctx)
           if ((session->timeout != 0) &&
               (now > session->lastUse + session->timeout))
             {
+#if DEBUG_CONNECT
+                {
+                  char *addr;
+
+                  if (GNUNET_socket_getpeername_string(session->sock, &addr) != GNUNET_OK)
+                    addr = GNUNET_strdup("unknown");
+                  GNUNET_GE_LOG (sh->ectx,
+                                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                                 "Closing timed out/closed connection to `%s'.\n",
+                                 addr);
+                  GNUNET_free(addr);
+                }
+#endif
               destroySession (sh, session);
               i--;
               continue;
@@ -914,6 +978,10 @@ GNUNET_select_create (const char *description,
       (GNUNET_OK !=
        GNUNET_pipe_make_nonblocking (sh->ectx, sh->signal_pipe[1])))
     {
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE |
+                              GNUNET_GE_ADMIN, "GNUNET_pipe_make_nonblocking");
+
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))
         GNUNET_GE_LOG_STRERROR (ectx,
@@ -1215,6 +1283,21 @@ GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
       GNUNET_mutex_unlock (sh->lock);
       return GNUNET_SYSERR;
     }
+
+#if DEBUG_CONNECT
+    {
+      char *addr;
+
+      if (GNUNET_socket_getpeername_string(session->sock, &addr) != GNUNET_OK)
+        addr = GNUNET_strdup("");
+      GNUNET_GE_LOG (sh->ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                     "Closing connection to `%s' because of select() disconnect.\n",
+                     addr);
+      GNUNET_free(addr);
+    }
+#endif
+
   destroySession (sh, session);
   GNUNET_mutex_unlock (sh->lock);
   signalSelect (sh);

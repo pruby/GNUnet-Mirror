@@ -676,5 +676,46 @@ GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s)
 #endif
 }
 
+/**
+ * Get the IP address of the remote peer
+ * @param s socket handle
+ * @param address IP address of the remote peer, freed by caller
+ * @return GNUNET_YES on success, GNUNET_SYSERR otherwise
+ */
+int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, const char **address)
+{
+  int type;
+#ifdef AF_INET6
+  struct sockaddr_in6 addr;
+#else
+  struct sockaddr_in addr;
+#endif
+  int addrsize, strsize;
+  void *destaddr;
+
+  addrsize = sizeof(addr);
+  if (GETPEERNAME(s->handle, (struct sockaddr *) &addr, &addrsize) != 0)
+      return GNUNET_SYSERR;
+
+  type = ((struct sockaddr *) &addr)->sa_family;
+  if (type == AF_INET)
+    {
+      strsize = INET_ADDRSTRLEN;
+      destaddr = &((struct sockaddr_in *) &addr)->sin_addr;
+    }
+  else
+    {
+      strsize = INET6_ADDRSTRLEN;
+      destaddr = &((struct sockaddr_in6 *) &addr)->sin6_addr;
+    }
+  *address = (char *) GNUNET_malloc(strsize);
+  if (!inet_ntop(type, destaddr, (void *) *address, strsize))
+    {
+      GNUNET_free(*address);
+      return GNUNET_SYSERR;
+    }
+  else
+    return GNUNET_YES;
+}
 
 /* end of io.c */

@@ -33,6 +33,7 @@
 #include "ip.h"
 
 #define DEBUG_TCP GNUNET_NO
+#define DEBUG_CONNECT GNUNET_NO
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -184,8 +185,26 @@ tcp_disconnect (GNUNET_TSession * tsession)
   if ((tcpsession->users > 0) || (tcpsession->in_select == GNUNET_YES))
     {
       if (tcpsession->users == 0)
+        {
+#if DEBUG_CONNECT
+          {
+            char *addr;
+
+            if (GNUNET_socket_getpeername_string(tcpsession->sock, &addr) != GNUNET_OK)
+              addr = GNUNET_strdup("unknown");
+
+            GNUNET_GE_LOG (coreAPI->ectx,
+                           GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
+                           GNUNET_GE_USER | GNUNET_GE_BULK,
+                           "TCP disconnect from peer `%s'\n",
+                           addr);
+            GNUNET_free(addr);
+          }
+#endif
+
         GNUNET_select_change_timeout (selector, tcpsession->sock,
                                       TCP_FAST_TIMEOUT);
+        }
       GNUNET_mutex_unlock (lock);
       return GNUNET_OK;
     }
@@ -262,6 +281,22 @@ select_message_handler (void *mh_cls,
     {
       /* at this point, we should be the only user! */
       GNUNET_GE_ASSERT (NULL, tcpSession->users == 1);
+
+#if DEBUG_CONNECT
+          {
+            char *addr;
+
+            if (GNUNET_socket_getpeername_string(tcpSession->sock, &addr) != GNUNET_OK)
+              addr = GNUNET_strdup("unknown");
+
+            GNUNET_GE_LOG (coreAPI->ectx,
+                           GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
+                           GNUNET_GE_USER | GNUNET_GE_BULK,
+                           "TCP got connetion from/to from peer `%s'\n",
+                           addr);
+            GNUNET_free(addr);
+          }
+#endif
 
       welcome = (const TCPWelcome *) msg;
       if ((ntohs (welcome->header.type) != 0) || (len != sizeof (TCPWelcome)))
@@ -647,6 +682,22 @@ tcp_connect (const GNUNET_MessageHello * hello,
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
+#if DEBUG_CONNECT
+          {
+            char *addr;
+
+            if (GNUNET_socket_getpeername_string(s, &addr) != GNUNET_OK)
+              addr = GNUNET_strdup("unknown");
+
+            GNUNET_GE_LOG (coreAPI->ectx,
+                           GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
+                           GNUNET_GE_USER | GNUNET_GE_BULK,
+                           "Connecting to peer `%s' using socket `%u'\n",
+                           addr, sock);
+            GNUNET_free(addr);
+          }
+#endif
+
   return tcp_connect_helper (hello, s, myAPI.protocol_number, tsessionPtr);
 }
 
