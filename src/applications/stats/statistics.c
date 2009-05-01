@@ -218,6 +218,10 @@ static int stat_bytes_noise_received;
 static int stat_connected;
 #ifdef MINGW
 static int stat_handles;
+static int stat_socks;
+static int stat_maps;
+extern unsigned int uiSockCount;
+extern unsigned int uiMappingsCount;
 #endif
 #if HAVE_MEMSTATS
 static int stat_mem;
@@ -249,6 +253,8 @@ initializeStats ()
     = statHandle (gettext_noop ("# bytes of noise received"));
 #ifdef MINGW
   stat_handles = statHandle (gettext_noop ("# plibc handles"));
+  stat_socks = statHandle (gettext_noop ("# plibc socks"));
+  stat_maps = statHandle (gettext_noop ("# plibc maps"));
 #endif
 #if HAVE_MEMSTATS
   stat_mem = statHandle ("# bytes dynamically allocated");
@@ -285,6 +291,8 @@ immediateUpdates ()
   statSet (stat_connected, coreAPI->p2p_connections_iterate (NULL, NULL));
 #ifdef MINGW
   statSet (stat_handles, plibc_get_handle_count ());
+  statSet (stat_socks, uiSockCount);
+  statSet (stat_maps, uiMappingsCount);
 #endif
 #if HAVE_MEMSTATS
   statSet (stat_mem, GNUNET_memory_usage);
