@@ -1158,6 +1158,14 @@ discardHostsHelper (void *now, const char *fn)
               *((time_t *) now))
             UNLINK (fn);
         }
+      else
+      {
+        CLOSE (hostFile);
+        GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                     GNUNET_GE_BULK, "unlink", fn);
+        return GNUNET_SYSERR;
+      }
     }
   return GNUNET_OK;
 }
