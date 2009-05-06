@@ -3,7 +3,7 @@
 gnunet\-search \- a command line interface to search for content on GNUnet
 .SH SYNOPSIS
 .B gnunet\-search
-[\fIOPTIONS\fR] KEYWORD [AND KEYWORD]*
+[\fIOPTIONS\fR] [+]KEYWORD [[+]KEYWORD]*
 .SH DESCRIPTION
 .PP
 Search for content on GNUnet. The keywords are case-sensitive.  gnunet\-search can be used both for a search in the global namespace as well as for searching a private subspace.
@@ -40,17 +40,21 @@ Writes the encountered (unencrypted) RBlocks or SBlocks to files with name PREFI
 print the version number
 .SH NOTES
 
-You can run gnunet\-search with an URI instead of a keyword.  The URI can have the format for a namespace search or for a keyword search.  For a namespace search, the format is gnunet://ecrs/sks/NAMESPACE/IDENTIFIER.  For a keyword search, use gnunet://ecrs/ksk/KEYWORD[+KEYWORD]*.  If the format does not correspond to a GNUnet URI, GNUnet will automatically assume that keywords are supplied directly.  If multiple words are passed as keywords that are not separated by an AND, gnunet-search will concatenate them to one bigger keyword.  Thus
+You can run gnunet\-search with an URI instead of a keyword.  The URI can have the format for a namespace search or for a keyword search.  For a namespace search, the format is gnunet://ecrs/sks/NAMESPACE/IDENTIFIER.  For a keyword search, use gnunet://ecrs/ksk/KEYWORD[+KEYWORD]*.  If the format does not correspond to a GNUnet URI, GNUnet will automatically assume that keywords are supplied directly.  If only one keyword argument is supplied, gnunet\-search will split the argument at any spaces to yield more keywords:
 
-# gnunet\-search Das Kapital
+# gnunet\-search +Das +Kapital
 
 and
 
-# gnunet\-search "Das Kapital"
+# gnunet\-search "+Das +Kapital"
 
-are identical. You can use AND to separate keywords. In that case, gnunet\-search will only display results that match all the keywords.  gnunet\-search cannot do multiple independent queries ("OR"), you must use multiple processes for that.
+are identical.  Both search for any content matching keywords "Das" and "Kapital".  In general, if multiple keywords are passed, gnunet-search will look for content matching any of the keywords.  The prefix "+" makes a keyword mandatory.  Quotes "..." can be used to form keywords that contain spaces.  But be carefull to protect these quotes from the shell:
+
+# gnunet\-search "\\"Das Kapital\\""
+
+searches for content matching the keyword "Das Kapital".  
+
 Search results are printed by gnunet\-search like this:
-
 .P
 	gnunet\-download \-o "COPYING" gnunet://ecrs/chk/HASH1.HASH2.SIZE
 

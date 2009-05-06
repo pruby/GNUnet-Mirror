@@ -88,7 +88,7 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
    gettext_noop
    ("use the given keyword to advertise the namespace (use when creating a new pseudonym)"),
    1, &GNUNET_ECRS_getopt_configure_set_keywords, &advertisement},
-  {'m', "meta", "TYPE=VALUE",
+  {'m', "meta", "TYPE:VALUE",
    gettext_noop ("specify metadata describing the namespace or collection"),
    1, &GNUNET_ECRS_getopt_configure_set_metadata, &meta},
   {'n', "no-advertisement", NULL,
