@@ -402,7 +402,7 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  * @param address IP address of the remote peer, freed by caller
  * @return GNUNET_YES on success, GNUNET_SYSERR otherwise
  */
-int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, const char **address);
+int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, char **address);
 
 
 /* ********************* select operations **************** */

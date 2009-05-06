@@ -682,7 +682,7 @@ GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s)
  * @param address IP address of the remote peer, freed by caller
  * @return GNUNET_YES on success, GNUNET_SYSERR otherwise
  */
-int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, const char **address)
+int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, char **address)
 {
   int type;
 #ifdef AF_INET6
@@ -690,7 +690,8 @@ int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, const char *
 #else
   struct sockaddr_in addr;
 #endif
-  int addrsize, strsize;
+  socklen_t addrsize;
+  size_t strsize;
   void *destaddr;
 
   addrsize = sizeof(addr);
