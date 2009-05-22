@@ -445,7 +445,9 @@ rereadConfiguration (void *ctx,
                                                                 "F2F",
                                                                 "FRIENDS-ONLY",
                                                                 GNUNET_NO);
-  if (fInfo.friends_only == GNUNET_SYSERR)
+  if (fInfo.friends_only == GNUNET_NO)
+    return 0;
+  else if (fInfo.friends_only == GNUNET_SYSERR)
     return GNUNET_SYSERR;       /* invalid */
   opt = 0;
   GNUNET_GC_get_configuration_value_number (cfg,
