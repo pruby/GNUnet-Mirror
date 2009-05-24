@@ -445,9 +445,7 @@ rereadConfiguration (void *ctx,
                                                                 "F2F",
                                                                 "FRIENDS-ONLY",
                                                                 GNUNET_NO);
-  if (fInfo.friends_only == GNUNET_NO)
-    return 0;
-  else if (fInfo.friends_only == GNUNET_SYSERR)
+  if (fInfo.friends_only == GNUNET_SYSERR)
     return GNUNET_SYSERR;       /* invalid */
   opt = 0;
   GNUNET_GC_get_configuration_value_number (cfg,
@@ -455,6 +453,9 @@ rereadConfiguration (void *ctx,
                                             "MINIMUM",
                                             0, 1024 * 1024, 0, &opt);
   fInfo.minimum_friend_count = (unsigned int) opt;
+
+  if (fInfo.friends_only == GNUNET_NO && fInfo.minimum_friend_count == 0)
+    return 0;
 
   fn = NULL;
   GNUNET_GC_get_configuration_value_filename (cfg,
