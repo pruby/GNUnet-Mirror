@@ -33,7 +33,7 @@
 #include "gnunet_util.h"
 #include "gnunet_remote_lib.h"
 
-#define VERBOSE GNUNET_NO
+#define VERBOSE GNUNET_YES
 
 /**
  * Linked list of information about daemon processes.

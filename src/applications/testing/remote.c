@@ -727,7 +727,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 #if VERBOSE
       fprintf (stderr, _("Creating small world topology\n"));
 #endif
-      ret = GNUNET_SYSERR;
+      ret = GNUNET_REMOTE_connect_small_world(number_of_daemons, list_as_array,
+                                        dotOutFile);
       break;
     case GNUNET_REMOTE_RING:
 #if VERBOSE

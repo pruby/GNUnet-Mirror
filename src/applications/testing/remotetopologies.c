@@ -43,6 +43,34 @@ printInfo (void *data,
 }
 #endif
 
+static int
+addNodeRefs(GNUNET_EncName *node1enc, GNUNET_EncName *node2enc, struct GNUNET_REMOTE_host_list *node1pos, struct GNUNET_REMOTE_host_list *node2pos)
+{
+  struct GNUNET_REMOTE_friends_list *node1temp;
+  struct GNUNET_REMOTE_friends_list *node2temp;
+
+  node1temp = GNUNET_malloc (sizeof(struct GNUNET_REMOTE_friends_list));
+  node2temp = GNUNET_malloc (sizeof(struct GNUNET_REMOTE_friends_list));
+
+  node2temp->hostentry = node1pos;
+  node1temp->hostentry = node2pos;
+
+  node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+  node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+
+  memcpy (node1temp->nodeid, node2enc, sizeof (GNUNET_EncName));
+  memcpy (node2temp->nodeid, node1enc, sizeof (GNUNET_EncName));
+
+  node1temp->next = node1pos->friend_entries;
+  node2temp->next = node2pos->friend_entries;
+
+  node1pos->friend_entries = node1temp;
+  node2pos->friend_entries = node2temp;
+
+  return GNUNET_OK;
+}
+
+
 int
 GNUNET_REMOTE_connect_erdos_renyi (double probability,
                                    struct GNUNET_REMOTE_host_list *main_list,
@@ -53,8 +81,6 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
   struct GNUNET_REMOTE_host_list *iter_pos = main_list;
   GNUNET_EncName *node1;
   GNUNET_EncName *node2;
-  struct GNUNET_REMOTE_friends_list *node1temp;
-  struct GNUNET_REMOTE_friends_list *node2temp;
 
   node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
   node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
@@ -78,27 +104,7 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
 #endif
               if (temp_rand < probability)
                 {
-                  node1temp =
-                    GNUNET_malloc (sizeof
-                                   (struct GNUNET_REMOTE_friends_list));
-                  node2temp =
-                    GNUNET_malloc (sizeof
-                                   (struct GNUNET_REMOTE_friends_list));
-
-                  node2temp->hostentry = pos;
-                  node1temp->hostentry = iter_pos;
-
-                  node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-                  node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-
-                  memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
-                  memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
-
-                  node1temp->next = pos->friend_entries;
-                  node2temp->next = iter_pos->friend_entries;
-
-                  pos->friend_entries = node1temp;
-                  iter_pos->friend_entries = node2temp;
+                  addNodeRefs(node1, node2, pos, iter_pos);
                 }
             }
           iter_pos = iter_pos->next;
@@ -120,8 +126,6 @@ GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list,
   struct GNUNET_REMOTE_host_list *iter_pos = main_list;
   GNUNET_EncName *node1;
   GNUNET_EncName *node2;
-  struct GNUNET_REMOTE_friends_list *node1temp;
-  struct GNUNET_REMOTE_friends_list *node2temp;
 
   node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
   node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
@@ -137,25 +141,7 @@ GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list,
                                                      iter_pos->port, &node1,
                                                      &node2))
             {
-              node1temp =
-                GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-              node2temp =
-                GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-
-              node2temp->hostentry = pos;
-              node1temp->hostentry = iter_pos;
-
-              node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-              node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-
-              memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
-              memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
-
-              node1temp->next = pos->friend_entries;
-              node2temp->next = iter_pos->friend_entries;
-
-              pos->friend_entries = node1temp;
-              iter_pos->friend_entries = node2temp;
+              addNodeRefs(node1, node2, pos, iter_pos);
             }
           iter_pos = iter_pos->next;
         }
@@ -176,9 +162,6 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
   struct GNUNET_REMOTE_host_list *iter_pos = main_list;
   GNUNET_EncName *node1;
   GNUNET_EncName *node2;
-  struct GNUNET_REMOTE_friends_list *node1temp;
-  struct GNUNET_REMOTE_friends_list *node2temp;
-
   node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
   node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
 
@@ -191,25 +174,7 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
                                                  iter_pos->port, &node1,
                                                  &node2))
         {
-          node1temp =
-            GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-          node2temp =
-            GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-
-          node2temp->hostentry = pos;
-          node1temp->hostentry = iter_pos;
-
-          node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-          node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-
-          memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
-          memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
-
-          node1temp->next = pos->friend_entries;
-          node2temp->next = iter_pos->friend_entries;
-
-          pos->friend_entries = node1temp;
-          iter_pos->friend_entries = node2temp;
+          addNodeRefs(node1, node2, pos, iter_pos);
         }
       pos = pos->next;
     }
@@ -219,23 +184,7 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
                                              iter_pos->hostname,
                                              iter_pos->port, &node1, &node2))
     {
-      node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-      node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-
-      node2temp->hostentry = pos;
-      node1temp->hostentry = iter_pos;
-
-      node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-      node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-
-      memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
-      memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
-
-      node1temp->next = pos->friend_entries;
-      node2temp->next = iter_pos->friend_entries;
-
-      pos->friend_entries = node1temp;
-      iter_pos->friend_entries = node2temp;
+      addNodeRefs(node1, node2, pos, iter_pos);
     }
 
   GNUNET_free (node1);
@@ -258,8 +207,6 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
 
   GNUNET_EncName *node1;
   GNUNET_EncName *node2;
-  struct GNUNET_REMOTE_friends_list *node1temp;
-  struct GNUNET_REMOTE_friends_list *node2temp;
 
   node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
   node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
@@ -310,24 +257,7 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
                                              [nodeToConnect]->port, &node1,
                                              &node2);
 
-      node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-      node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-
-      node2temp->hostentry = list_as_array[i];
-      node1temp->hostentry = list_as_array[nodeToConnect];
-
-      node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-      node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-
-      memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
-      memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
-
-      node1temp->next = list_as_array[i]->friend_entries;
-      node2temp->next = list_as_array[nodeToConnect]->friend_entries;
-
-      list_as_array[i]->friend_entries = node1temp;
-      list_as_array[nodeToConnect]->friend_entries = node2temp;
-
+      addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
 
       /* Second connect to the node immediately above */
       if (i < cols)
@@ -348,25 +278,7 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
                                                  [nodeToConnect]->port,
                                                  &node1, &node2);
 
-          node1temp =
-            GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-          node2temp =
-            GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-
-          node2temp->hostentry = list_as_array[i];
-          node1temp->hostentry = list_as_array[nodeToConnect];
-
-          node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-          node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-
-          memcpy (node1temp->nodeid, node2, sizeof (GNUNET_EncName));
-          memcpy (node2temp->nodeid, node1, sizeof (GNUNET_EncName));
-
-          node1temp->next = list_as_array[i]->friend_entries;
-          node2temp->next = list_as_array[nodeToConnect]->friend_entries;
-
-          list_as_array[i]->friend_entries = node1temp;
-          list_as_array[nodeToConnect]->friend_entries = node2temp;
+          addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
         }
 
     }
@@ -381,8 +293,138 @@ GNUNET_REMOTE_connect_small_world (int number_of_daemons,
                                    struct GNUNET_REMOTE_host_list
                                    **list_as_array, FILE * dotOutFile)
 {
+  unsigned int i, j, k;
+  unsigned int square;
+  unsigned int rows;
+  unsigned int cols;
+  unsigned int toggle = 1;
+  unsigned int nodeToConnect;
+  unsigned int natLog;
+  unsigned int node1Row;
+  unsigned int node1Col;
+  unsigned int node2Row;
+  unsigned int node2Col;
+  unsigned int distance;
+  double probability, random;
 
-  return GNUNET_SYSERR;
+  GNUNET_EncName *node1;
+  GNUNET_EncName *node2;
+
+  node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
+  node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
+
+  square = floor (sqrt (number_of_daemons));
+  rows = square;
+  cols = square;
+
+  if (square * square != number_of_daemons)
+    {
+      while (rows * cols < number_of_daemons)
+        {
+          if (toggle % 2 == 0)
+            rows++;
+          else
+            cols++;
+
+          toggle++;
+        }
+    }
+#if VERBOSE
+  fprintf (stderr,
+           _("Connecting nodes in 2d torus topology: %u rows %u columns\n"),
+           rows, cols);
+#endif
+  /* Rows and columns are all sorted out, now iterate over all nodes and connect each
+   * to the node to its right and above.  Once this is over, we'll have our torus!
+   * Special case for the last node (if the rows and columns are not equal), connect
+   * to the first in the row to maintain topology.
+   */
+  for (i = 0; i < number_of_daemons; i++)
+    {
+      /* First connect to the node to the right */
+      if (((i + 1) % cols != 0) && (i + 1 != number_of_daemons))
+        nodeToConnect = i + 1;
+      else if (i + 1 == number_of_daemons)
+        nodeToConnect = rows * cols - cols;
+      else
+        nodeToConnect = i - cols + 1;
+#if VERBOSE
+      fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
+#endif
+      GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname,
+                                             list_as_array[i]->port,
+                                             list_as_array
+                                             [nodeToConnect]->hostname,
+                                             list_as_array
+                                             [nodeToConnect]->port, &node1,
+                                             &node2);
+      addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
+
+      if (i < cols)
+        nodeToConnect = (rows * cols) - cols + i;
+      else
+        nodeToConnect = i - cols;
+
+      if (nodeToConnect < number_of_daemons)
+        {
+#if VERBOSE
+          fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
+#endif
+          GNUNET_REMOTE_get_daemons_information (list_as_array[i]->hostname,
+                                                 list_as_array[i]->port,
+                                                 list_as_array
+                                                 [nodeToConnect]->hostname,
+                                                 list_as_array
+                                                 [nodeToConnect]->port,
+                                                 &node1, &node2);
+          addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
+        }
+
+    }
+
+  natLog = log(number_of_daemons);
+
+  for (i = 0; i < natLog; i++)
+  {
+    for (j = 0; j < number_of_daemons; j++)
+    {
+      /* Determine the row and column of node at position j on the 2d torus */
+      node1Row = j / cols;
+      node1Col = j - (node1Row * cols);
+      for (k = 0; k < number_of_daemons; k++)
+      {
+        /* Determine the row and column of node at position k on the 2d torus */
+        node2Row = k / cols;
+        node2Col = k - (node2Row * cols);
+        /* Simple Cartesian distance */
+        distance = abs(node1Row - node2Row) + abs(node1Col - node2Col);
+        if (distance > 1)
+        {
+          /* Calculate probability as 1 over the square of the distance */
+          probability = 1.0 / (distance * distance);
+          /* Choose a random, divide by RAND_MAX to get a number between 0 and 1 */
+          random = ((double) rand() / RAND_MAX);
+          /* If random < probability, then connect the two nodes */
+          if (random < probability)
+          {
+            GNUNET_REMOTE_get_daemons_information (list_as_array[j]->hostname,
+                                                         list_as_array[j]->port,
+                                                         list_as_array
+                                                         [k]->hostname,
+                                                         list_as_array
+                                                         [k]->port, &node1,
+                                                         &node2);
+
+            addNodeRefs(node1, node2, list_as_array[j], list_as_array[k]);
+          }
+        }
+      }
+    }
+  }
+
+  GNUNET_free (node1);
+  GNUNET_free (node2);
+  return GNUNET_OK;
 }
 
 /**
