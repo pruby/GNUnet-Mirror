@@ -36,8 +36,14 @@
 static int
 test (GNUNET_dhtlog_ServiceAPI * api)
 {
-  GNUNET_PeerIdentity p;
-  GNUNET_HashCode k;
+  GNUNET_PeerIdentity p1;
+  GNUNET_PeerIdentity p2;
+  GNUNET_PeerIdentity p3;
+  GNUNET_PeerIdentity p4;
+
+  GNUNET_HashCode k1;
+  GNUNET_HashCode k2;
+
   GNUNET_HashCode n;
   GNUNET_CronTime exp;
   int ret;
@@ -47,10 +53,15 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   unsigned long long sqlrouteuid = 0;
   unsigned long long nodeuid = 0;
   unsigned long long internaluid = 1010223344;
+  unsigned long long dhtkeyuid = 0;
 
-  memset (&k, 1, sizeof (GNUNET_HashCode));
-  memset (&n, 4, sizeof (GNUNET_HashCode));
-  memcpy (&p.hashPubKey, &n, sizeof (GNUNET_HashCode));
+  memset(&p1.hashPubKey, 3, sizeof (GNUNET_HashCode));
+  memset(&p2.hashPubKey, 4, sizeof (GNUNET_HashCode));
+  memset(&p3.hashPubKey, 5, sizeof (GNUNET_HashCode));
+  memset(&p4.hashPubKey, 6, sizeof (GNUNET_HashCode));
+
+  memset (&k1, 0, sizeof (GNUNET_HashCode));
+  memset (&k2, 1, sizeof (GNUNET_HashCode));
 
   ret = api->insert_trial (&trialuid, i, "trialtest");
   fprintf (stderr, "Trial uid is %llu\n", trialuid);
@@ -59,44 +70,53 @@ test (GNUNET_dhtlog_ServiceAPI * api)
     {
       return ret;
     }
-  ret = api->get_trial (&trialuid);
+
+  ret = api->insert_node (&nodeuid, &p1);
+  ret = api->insert_node (&nodeuid, &p2);
+  ret = api->insert_node (&nodeuid, &p3);
+  ret = api->insert_node (&nodeuid, &p4);
+
   if (ret != GNUNET_OK)
-    {
-      return ret;
-    }
-  fprintf (stderr, "Trial uid is %llu\n", trialuid);
+  {
+    fprintf (stderr, "received ret value of %d\n", ret);
+    return ret;
+  }
+
+  ret = api->insert_dhtkey (&dhtkeyuid, &k1);
+  ret = api->insert_dhtkey (&dhtkeyuid, &k2);
+
+  if (ret != GNUNET_OK)
+  {
+    fprintf (stderr, "received ret value of %d\n", ret);
+    return ret;
+  }
 
   ret =
-    api->insert_query (&sqlqueryuid, internaluid, trialuid, 2, 4, 0, &p, &k);
+    api->insert_query (&sqlqueryuid, internaluid, 2, 4, 0, &p2, &k1);
+
   fprintf (stderr, "Sql uid for dht query is %llu\n", sqlqueryuid);
 
   ret =
-    api->insert_route (&sqlrouteuid, sqlqueryuid, trialuid, 1, 3, 1, &p, &k,
-                       NULL, &p);
+    api->insert_route (&sqlrouteuid, sqlqueryuid, 1, 3, 1, &p1, &k2,
+                       &p4, &p3);
   fprintf (stderr, "Sql uid for dht route is %llu\n", sqlrouteuid);
   ret =
-    api->insert_route (&sqlrouteuid, sqlqueryuid, trialuid, 2, 7, 0, &p, &k,
-                       &p, &p);
+    api->insert_route (&sqlrouteuid, sqlqueryuid, 2, 7, 0, &p3, &k1,
+                       &p4, &p2);
   fprintf (stderr, "Sql uid for dht route is %llu\n", sqlrouteuid);
   ret =
-    api->insert_route (&sqlrouteuid, sqlqueryuid, trialuid, 3, 9, 1, &p, &k,
-                       &p, NULL);
+    api->insert_route (&sqlrouteuid, sqlqueryuid, 3, 9, 1, &p3, &k2,
+                       &p2, NULL);
   fprintf (stderr, "Sql uid for dht route is %llu\n", sqlrouteuid);
 
-  ret = api->insert_node (&nodeuid, trialuid, &p);
-  if (ret != GNUNET_OK)
-    {
-      fprintf (stderr, "received ret value of %d\n", ret);
-      return ret;
-    }
   sleep (1);
   fprintf (stderr, "Updating trial %llu with endtime of now\n", trialuid);
   ret = api->update_trial (trialuid);
 
   if (ret != GNUNET_OK)
-    {
-      return ret;
-    }
+  {
+    return ret;
+  }
 
   return ret;
 }

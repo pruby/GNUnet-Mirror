@@ -41,6 +41,7 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static struct GNUNET_GC_Configuration *dhtlog_cfg;
 
+static unsigned long long current_trial = 0; /* I like to assign 0, just to remember */
 
 /**
  * Handle for the MySQL database.
@@ -48,11 +49,11 @@ static struct GNUNET_GC_Configuration *dhtlog_cfg;
 static struct GNUNET_MysqlDatabaseHandle *db;
 
 
-#define INSERT_QUERIES_STMT "INSERT INTO queries (trialuid, querytype, hops, dhtkey, dhtqueryid, succeeded, node) "\
+#define INSERT_QUERIES_STMT "INSERT INTO queries (trialuid, querytype, hops, dhtkeyuid, dhtqueryid, succeeded, nodeuid) "\
                           "VALUES (?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_query;
 
-#define INSERT_ROUTES_STMT "INSERT INTO routes (trialuid, querytype, hops, dhtkey, dhtqueryid, succeeded, node, from_node, to_node) "\
+#define INSERT_ROUTES_STMT "INSERT INTO routes (trialuid, querytype, hops, dhtkeyuid, dhtqueryid, succeeded, nodeuid, from_node, to_node) "\
                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_route;
 
@@ -64,11 +65,38 @@ static struct GNUNET_MysqlStatementHandle *insert_node;
                           "VALUES (NOW(), ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
-#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW() where trialuid=?"
+#define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid) "\
+                          "VALUES (?, ?)"
+static struct GNUNET_MysqlStatementHandle *insert_dhtkey;
+
+#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW() where trialuid = ?"
 static struct GNUNET_MysqlStatementHandle *update_trial;
 
 #define GET_TRIAL_STMT "SELECT MAX( trialuid ) FROM trials"
 static struct GNUNET_MysqlStatementHandle *get_trial;
+
+#define GET_DHTKEYUID_STMT "SELECT dhtkeyuid FROM dhtkeys where dhtkey = ? and trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *get_dhtkeyuid;
+
+#define GET_NODEUID_STMT "SELECT nodeuid FROM nodes where trialuid = ? and nodeid = ?"
+static struct GNUNET_MysqlStatementHandle *get_nodeuid;
+
+#define DEL_QUERIES_STMT "DELETE FROM queries where trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *del_queries;
+
+#define DEL_NODES_STMT "DELETE FROM nodes where trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *del_nodes;
+
+#define DEL_TRIALS_STMT "DELETE FROM trials where trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *del_trials;
+
+#define DEL_ROUTES_STMT "DELETE FROM routes where trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *del_routes;
+
+#define DEL_DHTKEYS_STMT "DELETE FROM dhtkeys where trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *del_dhtkeys;
+
+
 
 /*
  * Creates tables if they don't already exist for dht logging
@@ -77,40 +105,49 @@ static int
 itable ()
 {
 #define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_run_statement (db, a) )
+
+  if (MRUNS ("CREATE TABLE IF NOT EXISTS `dhtkeys` ("
+              "dhtkeyuid int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Key given to each query',"
+              "`dhtkey` varchar(255) NOT NULL COMMENT 'The ASCII value of the key being searched for',"
+              "trialuid int(10) unsigned NOT NULL,"
+              "UNIQUE KEY `dhtkeyuid` (`dhtkeyuid`)"
+              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
+      return GNUNET_SYSERR;
+
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `nodes` ("
              "`nodeuid` int(10) unsigned NOT NULL auto_increment,"
-             "`trialuid` int(11) NOT NULL,"
+             "`trialuid` int(10) unsigned NOT NULL,"
              "`nodeid` varchar(255) NOT NULL,"
              "PRIMARY KEY  (`nodeuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
 
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `queries` ("
-             "`trialuid` int(11) NOT NULL,"
+             "`trialuid` int(10) unsigned NOT NULL,"
              "`queryuid` int(10) unsigned NOT NULL auto_increment,"
              "`dhtqueryid` bigint(20) NOT NULL,"
              "`querytype` enum('1','2','3') NOT NULL,"
              "`hops` int(10) unsigned NOT NULL,"
              "`succeeded` tinyint NOT NULL,"
-             "`node` varchar(255) NOT NULL,"
+             "`nodeuid` int(10) unsigned NOT NULL,"
              "`time` timestamp NOT NULL default CURRENT_TIMESTAMP,"
-             "`dhtkey` varchar(255) NOT NULL,"
+             "`dhtkeyuid` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`queryuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
 
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `routes` ("
-             "`trialuid` int(11) NOT NULL,"
+             "`trialuid` int(10) unsigned NOT NULL,"
              "`queryuid` int(10) unsigned NOT NULL auto_increment,"
              "`dhtqueryid` bigint(20) NOT NULL,"
              "`querytype` enum('1','2','3') NOT NULL,"
              "`hops` int(10) unsigned NOT NULL,"
              "`succeeded` tinyint NOT NULL,"
-             "`node` varchar(255) NOT NULL,"
+             "`nodeuid` int(10) unsigned NOT NULL,"
              "`time` timestamp NOT NULL default CURRENT_TIMESTAMP,"
-             "`dhtkey` varchar(255) NOT NULL,"
-             "`from_node` varchar(255) NOT NULL,"
-             "`to_node` varchar(255) NOT NULL,"
+             "`dhtkeyuid` int(10) unsigned NOT NULL,"
+             "`from_node` int(10) unsigned NOT NULL,"
+             "`to_node` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`queryuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
@@ -125,6 +162,10 @@ itable ()
              "UNIQUE KEY `trialuid` (`trialuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
+
+  if (MRUNS ("SET AUTOCOMMIT = 1"))
+    return GNUNET_SYSERR;
+
   return GNUNET_OK;
 #undef MRUNS
 }
@@ -148,7 +189,10 @@ iopen ()
       PINIT (insert_route, INSERT_ROUTES_STMT) ||
       PINIT (insert_trial, INSERT_TRIALS_STMT) ||
       PINIT (insert_node, INSERT_NODES_STMT) ||
+      PINIT (insert_dhtkey, INSERT_DHTKEY_STMT) ||
       PINIT (update_trial, UPDATE_TRIALS_STMT) ||
+      PINIT (get_dhtkeyuid, GET_DHTKEYUID_STMT) ||
+      PINIT (get_nodeuid, GET_NODEUID_STMT) ||
       PINIT (get_trial, GET_TRIAL_STMT))
     {
       GNUNET_MYSQL_database_close (db);
@@ -165,10 +209,34 @@ return_ok (void *cls, unsigned int num_values, MYSQL_BIND * values)
   return GNUNET_OK;
 }
 
+
+static int
+get_current_trial (unsigned long long *trialuid)
+{
+  MYSQL_BIND rbind[1];
+
+  memset (rbind, 0, sizeof (rbind));
+  rbind[0].buffer_type = MYSQL_TYPE_LONG;
+  rbind[0].is_unsigned = 1;
+  rbind[0].buffer = trialuid;
+
+  if ((GNUNET_OK !=
+       GNUNET_MYSQL_prepared_statement_run_select (get_trial,
+                                                   1,
+                                                   rbind,
+                                                   return_ok, NULL, -1)))
+    {
+      return GNUNET_SYSERR;
+    }
+
+  return GNUNET_OK;
+}
+
+
 /*
  * Inserts the specified trial into the dhttests.trials table
  */
-static int
+int
 add_trial (unsigned long long *trialuid, int num_nodes, char *topology)
 {
 
@@ -193,24 +261,74 @@ add_trial (unsigned long long *trialuid, int num_nodes, char *topology)
         }
     }
 
+  get_current_trial(&current_trial);
+#if DEBUG_DHTLOG
+  fprintf(stderr, "Current trial is %llu\n", current_trial);
+#endif
   return GNUNET_OK;
 }
 
+
+/*
+ * Inserts the specified dhtkey into the dhttests.dhtkeys table,
+ * stores return value of dhttests.dhtkeys.dhtkeyuid into dhtkeyuid
+ */
+int
+add_dhtkey (unsigned long long *dhtkeyuid, GNUNET_HashCode *dhtkey)
+{
+
+  int ret;
+  GNUNET_EncName encKey;
+  unsigned long long k_len;
+  GNUNET_hash_to_enc (dhtkey, &encKey);
+  k_len = strlen((char *)&encKey);
+
+  if (GNUNET_OK !=
+      (ret = GNUNET_MYSQL_prepared_statement_run (insert_dhtkey,
+                                                  dhtkeyuid,
+                                                  MYSQL_TYPE_VAR_STRING,
+                                                  &encKey,
+                                                  max_varchar_len,
+                                                  &k_len,
+                                                  MYSQL_TYPE_LONG,
+                                                  &current_trial,
+                                                  GNUNET_YES,-1)))
+    {
+      if (ret == GNUNET_SYSERR)
+        {
+          return GNUNET_SYSERR;
+        }
+    }
+
+  return GNUNET_OK;
+}
+
+
 static int
-get_current_trial (unsigned long long *trialuid)
+get_dhtkey_uid (unsigned long long *dhtkeyuid, GNUNET_HashCode * key)
 {
   MYSQL_BIND rbind[1];
-
+  GNUNET_EncName encKey;
+  unsigned long long k_len;
   memset (rbind, 0, sizeof (rbind));
   rbind[0].buffer_type = MYSQL_TYPE_LONG;
   rbind[0].is_unsigned = 1;
-  rbind[0].buffer = trialuid;
+  rbind[0].buffer = dhtkeyuid;
+  GNUNET_hash_to_enc (key, &encKey);
+  k_len = strlen((char *)&encKey);
 
   if ((GNUNET_OK !=
-       GNUNET_MYSQL_prepared_statement_run_select (get_trial,
+       GNUNET_MYSQL_prepared_statement_run_select (get_dhtkeyuid,
                                                    1,
                                                    rbind,
-                                                   return_ok, NULL, -1)))
+                                                   return_ok, NULL,
+                                                   MYSQL_TYPE_VAR_STRING,
+                                                   &encKey,
+                                                   max_varchar_len,
+                                                   &k_len,
+                                                   MYSQL_TYPE_LONGLONG,
+                                                   &current_trial,
+                                                   GNUNET_YES, -1)))
     {
       return GNUNET_SYSERR;
     }
@@ -218,12 +336,50 @@ get_current_trial (unsigned long long *trialuid)
   return GNUNET_OK;
 }
 
+static int
+get_node_uid (unsigned long long *nodeuid, GNUNET_HashCode * peerHash)
+{
+  MYSQL_BIND rbind[1];
+  GNUNET_EncName encPeer;
+  unsigned long long p_len;
+
+  int ret;
+  memset (rbind, 0, sizeof (rbind));
+  rbind[0].buffer_type = MYSQL_TYPE_LONG;
+  rbind[0].buffer = nodeuid;
+  rbind[0].is_unsigned = GNUNET_YES;
+
+  GNUNET_hash_to_enc (peerHash, &encPeer);
+  p_len = strlen((char *)&encPeer);
+
+#if DEBUG_DHTLOG
+  fprintf(stderr, "Searching for peer %s\n", (char *)&encPeer);
+#endif
+
+  if (1 != (ret = GNUNET_MYSQL_prepared_statement_run_select (get_nodeuid,
+                                                   1,
+                                                   rbind,
+                                                   return_ok,
+                                                   NULL,
+                                                   MYSQL_TYPE_LONG,
+                                                   &current_trial,
+                                                   GNUNET_YES,
+                                                   MYSQL_TYPE_VAR_STRING,
+                                                   &encPeer,
+                                                   max_varchar_len,
+                                                   &p_len,
+                                                   -1)))
+     return GNUNET_SYSERR;
+
+  return GNUNET_OK;
+}
+
+
 /*
  * Inserts the specified node into the dhttests.nodes table
  */
-static int
-add_node (unsigned long long *nodeuid, unsigned long long trialuid,
-          GNUNET_PeerIdentity * node)
+int
+add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
 {
   GNUNET_EncName encPeer;
   unsigned long long p_len;
@@ -238,7 +394,7 @@ add_node (unsigned long long *nodeuid, unsigned long long trialuid,
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_node,
                                                   nodeuid,
                                                   MYSQL_TYPE_LONGLONG,
-                                                  &trialuid,
+                                                  &current_trial,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_VAR_STRING,
                                                   &encPeer,
@@ -256,11 +412,16 @@ add_node (unsigned long long *nodeuid, unsigned long long trialuid,
 /*
  * Update dhttests.trials table with current server time as end time
  */
-static int
+int
 update_trials (unsigned long long trialuid)
 {
   int ret;
-
+#if DEBUG_DHTLOG
+  if (trialuid != current_trial)
+  {
+    fprintf(stderr, _("Trialuid to update is not equal to current_trial\n"));
+  }
+#endif
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (update_trial,
                                                   NULL,
@@ -281,27 +442,39 @@ update_trials (unsigned long long trialuid)
 /*
  * Inserts the specified query into the dhttests.queries table
  */
-static int
+int
 add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
-           unsigned long long trialuid, unsigned int type, unsigned int hops,
-           int succeeded, GNUNET_PeerIdentity * node, GNUNET_HashCode * key)
+           unsigned int type, unsigned int hops, int succeeded,
+           GNUNET_PeerIdentity * node, GNUNET_HashCode * key)
 {
-//trialuid, type, key, dhtqueryid, succeeded, node
-  GNUNET_EncName encPeer;
-  GNUNET_EncName encKey;
-  unsigned long long p_len, k_len;
   int ret;
+  unsigned long long peer_uid, key_uid;
+  peer_uid = 0;
+  key_uid = 0;
 
-  GNUNET_hash_to_enc (&node->hashPubKey, &encPeer);
-  GNUNET_hash_to_enc (key, &encKey);
-  p_len = strlen ((char *) &encPeer);
-  k_len = strlen ((char *) &encKey);
+  if ((node != NULL) && (GNUNET_OK == get_node_uid (&peer_uid, &node->hashPubKey)))
+  {
+
+  }
+  else
+  {
+    return GNUNET_SYSERR;
+  }
+
+  if ( (key != NULL) && (GNUNET_OK == get_dhtkey_uid(&key_uid, key)) )
+  {
+
+  }
+  else
+  {
+    return GNUNET_SYSERR;
+  }
 
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_query,
                                                   sqlqueryuid,
                                                   MYSQL_TYPE_LONGLONG,
-                                                  &trialuid,
+                                                  &current_trial,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &type,
@@ -309,20 +482,18 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
                                                   MYSQL_TYPE_LONG,
                                                   &hops,
                                                   GNUNET_YES,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  &encKey,
-                                                  max_varchar_len,
-                                                  &k_len,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &key_uid,
+                                                  GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &queryid,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &succeeded,
                                                   GNUNET_NO,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  &encPeer,
-                                                  max_varchar_len,
-                                                  &p_len, -1)))
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &peer_uid,
+                                                  GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -338,42 +509,52 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
 /*
  * Inserts the specified route information into the dhttests.routes table
  */
-static int
+int
 add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
-           unsigned long long trialuid, unsigned int type, unsigned int hops,
+           unsigned int type, unsigned int hops,
            int succeeded, GNUNET_PeerIdentity * node, GNUNET_HashCode * key,
            GNUNET_PeerIdentity * from_node, GNUNET_PeerIdentity * to_node)
 {
-//trialuid, querytype, dhtkey, dhtqueryid, succeeded, node, from_node, to_node
-  GNUNET_EncName encPeer;
-  GNUNET_EncName encKey;
-  GNUNET_EncName encFromNode;
-  GNUNET_EncName encToNode;
-  unsigned long long p_len, k_len, from_len, to_len;
+  unsigned long long peer_uid, key_uid, from_uid, to_uid = 0;
   int ret;
 
-  GNUNET_hash_to_enc (&node->hashPubKey, &encPeer);
-  GNUNET_hash_to_enc (key, &encKey);
   if (from_node != NULL)
-    GNUNET_hash_to_enc (&from_node->hashPubKey, &encFromNode);
+    get_node_uid (&from_uid, &from_node->hashPubKey);
   else
-    strcpy ((char *) &encFromNode, "");
+    from_uid = 0;
 
-  if (from_node != NULL)
-    GNUNET_hash_to_enc (&from_node->hashPubKey, &encFromNode);
+  if (to_node != NULL)
+    get_node_uid (&to_uid, &to_node->hashPubKey);
   else
-    strcpy ((char *) &encFromNode, "");
+    to_uid = 0;
 
-  p_len = strlen ((char *) &encPeer);
-  k_len = strlen ((char *) &encKey);
-  from_len = strlen ((char *) &encFromNode);
-  to_len = strlen ((char *) &encToNode);
+  if ((node != NULL))
+  {
+    if (1 != get_node_uid (&peer_uid, &node->hashPubKey))
+    {
+      return GNUNET_SYSERR;
+    }
+  }
+  else
+    return GNUNET_SYSERR;
+
+  if ((key != NULL))
+  {
+    if (1 != get_dhtkey_uid(&key_uid, key))
+    {
+      return GNUNET_SYSERR;
+    }
+  }
+  else
+    return GNUNET_SYSERR;
+
+  fprintf(stderr, "fromnode %llu, tonode %llu, peeruid %llu, keyuid %llu\n", from_uid, to_uid, peer_uid, key_uid);
 
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_route,
                                                   sqlqueryuid,
                                                   MYSQL_TYPE_LONGLONG,
-                                                  &trialuid,
+                                                  &current_trial,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &type,
@@ -381,28 +562,24 @@ add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
                                                   MYSQL_TYPE_LONG,
                                                   &hops,
                                                   GNUNET_YES,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  &encKey,
-                                                  max_varchar_len,
-                                                  &k_len,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &key_uid,
+                                                  GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &queryid,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &succeeded,
                                                   GNUNET_NO,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  &encPeer,
-                                                  max_varchar_len,
-                                                  &p_len,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  &encFromNode,
-                                                  max_varchar_len,
-                                                  &from_len,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  &encToNode,
-                                                  max_varchar_len,
-                                                  &to_len, -1)))
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &peer_uid,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &from_uid,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &to_uid,
+                                                  GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -449,8 +626,8 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   api.update_trial = &update_trials;
   api.insert_route = &add_route;
   api.insert_node = &add_node;
-  api.get_trial = &get_current_trial;
-
+  api.insert_dhtkey = &add_dhtkey;
+  get_current_trial(&current_trial);
   return &api;
 }
 
