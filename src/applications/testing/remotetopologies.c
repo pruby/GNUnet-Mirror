@@ -44,13 +44,15 @@ printInfo (void *data,
 #endif
 
 static int
-addNodeRefs(GNUNET_EncName *node1enc, GNUNET_EncName *node2enc, struct GNUNET_REMOTE_host_list *node1pos, struct GNUNET_REMOTE_host_list *node2pos)
+addNodeRefs (GNUNET_EncName * node1enc, GNUNET_EncName * node2enc,
+             struct GNUNET_REMOTE_host_list *node1pos,
+             struct GNUNET_REMOTE_host_list *node2pos)
 {
   struct GNUNET_REMOTE_friends_list *node1temp;
   struct GNUNET_REMOTE_friends_list *node2temp;
 
-  node1temp = GNUNET_malloc (sizeof(struct GNUNET_REMOTE_friends_list));
-  node2temp = GNUNET_malloc (sizeof(struct GNUNET_REMOTE_friends_list));
+  node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+  node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
 
   node2temp->hostentry = node1pos;
   node1temp->hostentry = node2pos;
@@ -66,6 +68,71 @@ addNodeRefs(GNUNET_EncName *node1enc, GNUNET_EncName *node2enc, struct GNUNET_RE
 
   node1pos->friend_entries = node1temp;
   node2pos->friend_entries = node2temp;
+
+  return GNUNET_OK;
+}
+
+int
+GNUNET_REMOTE_connect_nated_internet (double nat_percentage,
+                                      int number_of_daemons,
+                                      struct GNUNET_REMOTE_host_list
+                                      *main_list, FILE * dotOutFile)
+{
+  unsigned int count, inner_count;
+  int is_nat, inner_is_nat, can_connect;
+  unsigned int cutoff;
+  struct GNUNET_REMOTE_host_list *pos = main_list;
+  struct GNUNET_REMOTE_host_list *iter_pos = main_list;
+  GNUNET_EncName *node1;
+  GNUNET_EncName *node2;
+
+  node1 = GNUNET_malloc (sizeof (GNUNET_EncName));
+  node2 = GNUNET_malloc (sizeof (GNUNET_EncName));
+  cutoff = (unsigned int) (nat_percentage * number_of_daemons);
+
+  count = 0;
+  while ((pos != NULL) && (pos->next != NULL))
+    {
+      if (count < cutoff)
+        is_nat = GNUNET_YES;
+      else
+        is_nat = GNUNET_NO;
+      inner_count = 0;
+      iter_pos = pos->next;
+      while (iter_pos != NULL)
+        {
+          if (inner_count < cutoff)
+            inner_is_nat = GNUNET_YES;
+          else
+            inner_is_nat = GNUNET_NO;
+          can_connect = GNUNET_YES;
+
+          if ((is_nat == GNUNET_YES) && (inner_is_nat == GNUNET_YES))
+            {
+              can_connect = GNUNET_NO;
+            }
+
+          if (GNUNET_YES == can_connect)
+            {
+              if (GNUNET_OK ==
+                  GNUNET_REMOTE_get_daemons_information (pos->hostname,
+                                                         pos->port,
+                                                         iter_pos->hostname,
+                                                         iter_pos->port,
+                                                         &node1, &node2))
+                {
+                  addNodeRefs (node1, node2, pos, iter_pos);
+                }
+            }
+          iter_pos = iter_pos->next;
+          inner_count++;
+        }
+      pos = pos->next;
+      count++;
+    }
+
+  GNUNET_free (node1);
+  GNUNET_free (node2);
 
   return GNUNET_OK;
 }
@@ -104,7 +171,7 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
 #endif
               if (temp_rand < probability)
                 {
-                  addNodeRefs(node1, node2, pos, iter_pos);
+                  addNodeRefs (node1, node2, pos, iter_pos);
                 }
             }
           iter_pos = iter_pos->next;
@@ -141,7 +208,7 @@ GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list,
                                                      iter_pos->port, &node1,
                                                      &node2))
             {
-              addNodeRefs(node1, node2, pos, iter_pos);
+              addNodeRefs (node1, node2, pos, iter_pos);
             }
           iter_pos = iter_pos->next;
         }
@@ -174,7 +241,7 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
                                                  iter_pos->port, &node1,
                                                  &node2))
         {
-          addNodeRefs(node1, node2, pos, iter_pos);
+          addNodeRefs (node1, node2, pos, iter_pos);
         }
       pos = pos->next;
     }
@@ -184,7 +251,7 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
                                              iter_pos->hostname,
                                              iter_pos->port, &node1, &node2))
     {
-      addNodeRefs(node1, node2, pos, iter_pos);
+      addNodeRefs (node1, node2, pos, iter_pos);
     }
 
   GNUNET_free (node1);
@@ -257,7 +324,8 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
                                              [nodeToConnect]->port, &node1,
                                              &node2);
 
-      addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
+      addNodeRefs (node1, node2, list_as_array[i],
+                   list_as_array[nodeToConnect]);
 
       /* Second connect to the node immediately above */
       if (i < cols)
@@ -278,7 +346,8 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
                                                  [nodeToConnect]->port,
                                                  &node1, &node2);
 
-          addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
+          addNodeRefs (node1, node2, list_as_array[i],
+                       list_as_array[nodeToConnect]);
         }
 
     }
@@ -358,7 +427,8 @@ GNUNET_REMOTE_connect_small_world (int number_of_daemons,
                                              list_as_array
                                              [nodeToConnect]->port, &node1,
                                              &node2);
-      addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
+      addNodeRefs (node1, node2, list_as_array[i],
+                   list_as_array[nodeToConnect]);
 
       if (i < cols)
         nodeToConnect = (rows * cols) - cols + i;
@@ -377,50 +447,55 @@ GNUNET_REMOTE_connect_small_world (int number_of_daemons,
                                                  list_as_array
                                                  [nodeToConnect]->port,
                                                  &node1, &node2);
-          addNodeRefs(node1, node2, list_as_array[i], list_as_array[nodeToConnect]);
+          addNodeRefs (node1, node2, list_as_array[i],
+                       list_as_array[nodeToConnect]);
         }
 
     }
 
-  natLog = log(number_of_daemons);
+  natLog = log (number_of_daemons);
 
   for (i = 0; i < natLog; i++)
-  {
-    for (j = 0; j < number_of_daemons; j++)
     {
-      /* Determine the row and column of node at position j on the 2d torus */
-      node1Row = j / cols;
-      node1Col = j - (node1Row * cols);
-      for (k = 0; k < number_of_daemons; k++)
-      {
-        /* Determine the row and column of node at position k on the 2d torus */
-        node2Row = k / cols;
-        node2Col = k - (node2Row * cols);
-        /* Simple Cartesian distance */
-        distance = abs(node1Row - node2Row) + abs(node1Col - node2Col);
-        if (distance > 1)
+      for (j = 0; j < number_of_daemons; j++)
         {
-          /* Calculate probability as 1 over the square of the distance */
-          probability = 1.0 / (distance * distance);
-          /* Choose a random, divide by RAND_MAX to get a number between 0 and 1 */
-          random = ((double) rand() / RAND_MAX);
-          /* If random < probability, then connect the two nodes */
-          if (random < probability)
-          {
-            GNUNET_REMOTE_get_daemons_information (list_as_array[j]->hostname,
-                                                         list_as_array[j]->port,
-                                                         list_as_array
-                                                         [k]->hostname,
-                                                         list_as_array
-                                                         [k]->port, &node1,
-                                                         &node2);
+          /* Determine the row and column of node at position j on the 2d torus */
+          node1Row = j / cols;
+          node1Col = j - (node1Row * cols);
+          for (k = 0; k < number_of_daemons; k++)
+            {
+              /* Determine the row and column of node at position k on the 2d torus */
+              node2Row = k / cols;
+              node2Col = k - (node2Row * cols);
+              /* Simple Cartesian distance */
+              distance =
+                abs (node1Row - node2Row) + abs (node1Col - node2Col);
+              if (distance > 1)
+                {
+                  /* Calculate probability as 1 over the square of the distance */
+                  probability = 1.0 / (distance * distance);
+                  /* Choose a random, divide by RAND_MAX to get a number between 0 and 1 */
+                  random = ((double) rand () / RAND_MAX);
+                  /* If random < probability, then connect the two nodes */
+                  if (random < probability)
+                    {
+                      GNUNET_REMOTE_get_daemons_information (list_as_array
+                                                             [j]->hostname,
+                                                             list_as_array
+                                                             [j]->port,
+                                                             list_as_array
+                                                             [k]->hostname,
+                                                             list_as_array
+                                                             [k]->port,
+                                                             &node1, &node2);
 
-            addNodeRefs(node1, node2, list_as_array[j], list_as_array[k]);
-          }
+                      addNodeRefs (node1, node2, list_as_array[j],
+                                   list_as_array[k]);
+                    }
+                }
+            }
         }
-      }
     }
-  }
 
   GNUNET_free (node1);
   GNUNET_free (node2);

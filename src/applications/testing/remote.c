@@ -38,10 +38,11 @@ static struct GNUNET_REMOTE_host_list **list_as_array;
  *
  * @param gnunetd_home directory where gnunetd is on remote machine
  * @param localConfigPath local configuration path for config file
- * @param remote_config_path remote path to copy local config to
  * @param configFileName  file to copy and use on remote machine
- * @param ip_address ip address of remote machine
+ * @param remote_config_path remote path to copy local config to
+ * @param hostname hostname or ip address of remote machine
  * @param username username to use for ssh (assumed to be used with ssh-agent)
+ * @param remote_friend_file_path path for friend file on remote machine
  */
 int
 GNUNET_REMOTE_start_daemon (char *gnunetd_home,
@@ -78,10 +79,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                        configFileName, username, hostname,
                        remote_config_path);
     }
-  /* To me this seems like information that will always be appreciated by the user
-   * if this is contested by anyone, please mark it here as well as how it should be
-   * done, and I can change it everywhere else by example! NE
-   */
+
 #if VERBOSE
   fprintf (stderr, _("cp command is : %s \n"), cmd);
 #endif
@@ -140,10 +138,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 #endif
 
   unused = system (cmd);
-
   GNUNET_free (cmd);
-
-
   return GNUNET_OK;
 }
 
@@ -246,6 +241,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   char *remote_config_path;
   char *remote_gnunetd_path;
   char *remote_pid_path;
+  char *mysql_server;
+  char *mysql_user;
+  char *mysql_password;
+  char *mysql_db;
   char *base_config;
   char *data_dir;
   char *hostnames;
@@ -258,11 +257,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 
   unsigned long long starting_port;
   unsigned long long port_increment;
+  unsigned long long mysql_port;
   unsigned long long daemons_per_machine;
   unsigned long long temp_port;
   unsigned long long topology;
-
-
 
   unsigned int extra_daemons;
   unsigned int count;
@@ -331,6 +329,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                             "PORT_INCREMENT",
                                             1, -1, 2, &port_increment);
 
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_PORT",
+                                            1, -1, 3306, &mysql_port);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "REMOTE_CONFIG_PATH", "/tmp/",
                                             &remote_config_path);
@@ -353,6 +355,19 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                             "PID_PATH", "/tmp/",
                                             &remote_pid_path);
 
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_SERVER", control_host,
+                                            &mysql_server);
+
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_DB", "dht", &mysql_db);
+
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_USER", "dht", &mysql_user);
+
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_PASSWORD", "dht**",
+                                            &mysql_password);
   length = strlen (hostnames);
   num_machines = 1;
   for (count = 0; count < length; count++)
@@ -386,6 +401,22 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
       GNUNET_GC_set_configuration_value_string (basecfg, NULL, "PATHS",
                                                 "GNUNETD_HOME",
                                                 remote_config_path);
+      GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                "MYSQL_LOGGING",
+                                                "MYSQL_SERVER", mysql_server);
+      GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                "MYSQL_LOGGING", "MYSQL_DB",
+                                                mysql_db);
+      GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                "MYSQL_LOGGING", "MYSQL_USER",
+                                                mysql_user);
+      GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                "MYSQL_LOGGING",
+                                                "MYSQL_PASSWORD",
+                                                mysql_password);
+      GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                "MYSQL_LOGGING", "MYSQL_PORT",
+                                                mysql_port);
 
       while (hostnames[pos] != ' ' && pos > 0)
         pos--;
@@ -727,8 +758,9 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 #if VERBOSE
       fprintf (stderr, _("Creating small world topology\n"));
 #endif
-      ret = GNUNET_REMOTE_connect_small_world(number_of_daemons, list_as_array,
-                                        dotOutFile);
+      ret =
+        GNUNET_REMOTE_connect_small_world (number_of_daemons, list_as_array,
+                                           dotOutFile);
       break;
     case GNUNET_REMOTE_RING:
 #if VERBOSE
