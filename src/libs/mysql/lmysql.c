@@ -262,27 +262,67 @@ iclose ()
 static int
 iopen (struct GNUNET_MysqlDatabaseHandle *ret)
 {
-  char *dbname;
+  char *mysql_dbname;
+  char *mysql_server;
+  char *mysql_user;
+  char *mysql_password;
+  unsigned long long mysql_port;
+
   my_bool reconnect = 0;
   unsigned int timeout = 60;    /* in seconds */
 
   ret->dbf = mysql_init (NULL);
   if (ret->dbf == NULL)
     return GNUNET_SYSERR;
-  mysql_options (ret->dbf, MYSQL_READ_DEFAULT_FILE, ret->cnffile);
+  if (ret->cnffile != NULL)
+    mysql_options (ret->dbf, MYSQL_READ_DEFAULT_FILE, ret->cnffile);
   mysql_options (ret->dbf, MYSQL_READ_DEFAULT_GROUP, "client");
   mysql_options (ret->dbf, MYSQL_OPT_RECONNECT, &reconnect);
   mysql_options (ret->dbf,
                  MYSQL_OPT_CONNECT_TIMEOUT, (const void *) &timeout);
   mysql_options (ret->dbf, MYSQL_OPT_READ_TIMEOUT, (const void *) &timeout);
   mysql_options (ret->dbf, MYSQL_OPT_WRITE_TIMEOUT, (const void *) &timeout);
-  dbname = NULL;
+  mysql_dbname = NULL;
+  mysql_server = NULL;
+  mysql_user = NULL;
+  mysql_password = NULL;
+  mysql_port = 0;
+
   GNUNET_GC_get_configuration_value_string (ret->cfg,
                                             "MYSQL", "DATABASE", "gnunet",
-                                            &dbname);
-  GNUNET_GE_ASSERT (ret->ectx, dbname != NULL);
-  mysql_real_connect (ret->dbf, NULL, NULL, NULL, dbname, 0, NULL, 0);
-  GNUNET_free (dbname);
+                                            &mysql_dbname);
+
+  if (GNUNET_YES == GNUNET_GC_have_configuration_value (ret->cfg,
+                                                        "MYSQL", "USER"))
+    {
+      GNUNET_GC_get_configuration_value_string (ret->cfg,
+                                                "MYSQL", "USER", "",
+                                                &mysql_user);
+    }
+
+  if (GNUNET_YES == GNUNET_GC_have_configuration_value (ret->cfg,
+                                                        "MYSQL", "PASSWORD"))
+    {
+      GNUNET_GC_get_configuration_value_string (ret->cfg,
+                                                "MYSQL", "PASSWORD", "",
+                                                &mysql_password);
+    }
+
+  if (GNUNET_YES == GNUNET_GC_have_configuration_value (ret->cfg,
+                                                        "MYSQL", "HOST"))
+    {
+      GNUNET_GC_get_configuration_value_string (ret->cfg,
+                                                "MYSQL", "HOST", "",
+                                                &mysql_server);
+    }
+
+  GNUNET_GC_get_configuration_value_number (ret->cfg, "MYSQL",
+                                            "PORT", 1, -1, 0, &mysql_port);
+
+  GNUNET_GE_ASSERT (ret->ectx, mysql_dbname != NULL);
+  mysql_real_connect (ret->dbf, mysql_server, mysql_user, mysql_password,
+                      mysql_dbname, (unsigned int) mysql_port, NULL, 0);
+  GNUNET_free (mysql_dbname);
   if (mysql_error (ret->dbf)[0])
     {
       LOG_MYSQL (GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
@@ -312,7 +352,7 @@ GNUNET_MYSQL_database_open (struct GNUNET_GE_Context *ectx,
   ret->ectx = ectx;
   ret->cfg = cfg;
   ret->cnffile = get_my_cnf_path (ectx, cfg);
-  if ((ret->cnffile == NULL) || (GNUNET_OK != iopen (ret)))
+  if ((ret->cnffile == NULL) && (GNUNET_OK != iopen (ret)))
     {
       if (ret->dbf != NULL)
         mysql_close (ret->dbf);
@@ -678,6 +718,7 @@ GNUNET_MYSQL_prepared_statement_run_select (struct GNUNET_MysqlStatementHandle
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
+
   total = 0;
   while (1)
     {
