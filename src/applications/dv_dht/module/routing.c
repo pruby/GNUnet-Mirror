@@ -1059,7 +1059,10 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
       debug_routes_extended = GNUNET_YES;
     }
 
-  if (debug_routes)
+  if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
+                                                             "DHT",
+                                                             "DHTLOG_MYSQL",
+                                                             GNUNET_NO))
     {
       dhtlog = coreAPI->service_request ("dhtlog_mysql");
       GNUNET_GE_ASSERT (coreAPI->ectx, dhtlog != NULL);
