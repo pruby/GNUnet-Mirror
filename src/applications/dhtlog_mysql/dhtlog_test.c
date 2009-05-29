@@ -55,10 +55,10 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   unsigned long long internaluid = 1010223344;
   unsigned long long dhtkeyuid = 0;
 
-  memset(&p1.hashPubKey, 3, sizeof (GNUNET_HashCode));
-  memset(&p2.hashPubKey, 4, sizeof (GNUNET_HashCode));
-  memset(&p3.hashPubKey, 5, sizeof (GNUNET_HashCode));
-  memset(&p4.hashPubKey, 6, sizeof (GNUNET_HashCode));
+  memset (&p1.hashPubKey, 3, sizeof (GNUNET_HashCode));
+  memset (&p2.hashPubKey, 4, sizeof (GNUNET_HashCode));
+  memset (&p3.hashPubKey, 5, sizeof (GNUNET_HashCode));
+  memset (&p4.hashPubKey, 6, sizeof (GNUNET_HashCode));
 
   memset (&k1, 0, sizeof (GNUNET_HashCode));
   memset (&k2, 1, sizeof (GNUNET_HashCode));
@@ -77,22 +77,21 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   ret = api->insert_node (&nodeuid, &p4);
 
   if (ret != GNUNET_OK)
-  {
-    fprintf (stderr, "received ret value of %d\n", ret);
-    return ret;
-  }
+    {
+      fprintf (stderr, "received ret value of %d\n", ret);
+      return ret;
+    }
 
   ret = api->insert_dhtkey (&dhtkeyuid, &k1);
   ret = api->insert_dhtkey (&dhtkeyuid, &k2);
 
   if (ret != GNUNET_OK)
-  {
-    fprintf (stderr, "received ret value of %d\n", ret);
-    return ret;
-  }
+    {
+      fprintf (stderr, "received ret value of %d\n", ret);
+      return ret;
+    }
 
-  ret =
-    api->insert_query (&sqlqueryuid, internaluid, 2, 4, 0, &p2, &k1);
+  ret = api->insert_query (&sqlqueryuid, internaluid, 2, 4, 0, &p2, &k1);
 
   fprintf (stderr, "Sql uid for dht query is %llu\n", sqlqueryuid);
 
@@ -114,9 +113,9 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   ret = api->update_trial (trialuid);
 
   if (ret != GNUNET_OK)
-  {
-    return ret;
-  }
+    {
+      return ret;
+    }
 
   return ret;
 }

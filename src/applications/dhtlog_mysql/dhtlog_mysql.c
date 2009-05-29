@@ -41,7 +41,7 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static struct GNUNET_GC_Configuration *dhtlog_cfg;
 
-static unsigned long long current_trial = 0; /* I like to assign 0, just to remember */
+static unsigned long long current_trial = 0;    /* I like to assign 0, just to remember */
 
 /**
  * Handle for the MySQL database.
@@ -107,12 +107,12 @@ itable ()
 #define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_run_statement (db, a) )
 
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `dhtkeys` ("
-              "dhtkeyuid int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Key given to each query',"
-              "`dhtkey` varchar(255) NOT NULL COMMENT 'The ASCII value of the key being searched for',"
-              "trialuid int(10) unsigned NOT NULL,"
-              "UNIQUE KEY `dhtkeyuid` (`dhtkeyuid`)"
-              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
-      return GNUNET_SYSERR;
+             "dhtkeyuid int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Key given to each query',"
+             "`dhtkey` varchar(255) NOT NULL COMMENT 'The ASCII value of the key being searched for',"
+             "trialuid int(10) unsigned NOT NULL,"
+             "UNIQUE KEY `dhtkeyuid` (`dhtkeyuid`)"
+             ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
+    return GNUNET_SYSERR;
 
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `nodes` ("
              "`nodeuid` int(10) unsigned NOT NULL auto_increment,"
@@ -261,9 +261,9 @@ add_trial (unsigned long long *trialuid, int num_nodes, char *topology)
         }
     }
 
-  get_current_trial(&current_trial);
+  get_current_trial (&current_trial);
 #if DEBUG_DHTLOG
-  fprintf(stderr, "Current trial is %llu\n", current_trial);
+  fprintf (stderr, "Current trial is %llu\n", current_trial);
 #endif
   return GNUNET_OK;
 }
@@ -274,14 +274,14 @@ add_trial (unsigned long long *trialuid, int num_nodes, char *topology)
  * stores return value of dhttests.dhtkeys.dhtkeyuid into dhtkeyuid
  */
 int
-add_dhtkey (unsigned long long *dhtkeyuid, GNUNET_HashCode *dhtkey)
+add_dhtkey (unsigned long long *dhtkeyuid, GNUNET_HashCode * dhtkey)
 {
 
   int ret;
   GNUNET_EncName encKey;
   unsigned long long k_len;
   GNUNET_hash_to_enc (dhtkey, &encKey);
-  k_len = strlen((char *)&encKey);
+  k_len = strlen ((char *) &encKey);
 
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_dhtkey,
@@ -292,7 +292,7 @@ add_dhtkey (unsigned long long *dhtkeyuid, GNUNET_HashCode *dhtkey)
                                                   &k_len,
                                                   MYSQL_TYPE_LONG,
                                                   &current_trial,
-                                                  GNUNET_YES,-1)))
+                                                  GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -315,7 +315,7 @@ get_dhtkey_uid (unsigned long long *dhtkeyuid, GNUNET_HashCode * key)
   rbind[0].is_unsigned = 1;
   rbind[0].buffer = dhtkeyuid;
   GNUNET_hash_to_enc (key, &encKey);
-  k_len = strlen((char *)&encKey);
+  k_len = strlen ((char *) &encKey);
 
   if ((GNUNET_OK !=
        GNUNET_MYSQL_prepared_statement_run_select (get_dhtkeyuid,
@@ -350,26 +350,25 @@ get_node_uid (unsigned long long *nodeuid, GNUNET_HashCode * peerHash)
   rbind[0].is_unsigned = GNUNET_YES;
 
   GNUNET_hash_to_enc (peerHash, &encPeer);
-  p_len = strlen((char *)&encPeer);
+  p_len = strlen ((char *) &encPeer);
 
 #if DEBUG_DHTLOG
-  fprintf(stderr, "Searching for peer %s\n", (char *)&encPeer);
+  fprintf (stderr, "Searching for peer %s\n", (char *) &encPeer);
 #endif
 
   if (1 != (ret = GNUNET_MYSQL_prepared_statement_run_select (get_nodeuid,
-                                                   1,
-                                                   rbind,
-                                                   return_ok,
-                                                   NULL,
-                                                   MYSQL_TYPE_LONG,
-                                                   &current_trial,
-                                                   GNUNET_YES,
-                                                   MYSQL_TYPE_VAR_STRING,
-                                                   &encPeer,
-                                                   max_varchar_len,
-                                                   &p_len,
-                                                   -1)))
-     return GNUNET_SYSERR;
+                                                              1,
+                                                              rbind,
+                                                              return_ok,
+                                                              NULL,
+                                                              MYSQL_TYPE_LONG,
+                                                              &current_trial,
+                                                              GNUNET_YES,
+                                                              MYSQL_TYPE_VAR_STRING,
+                                                              &encPeer,
+                                                              max_varchar_len,
+                                                              &p_len, -1)))
+    return GNUNET_SYSERR;
 
   return GNUNET_OK;
 }
@@ -418,9 +417,10 @@ update_trials (unsigned long long trialuid)
   int ret;
 #if DEBUG_DHTLOG
   if (trialuid != current_trial)
-  {
-    fprintf(stderr, _("Trialuid to update is not equal to current_trial\n"));
-  }
+    {
+      fprintf (stderr,
+               _("Trialuid to update is not equal to current_trial\n"));
+    }
 #endif
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (update_trial,
@@ -452,23 +452,24 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
   peer_uid = 0;
   key_uid = 0;
 
-  if ((node != NULL) && (GNUNET_OK == get_node_uid (&peer_uid, &node->hashPubKey)))
-  {
+  if ((node != NULL)
+      && (GNUNET_OK == get_node_uid (&peer_uid, &node->hashPubKey)))
+    {
 
-  }
+    }
   else
-  {
-    return GNUNET_SYSERR;
-  }
+    {
+      return GNUNET_SYSERR;
+    }
 
-  if ( (key != NULL) && (GNUNET_OK == get_dhtkey_uid(&key_uid, key)) )
-  {
+  if ((key != NULL) && (GNUNET_OK == get_dhtkey_uid (&key_uid, key)))
+    {
 
-  }
+    }
   else
-  {
-    return GNUNET_SYSERR;
-  }
+    {
+      return GNUNET_SYSERR;
+    }
 
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_query,
@@ -492,8 +493,7 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
                                                   &succeeded,
                                                   GNUNET_NO,
                                                   MYSQL_TYPE_LONGLONG,
-                                                  &peer_uid,
-                                                  GNUNET_YES, -1)))
+                                                  &peer_uid, GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -529,26 +529,27 @@ add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
     to_uid = 0;
 
   if ((node != NULL))
-  {
-    if (1 != get_node_uid (&peer_uid, &node->hashPubKey))
     {
-      return GNUNET_SYSERR;
+      if (1 != get_node_uid (&peer_uid, &node->hashPubKey))
+        {
+          return GNUNET_SYSERR;
+        }
     }
-  }
   else
     return GNUNET_SYSERR;
 
   if ((key != NULL))
-  {
-    if (1 != get_dhtkey_uid(&key_uid, key))
     {
-      return GNUNET_SYSERR;
+      if (1 != get_dhtkey_uid (&key_uid, key))
+        {
+          return GNUNET_SYSERR;
+        }
     }
-  }
   else
     return GNUNET_SYSERR;
 
-  fprintf(stderr, "fromnode %llu, tonode %llu, peeruid %llu, keyuid %llu\n", from_uid, to_uid, peer_uid, key_uid);
+  fprintf (stderr, "fromnode %llu, tonode %llu, peeruid %llu, keyuid %llu\n",
+           from_uid, to_uid, peer_uid, key_uid);
 
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_route,
@@ -578,8 +579,7 @@ add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
                                                   &from_uid,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
-                                                  &to_uid,
-                                                  GNUNET_YES, -1)))
+                                                  &to_uid, GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -599,6 +599,12 @@ GNUNET_dhtlog_ServiceAPI *
 provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_dhtlog_ServiceAPI api;
+  char *mysql_server;
+  char *mysql_user;
+  char *mysql_db;
+  char *mysql_password;
+  unsigned long long mysql_port;
+
   dhtlog_cfg = GNUNET_GC_create ();
   coreAPI = capi;
   max_varchar_len = 255;
@@ -609,9 +615,58 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
                  "MySQL DHT Logger: initializing database\n");
   fprintf (stderr, "MySQL DHT Logger: initializing database\n");
 #endif
+
+  GNUNET_GC_get_configuration_value_string (capi->cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_SERVER", "localhost",
+                                            &mysql_server);
+
+  GNUNET_GC_get_configuration_value_string (capi->cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_DB", "dhttests",
+                                            &mysql_db);
+
+  GNUNET_GC_get_configuration_value_string (capi->cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_USER", "dht", &mysql_user);
+
+  GNUNET_GC_get_configuration_value_string (capi->cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_PASSWORD", "dht**",
+                                            &mysql_password);
+
+  GNUNET_GC_get_configuration_value_number (capi->cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "MYSQL_PORT", 1, -1, 3306,
+                                            &mysql_port);
+
   GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
                                             NULL,
-                                            "MYSQL", "DATABASE", "dhttests");
+                                            "MYSQL", "DATABASE", mysql_db);
+
+  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
+                                            NULL,
+                                            "MYSQL", "HOST", mysql_server);
+
+  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
+                                            NULL,
+                                            "MYSQL", "USER", mysql_user);
+
+  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
+                                            NULL,
+                                            "MYSQL", "PASSWORD",
+                                            mysql_password);
+
+  GNUNET_GC_set_configuration_value_number (dhtlog_cfg,
+                                            NULL,
+                                            "MYSQL", "PORT", mysql_port);
+
+#if DEBUG_DHTLOG
+  fprintf (stderr,
+           _
+           ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
+           mysql_server, mysql_user, mysql_port, mysql_password, mysql_db);
+#endif
   if (iopen () != GNUNET_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
@@ -627,7 +682,7 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   api.insert_route = &add_route;
   api.insert_node = &add_node;
   api.insert_dhtkey = &add_dhtkey;
-  get_current_trial(&current_trial);
+  get_current_trial (&current_trial);
   return &api;
 }
 
