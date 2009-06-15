@@ -48,6 +48,22 @@ typedef struct
   int (*dv_connections_iterate) (GNUNET_NodeIteratorCallback method,
                                  void *arg);
 
+  /**
+   * For core, Query how much bandwidth is availabe FROM the given
+   * node to this node in bpm (at the moment).  For DV, currently
+   * only returns GNUNET_OK if node is known in DV tables.  Should
+   * be obsoleted by DV/transports/Core integration.  Necessary
+   * now because DHT uses this call to check if peer is known
+   * before adding to DHT routing tables.
+   *
+   * @param bpm set to the bandwidth
+   * @param last_seen set to last time peer was confirmed up
+   * @return GNUNET_OK on success, GNUNET_SYSERR if if we are NOT connected
+   */
+  int (*p2p_connection_status_check) (const GNUNET_PeerIdentity * node,
+                                      unsigned int *bpm,
+                                      GNUNET_CronTime * last_seen);
+
 } GNUNET_DV_ServiceAPI;
 
 #endif /* end of gnunet_dv_service.h */
