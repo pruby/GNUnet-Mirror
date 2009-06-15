@@ -30,6 +30,7 @@
 #include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "gnunet_dv_service.h"
+#include "gnunet_stats_service.h"
 #include "dv.h"
 
 #define DEBUG_DV_MAINTAIN GNUNET_YES
@@ -38,6 +39,18 @@
 /* How long to allow a message to be delayed */
 #define DV_DELAY (100 * GNUNET_CRON_MILLISECONDS)
 #define DV_PRIORITY 0
+
+/**
+ * Statistics service.
+ */
+static GNUNET_Stats_ServiceAPI *stats;
+static int stat_dv_total_peers;
+static int stat_dv_sent_messages;
+static int stat_dv_received_messages;
+static int stat_dv_forwarded_messages;
+static int stat_dv_sent_gossips;
+static int stat_dv_received_gossips;
+
 /*
  * Global construct
  */
@@ -55,7 +68,6 @@ struct GNUNET_DV_Context
   struct GNUNET_MultiHashMap *extended_neighbors;
   struct GNUNET_CONTAINER_Heap *neighbor_min_heap;
   struct GNUNET_CONTAINER_Heap *neighbor_max_heap;
-
 
 };
 
@@ -120,6 +132,8 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
     GNUNET_free (neighbor->referrer);
   GNUNET_free (neighbor);
 
+  if (stats != NULL)
+    stats->change (stat_dv_total_peers, -1);
   return GNUNET_OK;
 }
 
@@ -419,6 +433,8 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
                  "%s: Guessing packed message size %d, actual packed message size %d\n",
                  &shortID, message_length, ntohs (packed_message->size));
 #endif
+  if (stats != NULL)
+    stats->change (stat_dv_received_messages, 1);
   if (memcmp
       (coreAPI->my_identity, &incoming->recipient,
        sizeof (GNUNET_PeerIdentity)) == 0)
@@ -439,6 +455,7 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
 #endif
       coreAPI->loopback_send (&incoming->sender, (char *) packed_message,
                               ntohs (packed_message->size), GNUNET_YES, NULL);
+
     }
   else
     {
@@ -455,6 +472,8 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
                      (char *) &encSender, (char *) &encOrigin);
 #endif
       ret = forward_message (incoming);
+      if (stats != NULL)
+        stats->change (stat_dv_forwarded_messages, 1);
     }
   GNUNET_free (message_content);
   return ret;
@@ -486,10 +505,44 @@ GNUNET_DV_send_message (const GNUNET_PeerIdentity * recipient,
                  GNUNET_GE_BULK,
                  "%s: Entered GNUNET_DV_send_message!\n", &shortID);
 #endif
-
+  if (stats != NULL)
+    stats->change (stat_dv_sent_messages, 1);
   return send_message (recipient, coreAPI->my_identity, message, importance,
                        maxdelay);
 }
+
+
+/**
+ * For core, Query how much bandwidth is availabe FROM the given
+ * node to this node in bpm (at the moment).  For DV, currently
+ * only returns GNUNET_OK if node is known in DV tables.  Should
+ * be obsoleted by DV/transports/Core integration.  Necessary
+ * now because DHT uses this call to check if peer is known
+ * before adding to DHT routing tables.
+ *
+ * @param bpm set to the bandwidth
+ * @param last_seen set to last time peer was confirmed up
+ * @return GNUNET_OK on success, GNUNET_SYSERR if if we are NOT connected
+ */
+int
+GNUNET_DV_connection_get_bandwidth_assigned_to_peer (const
+                                                     GNUNET_PeerIdentity *
+                                                     node,
+                                                     unsigned int *bpm,
+                                                     GNUNET_CronTime *
+                                                     last_seen)
+{
+  unsigned int ret;
+  ret = GNUNET_SYSERR;
+  GNUNET_mutex_lock (ctx->dvMutex);
+  //fprintf(stderr, "DV Table size %d\n", GNUNET_multi_hash_map_size(ctx->extended_neighbors));
+  if (GNUNET_YES == GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                                    &node->hashPubKey))
+    ret = GNUNET_OK;
+  GNUNET_mutex_unlock (ctx->dvMutex);
+  return ret;
+}
+
 
 /*
  * Handles when a peer is either added due to being newly connected
@@ -582,6 +635,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
       GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor, cost);
       GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor, cost);
 
+      if (stats != NULL)
+        stats->change (stat_dv_total_peers, 1);
     }
   else
     {
@@ -674,7 +729,8 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
   nmsg = (const p2p_dv_MESSAGE_NeighborInfo *) message;
 
   ret = addUpdateNeighbor (&nmsg->neighbor, sender, ntohl (nmsg->cost) + 1);
-
+  if (stats != NULL)
+    stats->change (stat_dv_received_gossips, 1);
   if (GNUNET_OK != ret)
     GNUNET_GE_LOG (coreAPI->ectx,
                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -958,6 +1014,8 @@ neighbor_send_thread (void *rcls)
           coreAPI->ciphertext_send (to->neighbor, &message->header, 0,
                                     ctx->send_interval *
                                     GNUNET_CRON_MILLISECONDS);
+          if (stats != NULL)
+            stats->change (stat_dv_sent_gossips, 1);
         }
       GNUNET_thread_sleep (ctx->send_interval * GNUNET_CRON_MILLISECONDS);
     }
@@ -982,12 +1040,31 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
 
   api.dv_send = &GNUNET_DV_send_message;
   api.dv_connections_iterate = &GNUNET_DV_connection_iterate_peers;
-  ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
+  api.p2p_connection_status_check =
+    &GNUNET_DV_connection_get_bandwidth_assigned_to_peer;
 
+  stats = capi->service_request ("stats");
+  if (stats != NULL)
+    {
+      stat_dv_total_peers = stats->create (gettext_noop ("# dv connections"));
+      stat_dv_sent_messages =
+        stats->create (gettext_noop ("# dv messages sent"));
+      stat_dv_received_messages =
+        stats->create (gettext_noop ("# dv messages received"));
+      stat_dv_forwarded_messages =
+        stats->create (gettext_noop ("# dv messages forwarded"));
+      stat_dv_received_gossips =
+        stats->create (gettext_noop ("# dv gossips received"));
+      stat_dv_sent_gossips =
+        stats->create (gettext_noop ("# dv gossips sent"));
+
+    }
+
+  ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
   ctx->neighbor_min_heap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
   ctx->neighbor_max_heap = GNUNET_CONTAINER_heap_create (GNUNET_MAX_HEAP);
   ctx->send_interval = GNUNET_DV_DEFAULT_SEND_INTERVAL;
-  ctx->dvMutex = GNUNET_mutex_create (GNUNET_NO);
+  ctx->dvMutex = GNUNET_mutex_create (GNUNET_YES);
   coreAPI = capi;
   GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
   strncpy ((char *) &shortID, (char *) &encMe, 4);
