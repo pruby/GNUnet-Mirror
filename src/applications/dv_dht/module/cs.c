@@ -110,7 +110,7 @@ get_result (const GNUNET_HashCode * key,
     }
   msg = GNUNET_malloc (n);
   msg->header.size = htons (n);
-  msg->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
+  msg->header.type = htons (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT);
   msg->type = htonl (type);
   msg->key = *key;
   memcpy (&msg[1], value, size);
@@ -207,7 +207,7 @@ csGetEnd (struct GNUNET_ClientHandle *client,
 static void
 csClientExit (struct GNUNET_ClientHandle *client)
 {
-  struct GNUNET_DHT_GetHandle *gr;
+  struct GNUNET_DV_DHT_GetHandle *gr;
   struct DV_DHT_CLIENT_GET_RECORD *pos;
   struct DV_DHT_CLIENT_GET_RECORD *prev;
 
@@ -237,40 +237,46 @@ csClientExit (struct GNUNET_ClientHandle *client)
 }
 
 int
-initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
+initialize_module_dv_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   int status;
+  GNUNET_GE_LOG (capi->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _("`%s' registering client handlers: %d %d %d\n"),
+                 "dv_dht", GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT,
+                 GNUNET_CS_PROTO_DV_DHT_REQUEST_GET,
+                 GNUNET_CS_PROTO_DV_DHT_REQUEST_GET_END);
 
   dvdhtAPI = capi->service_request ("dv_dht");
   if (dvdhtAPI == NULL)
     return GNUNET_SYSERR;
   coreAPI = capi;
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 _("`%s' registering client handlers: %d %d\n"),
-                 "dht", GNUNET_CS_PROTO_DHT_REQUEST_PUT,
-                 GNUNET_CS_PROTO_DHT_REQUEST_GET);
+
   status = GNUNET_OK;
   lock = GNUNET_mutex_create (GNUNET_NO);
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT, &csPut))
+      coreAPI->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_PUT,
+                                    &csPut))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET, &csGet))
+      coreAPI->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET,
+                                    &csGet))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET_END,
-                                 &csGetEnd))
+      coreAPI->cs_handler_register (GNUNET_CS_PROTO_DV_DHT_REQUEST_GET_END,
+                                    &csGetEnd))
     status = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->cs_disconnect_handler_register (&csClientExit))
+  if (GNUNET_SYSERR ==
+      coreAPI->cs_disconnect_handler_register (&csClientExit))
     status = GNUNET_SYSERR;
-  GNUNET_GE_ASSERT (capi->ectx,
-                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                                   capi->ectx,
-                                                                   "ABOUT",
-                                                                   "dht",
-                                                                   gettext_noop
-                                                                   ("Enables efficient non-anonymous routing")));
+  GNUNET_GE_ASSERT (coreAPI->ectx,
+                    0 ==
+                    GNUNET_GC_set_configuration_value_string (coreAPI->cfg,
+                                                              coreAPI->ectx,
+                                                              "ABOUT", "dht",
+                                                              gettext_noop
+                                                              ("Enables efficient non-anonymous routing")));
   return status;
 }
 
@@ -313,7 +319,7 @@ kill_record (void *cls)
  * Unregisters handlers, cleans memory structures etc when node exits.
  */
 int
-done_module_dht ()
+done_module_dv_dht ()
 {
   int status;
 

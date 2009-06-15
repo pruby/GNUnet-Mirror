@@ -93,7 +93,6 @@ GNUNET_DV_DHT_ServiceAPI *
 provide_module_dv_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_DV_DHT_ServiceAPI api;
-
   if (GNUNET_OK != GNUNET_DV_DHT_table_init (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);

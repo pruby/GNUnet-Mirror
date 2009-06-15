@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/dht/tools/dht_expiration_test.c
+ * @file applications/dv_dht/tools/dv_dht_expiration_test.c
  * @brief DV_DHT testcase using only a single peer
  * @author Christian Grothoff
  * @author Nathan Evans

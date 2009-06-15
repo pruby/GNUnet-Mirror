@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/dht/tools/dht_multipeer_test.c
+ * @file applications/dv_dht/tools/dv_dht_multipeer_test.c
  * @brief DV_DHT testcase
  * @author Christian Grothoff
  * @author Nathan Evans
@@ -121,7 +121,7 @@ main (int argc, const char **argv)
     }
   printf ("Starting %u peers...\n", NUM_PEERS);
   peers = GNUNET_TESTING_start_daemons ("tcp",
-                                        "advertising dv dv_dht stats",
+                                        "advertising dv_dht stats",
                                         "/tmp/gnunet-dv-dht-multi-test",
                                         2087, 10, NUM_PEERS);
   if (peers == NULL)

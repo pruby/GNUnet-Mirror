@@ -67,12 +67,13 @@
  * What is the chance (1 in XXX) that we send DISCOVERY messages
  * to another peer?
  */
-#define MAINTAIN_CHANCE (10 + 100 * total_peers)
+/*#define MAINTAIN_CHANCE (10 + 100 * total_peers)*/
+#define MAINTAIN_CHANCE (1 + total_peers)
 
 /**
  * How long can a peer be inactive before we time it out?
  */
-#define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4
+#define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4 + 100
 
 /**
  * What is the maximum number of known DV_DHT-enabled peers
@@ -495,8 +496,7 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     {
       dvapi->dv_send (other,
                       &disco->header,
-                      GNUNET_EXTREME_PRIORITY / 4,
-                      MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+                      GNUNET_EXTREME_PRIORITY / 4, 2 * GNUNET_CRON_SECONDS);
       return;
     }
   pc = total_peers;
@@ -528,8 +528,9 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     }
   disco->header.size =
     htons (pc * sizeof (GNUNET_PeerIdentity) + sizeof (P2P_DV_DHT_Discovery));
-  dvapi->dv_send (other, &disco->header, 0,
-                  MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
+  //fprintf(stderr, "Sending discovery message, number of known peers %d\n", total_peers);
+  dvapi->dv_send (other, &disco->header, GNUNET_EXTREME_PRIORITY / 4,
+                  2 * GNUNET_CRON_SECONDS);
   GNUNET_free (disco);
 }
 
@@ -538,6 +539,7 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 {
   if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, MAINTAIN_CHANCE) != 0)
     return;
+  //fprintf(stderr, "sending discovery message\n");
   broadcast_dht_discovery (other, cls);
 }
 
@@ -548,7 +550,6 @@ static void
 maintain_dht_job (void *unused)
 {
   P2P_DV_DHT_Discovery disc;
-
   if (total_peers == 0)
     {
       disc.header.size = htons (sizeof (P2P_DV_DHT_Discovery));
@@ -667,7 +668,9 @@ considerPeer (const GNUNET_PeerIdentity * sender,
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     return;                     /* do not care */
   if (NULL != findPeerEntryInBucket (bucket, peer))
-    return;                     /* already have this peer in buckets */
+    {
+      return;                   /* already have this peer in buckets */
+    }
   /* do we know how to contact this peer? */
   hello =
     identity->identity2Hello (peer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
@@ -683,9 +686,11 @@ considerPeer (const GNUNET_PeerIdentity * sender,
                       5 * GNUNET_CRON_SECONDS);
       return;
     }
+
   GNUNET_free (hello);
   /* check if connected, if not, send discovery */
-  if (GNUNET_OK != coreAPI->p2p_connection_status_check (peer, NULL, NULL))
+  /* coreAPI->p2p_connection_status_check (peer, NULL, NULL); */
+  if (GNUNET_OK != dvapi->p2p_connection_status_check (peer, NULL, NULL))
     {
       /* not yet connected; connect sending DISCOVERY */
       broadcast_dht_discovery (peer, NULL);
@@ -771,7 +776,7 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
                               GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
-  dvapi->dv_send (sender, &hello->header, 0, 5 * GNUNET_CRON_SECONDS);
+  dvapi->dv_send (sender, &hello->header, 0, 1 * GNUNET_CRON_SECONDS);
   GNUNET_free (hello);
   return GNUNET_OK;
 }
@@ -874,6 +879,10 @@ GNUNET_DV_DHT_table_done ()
     {
       coreAPI->service_release (stats);
       stats = NULL;
+    }
+  if (dvapi != NULL)
+    {
+      coreAPI->service_release (dvapi);
     }
   coreAPI->service_release (identity);
   identity = NULL;

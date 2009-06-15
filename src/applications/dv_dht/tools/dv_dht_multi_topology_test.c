@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/dht/tools/dht_multipeer_test.c
+ * @file applications/dv_dht/tools/dv_dht_multipeer_test.c
  * @brief DV_DHT testcase
  * @author Christian Grothoff
  * @author Nathan Evans
@@ -37,7 +37,7 @@
  * How many peers should the testcase run?  Note that
  * we create a clique topology so the cost is quadratic!
  */
-#define NUM_PEERS 8
+#define NUM_PEERS 15
 
 /**
  * How many times will we try the DV_DHT-GET operation before
@@ -48,7 +48,7 @@
 /**
  * How often do we iterate the put-get loop?
  */
-#define NUM_REPEAT 5
+#define NUM_REPEAT 50
 
 static int ok;
 static int found;
@@ -78,6 +78,22 @@ result_callback (const GNUNET_HashCode * key,
 static int
 waitForConnect (const char *name, unsigned long long value, void *cls)
 {
+  if ((value > 0) && (0 == strcmp (_("# dv_dht connections"), name)))
+    {
+      ok = 1;
+      return GNUNET_SYSERR;
+    }
+  return GNUNET_OK;
+}
+
+static int
+getPeers (const char *name, unsigned long long value, void *cls)
+{
+  if ((value > 0) && (strstr (name, _("# dv")) != NULL))
+    {
+      fprintf (stderr, "%s : %llu\n", name, value);
+    }
+
   if ((value > 0) && (0 == strcmp (_("# dv_dht connections"), name)))
     {
       ok = 1;
@@ -138,8 +154,36 @@ main (int argc, const char **argv)
       peer_array[i] = pos;
       pos = pos->next;
     }
-
+  sleep (30);
   found = 0;
+  for (r = 0; r < NUM_REPEAT; r++)
+    {
+      fprintf (stderr, "After %d minutes\n", r);
+      for (i = 0; i < NUM_PEERS; i++)
+        {
+          if (GNUNET_shutdown_test () == GNUNET_YES)
+            break;
+          fprintf (stderr, "Peer %d: ", i);
+          sock =
+            GNUNET_client_connection_create (NULL, peer_array[i]->config);
+          GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL);
+          GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
+          GNUNET_client_connection_destroy (sock);
+
+        }
+      if (GNUNET_shutdown_test () == GNUNET_YES)
+        break;
+      sleep (60);
+    }
+  pos = peers;
+  while (pos != NULL)
+    {
+      GNUNET_REMOTE_kill_daemon (pos);
+      pos = pos->next;
+    }
+  GNUNET_GC_free (cfg);
+  return ret;
+
   for (r = 0; r < NUM_REPEAT; r++)
     {
       if (r > 0)
