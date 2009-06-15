@@ -546,7 +546,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
           GNUNET_free (temp_pid_file);
           GNUNET_free (temp_remote_config_path);
           GNUNET_free (temp);
-          UNLINK (temp_path);
+          //UNLINK (temp_path);
           GNUNET_free (temp_path);
 
           if ((i < extra_daemons) && (j == daemons_per_machine - 1))
@@ -700,7 +700,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
 
               GNUNET_free (temp_pid_file);
               GNUNET_free (temp_remote_config_path);
-              UNLINK (temp_path);
+              //UNLINK (temp_path);
               GNUNET_free (temp_path);
               GNUNET_free (temp);
             }
