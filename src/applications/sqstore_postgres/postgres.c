@@ -247,6 +247,47 @@ init_connection ()
         }
     }
   PQclear (ret);
+#if 1
+  ret = PQexec (dbh,
+                "ALTER TABLE gn080 ALTER value SET STORAGE EXTERNAL");
+  if ((ret == NULL) || ((PQresultStatus (ret) != PGRES_COMMAND_OK) && 
+			(0 != strcmp ("42P07",    /* duplicate table */
+				      PQresultErrorField
+				      (ret,
+				       PG_DIAG_SQLSTATE)))))
+    {
+      check_result (ret, PGRES_COMMAND_OK, "ALTER TABLE", "gn080", __LINE__);
+      PQfinish (dbh);
+      dbh = NULL;
+      return GNUNET_SYSERR;
+    }
+  ret = PQexec (dbh,
+                "ALTER TABLE gn080 ALTER hash SET STORAGE PLAIN");
+  if ((ret == NULL) || ((PQresultStatus (ret) != PGRES_COMMAND_OK) && 
+			(0 != strcmp ("42P07",    /* duplicate table */
+				      PQresultErrorField
+				      (ret,
+				       PG_DIAG_SQLSTATE)))))
+    {
+      check_result (ret, PGRES_COMMAND_OK, "ALTER TABLE", "gn080", __LINE__);
+      PQfinish (dbh);
+      dbh = NULL;
+      return GNUNET_SYSERR;
+    }
+  ret = PQexec (dbh,
+                "ALTER TABLE gn080 ALTER vhash SET STORAGE PLAIN");
+  if ((ret == NULL) || ((PQresultStatus (ret) != PGRES_COMMAND_OK) && 
+			(0 != strcmp ("42P07",    /* duplicate table */
+				      PQresultErrorField
+				      (ret,
+				       PG_DIAG_SQLSTATE)))))
+    {
+      check_result (ret, PGRES_COMMAND_OK, "ALTER TABLE", "gn080", __LINE__);
+      PQfinish (dbh);
+      dbh = NULL;
+      return GNUNET_SYSERR;
+    }
+#endif
   if ((GNUNET_OK !=
        pq_prepare ("getvt",
                    "SELECT size, type, prio, anonLevel, expire, hash, value, oid FROM gn080 "
