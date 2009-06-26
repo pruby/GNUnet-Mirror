@@ -19,8 +19,8 @@
 */
 
 /**
- * @file applications/dv_dht/tools/dv_dht_multipeer_test.c
- * @brief DV_DHT testcase
+ * @file applications/dv_dht/tools/dv_dht_driver.c
+ * @brief DV_DHT Driver for testing DHT
  * @author Christian Grothoff
  * @author Nathan Evans
  */
@@ -32,26 +32,66 @@
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"
 #include "gnunet_remote_lib.h"
+#include "gnunet_dhtlog_service.h"
+
+
+
+static char *configFile = "dv_test.conf";
+static GNUNET_CoreAPIForPlugins capi;
+static struct GNUNET_GE_Context *ectx;
+static struct GNUNET_GC_Configuration *cfg;
+static GNUNET_ServicePluginInitializationMethod init;
+static GNUNET_ServicePluginShutdownMethod done;
+static GNUNET_dhtlog_ServiceAPI *sqlapi;
+
+static unsigned long long topology;
+static unsigned long long num_peers;
+static unsigned long long num_repeat;
+static unsigned long long num_rounds;
+static char *dotOutFileName = NULL;
+
+static struct GNUNET_CommandLineOption gnunetDHTDriverOptions[] = {
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),    /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Run tests on DHT")),  /* -h */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  {'O', "output", "DOT_OUTPUT",
+   gettext_noop
+   ("set output file for a dot input file which represents the graph of the connected nodes"),
+   1, &GNUNET_getopt_configure_set_string, &dotOutFileName},
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
+};
 
 /**
- * How many peers should the testcase run?  Note that
- * we create a clique topology so the cost is quadratic!
+ * How many peers should the testcase run (default)?
  */
-#define NUM_PEERS 15
+#define DEFAULT_NUM_PEERS 15
 
 /**
  * How many times will we try the DV_DHT-GET operation before
- * giving up for good?
+ * giving up for good (default)?
  */
-#define NUM_ROUNDS 20
+#define DEFAULT_NUM_ROUNDS 20
 
 /**
- * How often do we iterate the put-get loop?
+ * How often do we iterate the put-get loop (default)?
  */
-#define NUM_REPEAT 5
+#define DEFAULT_NUM_REPEAT 5
 
 static int ok;
 static int found;
+
+static void *
+rs (const char *name)
+{
+  return NULL;
+}
+
+static int
+rsx (void *s)
+{
+  return GNUNET_OK;
+}
 
 static int
 result_callback (const GNUNET_HashCode * key,
@@ -104,21 +144,16 @@ getPeers (const char *name, unsigned long long value, void *cls)
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
-/**
- * Testcase to test DV_DHT routing (many peers).
- * @return 0: ok, -1: error
- */
+
 int
-main (int argc, const char **argv)
+do_testing (int argc, char *const *argv)
 {
   struct GNUNET_REMOTE_TESTING_DaemonContext *peers;
-  struct GNUNET_REMOTE_TESTING_DaemonContext *peer_array[NUM_PEERS];
+  struct GNUNET_REMOTE_TESTING_DaemonContext *peer_array[num_peers];
   struct GNUNET_REMOTE_TESTING_DaemonContext *pos;
   int ret = 0;
   GNUNET_HashCode key;
   char value[8];
-  struct GNUNET_GE_Context *ectx;
-  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_DV_DHT_Context *dctx;
   struct GNUNET_DV_DHT_GetRequest *get1;
@@ -130,36 +165,38 @@ main (int argc, const char **argv)
   int r;
   int last;
   char buf[128];
+  unsigned long long trialuid;
 
-  ectx = NULL;
-  cfg = GNUNET_GC_create ();
-  if (-1 == GNUNET_GC_parse_configuration (cfg, "dv_test.conf"))
+  if (sqlapi == NULL)
     {
-      GNUNET_GC_free (cfg);
-      return -1;
+      return GNUNET_SYSERR;
     }
-  GNUNET_GC_set_configuration_value_string (cfg, NULL,
-                                            "MULTIPLE_SERVER_TESTING",
-                                            "DOT_OUTPUT", "topology.dot");
-  printf ("Starting %u peers...\n", NUM_PEERS);
-  peers = GNUNET_REMOTE_start_daemons (cfg, NUM_PEERS);
+  else
+    {
+      ret = sqlapi->insert_trial (&trialuid, num_peers, topology);
+    }
+
+  if (ret != GNUNET_OK)
+    return GNUNET_SYSERR;
+  printf ("Starting %u peers...\n", (unsigned int) num_peers);
+  peers = GNUNET_REMOTE_start_daemons (cfg, num_peers);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);
       return -1;
     }
   pos = peers;
-  for (i = 0; i < NUM_PEERS; i++)
+  for (i = 0; i < num_peers; i++)
     {
       peer_array[i] = pos;
       pos = pos->next;
     }
   sleep (30);
   found = 0;
-  for (r = 0; r < NUM_REPEAT; r++)
+  for (r = 0; r < num_repeat; r++)
     {
       fprintf (stderr, "After %d minutes\n", r);
-      for (i = 0; i < NUM_PEERS; i++)
+      for (i = 0; i < num_peers; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
@@ -175,24 +212,17 @@ main (int argc, const char **argv)
         break;
       sleep (60);
     }
-/*  pos = peers;
-  while (pos != NULL)
-    {
-      GNUNET_REMOTE_kill_daemon (pos);
-      pos = pos->next;
-    }
-  GNUNET_GC_free (cfg);
-*/
-  for (r = 0; r < NUM_REPEAT; r++)
+
+  for (r = 0; r < num_repeat; r++)
     {
       if (r > 0)
         {
-          printf ("Found %u out of %u attempts.\n", found,
-                  NUM_PEERS * NUM_PEERS * r);
-          if (found >= NUM_PEERS * NUM_PEERS * r / 2)
+          printf ("Found %u out of %llu attempts.\n", found,
+                  num_peers * num_peers * r);
+          if (found >= num_peers * num_peers * r / 2)
             break;              /* good enough */
         }
-      for (i = 0; i < NUM_PEERS; i++)
+      for (i = 0; i < num_peers; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
@@ -202,13 +232,12 @@ main (int argc, const char **argv)
           GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL);
           GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
           GNUNET_client_connection_destroy (sock);
-
         }
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
       /* put loop */
       printf ("Waiting for DV_DHT connections of peer");
-      for (i = 0; i < NUM_PEERS; i++)
+      for (i = 0; i < num_peers; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
@@ -259,7 +288,7 @@ main (int argc, const char **argv)
         }
       printf ("\n");
       /* get loop */
-      for (i = 0; i < NUM_PEERS; i++)
+      for (i = 0; i < num_peers; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
@@ -270,7 +299,7 @@ main (int argc, const char **argv)
                                           &result_callback, &c);
           printf ("Peer %d gets key", i);
           fflush (stdout);
-          for (j = 0; j < NUM_PEERS; j++)
+          for (j = 0; j < num_peers; j++)
             {
               if (GNUNET_shutdown_test () == GNUNET_YES)
                 break;
@@ -285,7 +314,7 @@ main (int argc, const char **argv)
                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                               &key);
               GNUNET_GE_ASSERT (NULL, get1 != NULL);
-              for (k = 0; k < NUM_ROUNDS; k++)
+              for (k = 0; k < num_rounds; k++)
                 {
                   if (GNUNET_shutdown_test () == GNUNET_YES)
                     break;
@@ -300,7 +329,7 @@ main (int argc, const char **argv)
                     break;
                 }
               GNUNET_DV_DHT_get_stop (dctx, get1);
-              if (k == NUM_ROUNDS)
+              if (k == num_rounds)
                 {
                   printf ("?");
                   fflush (stdout);
@@ -311,10 +340,10 @@ main (int argc, const char **argv)
         }
     }
   /* end of actual test code */
-  if (r == NUM_REPEAT)
-    printf ("Found %u out of %u attempts.\n", found,
-            NUM_PEERS * NUM_PEERS * r);
-  if (found < NUM_PEERS * NUM_PEERS * r / 2)
+  if (r == num_repeat)
+    printf ("Found %u out of %llu attempts.\n", found,
+            num_peers * num_peers * r);
+  if (found < num_peers * num_peers * r / 2)
     {
       printf
         ("Not enough results (not even 50%%), marking test as failed!\n");
@@ -327,8 +356,96 @@ FAILURE:
       GNUNET_REMOTE_kill_daemon (pos);
       pos = pos->next;
     }
+  ret = sqlapi->update_trial (trialuid);
+  return ret;
+}
+
+/**
+ * Driver for testing DV_DHT routing (many peers).
+ * @return 0: ok, -1: error
+ */
+int
+main (int argc, char *const *argv)
+{
+  int ret = 0;
+  struct GNUNET_PluginHandle *plugin;
+  struct GNUNET_GC_Configuration *driverConfig;
+  ectx = NULL;
+  cfg = GNUNET_GC_create ();
+
+  ret =
+    GNUNET_init (argc, argv, "dvdhtdriver", &configFile,
+                 gnunetDHTDriverOptions, &ectx, &driverConfig);
+
+  if (ret == -1)
+    {
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+
+  if (-1 == GNUNET_GC_parse_configuration (cfg, configFile))
+    {
+      GNUNET_GC_free (cfg);
+      return -1;
+    }
+  if (dotOutFileName != NULL)
+    {
+      GNUNET_GC_set_configuration_value_string (cfg, NULL,
+                                                "MULTIPLE_SERVER_TESTING",
+                                                "DOT_OUTPUT", dotOutFileName);
+    }
+
+  GNUNET_GC_get_configuration_value_number (cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "TOPOLOGY", 0, -1, 0, &topology);
+
+  GNUNET_GC_get_configuration_value_number (cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "NUM_PEERS",
+                                            1,
+                                            -1,
+                                            DEFAULT_NUM_PEERS, &num_peers);
+
+  GNUNET_GC_get_configuration_value_number (cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "NUM_ROUNDS",
+                                            1,
+                                            -1,
+                                            DEFAULT_NUM_ROUNDS, &num_rounds);
+
+  GNUNET_GC_get_configuration_value_number (cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "NUM_REPEAT",
+                                            1,
+                                            -1,
+                                            DEFAULT_NUM_REPEAT, &num_repeat);
+
+  memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
+  capi.cfg = cfg;
+  capi.service_request = &rs;
+  capi.service_release = &rsx;
+
+  plugin = GNUNET_plugin_load (NULL, "libgnunetmodule_", "dhtlog_mysql");
+  init =
+    GNUNET_plugin_resolve_function (plugin, "provide_module_", GNUNET_YES);
+  sqlapi = init (&capi);
+  if (sqlapi == NULL)
+    {
+      ret = GNUNET_SYSERR;
+    }
+  else
+    {
+      ret = do_testing (argc, argv);
+    }
+  done =
+    GNUNET_plugin_resolve_function (plugin, "release_module_", GNUNET_YES);
+  if (done != NULL)
+    done ();
+
+  GNUNET_plugin_unload (plugin);
+
   GNUNET_GC_free (cfg);
   return ret;
 }
 
-/* end of dv_dht_multipeer_test.c */
+/* end of dv_dht_driver.c */

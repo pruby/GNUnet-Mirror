@@ -38,6 +38,7 @@
 #include "gnunet_dhtlog_service.h"
 
 #define DEBUG_ROUTING GNUNET_YES
+#define DEBUG_INSANE GNUNET_YES
 
 /**
  * What is the request priority for DV_DHT operations?
@@ -158,6 +159,7 @@ typedef struct
    * Unique trial id for sql database interaction
    */
   unsigned long long trialuid;
+
 #endif
 
 } DV_DHT_MESSAGE;
@@ -207,6 +209,10 @@ static DV_DHTQueryRecord *records;
  */
 static unsigned int rt_size;
 
+#if DEBUG_INSANE
+static unsigned int indentation;
+#endif
+
 /*
  * Whether or not to send routing debugging information
  * to the dht logging server
@@ -247,6 +253,42 @@ static unsigned int stat_get_requests_received;
 
 static unsigned int stat_put_requests_received;
 
+#if DEBUG_INSANE
+static void
+print_entry (char *function)
+{
+  int i;
+
+  for (i = 0; i < indentation; i++)
+    {
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, "  ");
+    }
+
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, _("Entering `%s'\n"), function);
+  indentation++;
+}
+
+static void
+print_exit (char *function)
+{
+  int i;
+  for (i = 0; i < indentation; i++)
+    {
+      if (indentation >= 1)
+        indentation--;
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, "  ");
+    }
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, _("Exiting `%s'\n"), function);
+}
+#endif
 
 /**
  * To how many peers should we (on average)
@@ -305,8 +347,9 @@ route_result (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-                 "DHT-Routing of result for key `%s'.\n", &enc);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _("DHT-Routing of result for key `%s'.\n"), &enc);
 #endif
 
   if (cls != NULL)
@@ -361,8 +404,8 @@ route_result (const GNUNET_HashCode * key,
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                         GNUNET_GE_DEVELOPER,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
                          "Seen the same result earlier, not routing it again.\n");
 #endif
           break;
@@ -379,8 +422,8 @@ route_result (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
               GNUNET_hash_to_enc (&pos->source.hashPubKey, &enc);
               GNUNET_GE_LOG (coreAPI->ectx,
-                             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                             GNUNET_GE_DEVELOPER,
+                             GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                             GNUNET_GE_USER | GNUNET_GE_BULK,
                              "Route to peer `%s' has expired (%llu < %llu)\n",
                              &enc, pos->expire, now);
 #endif
@@ -402,8 +445,8 @@ route_result (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
               GNUNET_hash_to_enc (&pos->source.hashPubKey, &enc);
               GNUNET_GE_LOG (coreAPI->ectx,
-                             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                             GNUNET_GE_DEVELOPER,
+                             GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                             GNUNET_GE_USER | GNUNET_GE_BULK,
                              "Routing result to `%s'\n", &enc);
 #endif
               if ((debug_routes_extended) && (dhtlog != NULL))
@@ -425,8 +468,8 @@ route_result (const GNUNET_HashCode * key,
             {
 #if DEBUG_ROUTING
               GNUNET_GE_LOG (coreAPI->ectx,
-                             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                             GNUNET_GE_DEVELOPER,
+                             GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                             GNUNET_GE_USER | GNUNET_GE_BULK,
                              "Routing result to local client\n");
 #endif
               pos->receiver (key, type, size, data, pos->receiver_closure);
@@ -442,7 +485,8 @@ route_result (const GNUNET_HashCode * key,
   GNUNET_mutex_unlock (lock);
 #if DEBUG_ROUTING
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
                  "Routed result to %u out of %u pending requests\n",
                  routed, tracked);
 #endif
@@ -537,8 +581,8 @@ add_route (const GNUNET_PeerIdentity * sender,
   pos->receiver_closure = cls;
 #if DEBUG_ROUTING
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-                 "Tracking request in slot %u\n", rt_pos);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Tracking request in slot %u\n", rt_pos);
 #endif
   GNUNET_mutex_unlock (lock);
   if (stats != NULL)
@@ -578,7 +622,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
   if (sender != NULL)
     GNUNET_hash_to_enc (&sender->hashPubKey, &henc);
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
                  "Received DV_DHT GET for key `%s' from `%s'.\n", &enc,
                  sender == NULL ? "me" : (char *) &henc);
 #endif
@@ -589,8 +634,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_ROUTING
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                     GNUNET_GE_DEVELOPER,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
                      "Failed to add entry in routing table for request.\n");
       fprintf (stderr, "Failed to add entry in routing table for request.\n");
       if ((debug_routes) && (dhtlog != NULL))
@@ -609,8 +654,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_ROUTING
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                     GNUNET_GE_DEVELOPER,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
                      "Found %d results locally, will not route GET any further\n",
                      total);
 #endif
@@ -635,8 +680,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                         GNUNET_GE_DEVELOPER,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
                          "Failed to select peer for fowarding in round %d/%d\n",
                          i + 1, GET_TRIES);
 #endif
@@ -645,8 +690,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
       GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                     GNUNET_GE_DEVELOPER,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
                      "Forwarding DV_DHT GET request to peer `%s'.\n", &enc);
 #endif
       if ((debug_routes_extended) && (dhtlog != NULL))
@@ -694,8 +739,9 @@ handle_put (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&put->key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-                 "Received DV_DHT PUT for key `%s'.\n", &enc);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _("Received DV_DHT PUT for key `%s'.\n"), &enc);
 #endif
   store = 0;
   hop_count = htonl (put->hop_count);
@@ -718,8 +764,8 @@ handle_put (const GNUNET_PeerIdentity * sender,
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                         GNUNET_GE_DEVELOPER,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
                          "Failed to select peer for PUT fowarding in round %d/%d\n",
                          i + 1, PUT_TRIES);
 #endif
@@ -733,8 +779,8 @@ handle_put (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
       GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                     GNUNET_GE_DEVELOPER,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
                      "Forwarding DV_DHT PUT request to peer `%s'.\n", &enc);
 #endif
       if ((debug_routes_extended) && (dhtlog != NULL))
@@ -754,8 +800,8 @@ handle_put (const GNUNET_PeerIdentity * sender,
       now = GNUNET_get_time ();
 #if DEBUG_ROUTING
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                     GNUNET_GE_DEVELOPER,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
                      "Decided to cache data `%.*s' locally until %llu (for %llu ms)\n",
                      ntohs (put->header.size) - sizeof (DV_DHT_MESSAGE),
                      &put[1], CONTENT_LIFETIME + now, CONTENT_LIFETIME);
@@ -778,8 +824,8 @@ handle_put (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_ROUTING
       GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                     GNUNET_GE_DEVELOPER,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
                      "Decided NOT to cache data `%.*s' locally\n",
                      ntohs (put->header.size) - sizeof (DV_DHT_MESSAGE),
                      &put[1]);
@@ -812,7 +858,8 @@ handle_result (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&result->key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
                  "Received REMOTE DV_DHT RESULT for key `%s'.\n", &enc);
 #endif
 
@@ -860,7 +907,8 @@ GNUNET_DV_DHT_get_start (const GNUNET_HashCode * key,
   get.queryuid = htonl (queryuid);
   GNUNET_hash_to_enc (&get.key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
                  "Initiating DV_DHT GET (based on local request) for key `%s'.\n",
                  &enc);
 
@@ -998,6 +1046,11 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
   unsigned long long nodeuid;
   coreAPI = capi;
   rts = 65536;
+
+#if DEBUG_INSANE
+  print_entry ("GNUNET_DV_DHT_init_routing");
+#endif
+
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
                                             "DHT",
                                             "TABLESIZE",
@@ -1086,11 +1139,21 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
                      GNUNET_GE_BULK,
                      _("`%s' loading logging context %s\n"),
                      "dv_dht", "dhtlog_mysql");
+#if DEBUG_ROUTING
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _
+                     ("routing debugging enabled, expect lots of messages!\n"));
+
+#endif
       dhtlog = coreAPI->service_request ("dhtlog_mysql");
       dhtlog->insert_node (&nodeuid, coreAPI->my_identity);
       GNUNET_GE_ASSERT (coreAPI->ectx, dhtlog != NULL);
     }
-
+#if DEBUG_INSANE
+  print_exit ("GNUNET_DV_DHT_init_routing");
+#endif
   return GNUNET_OK;
 }
 

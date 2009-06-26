@@ -57,6 +57,12 @@
 #include "gnunet_dv_service.h"
 
 
+#define DEBUG_TABLE GNUNET_NO
+
+#if DEBUG_TABLE
+static unsigned int indentation;
+#endif
+
 /**
  * How often should the cron job for maintaining the DV_DHT
  * run?
@@ -67,13 +73,13 @@
  * What is the chance (1 in XXX) that we send DISCOVERY messages
  * to another peer?
  */
-/*#define MAINTAIN_CHANCE (10 + 100 * total_peers)*/
-#define MAINTAIN_CHANCE (1 + total_peers)
+#define MAINTAIN_CHANCE (10 + 100 * total_peers)
+/*#define MAINTAIN_CHANCE (1 + total_peers)*/
 
 /**
  * How long can a peer be inactive before we time it out?
  */
-#define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4 + 100
+#define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4
 
 /**
  * What is the maximum number of known DV_DHT-enabled peers
@@ -233,6 +239,37 @@ typedef struct
 
 } P2P_DV_DHT_ASK_HELLO;
 
+#if DEBUG_TABLE
+static FILE *debug_file;
+static char *debug_file_name;
+static void
+print_entry (char *function)
+{
+  int i;
+
+  for (i = 0; i < indentation; i++)
+    {
+      fprintf (debug_file, "  ");
+    }
+
+  fprintf (debug_file, _("Entering `%s'\n"), function);
+  indentation++;
+}
+
+static void
+print_exit (char *function)
+{
+  int i;
+  if (indentation >= 1)
+    indentation--;
+  for (i = 0; i < indentation; i++)
+    {
+      fprintf (debug_file, "  ");
+    }
+  fprintf (debug_file, _("Exiting `%s'\n"), function);
+}
+#endif
+
 /**
  * Compute a (rough) estimate of the networks diameter.
  *
@@ -282,9 +319,20 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
     return NULL;                /* myself! */
   index = get_bit_distance (&peer->hashPubKey,
                             &coreAPI->my_identity->hashPubKey);
+/* Why are we not returning the bit distance as the bucket we'd like to store
+ * this peer in?  If the first bit differs (none match) then it goes in bucket
+ * 0.  If more match than we have buckets for it goes in the highest numbered
+ * bucket.  Why do all this nonsense?  Also why break in error when we have
+ * a peer that matches lots of our bits?  We WANT that peer in our table,
+ * but returning NULL and erroring out keeps it far far away from us!
+ */
   i = bucketCount - 1;
-  while ((buckets[i].bstart >= index) && (i > 0))
+  while ((buckets[i].bstart > index) && (i > 0))
     i--;
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "index is %d, bucket start is %d\n", index,
+                 buckets[i].bstart);
   if ((buckets[i].bstart <= index) && (buckets[i].bend >= index))
     return &buckets[i];
   GNUNET_GE_BREAK (NULL, 0);
@@ -489,7 +537,9 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
   unsigned int pc;
   unsigned int i;
   GNUNET_PeerIdentity *pos;
-
+#if DEBUG_TABLE
+  print_entry ("broadcast_dht_discovery");
+#endif
   if (stats != NULL)
     stats->change (stat_dht_advertisements, 1);
   if (disco != NULL)
@@ -497,6 +547,9 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
       dvapi->dv_send (other,
                       &disco->header,
                       GNUNET_EXTREME_PRIORITY / 4, 2 * GNUNET_CRON_SECONDS);
+#if DEBUG_TABLE
+      print_exit ("broadcast_dht_discovery");
+#endif
       return;
     }
   pc = total_peers;
@@ -532,15 +585,31 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
   dvapi->dv_send (other, &disco->header, GNUNET_EXTREME_PRIORITY / 4,
                   2 * GNUNET_CRON_SECONDS);
   GNUNET_free (disco);
+#if DEBUG_TABLE
+  print_exit ("broadcast_dht_discovery");
+#endif
 }
 
 static void
 broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 {
+#if DEBUG_TABLE
+  print_entry ("broadcast_dht_discovery_prob");
+#endif
+
   if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, MAINTAIN_CHANCE) != 0)
-    return;
+    {
+#if DEBUG_TABLE
+      print_exit ("broadcast_dht_discovery_prob");
+#endif
+      return;
+    }
   //fprintf(stderr, "sending discovery message\n");
   broadcast_dht_discovery (other, cls);
+
+#if DEBUG_TABLE
+  print_exit ("broadcast_dht_discovery_prob");
+#endif
 }
 
 /**
@@ -549,6 +618,9 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 static void
 maintain_dht_job (void *unused)
 {
+#if DEBUG_TABLE
+  print_entry ("maintain_dht_job");
+#endif
   P2P_DV_DHT_Discovery disc;
   if (total_peers == 0)
     {
@@ -561,6 +633,9 @@ maintain_dht_job (void *unused)
     {
       dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
     }
+#if DEBUG_TABLE
+  print_exit ("maintain_dht_job");
+#endif
 }
 
 /**
@@ -801,6 +876,54 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_unlock (lock);
 }
 
+
+void
+printPeerBits (GNUNET_PeerIdentity * peer)
+{
+  unsigned int i;
+  char loc[513];
+  loc[512] = '\0';
+  for (i = 0; i < sizeof (GNUNET_HashCode) * 8; i++)
+    {
+      if (GNUNET_hash_get_bit (&peer->hashPubKey, i) == 0)
+        {
+          loc[i] = '0';
+        }
+      else
+        {
+          loc[i] = '1';
+        }
+    }
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s\n", &loc);
+}
+
+void
+print_buckets ()
+{
+  unsigned int i;
+  unsigned int j;
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "My bit location:\n");
+  printPeerBits (coreAPI->my_identity);
+  for (i = 0; i < bucketCount; i++)
+    {
+      if (buckets[i].peers_size > 0)
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK, "Printing peers in bucket %d", i);
+          for (j = 0; j < buckets[i].peers_size; j++)
+            {
+              printPeerBits (&buckets[i].peers[j]->id);
+            }
+        }
+    }
+}
+
+
 /**
  * Initialize table DV_DHT component.
  *
@@ -813,17 +936,76 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   unsigned long long i;
 
   coreAPI = capi;
+#if DEBUG_TABLE
+  char *gnunet_path;
+  GNUNET_GC_get_configuration_value_string (coreAPI->cfg, "PATHS",
+                                            "GNUNETD_HOME", "/tmp",
+                                            &gnunet_path);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "gnunet_path %s\n", gnunet_path);
+  debug_file_name =
+    GNUNET_malloc (strlen (gnunet_path) + strlen ("table.log") + 2);
+  sprintf (debug_file_name, "%s/%s", gnunet_path, "table.log");
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "table log file is %s\n", debug_file_name);
+  debug_file = fopen (debug_file_name, "w");
+  if (debug_file == NULL)
+    {
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "unable to create/open file `%s', errno is %s\n",
+                     debug_file_name, strerror (errno));
+      return GNUNET_SYSERR;
+    }
+#endif
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "My bit location:\n");
+  printPeerBits (coreAPI->my_identity);
   /* use less than 50% of peer's ideal number of
      connections for DV_DHT table size */
   i = coreAPI->core_slots_count () / MAINTAIN_BUCKET_SIZE / 2;
+  i = sizeof (GNUNET_HashCode) * 8;
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "core_slots_count returns %d, using %d buckets\n",
+                 coreAPI->core_slots_count (), i);
   if (i < 4)
     i = 4;
   GNUNET_array_grow (buckets, bucketCount, i);
+  /* I think this is wrong.  First, we have just increased the
+   * number of buckets to i, but then we iterate only over whatever
+   * the old bucketCount was!  And bucketCount is declared as
+   * static and never changed which means that it will always be
+   * 0.  This results in having a single bucket for all peers,
+   * which is rather insane/useless.  Also, why would bstart
+   * and bend be multiplied by 512?? Their bit distance should
+   * be between 2^i and 2^i+1 right???  Not 2^(512 + i) as that
+   * number is freaking huge and nuts.  Are we trying to evenly
+   * spread the table over however many buckets we have?  That
+   * makes more sense, but still doesn't get accomplished by
+   * the code below.
+   * for (i = 0; i < bucketCount; i++)
+   {
+   buckets[i].bstart = 512 * i / bucketCount;
+   buckets[i].bend = 512 * (i + 1) / bucketCount;
+   }
+   */
+
+  /* So if we are trying to cover all locations with i (not bucketCount,
+   * which will always be zero at this point) we set bucketCount = i.
+   */
+  bucketCount = i;
   for (i = 0; i < bucketCount; i++)
     {
       buckets[i].bstart = 512 * i / bucketCount;
       buckets[i].bend = 512 * (i + 1) / bucketCount;
     }
+
   lock = capi->global_lock_get ();
   stats = capi->service_request ("stats");
   dvapi = capi->service_request ("dv");
@@ -853,6 +1035,8 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_cron_add_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,
                        MAINTAIN_FREQUENCY, NULL);
 
+  GNUNET_cron_add_job (coreAPI->cron, &print_buckets, MAINTAIN_FREQUENCY * 30,
+                       MAINTAIN_FREQUENCY * 30, NULL);
   return GNUNET_OK;
 }
 
