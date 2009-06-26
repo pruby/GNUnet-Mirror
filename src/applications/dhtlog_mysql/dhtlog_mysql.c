@@ -155,7 +155,7 @@ itable ()
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `trials` ("
              "`trialuid` int(10) unsigned NOT NULL auto_increment,"
              "`numnodes` int(10) unsigned NOT NULL,"
-             "`topology` varchar(55) NOT NULL,"
+             "`topology` int(10) NOT NULL,"
              "`starttime` datetime NOT NULL,"
              "`endtime` datetime NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
@@ -237,23 +237,17 @@ get_current_trial (unsigned long long *trialuid)
  * Inserts the specified trial into the dhttests.trials table
  */
 int
-add_trial (unsigned long long *trialuid, int num_nodes, char *topology)
+add_trial (unsigned long long *trialuid, int num_nodes, int topology)
 {
-
   int ret;
-  unsigned long long t_len;
-  t_len = strlen (topology);
-
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_trial,
                                                   trialuid,
                                                   MYSQL_TYPE_LONG,
                                                   &num_nodes,
                                                   GNUNET_YES,
-                                                  MYSQL_TYPE_VAR_STRING,
-                                                  topology,
-                                                  max_varchar_len,
-                                                  &t_len, -1)))
+                                                  MYSQL_TYPE_LONG,
+                                                  &topology, GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -274,7 +268,7 @@ add_trial (unsigned long long *trialuid, int num_nodes, char *topology)
  * stores return value of dhttests.dhtkeys.dhtkeyuid into dhtkeyuid
  */
 int
-add_dhtkey (unsigned long long *dhtkeyuid, GNUNET_HashCode * dhtkey)
+add_dhtkey (unsigned long long *dhtkeyuid, const GNUNET_HashCode * dhtkey)
 {
 
   int ret;
@@ -305,7 +299,7 @@ add_dhtkey (unsigned long long *dhtkeyuid, GNUNET_HashCode * dhtkey)
 
 
 static int
-get_dhtkey_uid (unsigned long long *dhtkeyuid, GNUNET_HashCode * key)
+get_dhtkey_uid (unsigned long long *dhtkeyuid, const GNUNET_HashCode * key)
 {
   MYSQL_BIND rbind[1];
   GNUNET_EncName encKey;
@@ -337,7 +331,7 @@ get_dhtkey_uid (unsigned long long *dhtkeyuid, GNUNET_HashCode * key)
 }
 
 static int
-get_node_uid (unsigned long long *nodeuid, GNUNET_HashCode * peerHash)
+get_node_uid (unsigned long long *nodeuid, const GNUNET_HashCode * peerHash)
 {
   MYSQL_BIND rbind[1];
   GNUNET_EncName encPeer;
@@ -352,10 +346,6 @@ get_node_uid (unsigned long long *nodeuid, GNUNET_HashCode * peerHash)
   GNUNET_hash_to_enc (peerHash, &encPeer);
   p_len = strlen ((char *) &encPeer);
 
-#if DEBUG_DHTLOG
-  fprintf (stderr, "Searching for peer %s\n", (char *) &encPeer);
-#endif
-
   if (1 != (ret = GNUNET_MYSQL_prepared_statement_run_select (get_nodeuid,
                                                               1,
                                                               rbind,
@@ -368,8 +358,12 @@ get_node_uid (unsigned long long *nodeuid, GNUNET_HashCode * peerHash)
                                                               &encPeer,
                                                               max_varchar_len,
                                                               &p_len, -1)))
-    return GNUNET_SYSERR;
-
+    {
+#if DEBUG_DHTLOG
+      fprintf (stderr, "FAILED\n");
+#endif
+      return GNUNET_SYSERR;
+    }
   return GNUNET_OK;
 }
 
@@ -445,7 +439,7 @@ update_trials (unsigned long long trialuid)
 int
 add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
            unsigned int type, unsigned int hops, int succeeded,
-           GNUNET_PeerIdentity * node, GNUNET_HashCode * key)
+           const GNUNET_PeerIdentity * node, const GNUNET_HashCode * key)
 {
   int ret;
   unsigned long long peer_uid, key_uid;
@@ -512,10 +506,14 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
 int
 add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
            unsigned int type, unsigned int hops,
-           int succeeded, GNUNET_PeerIdentity * node, GNUNET_HashCode * key,
-           GNUNET_PeerIdentity * from_node, GNUNET_PeerIdentity * to_node)
+           int succeeded, const GNUNET_PeerIdentity * node,
+           const GNUNET_HashCode * key, const GNUNET_PeerIdentity * from_node,
+           const GNUNET_PeerIdentity * to_node)
 {
-  unsigned long long peer_uid, key_uid, from_uid, to_uid = 0;
+  unsigned long long peer_uid = 0;
+  unsigned long long key_uid = 0;
+  unsigned long long from_uid = 0;
+  unsigned long long to_uid = 0;
   int ret;
 
   if (from_node != NULL)
@@ -547,9 +545,6 @@ add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
     }
   else
     return GNUNET_SYSERR;
-
-  fprintf (stderr, "fromnode %llu, tonode %llu, peeruid %llu, keyuid %llu\n",
-           from_uid, to_uid, peer_uid, key_uid);
 
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_route,
@@ -611,8 +606,8 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   blank = "";
 #if DEBUG_DHTLOG
   GNUNET_GE_LOG (capi->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "MySQL DHT Logger: initializing database\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "MySQL DHT Logger: initializing database\n");
   fprintf (stderr, "MySQL DHT Logger: initializing database\n");
 #endif
 
@@ -662,10 +657,13 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
                                             "MYSQL", "PORT", mysql_port);
 
 #if DEBUG_DHTLOG
-  fprintf (stderr,
-           _
-           ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
-           mysql_server, mysql_user, mysql_port, mysql_password, mysql_db);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _
+                 ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
+                 mysql_server, mysql_user, mysql_port, mysql_password,
+                 mysql_db);
 #endif
   if (iopen () != GNUNET_OK)
     {
