@@ -116,19 +116,19 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   if (is_local)
     {
       length =
-        snprintf (NULL, 0, "%sgnunetd -d -c %s%s &",
+        snprintf (NULL, 0, "%sgnunetd -c %s%s &",
                   gnunetd_home, remote_config_path, configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "%sgnunetd -d -c %s%s &", gnunetd_home,
+      snprintf (cmd, length + 1, "%sgnunetd -c %s%s &", gnunetd_home,
                 remote_config_path, configFileName);
     }
   else
     {
       length =
-        snprintf (NULL, 0, "ssh %s@%s %sgnunetd -d -c %s%s &", username,
+        snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s &", username,
                   hostname, gnunetd_home, remote_config_path, configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -d -c %s%s &",
+      snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s &",
                 username, hostname, gnunetd_home, remote_config_path,
                 configFileName);
 
