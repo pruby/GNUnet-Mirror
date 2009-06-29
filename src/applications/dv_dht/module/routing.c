@@ -473,6 +473,13 @@ route_result (const GNUNET_HashCode * key,
                              "Routing result to local client\n");
 #endif
               pos->receiver (key, type, size, data, pos->receiver_closure);
+              if ((debug_routes) && (dhtlog != NULL))
+                {
+                  queryuid = ntohl (result->queryuid);
+                  dhtlog->insert_query (NULL, queryuid, DHTLOG_RESULT,
+                                        ntohl (result->hop_count), GNUNET_YES,
+                                        coreAPI->my_identity, key);
+                }
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
             }
@@ -863,13 +870,6 @@ handle_result (const GNUNET_PeerIdentity * sender,
                  "Received REMOTE DV_DHT RESULT for key `%s'.\n", &enc);
 #endif
 
-  if ((debug_routes) && (dhtlog != NULL))
-    {
-      queryuid = ntohl (result->queryuid);
-      dhtlog->insert_query (NULL, queryuid, DHTLOG_RESULT,
-                            ntohl (result->hop_count), GNUNET_YES,
-                            coreAPI->my_identity, &result->key);
-    }
   route_result (&result->key,
                 ntohl (result->type),
                 ntohs (result->header.size) - sizeof (DV_DHT_MESSAGE),
