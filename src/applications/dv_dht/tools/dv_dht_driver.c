@@ -35,6 +35,12 @@
 #include "gnunet_dhtlog_service.h"
 
 
+struct GNUNET_DV_DHT_keys
+{
+  struct GNUNET_DV_DHT_keys * next;
+  char data[8];
+  GNUNET_HashCode key;
+};
 
 static char *configFile = "dv_test.conf";
 static GNUNET_CoreAPIForPlugins capi;
@@ -80,6 +86,7 @@ static struct GNUNET_CommandLineOption gnunetDHTDriverOptions[] = {
 
 static int ok;
 static int found;
+static int new_found;
 
 static void *
 rs (const char *name)
@@ -98,20 +105,32 @@ result_callback (const GNUNET_HashCode * key,
                  unsigned int type,
                  unsigned int size, const char *data, void *cls)
 {
-  int *i = cls;
-  char expect[8];
+struct GNUNET_DV_DHT_keys *keys = cls;
+int match = 0;
 
-  memset (expect, (*i), sizeof (expect));
+while (keys != NULL)
+{
+    if (0 == memcmp (keys->data, data, size))
+      match = 1;
+    keys = keys->next;
+}
 #if 0
   fprintf (stderr, "Got %u %u `%.*s' (want `%.*s')\n", type, size, size, data,
            sizeof (expect), expect);
-#endif
+
   if ((8 != size) ||
-      (0 != memcmp (expect, data, size)) ||
+      (0 != memcmp (key_data->data, data, size)) ||
       (type != GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING))
     return GNUNET_SYSERR;
-  found++;
-  return GNUNET_OK;
+#endif
+  if (match == 1)
+  {
+    found++;
+    new_found++;
+    return GNUNET_OK;
+  }
+  else
+    return GNUNET_SYSERR;
 }
 
 
@@ -152,9 +171,11 @@ do_testing (int argc, char *const *argv)
   struct GNUNET_REMOTE_TESTING_DaemonContext *peer_array[num_peers];
   struct GNUNET_REMOTE_TESTING_DaemonContext *pos;
   int ret = 0;
-  GNUNET_HashCode key;
-  char value[8];
+
   struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_DV_DHT_keys *keys = NULL;
+  struct GNUNET_DV_DHT_keys *key_pos;
+  struct GNUNET_DV_DHT_keys *temp_key_pos;
   struct GNUNET_DV_DHT_Context *dctx;
   struct GNUNET_DV_DHT_GetRequest *get1;
   int left;
@@ -163,10 +184,12 @@ do_testing (int argc, char *const *argv)
   int k;
   int c;
   int r;
+  int l;
   int last;
-  char buf[128];
+  int key_count;
   unsigned long long trialuid;
 
+  key_count = 0;
   if (sqlapi == NULL)
     {
       return GNUNET_SYSERR;
@@ -178,7 +201,7 @@ do_testing (int argc, char *const *argv)
 
   if (ret != GNUNET_OK)
     return GNUNET_SYSERR;
-  printf ("Starting %u peers...\n", (unsigned int) num_peers);
+  printf ("Starting %u peers for trial %llu...\n", (unsigned int) num_peers, trialuid);
   peers = GNUNET_REMOTE_start_daemons (cfg, num_peers);
   if (peers == NULL)
     {
@@ -191,9 +214,32 @@ do_testing (int argc, char *const *argv)
       peer_array[i] = pos;
       pos = pos->next;
     }
+
+  for (i = 0; i < num_peers; i++)
+  {
+    for (r = 0; r < num_peers; r++)
+    {
+      key_pos = GNUNET_malloc(sizeof(struct GNUNET_DV_DHT_keys));
+      for (l = 0; l < 8; l++)
+      {
+        key_pos->data[l] = rand();
+      }
+      GNUNET_hash (key_pos->data, 8, &key_pos->key);
+      if (keys == NULL)
+      {
+        keys = key_pos;
+        key_pos->next = NULL;
+      }
+      else
+      {
+        key_pos->next = keys;
+        keys = key_pos;
+      }
+    }
+  }
   sleep (30);
   found = 0;
-  for (r = 0; r < num_repeat; r++)
+  for (r = 0; r < 5; r++)
     {
       fprintf (stderr, "After %d minutes\n", r);
       for (i = 0; i < num_peers; i++)
@@ -237,6 +283,7 @@ do_testing (int argc, char *const *argv)
         break;
       /* put loop */
       printf ("Waiting for DV_DHT connections of peer");
+      key_pos = keys;
       for (i = 0; i < num_peers; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
@@ -244,7 +291,7 @@ do_testing (int argc, char *const *argv)
           ok = 0;
           printf (" %d", i);
           fflush (stdout);
-          GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);
+          /*GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);*/
           /* wait for some DV_DHT's to find each other! */
           sock =
             GNUNET_client_connection_create (NULL, peer_array[i]->config);
@@ -278,25 +325,49 @@ do_testing (int argc, char *const *argv)
               GNUNET_GC_free (cfg);
               return -1;
             }
-          GNUNET_hash (buf, strlen (buf), &key);
+
+          /*GNUNET_hash (buf, strlen (buf), &key);
           memset (value, 'A' + i, sizeof (value));
           CHECK (GNUNET_OK == GNUNET_DV_DHT_put (peer_array[i]->config,
                                                  ectx,
                                                  &key,
                                                  GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                                  sizeof (value), value));
+
+          memset (value, 'A' + i, sizeof (value));*/
+          for (j = 0; j < num_peers; j++)
+          {
+            fprintf(stdout, "Inserting key %d at peer %d\n", key_count, i);
+            CHECK (GNUNET_OK == GNUNET_DV_DHT_put (peer_array[i]->config,
+                                                 ectx,
+                                                 &key_pos->key,
+                                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                                 sizeof (key_pos->data), key_pos->data));
+            if (key_pos->next != NULL)
+            {
+              key_pos = key_pos->next;
+              key_count++;
+            }
+            else
+            {
+              key_pos = keys;
+              key_count = 0;
+            }
+          }
         }
       printf ("\n");
       /* get loop */
+      key_pos = keys;
+      key_count = 0;
       for (i = 0; i < num_peers; i++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
-          GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);
+          /*GNUNET_snprintf (buf, sizeof (buf), "localhost:%u", 2087 + i * 10);*/
 
           dctx =
             GNUNET_DV_DHT_context_create (peer_array[i]->config, ectx,
-                                          &result_callback, &c);
+                                          &result_callback, keys);
           printf ("Peer %d gets key", i);
           fflush (stdout);
           for (j = 0; j < num_peers; j++)
@@ -304,15 +375,15 @@ do_testing (int argc, char *const *argv)
               if (GNUNET_shutdown_test () == GNUNET_YES)
                 break;
               c = 'A' + j;
-              GNUNET_snprintf (buf, sizeof (buf), "localhost:%u",
+              /*GNUNET_snprintf (buf, sizeof (buf), "localhost:%u",
                                2087 + j * 10);
-              GNUNET_hash (buf, strlen (buf), &key);
-              printf (" %d", j);
+              GNUNET_hash (buf, strlen (buf), &key);*/
+              printf (" %d", key_count);
               fflush (stdout);
               last = found;
               get1 = GNUNET_DV_DHT_get_start (dctx,
                                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                              &key);
+                                              &key_pos->key); /* Used to be key*/
               GNUNET_GE_ASSERT (NULL, get1 != NULL);
               for (k = 0; k < num_rounds; k++)
                 {
@@ -334,9 +405,23 @@ do_testing (int argc, char *const *argv)
                   printf ("?");
                   fflush (stdout);
                 }
+
+              if (key_pos->next != NULL)
+              {
+                key_pos = key_pos->next;
+                key_count++;
+              }
+              else
+              {
+                key_pos = keys;
+                key_count = 0;
+              }
             }
           GNUNET_DV_DHT_context_destroy (dctx);
           printf ("\n");
+          printf ("Found %u out of %llu attempts.\n", new_found,
+            num_peers);
+          new_found = 0;
         }
     }
   /* end of actual test code */
@@ -357,6 +442,13 @@ FAILURE:
       pos = pos->next;
     }
   ret = sqlapi->update_trial (trialuid);
+  key_pos = keys;
+  while(key_pos != NULL)
+  {
+    temp_key_pos = key_pos->next;
+    GNUNET_free(key_pos);
+    key_pos = temp_key_pos;
+  }
   return ret;
 }
 
@@ -370,6 +462,7 @@ main (int argc, char *const *argv)
   int ret = 0;
   struct GNUNET_PluginHandle *plugin;
   struct GNUNET_GC_Configuration *driverConfig;
+
   ectx = NULL;
   cfg = GNUNET_GC_create ();
 
@@ -444,7 +537,6 @@ main (int argc, char *const *argv)
 
   GNUNET_plugin_unload (plugin);
 
-  GNUNET_GC_free (cfg);
   return ret;
 }
 
