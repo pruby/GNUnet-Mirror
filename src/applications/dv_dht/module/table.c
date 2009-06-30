@@ -385,8 +385,17 @@ inverse_distance (const GNUNET_HashCode * target,
   double d;
 
   bucket = get_bit_distance (target, have);
-  d = bucket * 32;
+  /*d = bucket * 32;
   d = exp2 (d / (sizeof (GNUNET_HashCode) * 8));
+  I can't understand this code.  Why multiply bucket by 32?
+  I say if we want a scaled value, assume we have a bucket
+  for each bit.  Obviously we can't get to 2^512, but this
+  will appropriately tell us whether one loc is closer than
+  another.  I also don't get why we want 2^(d/512)!!  Say we
+  should be in bucket 5 (5 matching bits), then we get 1
+  as a retrun value, just as if we have 15 matching bits!!!
+  15 matching should be closer than 5!!!!!!!*/
+  d = exp2 (bucket);
   if (d > ((unsigned int) -1))
     return -1;
   return (unsigned int) d;
@@ -523,6 +532,90 @@ find_closest_peer (GNUNET_PeerIdentity * set, const GNUNET_HashCode * target)
     }
   else
     return GNUNET_SYSERR;
+}
+
+void
+printPeerBits (GNUNET_PeerIdentity * peer)
+{
+  unsigned int i;
+  char loc[513];
+  loc[512] = '\0';
+  for (i = 0; i < sizeof (GNUNET_HashCode) * 8; i++)
+    {
+      if (GNUNET_hash_get_bit (&peer->hashPubKey, i) == 0)
+        {
+          loc[i] = '0';
+        }
+      else
+        {
+          loc[i] = '1';
+        }
+    }
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s\n", &loc);
+}
+
+void
+printKeyBits (const GNUNET_HashCode * key)
+{
+  unsigned int i;
+  char loc[513];
+  loc[512] = '\0';
+  for (i = 0; i < sizeof (GNUNET_HashCode) * 8; i++)
+    {
+      if (GNUNET_hash_get_bit (key, i) == 0)
+        {
+          loc[i] = '0';
+        }
+      else
+        {
+          loc[i] = '1';
+        }
+    }
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s\n", &loc);
+}
+
+/*
+ * Check whether my identity is closer than any known peers.
+ *
+ * Return GNUNET_YES if node location is closest, GNUNET_NO
+ * otherwise.
+ */
+int
+GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
+{
+
+  GNUNET_PeerIdentity closest;
+
+  find_closest_peer (&closest, target);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "closest peer\n");
+  printPeerBits (&closest);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "me\n");
+  printPeerBits (coreAPI->my_identity);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "key\n");
+  printKeyBits (target);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "closest peer inverse distance is %u, mine is %u\n",
+                     inverse_distance(target, &closest.hashPubKey), inverse_distance(target, &coreAPI->my_identity->hashPubKey));
+  if (inverse_distance(target, &coreAPI->my_identity->hashPubKey) > inverse_distance(target, &closest.hashPubKey))
+  {
+    return GNUNET_YES;
+  }
+  return GNUNET_NO;
 }
 
 /**
@@ -876,28 +969,6 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_unlock (lock);
 }
 
-
-void
-printPeerBits (GNUNET_PeerIdentity * peer)
-{
-  unsigned int i;
-  char loc[513];
-  loc[512] = '\0';
-  for (i = 0; i < sizeof (GNUNET_HashCode) * 8; i++)
-    {
-      if (GNUNET_hash_get_bit (&peer->hashPubKey, i) == 0)
-        {
-          loc[i] = '0';
-        }
-      else
-        {
-          loc[i] = '1';
-        }
-    }
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK, "%s\n", &loc);
-}
 
 void
 print_buckets ()

@@ -70,4 +70,13 @@ int GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi);
  */
 int GNUNET_DV_DHT_table_done (void);
 
+/*
+ * Check whether my identity is closer than any known peers.
+ *
+ * Return GNUNET_YES if node location is closest, GNUNET_NO
+ * otherwise.
+ */
+int
+GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target);
+
 #endif

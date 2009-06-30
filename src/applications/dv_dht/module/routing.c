@@ -410,6 +410,7 @@ route_result (const GNUNET_HashCode * key,
 #endif
           break;
         }
+
       routed++;
       GNUNET_array_grow (q->results, q->result_count, q->result_count + 1);
       q->results[q->result_count - 1] = hc;
@@ -802,6 +803,11 @@ handle_put (const GNUNET_PeerIdentity * sender,
       j++;
     }
   GNUNET_free (aput);
+
+  store = 0;
+  if (GNUNET_YES == GNUNET_DV_DHT_am_closest_peer(&put->key))
+    store = 1;
+
   if (store != 0)
     {
       now = GNUNET_get_time ();
@@ -851,7 +857,6 @@ handle_result (const GNUNET_PeerIdentity * sender,
   const DV_DHT_MESSAGE *result;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
-  unsigned long long queryuid;
 #endif
 
   if (ntohs (msg->size) < sizeof (DV_DHT_MESSAGE))
