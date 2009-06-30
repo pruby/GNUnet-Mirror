@@ -664,6 +664,10 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
                  ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
                  mysql_server, mysql_user, mysql_port, mysql_password,
                  mysql_db);
+  fprintf(stderr, _
+                 ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
+                 mysql_server, mysql_user, mysql_port, mysql_password,
+                 mysql_db);
 #endif
   if (iopen () != GNUNET_OK)
     {
@@ -681,6 +685,12 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   api.insert_node = &add_node;
   api.insert_dhtkey = &add_dhtkey;
   get_current_trial (&current_trial);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 _
+                 ("current trial is %llu\n"),
+                 current_trial);
   return &api;
 }
 
