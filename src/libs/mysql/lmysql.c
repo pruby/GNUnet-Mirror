@@ -394,7 +394,8 @@ GNUNET_MYSQL_database_close (struct GNUNET_MysqlDatabaseHandle *dbh)
     dbs = dbh->next;
   if (dbh->dbf != NULL)
     mysql_close (dbh->dbf);
-  GNUNET_free (dbh->cnffile);
+  if (dbh->cnffile != NULL)
+    GNUNET_free (dbh->cnffile);
   GNUNET_free (dbh);
   mysql_thread_end ();
   GNUNET_mutex_unlock (lock);
