@@ -375,14 +375,14 @@ int
 add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
 {
   GNUNET_EncName encPeer;
-  unsigned long long p_len;
+  unsigned long p_len;
   int ret;
 
   if (node == NULL)
     return GNUNET_SYSERR;
 
   GNUNET_hash_to_enc (&node->hashPubKey, &encPeer);
-  p_len = strlen ((char *) &encPeer);
+  p_len = (unsigned long)strlen ((char *) &encPeer);
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_node,
                                                   nodeuid,
@@ -661,10 +661,6 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
                  _
-                 ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
-                 mysql_server, mysql_user, mysql_port, mysql_password,
-                 mysql_db);
-  fprintf(stderr, _
                  ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
                  mysql_server, mysql_user, mysql_port, mysql_password,
                  mysql_db);
