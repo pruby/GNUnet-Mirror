@@ -33,7 +33,7 @@
 
 #define DEBUG_DHTLOG GNUNET_YES
 
-static unsigned long long max_varchar_len;
+static unsigned long max_varchar_len;
 
 static char *blank;
 
