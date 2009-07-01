@@ -611,6 +611,10 @@ init_params (struct GNUNET_MysqlStatementHandle *s, va_list ap)
           qbind[off].is_unsigned = va_arg (ap, int);
           break;
         case MYSQL_TYPE_VAR_STRING:
+          qbind[off].buffer = va_arg (ap, void *);
+          qbind[off].buffer_length = va_arg (ap, unsigned long);
+          qbind[off].length = va_arg (ap, void *);
+          break;
         case MYSQL_TYPE_STRING:
         case MYSQL_TYPE_BLOB:
           qbind[off].buffer = va_arg (ap, void *);
