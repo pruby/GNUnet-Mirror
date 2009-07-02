@@ -402,20 +402,20 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                 "GNUNETD_HOME",
                                                 remote_config_path);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
-                                                "MYSQL_LOGGING",
+                                                "MULTIPLE_SERVER_TESTING",
                                                 "MYSQL_SERVER", mysql_server);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
-                                                "MYSQL_LOGGING", "MYSQL_DB",
+                                                "MULTIPLE_SERVER_TESTING", "MYSQL_DB",
                                                 mysql_db);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
-                                                "MYSQL_LOGGING", "MYSQL_USER",
+                                                "MULTIPLE_SERVER_TESTING", "MYSQL_USER",
                                                 mysql_user);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
-                                                "MYSQL_LOGGING",
+                                                "MULTIPLE_SERVER_TESTING",
                                                 "MYSQL_PASSWORD",
                                                 mysql_password);
       GNUNET_GC_set_configuration_value_number (basecfg, NULL,
-                                                "MYSQL_LOGGING", "MYSQL_PORT",
+                                                "MULTIPLE_SERVER_TESTING", "MYSQL_PORT",
                                                 mysql_port);
 
       while (hostnames[pos] != ' ' && pos > 0)
