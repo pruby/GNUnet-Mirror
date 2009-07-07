@@ -405,18 +405,18 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                 "MULTIPLE_SERVER_TESTING",
                                                 "MYSQL_SERVER", mysql_server);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
-                                                "MULTIPLE_SERVER_TESTING", "MYSQL_DB",
-                                                mysql_db);
+                                                "MULTIPLE_SERVER_TESTING",
+                                                "MYSQL_DB", mysql_db);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
-                                                "MULTIPLE_SERVER_TESTING", "MYSQL_USER",
-                                                mysql_user);
+                                                "MULTIPLE_SERVER_TESTING",
+                                                "MYSQL_USER", mysql_user);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                 "MULTIPLE_SERVER_TESTING",
                                                 "MYSQL_PASSWORD",
                                                 mysql_password);
       GNUNET_GC_set_configuration_value_number (basecfg, NULL,
-                                                "MULTIPLE_SERVER_TESTING", "MYSQL_PORT",
-                                                mysql_port);
+                                                "MULTIPLE_SERVER_TESTING",
+                                                "MYSQL_PORT", mysql_port);
 
       while (hostnames[pos] != ' ' && pos > 0)
         pos--;

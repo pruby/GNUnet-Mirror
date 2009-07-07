@@ -51,23 +51,48 @@ addNodeRefs (GNUNET_EncName * node1enc, GNUNET_EncName * node2enc,
   struct GNUNET_REMOTE_friends_list *node1temp;
   struct GNUNET_REMOTE_friends_list *node2temp;
 
-  node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
-  node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+  struct GNUNET_REMOTE_friends_list *node1iter;
+  struct GNUNET_REMOTE_friends_list *node2iter;
 
-  node2temp->hostentry = node1pos;
-  node1temp->hostentry = node2pos;
+  int addNode1 = 1;
+  int addNode2 = 1;
 
-  node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
-  node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+  node1iter = node1pos->friend_entries;
+  node2iter = node2pos->friend_entries;
 
-  memcpy (node1temp->nodeid, node2enc, sizeof (GNUNET_EncName));
-  memcpy (node2temp->nodeid, node1enc, sizeof (GNUNET_EncName));
+  while (node2iter != NULL)
+    {
+      if (memcmp (node2iter->nodeid, node1enc, sizeof (GNUNET_EncName)) == 0)
+        addNode2 = 0;
+      node2iter = node2iter->next;
+    }
 
-  node1temp->next = node1pos->friend_entries;
-  node2temp->next = node2pos->friend_entries;
+  while (node1iter != NULL)
+    {
+      if (memcmp (node1iter->nodeid, node2enc, sizeof (GNUNET_EncName)) == 0)
+        addNode1 = 0;
+      node1iter = node1iter->next;
+    }
 
-  node1pos->friend_entries = node1temp;
-  node2pos->friend_entries = node2temp;
+  if (addNode1)
+  {
+    node1temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+    node1temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+    memcpy (node1temp->nodeid, node2enc, sizeof (GNUNET_EncName));
+    node1temp->next = node1pos->friend_entries;
+    node1temp->hostentry = node2pos;
+    node1pos->friend_entries = node1temp;
+  }
+
+  if (addNode2)
+  {
+    node2temp = GNUNET_malloc (sizeof (struct GNUNET_REMOTE_friends_list));
+    node2temp->hostentry = node1pos;
+    node2temp->nodeid = GNUNET_malloc (sizeof (GNUNET_EncName));
+    memcpy (node2temp->nodeid, node1enc, sizeof (GNUNET_EncName));
+    node2temp->next = node2pos->friend_entries;
+    node2pos->friend_entries = node2temp;
+  }
 
   return GNUNET_OK;
 }
