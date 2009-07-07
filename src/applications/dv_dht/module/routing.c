@@ -342,6 +342,8 @@ route_result (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   unsigned long long queryuid;
+  unsigned long long *dhtqueryuid_ptr = NULL;
+  unsigned long long dhtqueryuid;
 #endif
 
 #if DEBUG_ROUTING
@@ -359,8 +361,29 @@ route_result (const GNUNET_HashCode * key,
       result->hop_count = htonl (ntohl (result->hop_count) + 1);
 #endif
     }
-  else
+  if ((cls == NULL) || (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
     {
+#if DEBUG_ROUTING
+
+      if ((cls != NULL) && (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
+      {
+        dhtqueryuid_ptr = cls;
+        dhtqueryuid = *dhtqueryuid_ptr;
+        GNUNET_GE_LOG (coreAPI->ectx,
+               GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+               GNUNET_GE_BULK,
+               _("cls not null and type is wrong! Got dhtqueryuid of %llu"), dhtqueryuid);
+        GNUNET_GE_LOG (coreAPI->ectx,
+               GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+               GNUNET_GE_BULK,
+               _("got header type of %d or %d, wanted %d"), ntohs (result->header.type), result->header.type, GNUNET_P2P_PROTO_DHT_RESULT);
+
+      }
+      else
+      {
+        dhtqueryuid = 0;
+      }
+#endif
       result = GNUNET_malloc (sizeof (DV_DHT_MESSAGE) + size);
       result->header.size = htons (sizeof (DV_DHT_MESSAGE) + size);
       result->header.type = htons (GNUNET_P2P_PROTO_DHT_RESULT);
@@ -371,12 +394,15 @@ route_result (const GNUNET_HashCode * key,
       result->key = *key;
       if ((debug_routes) && (dhtlog != NULL))
         {
-          dhtlog->insert_query (&queryuid, 0, DHTLOG_RESULT,
+          dhtlog->insert_query (&queryuid, dhtqueryuid, DHTLOG_RESULT,
                                 ntohl (result->hop_count), GNUNET_NO,
                                 coreAPI->my_identity, key);
         }
 #if DEBUG_ROUTING
-      result->queryuid = htonl (queryuid);
+      if (dhtqueryuid != 0)
+        result->queryuid = htonl (dhtqueryuid);
+      else
+        result->queryuid = htonl (queryuid);
 #endif
       memcpy (&result[1], data, size);
     }
@@ -645,7 +671,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "Failed to add entry in routing table for request.\n");
-      fprintf (stderr, "Failed to add entry in routing table for request.\n");
+
       if ((debug_routes) && (dhtlog != NULL))
         {
           hop_count = ntohl (get->hop_count);
@@ -657,7 +683,14 @@ handle_get (const GNUNET_PeerIdentity * sender,
 #endif
       return GNUNET_OK;         /* could not route */
     }
+
+#if DEBUG_ROUTING
+  queryuid = ntohl (get->queryuid);
+  total = dstore->get (&get->key, ntohl (get->type), &route_result, (void *)&queryuid);
+#else
   total = dstore->get (&get->key, ntohl (get->type), &route_result, NULL);
+#endif
+
   if (total > MAX_RESULTS)
     {
 #if DEBUG_ROUTING

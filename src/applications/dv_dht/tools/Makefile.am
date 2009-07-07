@@ -27,12 +27,22 @@ gnunet_dvdht_query_LDADD =  \
   $(GN_LIBINTL)
 
 bin_PROGRAMS = \
-  dv_dht_driver
+  dv_dht_driver \
+  dv_dht_driver_new
 
 
 dv_dht_driver_SOURCES = \
   dv_dht_driver.c
 dv_dht_driver_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
+  $(top_builddir)/src/applications/testing/libgnunetremoteapi.la \
+  $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
+  $(top_builddir)/src/util/libgnunetutil.la
+
+dv_dht_driver_new_SOURCES = \
+  dv_dht_driver_new.c
+dv_dht_driver_new_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
   $(top_builddir)/src/applications/testing/libgnunetremoteapi.la \

@@ -611,7 +611,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
                      GNUNET_GE_BULK,
                      "closest peer inverse distance is %u, mine is %u\n",
                      inverse_distance(target, &closest.hashPubKey), inverse_distance(target, &coreAPI->my_identity->hashPubKey));
-  if (inverse_distance(target, &coreAPI->my_identity->hashPubKey) > inverse_distance(target, &closest.hashPubKey))
+  if (inverse_distance(target, &coreAPI->my_identity->hashPubKey) >= inverse_distance(target, &closest.hashPubKey))
   {
     return GNUNET_YES;
   }
