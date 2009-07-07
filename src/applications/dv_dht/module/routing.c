@@ -361,28 +361,34 @@ route_result (const GNUNET_HashCode * key,
       result->hop_count = htonl (ntohl (result->hop_count) + 1);
 #endif
     }
-  if ((cls == NULL) || (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
+  if ((cls == NULL)
+      || (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
     {
 #if DEBUG_ROUTING
 
-      if ((cls != NULL) && (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
-      {
-        dhtqueryuid_ptr = cls;
-        dhtqueryuid = *dhtqueryuid_ptr;
-        GNUNET_GE_LOG (coreAPI->ectx,
-               GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-               GNUNET_GE_BULK,
-               _("cls not null and type is wrong! Got dhtqueryuid of %llu"), dhtqueryuid);
-        GNUNET_GE_LOG (coreAPI->ectx,
-               GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-               GNUNET_GE_BULK,
-               _("got header type of %d or %d, wanted %d"), ntohs (result->header.type), result->header.type, GNUNET_P2P_PROTO_DHT_RESULT);
+      if ((cls != NULL)
+          && (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
+        {
+          dhtqueryuid_ptr = cls;
+          dhtqueryuid = *dhtqueryuid_ptr;
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
+                         _
+                         ("cls not null and type is wrong! Got dhtqueryuid of %llu"),
+                         dhtqueryuid);
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
+                         _("got header type of %d or %d, wanted %d"),
+                         ntohs (result->header.type), result->header.type,
+                         GNUNET_P2P_PROTO_DHT_RESULT);
 
-      }
+        }
       else
-      {
-        dhtqueryuid = 0;
-      }
+        {
+          dhtqueryuid = 0;
+        }
 #endif
       result = GNUNET_malloc (sizeof (DV_DHT_MESSAGE) + size);
       result->header.size = htons (sizeof (DV_DHT_MESSAGE) + size);
@@ -686,7 +692,9 @@ handle_get (const GNUNET_PeerIdentity * sender,
 
 #if DEBUG_ROUTING
   queryuid = ntohl (get->queryuid);
-  total = dstore->get (&get->key, ntohl (get->type), &route_result, (void *)&queryuid);
+  total =
+    dstore->get (&get->key, ntohl (get->type), &route_result,
+                 (void *) &queryuid);
 #else
   total = dstore->get (&get->key, ntohl (get->type), &route_result, NULL);
 #endif
@@ -838,7 +846,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
   GNUNET_free (aput);
 
   store = 0;
-  if (GNUNET_YES == GNUNET_DV_DHT_am_closest_peer(&put->key))
+  if (GNUNET_YES == GNUNET_DV_DHT_am_closest_peer (&put->key))
     store = 1;
 
   if (store != 0)

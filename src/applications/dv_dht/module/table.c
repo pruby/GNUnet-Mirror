@@ -386,15 +386,15 @@ inverse_distance (const GNUNET_HashCode * target,
 
   bucket = get_bit_distance (target, have);
   /*d = bucket * 32;
-  d = exp2 (d / (sizeof (GNUNET_HashCode) * 8));
-  I can't understand this code.  Why multiply bucket by 32?
-  I say if we want a scaled value, assume we have a bucket
-  for each bit.  Obviously we can't get to 2^512, but this
-  will appropriately tell us whether one loc is closer than
-  another.  I also don't get why we want 2^(d/512)!!  Say we
-  should be in bucket 5 (5 matching bits), then we get 1
-  as a retrun value, just as if we have 15 matching bits!!!
-  15 matching should be closer than 5!!!!!!!*/
+     d = exp2 (d / (sizeof (GNUNET_HashCode) * 8));
+     I can't understand this code.  Why multiply bucket by 32?
+     I say if we want a scaled value, assume we have a bucket
+     for each bit.  Obviously we can't get to 2^512, but this
+     will appropriately tell us whether one loc is closer than
+     another.  I also don't get why we want 2^(d/512)!!  Say we
+     should be in bucket 5 (5 matching bits), then we get 1
+     as a retrun value, just as if we have 15 matching bits!!!
+     15 matching should be closer than 5!!!!!!! */
   d = exp2 (bucket);
   if (d > ((unsigned int) -1))
     return -1;
@@ -592,29 +592,29 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
 
   find_closest_peer (&closest, target);
   GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "closest peer\n");
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "closest peer\n");
   printPeerBits (&closest);
   GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "me\n");
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "me\n");
   printPeerBits (coreAPI->my_identity);
   GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "key\n");
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "key\n");
   printKeyBits (target);
   GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "closest peer inverse distance is %u, mine is %u\n",
-                     inverse_distance(target, &closest.hashPubKey), inverse_distance(target, &coreAPI->my_identity->hashPubKey));
-  if (inverse_distance(target, &coreAPI->my_identity->hashPubKey) >= inverse_distance(target, &closest.hashPubKey))
-  {
-    return GNUNET_YES;
-  }
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "closest peer inverse distance is %u, mine is %u\n",
+                 inverse_distance (target, &closest.hashPubKey),
+                 inverse_distance (target,
+                                   &coreAPI->my_identity->hashPubKey));
+  if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >=
+      inverse_distance (target, &closest.hashPubKey))
+    {
+      return GNUNET_YES;
+    }
   return GNUNET_NO;
 }
 

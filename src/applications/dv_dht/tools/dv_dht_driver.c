@@ -37,7 +37,7 @@
 
 struct GNUNET_DV_DHT_keys
 {
-  struct GNUNET_DV_DHT_keys * next;
+  struct GNUNET_DV_DHT_keys *next;
   char data[8];
   GNUNET_HashCode key;
 };
@@ -109,15 +109,15 @@ result_callback (const GNUNET_HashCode * key,
                  unsigned int type,
                  unsigned int size, const char *data, void *cls)
 {
-struct GNUNET_DV_DHT_keys *keys = cls;
-int match = 0;
+  struct GNUNET_DV_DHT_keys *keys = cls;
+  int match = 0;
 
-while (keys != NULL)
-{
-    if (0 == memcmp (keys->data, data, size))
-      match = 1;
-    keys = keys->next;
-}
+  while (keys != NULL)
+    {
+      if (0 == memcmp (keys->data, data, size))
+        match = 1;
+      keys = keys->next;
+    }
 #if 0
   fprintf (stderr, "Got %u %u `%.*s' (want `%.*s')\n", type, size, size, data,
            sizeof (expect), expect);
@@ -128,11 +128,11 @@ while (keys != NULL)
     return GNUNET_SYSERR;
 #endif
   if (match == 1)
-  {
-    found++;
-    new_found++;
-    return GNUNET_OK;
-  }
+    {
+      found++;
+      new_found++;
+      return GNUNET_OK;
+    }
   else
     return GNUNET_SYSERR;
 }
@@ -186,128 +186,134 @@ do_testing (int argc, char *const *argv)
     }
   else
     {
-      ret = sqlapi->insert_trial (&trialuid, num_peers, topology, put_items, get_requests, 1);
+      ret =
+        sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
+                              get_requests, 1);
     }
 
   if (ret != GNUNET_OK)
     return GNUNET_SYSERR;
-  printf ("Starting %u peers for trial %llu...\n", (unsigned int) num_peers, trialuid);
+  printf ("Starting %u peers for trial %llu...\n", (unsigned int) num_peers,
+          trialuid);
   peers = GNUNET_REMOTE_start_daemons (cfg, num_peers);
   if (peers == NULL)
-  {
-    GNUNET_GC_free (cfg);
-    return -1;
-  }
+    {
+      GNUNET_GC_free (cfg);
+      return -1;
+    }
   pos = peers;
   for (i = 0; i < num_peers; i++)
-  {
-    peer_array[i] = pos;
-    pos = pos->next;
-  }
+    {
+      peer_array[i] = pos;
+      pos = pos->next;
+    }
 
   for (i = 0; i < put_items; i++)
-  {
-    key_pos = GNUNET_malloc(sizeof(struct GNUNET_DV_DHT_keys));
-    for (l = 0; l < 8; l++)
     {
-      key_pos->data[l] = rand();
+      key_pos = GNUNET_malloc (sizeof (struct GNUNET_DV_DHT_keys));
+      for (l = 0; l < 8; l++)
+        {
+          key_pos->data[l] = rand ();
+        }
+      GNUNET_hash (key_pos->data, 8, &key_pos->key);
+      if (keys == NULL)
+        {
+          keys = key_pos;
+          key_pos->next = NULL;
+        }
+      else
+        {
+          key_pos->next = keys;
+          keys = key_pos;
+        }
     }
-    GNUNET_hash (key_pos->data, 8, &key_pos->key);
-    if (keys == NULL)
-    {
-      keys = key_pos;
-      key_pos->next = NULL;
-    }
-    else
-    {
-      key_pos->next = keys;
-      keys = key_pos;
-    }
-  }
   sleep (30);
   found = 0;
 
   for (r = 0; r < settle_time; r++)
-  {
-    fprintf (stderr, "After %d minutes\n", r);
-    for (i = 0; i < num_peers; i++)
     {
-      if (GNUNET_shutdown_test () == GNUNET_YES)
-        break;
-      fprintf (stderr, "Peer %d: ", i);
-      sock =
-        GNUNET_client_connection_create (NULL, peer_array[i]->config);
-      GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL);
-      GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
-      GNUNET_client_connection_destroy (sock);
-    }
-    if (GNUNET_shutdown_test () == GNUNET_YES)
-      break;
-    sleep (60);
-  }
-
-  key_pos = keys;
-  key_count = 0;
-  while(key_pos != NULL)
-  {
-    random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
-    fprintf(stdout, "Inserting key %d at peer %d\n", key_count, random_peer);
-    CHECK (GNUNET_OK == GNUNET_DV_DHT_put (peer_array[random_peer]->config,
-                                         ectx,
-                                         &key_pos->key,
-                                         GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                         sizeof (key_pos->data), key_pos->data));
-
-    key_pos = key_pos->next;
-    key_count++;
-  }
-  fprintf(stdout, "Inserted %d items\n", key_count);
-  key_pos = keys;
-  key_count = 0;
-  for (i = 0; i < get_requests; i ++)
-  {
-    random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
-    dctx = GNUNET_DV_DHT_context_create (peer_array[random_peer]->config, ectx,
-                                         &result_callback, keys);
-    fprintf(stdout, "Searching for key %d from peer %d\n", key_count, random_peer);
-    get1 = GNUNET_DV_DHT_get_start (dctx,
-                                    GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                    &key_pos->key);
-    GNUNET_GE_ASSERT (NULL, get1 != NULL);
-    for (k = 0; k < DEFAULT_NUM_ROUNDS; k++)
-    {
-      if (GNUNET_shutdown_test () == GNUNET_YES)
-        break;
-      if (9 == (k % 10))
+      fprintf (stderr, "After %d minutes\n", r);
+      for (i = 0; i < num_peers; i++)
         {
-          printf (".");
-          fflush (stdout);
+          if (GNUNET_shutdown_test () == GNUNET_YES)
+            break;
+          fprintf (stderr, "Peer %d: ", i);
+          sock =
+            GNUNET_client_connection_create (NULL, peer_array[i]->config);
+          GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL);
+          GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
+          GNUNET_client_connection_destroy (sock);
         }
-      fflush (stdout);
-      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-      if (last < found)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
+      sleep (60);
     }
-    GNUNET_DV_DHT_get_stop (dctx, get1);
-    if (k == DEFAULT_NUM_ROUNDS)
+
+  key_pos = keys;
+  key_count = 0;
+  while (key_pos != NULL)
     {
-      printf ("?");
-      fflush (stdout);
-    }
-    GNUNET_DV_DHT_context_destroy(dctx);
-    if (key_pos->next != NULL)
-    {
+      random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
+      fprintf (stdout, "Inserting key %d at peer %d\n", key_count,
+               random_peer);
+      CHECK (GNUNET_OK ==
+             GNUNET_DV_DHT_put (peer_array[random_peer]->config, ectx,
+                                &key_pos->key,
+                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                sizeof (key_pos->data), key_pos->data));
+
       key_pos = key_pos->next;
       key_count++;
     }
-    else
+  fprintf (stdout, "Inserted %d items\n", key_count);
+  key_pos = keys;
+  key_count = 0;
+  for (i = 0; i < get_requests; i++)
     {
-      key_pos = keys;
-      key_count = 0;
+      random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
+      dctx =
+        GNUNET_DV_DHT_context_create (peer_array[random_peer]->config, ectx,
+                                      &result_callback, keys);
+      fprintf (stdout, "Searching for key %d from peer %d\n", key_count,
+               random_peer);
+      get1 =
+        GNUNET_DV_DHT_get_start (dctx,
+                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                 &key_pos->key);
+      GNUNET_GE_ASSERT (NULL, get1 != NULL);
+      for (k = 0; k < DEFAULT_NUM_ROUNDS; k++)
+        {
+          if (GNUNET_shutdown_test () == GNUNET_YES)
+            break;
+          if (9 == (k % 10))
+            {
+              printf (".");
+              fflush (stdout);
+            }
+          fflush (stdout);
+          GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+          if (last < found)
+            break;
+        }
+      GNUNET_DV_DHT_get_stop (dctx, get1);
+      if (k == DEFAULT_NUM_ROUNDS)
+        {
+          printf ("?");
+          fflush (stdout);
+        }
+      GNUNET_DV_DHT_context_destroy (dctx);
+      if (key_pos->next != NULL)
+        {
+          key_pos = key_pos->next;
+          key_count++;
+        }
+      else
+        {
+          key_pos = keys;
+          key_count = 0;
+        }
     }
-  }
-  printf ("Found %u out of %llu attempts.\n", found,
-            get_requests);
+  printf ("Found %u out of %llu attempts.\n", found, get_requests);
 
 FAILURE:
   pos = peers;
@@ -318,12 +324,12 @@ FAILURE:
     }
 
   key_pos = keys;
-  while(key_pos != NULL)
-  {
-    temp_key_pos = key_pos->next;
-    GNUNET_free(key_pos);
-    key_pos = temp_key_pos;
-  }
+  while (key_pos != NULL)
+    {
+      temp_key_pos = key_pos->next;
+      GNUNET_free (key_pos);
+      key_pos = temp_key_pos;
+    }
 
   ret = sqlapi->update_trial (trialuid);
   return ret;
@@ -379,23 +385,17 @@ main (int argc, char *const *argv)
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "MULTIPLE_SERVER_TESTING",
                                             "SETTLE_TIME",
-                                            0,
-                                            -1,
-                                            0, &settle_time);
+                                            0, -1, 0, &settle_time);
 
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "MULTIPLE_SERVER_TESTING",
                                             "PUT_ITEMS",
-                                            1,
-                                            -1,
-                                            100, &put_items);
+                                            1, -1, 100, &put_items);
 
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "MULTIPLE_SERVER_TESTING",
                                             "GET_REQUESTS",
-                                            1,
-                                            -1,
-                                            100, &get_requests);
+                                            1, -1, 100, &get_requests);
 
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "MULTIPLE_SERVER_TESTING",
