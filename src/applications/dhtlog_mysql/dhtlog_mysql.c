@@ -61,8 +61,8 @@ static struct GNUNET_MysqlStatementHandle *insert_route;
                           "VALUES (?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
-#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology) "\
-                          "VALUES (NOW(), ?, ?)"
+#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent) "\
+                          "VALUES (NOW(), ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
 #define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid) "\
@@ -156,6 +156,9 @@ itable ()
              "`trialuid` int(10) unsigned NOT NULL auto_increment,"
              "`numnodes` int(10) unsigned NOT NULL,"
              "`topology` int(10) NOT NULL,"
+             "`puts` int(10) unsigned NOT NULL,"
+             "`gets` int(10) unsigned NOT NULL,"
+             "`concurrent` int(10) unsigned NOT NULL,"
              "`starttime` datetime NOT NULL,"
              "`endtime` datetime NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
@@ -237,7 +240,8 @@ get_current_trial (unsigned long long *trialuid)
  * Inserts the specified trial into the dhttests.trials table
  */
 int
-add_trial (unsigned long long *trialuid, int num_nodes, int topology)
+add_trial (unsigned long long *trialuid, int num_nodes, int topology,
+           int puts, int gets, int concurrent)
 {
   int ret;
   if (GNUNET_OK !=
@@ -247,7 +251,17 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology)
                                                   &num_nodes,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
-                                                  &topology, GNUNET_YES, -1)))
+                                                  &topology,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &puts,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &gets,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &concurrent,
+                                                  GNUNET_YES, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -382,7 +396,7 @@ add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
     return GNUNET_SYSERR;
 
   GNUNET_hash_to_enc (&node->hashPubKey, &encPeer);
-  p_len = (unsigned long)strlen ((char *) &encPeer);
+  p_len = (unsigned long) strlen ((char *) &encPeer);
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_node,
                                                   nodeuid,
@@ -683,10 +697,7 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   get_current_trial (&current_trial);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK,
-                 _
-                 ("current trial is %llu\n"),
-                 current_trial);
+                 GNUNET_GE_BULK, _("current trial is %llu\n"), current_trial);
   return &api;
 }
 
