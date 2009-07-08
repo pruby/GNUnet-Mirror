@@ -149,7 +149,7 @@ main (int argc, char **argv)
   GNUNET_GC_set_configuration_value_string (cfg, NULL,
                                             "MULTIPLE_SERVER_TESTING",
                                             "DOT_OUTPUT", "topology.dot");
-  peers = GNUNET_REMOTE_start_daemons (cfg, 8);
+  GNUNET_REMOTE_start_daemons (&peers, cfg, 8);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);
