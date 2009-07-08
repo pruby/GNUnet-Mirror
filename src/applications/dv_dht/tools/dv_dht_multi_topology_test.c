@@ -142,7 +142,7 @@ main (int argc, const char **argv)
                                             "MULTIPLE_SERVER_TESTING",
                                             "DOT_OUTPUT", "topology.dot");
   printf ("Starting %u peers...\n", NUM_PEERS);
-  peers = GNUNET_REMOTE_start_daemons (cfg, NUM_PEERS);
+  GNUNET_REMOTE_start_daemons (&peers, cfg, NUM_PEERS);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);

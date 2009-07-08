@@ -61,8 +61,8 @@ static struct GNUNET_MysqlStatementHandle *insert_route;
                           "VALUES (?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
-#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent) "\
-                          "VALUES (NOW(), ?, ?, ?, ?, ?)"
+#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, message) "\
+                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
 #define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid) "\
@@ -71,6 +71,9 @@ static struct GNUNET_MysqlStatementHandle *insert_dhtkey;
 
 #define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW() where trialuid = ?"
 static struct GNUNET_MysqlStatementHandle *update_trial;
+
+#define UPDATE_CONNECTIONS_STMT "UPDATE trials set totalConnections = ? where trialuid = ?"
+static struct GNUNET_MysqlStatementHandle *update_connection;
 
 #define GET_TRIAL_STMT "SELECT MAX( trialuid ) FROM trials"
 static struct GNUNET_MysqlStatementHandle *get_trial;
@@ -161,6 +164,7 @@ itable ()
              "`concurrent` int(10) unsigned NOT NULL,"
              "`starttime` datetime NOT NULL,"
              "`endtime` datetime NOT NULL,"
+             "`settle_time` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
              "UNIQUE KEY `trialuid` (`trialuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
@@ -196,6 +200,7 @@ iopen ()
       PINIT (update_trial, UPDATE_TRIALS_STMT) ||
       PINIT (get_dhtkeyuid, GET_DHTKEYUID_STMT) ||
       PINIT (get_nodeuid, GET_NODEUID_STMT) ||
+      PINIT (update_connection, UPDATE_CONNECTIONS_STMT) ||
       PINIT (get_trial, GET_TRIAL_STMT))
     {
       GNUNET_MYSQL_database_close (db);
@@ -241,9 +246,11 @@ get_current_trial (unsigned long long *trialuid)
  */
 int
 add_trial (unsigned long long *trialuid, int num_nodes, int topology,
-           int puts, int gets, int concurrent)
+           int puts, int gets, int concurrent, int settle_time, char *message)
 {
   int ret;
+  unsigned long long m_len;
+  m_len = strlen (message);
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_trial,
                                                   trialuid,
@@ -261,7 +268,15 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &concurrent,
-                                                  GNUNET_YES, -1)))
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &settle_time,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_BLOB,
+                                                  message,
+                                                  max_varchar_len +
+                                                  max_varchar_len, &m_len,
+                                                  -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -433,6 +448,41 @@ update_trials (unsigned long long trialuid)
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (update_trial,
                                                   NULL,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &trialuid, GNUNET_YES, -1)))
+    {
+      if (ret == GNUNET_SYSERR)
+        {
+          return GNUNET_SYSERR;
+        }
+    }
+  if (ret > 0)
+    return GNUNET_OK;
+  else
+    return GNUNET_SYSERR;
+}
+
+
+/*
+ * Update dhttests.trials table with total connections information
+ */
+int
+add_connections (unsigned long long trialuid, unsigned int totalConnections)
+{
+  int ret;
+#if DEBUG_DHTLOG
+  if (trialuid != current_trial)
+    {
+      fprintf (stderr,
+               _("Trialuid to update is not equal to current_trial(!)(?)\n"));
+    }
+#endif
+  if (GNUNET_OK !=
+      (ret = GNUNET_MYSQL_prepared_statement_run (update_connection,
+                                                  NULL,
+                                                  MYSQL_TYPE_LONG,
+                                                  &totalConnections,
+                                                  GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &trialuid, GNUNET_YES, -1)))
     {
@@ -694,6 +744,7 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   api.insert_route = &add_route;
   api.insert_node = &add_node;
   api.insert_dhtkey = &add_dhtkey;
+  api.update_connections = &add_connections;
   get_current_trial (&current_trial);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |

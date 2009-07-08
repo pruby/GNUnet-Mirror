@@ -56,7 +56,7 @@ int
 main (int argc, char *const *argv)
 {
   int res;
-
+  struct GNUNET_REMOTE_TESTING_DaemonContext *peers;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *hostConfig;
@@ -86,7 +86,7 @@ main (int argc, char *const *argv)
                                                 "DOT_OUTPUT", dotOutFileName);
     }
 
-  GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons);
+  GNUNET_REMOTE_start_daemons (&peers, hostConfig, number_of_daemons);
 
   GNUNET_GC_free (hostConfig);
   GNUNET_fini (ectx, cfg);

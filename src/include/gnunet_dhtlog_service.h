@@ -82,12 +82,19 @@ typedef struct
    * Inserts the trial information into the database
    */
   int (*insert_trial) (unsigned long long *trialuid, int num_nodes,
-                       int topology, int puts, int gets, int concurrent);
+                       int topology, int puts, int gets, int concurrent,
+                       int settle_time, char *message);
 
   /*
    * Update the trial information with the ending time
    */
   int (*update_trial) (unsigned long long trialuid);
+
+  /*
+   * Update the trial information with the total connections
+   */
+  int (*update_connections) (unsigned long long trialuid,
+                             unsigned int totalConnections);
 
   /*
    * Insert the query information from a single hop into the database

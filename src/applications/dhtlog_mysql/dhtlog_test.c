@@ -63,7 +63,7 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   memset (&k1, 0, sizeof (GNUNET_HashCode));
   memset (&k2, 1, sizeof (GNUNET_HashCode));
 
-  ret = api->insert_trial (&trialuid, i, 5, 0, 0, 0);
+  ret = api->insert_trial (&trialuid, i, 5, 0, 0, 0, 0);
   fprintf (stderr, "Trial uid is %llu\n", trialuid);
 
   if (ret != GNUNET_OK)

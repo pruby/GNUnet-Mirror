@@ -44,6 +44,7 @@ typedef enum
   GNUNET_REMOTE_RING,
   GNUNET_REMOTE_2D_TORUS,
   GNUNET_REMOTE_ERDOS_RENYI,
+  GNUNET_REMOTE_INTERNAT,
   GNUNET_REMOTE_NONE,
 
 } GNUNET_REMOTE_TOPOLOGIES;
@@ -81,11 +82,14 @@ int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 /**
  * Main start function to be called.  Needs a remote config specified, as well
  * as the number of daemons to start and the type of topology.  Available topology
- * types are defined in gnunet_remote_lib.h  Returns a linked list of hosts started
+ * types are defined in gnunet_remote_lib.h  ret_peers hold a linked list of the
+ * hosts started.  Returns the total number of connections in the topology.
  */
-struct GNUNET_REMOTE_TESTING_DaemonContext
-  *GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
-                                unsigned long long number_of_daemons);
+int
+GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
+                             **ret_peers,
+                             struct GNUNET_GC_Configuration *newcfg,
+                             unsigned long long number_of_daemons);
 
 int
 GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext

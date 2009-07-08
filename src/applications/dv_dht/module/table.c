@@ -73,8 +73,8 @@ static unsigned int indentation;
  * What is the chance (1 in XXX) that we send DISCOVERY messages
  * to another peer?
  */
-#define MAINTAIN_CHANCE (10 + 100 * total_peers)
-/*#define MAINTAIN_CHANCE (1 + total_peers)*/
+#define MAINTAIN_CHANCE (10 + 25 * total_peers)
+/*#define MAINTAIN_CHANCE (10 + 100 * total_peers)*/
 
 /**
  * How long can a peer be inactive before we time it out?
@@ -90,7 +90,7 @@ static unsigned int indentation;
 /**
  * Target number of peers per bucket
  */
-#define MAINTAIN_BUCKET_SIZE 4
+#define MAINTAIN_BUCKET_SIZE 8  /* Previously 4, trying different values... */
 
 
 /**

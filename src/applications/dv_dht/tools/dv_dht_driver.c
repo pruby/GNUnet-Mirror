@@ -178,8 +178,10 @@ do_testing (int argc, char *const *argv)
   int key_count;
   int random_peer;
   unsigned long long trialuid;
+  int totalConnections;
 
   key_count = 0;
+
   if (sqlapi == NULL)
     {
       return GNUNET_SYSERR;
@@ -188,19 +190,27 @@ do_testing (int argc, char *const *argv)
     {
       ret =
         sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
-                              get_requests, 1);
+                              get_requests, 1, settle_time, "");
     }
-
   if (ret != GNUNET_OK)
     return GNUNET_SYSERR;
+
   printf ("Starting %u peers for trial %llu...\n", (unsigned int) num_peers,
           trialuid);
-  peers = GNUNET_REMOTE_start_daemons (cfg, num_peers);
+  ret = GNUNET_REMOTE_start_daemons (&peers, cfg, num_peers);
+
+  if (ret != GNUNET_SYSERR)
+    totalConnections = ret;
+  else
+    return ret;
+
+  sqlapi->update_connections (trialuid, totalConnections);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);
       return -1;
     }
+
   pos = peers;
   for (i = 0; i < num_peers; i++)
     {

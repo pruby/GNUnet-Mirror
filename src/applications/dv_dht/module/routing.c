@@ -699,6 +699,18 @@ handle_get (const GNUNET_PeerIdentity * sender,
   total = dstore->get (&get->key, ntohl (get->type), &route_result, NULL);
 #endif
 
+  if (total > 0)
+    {
+      if ((debug_routes) && (dhtlog != NULL))
+        {
+          queryuid = ntohl (get->queryuid);
+          hop_count = ntohl (get->hop_count);
+          dhtlog->insert_query (NULL, queryuid, DHTLOG_GET,
+                                hop_count, GNUNET_YES, coreAPI->my_identity,
+                                &get->key);
+        }
+    }
+
   if (total > MAX_RESULTS)
     {
 #if DEBUG_ROUTING

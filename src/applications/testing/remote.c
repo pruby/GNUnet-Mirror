@@ -218,8 +218,10 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
 }
 
 
-struct GNUNET_REMOTE_TESTING_DaemonContext *
-GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
+int
+GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
+                             **ret_peers,
+                             struct GNUNET_GC_Configuration *newcfg,
                              unsigned long long number_of_daemons)
 {
   struct GNUNET_GC_Configuration *basecfg;
@@ -227,10 +229,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   struct GNUNET_REMOTE_host_list *array_of_pointers[number_of_daemons];
   struct GNUNET_REMOTE_host_list *temp_pos;
   GNUNET_REMOTE_TOPOLOGIES type_of_topology;
-  struct GNUNET_REMOTE_TESTING_DaemonContext *ret_peers;
+  struct GNUNET_REMOTE_TESTING_DaemonContext *new_ret_peers;
   struct GNUNET_REMOTE_TESTING_DaemonContext *next_peer;
 
-  ret_peers = NULL;
+  new_ret_peers = NULL;
   list_as_array = &array_of_pointers[0];
   FILE *dotOutFile;
 
@@ -514,7 +516,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               next_peer =
                 GNUNET_malloc (sizeof
                                (struct GNUNET_REMOTE_TESTING_DaemonContext));
-              next_peer->next = ret_peers;
+              next_peer->next = new_ret_peers;
               next_peer->hostname = GNUNET_strdup (curr_host);
               next_peer->username = GNUNET_strdup (ssh_username);
               next_peer->port = starting_port + (j * port_increment);
@@ -530,7 +532,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                 GNUNET_REMOTE_get_daemon_information (next_peer->hostname,
                                                       next_peer->port);
 
-              ret_peers = next_peer;
+              new_ret_peers = next_peer;
 
               GNUNET_GC_get_configuration_value_number (basecfg,
                                                         "NETWORK",
@@ -667,7 +669,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                     GNUNET_malloc (sizeof
                                    (struct
                                     GNUNET_REMOTE_TESTING_DaemonContext));
-                  next_peer->next = ret_peers;
+                  next_peer->next = new_ret_peers;
                   next_peer->hostname = GNUNET_strdup (curr_host);
                   next_peer->port =
                     starting_port + ((j + 1) * port_increment);
@@ -683,7 +685,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                   next_peer->peer =
                     GNUNET_REMOTE_get_daemon_information (next_peer->hostname,
                                                           next_peer->port);
-                  ret_peers = next_peer;
+                  new_ret_peers = next_peer;
 
                   GNUNET_GC_get_configuration_value_number (basecfg,
                                                             "NETWORK",
@@ -728,8 +730,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
   GNUNET_free (hostnames);
   GNUNET_free (remote_config_path);
   GNUNET_free (remote_gnunetd_path);
-
-  return ret_peers;
+  *ret_peers = new_ret_peers;
+  return ret;
 }
 
 int
@@ -744,6 +746,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int unused;
   char *cmd;
   int length;
+  int totalConnections;
 
   ret = GNUNET_OK;
   switch (type)
@@ -782,6 +785,14 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 #endif
       ret = GNUNET_REMOTE_connect_erdos_renyi (percentage, head, dotOutFile);
       break;
+    case GNUNET_REMOTE_INTERNAT:
+#if VERBOSE
+      fprintf (stderr, _("Creating Erdos-Renyi topology\n"));
+#endif
+      ret =
+        GNUNET_REMOTE_connect_nated_internet (percentage, number_of_daemons,
+                                              head, dotOutFile);
+      break;
     case GNUNET_REMOTE_NONE:
       return ret;
       break;
@@ -789,9 +800,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       ret = GNUNET_SYSERR;
       break;
     }
-
+  totalConnections = 0;
   if (ret == GNUNET_OK)
     {
+
       pos = head;
       while (pos != NULL)
         {
@@ -810,6 +822,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
               fprintf (temp_friend_handle, "%s\n",
                        (const char *) friend_pos->nodeid);
               friend_pos = friend_pos->next;
+              totalConnections++;
             }
 
           fclose (temp_friend_handle);
@@ -883,8 +896,13 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 #endif
     }
 
-
-  return ret;
+#if VERBOSE
+  fprintf (stderr, _("Total connections: %d!\n"), totalConnections);
+#endif
+  if (ret != GNUNET_OK)
+    return ret;
+  else
+    return totalConnections;
 }
 
 /* end of remote.c */

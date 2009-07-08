@@ -62,6 +62,7 @@ static unsigned long long requests_per_second;
 static unsigned long long requests_wait_time;
 
 static char *dotOutFileName = NULL;
+static char *trialmessage = NULL;
 
 static struct GNUNET_CommandLineOption gnunetDHTDriverOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),    /* -c */
@@ -71,6 +72,9 @@ static struct GNUNET_CommandLineOption gnunetDHTDriverOptions[] = {
    gettext_noop
    ("set output file for a dot input file which represents the graph of the connected nodes"),
    1, &GNUNET_getopt_configure_set_string, &dotOutFileName},
+  {'m', "mesage", "LOG_MESSAGE",
+   gettext_noop ("log a message along with this trial in the database"),
+   1, &GNUNET_getopt_configure_set_string, &trialmessage},
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -178,9 +182,15 @@ new_do_testing (int argc, char *const *argv)
   int random_peers[concurrent_requests];
   int random_peer;
   int random_key;
+  unsigned int totalConnections;
   unsigned long long trialuid;
 
   key_count = 0;
+
+
+  printf ("Starting %u peers\n", (unsigned int) num_peers);
+  printf ("Trial message is %s, strlen is %d\n", trialmessage,
+          strlen (trialmessage));
   if (sqlapi == NULL)
     {
       return GNUNET_SYSERR;
@@ -189,14 +199,21 @@ new_do_testing (int argc, char *const *argv)
     {
       ret =
         sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
-                              get_requests, concurrent_requests);
+                              get_requests, concurrent_requests, settle_time,
+                              trialmessage);
     }
-
   if (ret != GNUNET_OK)
     return GNUNET_SYSERR;
-  printf ("Starting %u peers for trial %llu...\n", (unsigned int) num_peers,
-          trialuid);
-  peers = GNUNET_REMOTE_start_daemons (cfg, num_peers);
+
+  ret = GNUNET_REMOTE_start_daemons (&peers, cfg, num_peers);
+  if (ret != GNUNET_SYSERR)
+    totalConnections = (unsigned int) ret;
+  else
+    return ret;
+
+  sqlapi->update_connections (trialuid, totalConnections);
+  printf ("Topology created, %d total connections, Trial uid %llu\n",
+          totalConnections, trialuid);
   if (peers == NULL)
     {
       GNUNET_GC_free (cfg);
