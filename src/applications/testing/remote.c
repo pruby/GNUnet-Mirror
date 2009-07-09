@@ -931,6 +931,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 
 #if VERBOSE
   fprintf (stderr, _("Total connections: %d!\n"), totalConnections);
+  fprintf (stderr, _("Total failed connections: %d!\n"), connectFailures);
 #endif
   if (ret != GNUNET_OK)
     return ret;
