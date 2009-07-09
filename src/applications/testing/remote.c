@@ -383,6 +383,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 #if VERBOSE
   fprintf (stdout, "Have %u machines, need to start %u daemons\n",
            num_machines, number_of_daemons);
+  fprintf(stdout, "Total started without extra is %u\n", daemons_per_machine * num_machines);
   fprintf (stdout, "Will start %u per machine, and %u extra\n",
            daemons_per_machine, extra_daemons);
 #endif
