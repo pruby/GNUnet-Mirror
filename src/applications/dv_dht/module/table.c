@@ -73,7 +73,7 @@ static unsigned int indentation;
  * What is the chance (1 in XXX) that we send DISCOVERY messages
  * to another peer?
  */
-#define MAINTAIN_CHANCE (10 + 25 * total_peers)
+#define MAINTAIN_CHANCE (10 + 75 * total_peers)
 /*#define MAINTAIN_CHANCE (10 + 100 * total_peers)*/
 
 /**

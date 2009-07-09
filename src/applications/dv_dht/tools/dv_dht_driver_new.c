@@ -189,18 +189,32 @@ new_do_testing (int argc, char *const *argv)
 
 
   printf ("Starting %u peers\n", (unsigned int) num_peers);
-  printf ("Trial message is %s, strlen is %d\n", trialmessage,
-          strlen (trialmessage));
+  if (trialmessage != NULL)
+    {
+      printf ("Trial message is %s, strlen is %d\n", trialmessage,
+              strlen (trialmessage));
+    }
+
   if (sqlapi == NULL)
     {
       return GNUNET_SYSERR;
     }
   else
     {
-      ret =
-        sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
-                              get_requests, concurrent_requests, settle_time,
-                              trialmessage);
+      if (trialmessage != NULL)
+        {
+          ret =
+            sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
+                                  get_requests, concurrent_requests,
+                                  settle_time, trialmessage);
+        }
+      else
+        {
+          ret =
+            sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
+                                  get_requests, concurrent_requests,
+                                  settle_time, "");
+        }
     }
   if (ret != GNUNET_OK)
     return GNUNET_SYSERR;
