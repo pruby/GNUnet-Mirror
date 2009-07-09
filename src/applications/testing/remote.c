@@ -775,7 +775,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   char *cmd;
   int length;
   int totalConnections;
-
+  int connectFailures;
   ret = GNUNET_OK;
   switch (type)
     {
@@ -893,6 +893,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
        * to the first later, but this IS simple.  If performance becomes a problem
        * with MANY conns, we'll see...
        */
+      connectFailures = 0;
       while ((pos != NULL) && (ret == GNUNET_OK))
         {
           friend_pos = pos->friend_entries;
@@ -910,6 +911,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                                    friend_pos->hostentry->
                                                    port, dotOutFile);
               if (ret != GNUNET_OK)
+              {
+                connectFailures++;
+              }
+              if (connectFailures > totalConnections/2)
                 break;
               friend_pos = friend_pos->next;
             }
