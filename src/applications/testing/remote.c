@@ -312,7 +312,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "DOT_OUTPUT", "",
                                             &dotOutFileName);
-
+#if VERBOSE
+  fprintf (stderr, "Hostnames is %s\n", hostnames);
+#endif
   dotOutFile = NULL;
   if (strcmp (dotOutFileName, "") != 0)
     {
@@ -378,7 +380,12 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
   daemons_per_machine = number_of_daemons / num_machines;
   extra_daemons = number_of_daemons - (daemons_per_machine * num_machines);
-
+#if VERBOSE
+  fprintf (stdout, "Have %u machines, need to start %u daemons\n",
+           num_machines, number_of_daemons);
+  fprintf (stdout, "Will start %u per machine, and %u extra\n",
+           daemons_per_machine, extra_daemons);
+#endif
   i = 0;
   count_started = 0;
   pos = length;
@@ -578,6 +585,26 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         "PATHS",
                                                         "GNUNETD_HOME",
                                                         remote_config_path);
+
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "MULTIPLE_SERVER_TESTING",
+                                                        "MYSQL_SERVER",
+                                                        mysql_server);
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "MULTIPLE_SERVER_TESTING",
+                                                        "MYSQL_DB", mysql_db);
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "MULTIPLE_SERVER_TESTING",
+                                                        "MYSQL_USER",
+                                                        mysql_user);
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "MULTIPLE_SERVER_TESTING",
+                                                        "MYSQL_PASSWORD",
+                                                        mysql_password);
+              GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                        "MULTIPLE_SERVER_TESTING",
+                                                        "MYSQL_PORT",
+                                                        mysql_port);
               length_temp =
                 snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j + 1);
               temp_pid_file = GNUNET_malloc (length_temp + 1);
