@@ -37,8 +37,8 @@
 #define DEBUG_DV GNUNET_NO
 #define DEBUG_DV_FORWARD GNUNET_NO
 /* How long to allow a message to be delayed */
-#define DV_DELAY (100 * GNUNET_CRON_MILLISECONDS)
-#define DV_PRIORITY 0
+#define DV_DELAY (500 * GNUNET_CRON_MILLISECONDS)
+#define DV_PRIORITY 1
 
 /**
  * Statistics service.
@@ -114,6 +114,21 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
 }
 
 /*
+ * Update the statistics about dv routing
+ */
+static int
+update_stats ()
+{
+  unsigned int current_stat;
+  unsigned int delta;
+
+  current_stat = stats->get (stat_dv_total_peers);
+  delta = GNUNET_multi_hash_map_size (ctx->extended_neighbors) - current_stat;
+
+  stats->change (stat_dv_total_peers, delta);
+}
+
+/*
  * Deletes a neighbor from the max and min heaps and
  * from the extended neighbor hash map.  Does not delete
  * from the directly connected neighbor list, because
@@ -133,7 +148,7 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
   GNUNET_free (neighbor);
 
   if (stats != NULL)
-    stats->change (stat_dv_total_peers, -1);
+    update_stats;
   return GNUNET_OK;
 }
 
