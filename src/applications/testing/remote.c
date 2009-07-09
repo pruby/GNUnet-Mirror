@@ -264,12 +264,12 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   unsigned long long temp_port;
   unsigned long long topology;
 
-  unsigned int extra_daemons;
+  unsigned long long extra_daemons;
   unsigned int count;
   unsigned int count_started;
   unsigned int length;
   unsigned int length_temp;
-  unsigned int num_machines;
+  unsigned long long num_machines;
   unsigned int i;
   unsigned int j;
   unsigned int pos;
@@ -381,10 +381,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   daemons_per_machine = number_of_daemons / num_machines;
   extra_daemons = number_of_daemons - (daemons_per_machine * num_machines);
 #if VERBOSE
-  fprintf (stdout, "Have %u machines, need to start %u daemons\n",
+  fprintf (stdout, "Have %llu machines, need to start %llu daemons\n",
            num_machines, number_of_daemons);
-  fprintf(stdout, "Total started without extra is %u\n", daemons_per_machine * num_machines);
-  fprintf (stdout, "Will start %u per machine, and %u extra\n",
+  fprintf(stdout, "Total started without extra is %llu\n", daemons_per_machine * num_machines);
+  fprintf (stdout, "Will start %llu per machine, and %llu extra\n",
            daemons_per_machine, extra_daemons);
 #endif
   i = 0;
