@@ -38,7 +38,8 @@
 #define DEBUG_DV_FORWARD GNUNET_NO
 /* How long to allow a message to be delayed */
 #define DV_DELAY (500 * GNUNET_CRON_MILLISECONDS)
-#define DV_PRIORITY 1
+#define DV_PRIORITY 0
+#define FORWARDS_PER_SECOND 10
 
 /**
  * Statistics service.
@@ -82,6 +83,7 @@ static struct GNUNET_DV_Context *ctx;
 static struct GNUNET_ThreadHandle *sendingThread;
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
+#if DEBUG_DV
 /*
  * Callback for printing a single entry in one of the
  * DV routing tables
@@ -112,6 +114,7 @@ printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
     }
   return GNUNET_OK;
 }
+#endif
 
 /*
  * Update the statistics about dv routing
@@ -126,6 +129,8 @@ update_stats ()
   delta = GNUNET_multi_hash_map_size (ctx->extended_neighbors) - current_stat;
 
   stats->change (stat_dv_total_peers, delta);
+
+  return GNUNET_OK;
 }
 
 /*
@@ -148,10 +153,12 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
   GNUNET_free (neighbor);
 
   if (stats != NULL)
-    update_stats;
+    update_stats();
+
   return GNUNET_OK;
 }
 
+#if DEBUG_DV
 /*
  * Prints out the known neighbor routing tables.
  */
@@ -173,6 +180,7 @@ print_tables ()
                                  "EXTENDED");
   return;
 }
+#endif
 
 /*
  * A callback for iterating over all known nodes.
@@ -630,28 +638,31 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
            GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
                                            &peer->hashPubKey))
     {
-      neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
-      neighbor->cost = cost;
-      neighbor->last_activity = now;
-      neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
-      memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      if (ctx->max_table_size > GNUNET_multi_hash_map_size(ctx->extended_neighbors))
+      {
+        neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+        neighbor->cost = cost;
+        neighbor->last_activity = now;
+        neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+        memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
 
-      if (referrer == NULL)
-        neighbor->referrer = NULL;
-      else
-        {
-          neighbor->referrer = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
-          memcpy (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity));
-        }
+        if (referrer == NULL)
+          neighbor->referrer = NULL;
+        else
+          {
+            neighbor->referrer = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+            memcpy (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity));
+          }
 
-      GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
-                                 neighbor, GNUNET_MultiHashMapOption_REPLACE);
+        GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
+                                   neighbor, GNUNET_MultiHashMapOption_REPLACE);
 
-      GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor, cost);
-      GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor, cost);
+        GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor, cost);
+        GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor, cost);
 
-      if (stats != NULL)
-        stats->change (stat_dv_total_peers, 1);
+        if (stats != NULL)
+          stats->change (stat_dv_total_peers, 1);
+      }
     }
   else
     {
@@ -1072,7 +1083,6 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# dv gossips received"));
       stat_dv_sent_gossips =
         stats->create (gettext_noop ("# dv gossips sent"));
-
     }
 
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
@@ -1181,6 +1191,9 @@ release_module_dv ()
                        GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
 
   GNUNET_mutex_destroy (ctx->dvMutex);
+
+  coreAPI->service_release(stats);
+  stats = NULL;
   coreAPI = NULL;
 }
 
