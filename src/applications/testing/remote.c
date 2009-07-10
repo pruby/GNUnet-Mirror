@@ -618,12 +618,12 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         temp_pid_file);
 
               temp_remote_config_path_length =
-                snprintf (NULL, 0, "%s%d", remote_config_path, j);
+                snprintf (NULL, 0, "%s%d", remote_config_path, j + 1);
               temp_remote_config_path =
                 GNUNET_malloc (temp_remote_config_path_length + 1);
               snprintf (temp_remote_config_path,
                         temp_remote_config_path_length + 1, "%s%d",
-                        remote_config_path, j);
+                        remote_config_path, j + 1);
 
               GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                         "PATHS",
