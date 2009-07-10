@@ -151,7 +151,7 @@ getPeers (const char *name, unsigned long long value, void *cls)
   if ((value > 0) && (0 == strcmp (_("# dv_dht connections"), name)))
     {
       ok = 1;
-      return GNUNET_SYSERR;
+      return GNUNET_OK;
     }
   return GNUNET_OK;
 }
