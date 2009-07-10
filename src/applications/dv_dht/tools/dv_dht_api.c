@@ -317,6 +317,8 @@ GNUNET_DV_DHT_put (struct GNUNET_GC_Configuration *cfg,
   req->type = htonl (type);
   memcpy (&req[1], value, size);
   ret = GNUNET_client_connection_write (sock, &req->header);
+  if (ret != GNUNET_OK)
+    return ret;
   if ((GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret2)) ||
       (ret2 != GNUNET_OK))
     ret = GNUNET_SYSERR;
