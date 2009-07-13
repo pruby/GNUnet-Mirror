@@ -275,6 +275,9 @@ new_do_testing (int argc, char *const *argv)
       sleep (60);
     }
 
+  if (GNUNET_shutdown_test () == GNUNET_YES)
+    return GNUNET_SYSERR;
+
   for (i = 0; i < put_items; i++)
     {
       random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
