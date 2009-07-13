@@ -320,7 +320,7 @@ new_do_testing (int argc, char *const *argv)
           GNUNET_GE_ASSERT (NULL, gets[j] != NULL);
         }
 
-      for (k = 0; k < DEFAULT_NUM_ROUNDS; k++)
+      for (k = 0; k < num_rounds; k++)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
@@ -460,9 +460,9 @@ main (int argc, char *const *argv)
     done ();
 
   fprintf (stdout,
-           "# Inserts: %llu\n# Gets: %llu\nSettle time: %llu\n# Nodes: %llu\n# Concurrent: %llu\n# Wait time: %d\n# Successful: %d\n",
+           "# Inserts: %llu\n# Gets: %llu\nSettle time: %llu\n# Nodes: %llu\n# Concurrent: %llu\n# Wait time: %llu\n# Successful: %d\n",
            put_items, get_requests, settle_time, num_peers,
-           concurrent_requests, DEFAULT_NUM_ROUNDS, found);
+           concurrent_requests, num_rounds, found);
   GNUNET_plugin_unload (plugin);
   GNUNET_mutex_destroy (lock);
   return ret;
