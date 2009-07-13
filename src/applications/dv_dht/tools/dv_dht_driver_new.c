@@ -267,7 +267,7 @@ new_do_testing (int argc, char *const *argv)
           {
             fprintf(stderr, "Problem connecting to peer %d!\n", i);
           }
-          GNUNET_thread_sleep (200 * GNUNET_CRON_MILLISECONDS);
+          GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
           GNUNET_client_connection_destroy (sock);
         }
       if (GNUNET_shutdown_test () == GNUNET_YES)
@@ -281,19 +281,19 @@ new_do_testing (int argc, char *const *argv)
   for (i = 0; i < put_items; i++)
     {
       random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
-      //random_key = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, put_items);
-      fprintf (stdout, "Inserting key %d at peer %d\n", i, random_peer);
+      random_key = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, put_items);
+      fprintf (stdout, "Inserting key %d at peer %d\n", random_key, random_peer);
       if (GNUNET_OK != GNUNET_DV_DHT_put (peer_array[random_peer]->config,
                                              ectx,
-                                             &keys[i].key,
+                                             &keys[random_key].key,
                                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                             sizeof (keys[i].data),
-                                             keys[i].data))
+                                             sizeof (keys[random_key].data),
+                                             keys[random_key].data))
         {
           fprintf (stdout, "Insert FAILED at peer %d\n", random_peer);
           failed_inserts++;
         }
-      GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
     }
   fprintf (stdout, "Inserted %llu items\n", put_items - failed_inserts);
 
