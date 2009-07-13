@@ -879,6 +879,15 @@ handle_put (const GNUNET_PeerIdentity * sender,
   if (GNUNET_YES == GNUNET_DV_DHT_am_closest_peer (&put->key))
     store = 1;
 
+  if ((store == 0) && (target_value == 0) && (debug_routes_extended) && (dhtlog != NULL))
+  {
+    queryuid = ntohl (put->queryuid);
+    dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
+                          hop_count, GNUNET_NO,
+                          coreAPI->my_identity, &put->key, sender,
+                          NULL);
+  }
+
   if (store != 0)
     {
       now = GNUNET_get_time ();
