@@ -513,6 +513,16 @@ route_result (const GNUNET_HashCode * key,
                                         ntohl (result->hop_count), GNUNET_YES,
                                         coreAPI->my_identity, key);
                 }
+
+                if ((debug_routes_extended) && (dhtlog != NULL))
+                {
+                  queryuid = ntohl (result->queryuid);
+                  dhtlog->insert_route (NULL, queryuid,
+                                        DHTLOG_RESULT,
+                                        ntohl (result->hop_count), GNUNET_YES,
+                                        coreAPI->my_identity, key, NULL,
+                                        NULL);
+                }
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
             }
@@ -709,6 +719,14 @@ handle_get (const GNUNET_PeerIdentity * sender,
                                 hop_count, GNUNET_YES, coreAPI->my_identity,
                                 &get->key);
         }
+
+        if ((debug_routes_extended) && (dhtlog != NULL))
+        {
+          queryuid = ntohl (get->queryuid);
+          dhtlog->insert_route (NULL, ntohl (get->queryuid), DHTLOG_GET,
+                                hop_count, GNUNET_YES, coreAPI->my_identity,
+                                &get->key, sender, NULL);
+        }
     }
 
   if (total > MAX_RESULTS)
@@ -879,6 +897,15 @@ handle_put (const GNUNET_PeerIdentity * sender,
           dhtlog->insert_query (NULL, queryuid, DHTLOG_PUT,
                                 hop_count, GNUNET_YES,
                                 coreAPI->my_identity, &put->key);
+        }
+
+        if ((debug_routes_extended) && (dhtlog != NULL))
+        {
+          queryuid = ntohl (put->queryuid);
+          dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
+                                hop_count, GNUNET_YES,
+                                coreAPI->my_identity, &put->key, sender,
+                                NULL);
         }
       dstore->put (&put->key,
                    ntohl (put->type),
