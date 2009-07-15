@@ -67,7 +67,7 @@ static unsigned int indentation;
  * How often should the cron job for maintaining the DV_DHT
  * run?
  */
-#define MAINTAIN_FREQUENCY 1500 * GNUNET_CRON_MILLISECONDS
+#define MAINTAIN_FREQUENCY 5000 * GNUNET_CRON_MILLISECONDS
 
 /**
  * What is the chance (1 in XXX) that we send DISCOVERY messages
@@ -417,7 +417,8 @@ int
 GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
                            const GNUNET_HashCode * target,
                            const GNUNET_PeerIdentity * blocked,
-                           unsigned int blocked_size)
+                           unsigned int blocked_size,
+                           struct GNUNET_BloomFilter *bloom)
 {
   unsigned long long total_distance;
   unsigned long long selected;
@@ -429,6 +430,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
   const PeerBucket *bucket;
   const PeerInfo *pi;
 
+  //return find_closest_peer(set, target);
   GNUNET_mutex_lock (lock);
   if (stats != NULL)
     stats->change (stat_dht_route_looks, 1);
@@ -440,6 +442,11 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
         {
           pi = bucket->peers[ec];
           match = GNUNET_NO;
+          match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
+          if (match == GNUNET_YES)
+            {
+              continue;
+            }
           for (i = 0; i < blocked_size; i++)
             {
               if (0 ==
@@ -467,6 +474,15 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
         {
           pi = bucket->peers[ec];
           match = GNUNET_NO;
+          match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
+          if (match == GNUNET_YES)
+            {
+              GNUNET_GE_LOG (coreAPI->ectx,
+                             GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                             GNUNET_GE_USER | GNUNET_GE_BULK,
+                             "Avoiding circular route, yay!\n");
+              continue;
+            }
           for (i = 0; i < blocked_size; i++)
             {
               if (0 ==
@@ -610,7 +626,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
                  inverse_distance (target, &closest.hashPubKey),
                  inverse_distance (target,
                                    &coreAPI->my_identity->hashPubKey));
-  if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >=
+  if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >
       inverse_distance (target, &closest.hashPubKey))
     {
       return GNUNET_YES;
@@ -618,6 +634,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
   return GNUNET_NO;
 }
 
+#ifdef DISCOVERY
 /**
  * Send a discovery message to the other peer.
  *
@@ -682,54 +699,8 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
   print_exit ("broadcast_dht_discovery");
 #endif
 }
-
-static void
-broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
-{
-#if DEBUG_TABLE
-  print_entry ("broadcast_dht_discovery_prob");
 #endif
 
-  if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, MAINTAIN_CHANCE) != 0)
-    {
-#if DEBUG_TABLE
-      print_exit ("broadcast_dht_discovery_prob");
-#endif
-      return;
-    }
-  //fprintf(stderr, "sending discovery message\n");
-  broadcast_dht_discovery (other, cls);
-
-#if DEBUG_TABLE
-  print_exit ("broadcast_dht_discovery_prob");
-#endif
-}
-
-/**
- * Cron job to maintain DV_DHT routing table.
- */
-static void
-maintain_dht_job (void *unused)
-{
-#if DEBUG_TABLE
-  print_entry ("maintain_dht_job");
-#endif
-  P2P_DV_DHT_Discovery disc;
-  if (total_peers == 0)
-    {
-      disc.header.size = htons (sizeof (P2P_DV_DHT_Discovery));
-      disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
-      disc.space_available = -1;        /* FIXME */
-      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, &disc);
-    }
-  else
-    {
-      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
-    }
-#if DEBUG_TABLE
-  print_exit ("maintain_dht_job");
-#endif
-}
 
 /**
  * We have received a pong from a peer and know it is still
@@ -825,8 +796,6 @@ considerPeer (const GNUNET_PeerIdentity * sender,
 {
   PeerInfo *pi;
   PeerBucket *bucket;
-  P2P_DV_DHT_ASK_HELLO ask;
-  GNUNET_MessageHello *hello;
 
   bucket = findBucketFor (peer);
   if (bucket == NULL)
@@ -840,6 +809,11 @@ considerPeer (const GNUNET_PeerIdentity * sender,
       return;                   /* already have this peer in buckets */
     }
   /* do we know how to contact this peer? */
+  /* This may not work with the dv implementation... */
+#if 0
+  P2P_DV_DHT_ASK_HELLO ask;
+  GNUNET_MessageHello *hello;
+
   hello =
     identity->identity2Hello (peer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
                               GNUNET_NO);
@@ -850,21 +824,25 @@ considerPeer (const GNUNET_PeerIdentity * sender,
       ask.header.type = htons (sizeof (GNUNET_P2P_PROTO_DHT_ASK_HELLO));
       ask.reserved = 0;
       ask.peer = *peer;
-      dvapi->dv_send (sender, &ask.header, 0,   /* FIXME: priority */
+      dvapi->dv_send (peer, &ask.header, 0,     /* FIXME: priority */
                       5 * GNUNET_CRON_SECONDS);
       return;
     }
 
   GNUNET_free (hello);
+#endif
+
   /* check if connected, if not, send discovery */
   /* coreAPI->p2p_connection_status_check (peer, NULL, NULL); */
   if (GNUNET_OK != dvapi->p2p_connection_status_check (peer, NULL, NULL))
     {
+#if DISCOVERY
       /* not yet connected; connect sending DISCOVERY */
-      broadcast_dht_discovery (peer, NULL);
+      /*broadcast_dht_discovery (peer, NULL); */
+#endif
       return;
     }
-  /* we are connected (in core), add to bucket */
+  /* we are connected (in dv), add to bucket */
   pi = GNUNET_malloc (sizeof (PeerInfo));
   memset (pi, 0, sizeof (PeerInfo));
   pi->id = *peer;
@@ -877,6 +855,58 @@ considerPeer (const GNUNET_PeerIdentity * sender,
     stats->change (stat_dht_total_peers, 1);
 }
 
+static void
+broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
+{
+#if DEBUG_TABLE
+  print_entry ("broadcast_dht_discovery_prob");
+#endif
+
+  considerPeer (other, other);
+  /*
+     if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, MAINTAIN_CHANCE) > (MAINTAIN_CHANCE / 2))
+     {
+     #if DEBUG_TABLE
+     print_exit ("broadcast_dht_discovery_prob");
+     #endif
+     return;
+     } */
+  /*fprintf(stderr, "sending discovery message\n");
+     broadcast_dht_discovery (other, cls); */
+
+#if DEBUG_TABLE
+  print_exit ("broadcast_dht_discovery_prob");
+#endif
+}
+
+
+/**
+ * Cron job to maintain DV_DHT routing table.
+ */
+static void
+maintain_dht_job (void *unused)
+{
+#if DEBUG_TABLE
+  print_entry ("maintain_dht_job");
+#endif
+  P2P_DV_DHT_Discovery disc;
+  if (total_peers == 0)
+    {
+      disc.header.size = htons (sizeof (P2P_DV_DHT_Discovery));
+      disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
+      disc.space_available = -1;        /* FIXME */
+      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, &disc);
+    }
+  else
+    {
+      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
+    }
+#if DEBUG_TABLE
+  print_exit ("maintain_dht_job");
+#endif
+}
+
+#ifdef DISCOVERY
 /**
  * Handle discovery message.
  */
@@ -919,6 +949,7 @@ handleDiscovery (const GNUNET_PeerIdentity * sender,
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
+#endif
 
 /**
  * Handle ask hello message.
@@ -1097,8 +1128,10 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (coreAPI->ectx, identity != NULL);
   pingpong = coreAPI->service_request ("pingpong");
   GNUNET_GE_ASSERT (coreAPI->ectx, pingpong != NULL);
+#if DISCOVERY
   capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DHT_DISCOVERY,
                                          &handleDiscovery);
+#endif
   capi->p2p_ciphertext_handler_register (GNUNET_P2P_PROTO_DHT_ASK_HELLO,
                                          &handleAskHello);
   capi->peer_disconnect_notification_register (&peer_disconnect_handler,
@@ -1124,8 +1157,10 @@ GNUNET_DV_DHT_table_done ()
 
   coreAPI->peer_disconnect_notification_unregister (&peer_disconnect_handler,
                                                     NULL);
+#if DISCOVERY
   coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_DISCOVERY,
                                               &handleDiscovery);
+#endif
   coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_ASK_HELLO,
                                               &handleAskHello);
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,

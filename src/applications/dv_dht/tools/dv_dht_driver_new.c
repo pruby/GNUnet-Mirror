@@ -60,6 +60,7 @@ static unsigned long long get_requests;
 static unsigned long long concurrent_requests;
 static unsigned long long requests_per_second;
 static unsigned long long requests_wait_time;
+static unsigned long long randomized_gets;
 
 static char *dotOutFileName = NULL;
 static char *trialmessage = NULL;
@@ -183,17 +184,17 @@ new_do_testing (int argc, char *const *argv)
   int random_peer;
   int random_key;
   int totalConnections;
-  unsigned int failed_inserts;
+  unsigned long long failed_inserts;
   unsigned long long trialuid;
 
   key_count = 0;
-
+  failed_inserts = 0;
 
   printf ("Starting %u peers\n", (unsigned int) num_peers);
   if (trialmessage != NULL)
     {
       printf ("Trial message is %s, strlen is %d\n", trialmessage,
-              (int)strlen (trialmessage));
+              (int) strlen (trialmessage));
     }
 
   if (sqlapi == NULL)
@@ -259,14 +260,17 @@ new_do_testing (int argc, char *const *argv)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
-          fprintf (stderr, "Peer %d (%s:%d, pid %s):\n", i, peer_array[i]->hostname, peer_array[i]->port, peer_array[i]->pid);
+          fprintf (stderr, "Peer %d (%s:%d, pid %s):\n", i,
+                   peer_array[i]->hostname, peer_array[i]->port,
+                   peer_array[i]->pid);
           sock =
             GNUNET_client_connection_create (NULL, peer_array[i]->config);
 
-          if (GNUNET_SYSERR == GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL))
-          {
-            fprintf(stderr, "Problem connecting to peer %d!\n", i);
-          }
+          if (GNUNET_SYSERR ==
+              GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL))
+            {
+              fprintf (stderr, "Problem connecting to peer %d!\n", i);
+            }
           GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
           GNUNET_client_connection_destroy (sock);
         }
@@ -281,21 +285,24 @@ new_do_testing (int argc, char *const *argv)
   for (i = 0; i < put_items; i++)
     {
       random_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
-      random_key = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, put_items);
-      fprintf (stdout, "Inserting key %d at peer %d\n", random_key, random_peer);
-      if (GNUNET_OK != GNUNET_DV_DHT_put (peer_array[random_peer]->config,
-                                             ectx,
-                                             &keys[random_key].key,
-                                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                             sizeof (keys[random_key].data),
-                                             keys[random_key].data))
+      /*random_key = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, put_items); */
+      random_key = i;
+      fprintf (stdout, "Inserting key %d at peer %d\n", random_key,
+               random_peer);
+      if (GNUNET_OK !=
+          GNUNET_DV_DHT_put (peer_array[random_peer]->config, ectx,
+                             &keys[random_key].key,
+                             GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                             sizeof (keys[random_key].data),
+                             keys[random_key].data))
         {
           fprintf (stdout, "Insert FAILED at peer %d\n", random_peer);
           failed_inserts++;
         }
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
     }
-  fprintf (stdout, "Inserted %llu items\n", put_items - failed_inserts);
+  fprintf (stdout, "Inserted %d items\n",
+           (int) put_items - (int) failed_inserts);
 
   for (i = 0; i < get_requests / concurrent_requests; i++)
     {
@@ -304,9 +311,15 @@ new_do_testing (int argc, char *const *argv)
         {
           random_peers[j] =
             GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
-          random_key =
-            GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, put_items);
-          /*random_key = (i + 1) * (j + 1) - 1; */
+          if (randomized_gets == GNUNET_YES)
+            {
+              random_key =
+                GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, put_items);
+            }
+          else
+            {
+              random_key = (i + 1) * (j + 1) - 1;
+            }
           dctx[j] =
             GNUNET_DV_DHT_context_create (peer_array[random_peers[j]]->config,
                                           ectx, &result_callback,

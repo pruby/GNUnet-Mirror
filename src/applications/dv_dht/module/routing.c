@@ -45,6 +45,17 @@
  */
 #define DV_DHT_PRIORITY 0
 
+/*
+ * Number of hash functions for bloom filter
+ */
+#define DV_DHT_BLOOM_K 16
+
+/*
+ * Size in bytes of bloom filter
+ */
+#define DV_DHT_BLOOM_SIZE 4
+
+
 /**
  * What is the estimated per-hop delay for DV_DHT operations
  * (this is how much we will request from the GNUnet core);
@@ -106,13 +117,14 @@ typedef struct DV_DHT_Source_Route
    */
   GNUNET_ResultProcessor receiver;
 
+  /*
+   * Have we sent this specific response to a local client yet?
+   * (So we only give a single response to an application)
+   */
+  unsigned int received;
+
   void *receiver_closure;
 
-  /**
-   * At what time will this record automatically
-   * expire?
-   */
-  GNUNET_CronTime expire;
 
 } DV_DHT_Source_Route;
 
@@ -149,6 +161,11 @@ typedef struct
    */
   GNUNET_HashCode key;
 
+  /*
+   * Bloomfilter to stop circular routes
+   */
+  char bloomfilter[4];
+
 #if DEBUG_ROUTING
   /*
    * Unique query id for sql database interaction.
@@ -169,12 +186,6 @@ typedef struct
  */
 typedef struct DV_DHTQueryRecord
 {
-
-  /**
-   * When does this record expire?  Should be the max
-   * of the individual source records.
-   */
-  GNUNET_CronTime expire;
 
   /**
    * Information about where to send the results back to.
@@ -200,7 +211,7 @@ typedef struct DV_DHTQueryRecord
 } DV_DHTQueryRecord;
 
 /**
- * Linked list of active records.
+ * Array of active records.
  */
 static DV_DHTQueryRecord *records;
 
@@ -208,6 +219,7 @@ static DV_DHTQueryRecord *records;
  * Size of records
  */
 static unsigned int rt_size;
+static unsigned int next_record;
 
 #if DEBUG_INSANE
 static unsigned int indentation;
@@ -329,16 +341,14 @@ route_result (const GNUNET_HashCode * key,
               unsigned int size, const char *data, void *cls)
 {
   DV_DHTQueryRecord *q;
-  unsigned int i;
-  unsigned int j;
-  int found;
   GNUNET_HashCode hc;
   DV_DHT_MESSAGE *result;
+  struct GNUNET_BloomFilter *bloom;
   unsigned int routed;
   unsigned int tracked;
+  unsigned int i;
   DV_DHT_Source_Route *pos;
   DV_DHT_Source_Route *prev;
-  GNUNET_CronTime now;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   unsigned long long queryuid;
@@ -398,6 +408,7 @@ route_result (const GNUNET_HashCode * key,
       result->network_size =
         htonl (GNUNET_DV_DHT_estimate_network_diameter ());
       result->key = *key;
+      memset (&result->bloomfilter, 0, DV_DHT_BLOOM_SIZE);
       if ((debug_routes) && (dhtlog != NULL))
         {
           dhtlog->insert_query (&queryuid, dhtqueryuid, DHTLOG_RESULT,
@@ -413,64 +424,40 @@ route_result (const GNUNET_HashCode * key,
       memcpy (&result[1], data, size);
     }
 
+  bloom =
+    GNUNET_bloomfilter_init (NULL, &result->bloomfilter[0], DV_DHT_BLOOM_SIZE,
+                             DV_DHT_BLOOM_K);
+  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
+  GNUNET_bloomfilter_get_raw_data (bloom, &result->bloomfilter[0],
+                                   DV_DHT_BLOOM_SIZE);
+
   GNUNET_hash (data, size, &hc);
   routed = 0;
   tracked = 0;
   GNUNET_mutex_lock (lock);
-  now = GNUNET_get_time ();
+
   for (i = 0; i < rt_size; i++)
     {
       q = &records[i];
       tracked++;
-      if ((ntohl (q->get.type) != type) ||
-          (0 != memcmp (key, &q->get.key, sizeof (GNUNET_HashCode))))
+      if ((ntohl (q->get.type) != type)
+          || (0 != memcmp (key, &q->get.key, sizeof (GNUNET_HashCode))))
         continue;
-      found = GNUNET_NO;
-      for (j = 0; j < q->result_count; j++)
-        if (0 == memcmp (&hc, &q->results[j], sizeof (GNUNET_HashCode)))
-          {
-            found = GNUNET_YES;
-            break;
-          }
-      if (found == GNUNET_YES)
+      else
         {
 #if DEBUG_ROUTING
+          GNUNET_hash_to_enc (&q->get.key, &enc);
           GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
-                         | GNUNET_GE_BULK,
-                         "Seen the same result earlier, not routing it again.\n");
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                         GNUNET_GE_USER | GNUNET_GE_BULK,
+                         "Found matching request for reply `%s'\n", &enc);
 #endif
-          break;
         }
-
       routed++;
-      GNUNET_array_grow (q->results, q->result_count, q->result_count + 1);
-      q->results[q->result_count - 1] = hc;
       pos = q->sources;
       prev = NULL;
       while (pos != NULL)
         {
-          if (pos->expire < now)
-            {
-#if DEBUG_ROUTING
-              GNUNET_hash_to_enc (&pos->source.hashPubKey, &enc);
-              GNUNET_GE_LOG (coreAPI->ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
-                             GNUNET_GE_USER | GNUNET_GE_BULK,
-                             "Route to peer `%s' has expired (%llu < %llu)\n",
-                             &enc, pos->expire, now);
-#endif
-              if (prev == NULL)
-                q->sources = pos->next;
-              else
-                prev->next = pos->next;
-              GNUNET_free (pos);
-              if (prev == NULL)
-                pos = q->sources;
-              else
-                pos = prev->next;
-              continue;
-            }
           if (0 != memcmp (&pos->source,
                            coreAPI->my_identity,
                            sizeof (GNUNET_PeerIdentity)))
@@ -497,7 +484,7 @@ route_result (const GNUNET_HashCode * key,
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
             }
-          if (pos->receiver != NULL)
+          if ((pos->receiver != NULL) && (pos->received != GNUNET_YES))
             {
 #if DEBUG_ROUTING
               GNUNET_GE_LOG (coreAPI->ectx,
@@ -506,6 +493,7 @@ route_result (const GNUNET_HashCode * key,
                              "Routing result to local client\n");
 #endif
               pos->receiver (key, type, size, data, pos->receiver_closure);
+              pos->received = GNUNET_YES;
               if ((debug_routes) && (dhtlog != NULL))
                 {
                   queryuid = ntohl (result->queryuid);
@@ -514,7 +502,7 @@ route_result (const GNUNET_HashCode * key,
                                         coreAPI->my_identity, key);
                 }
 
-                if ((debug_routes_extended) && (dhtlog != NULL))
+              if ((debug_routes_extended) && (dhtlog != NULL))
                 {
                   queryuid = ntohl (result->queryuid);
                   dhtlog->insert_route (NULL, queryuid,
@@ -528,9 +516,6 @@ route_result (const GNUNET_HashCode * key,
             }
           pos = pos->next;
         }
-      if (q->result_count >= MAX_RESULTS)
-        q->expire = 0;
-      break;
     }
   GNUNET_mutex_unlock (lock);
 #if DEBUG_ROUTING
@@ -540,6 +525,7 @@ route_result (const GNUNET_HashCode * key,
                  "Routed result to %u out of %u pending requests\n",
                  routed, tracked);
 #endif
+  GNUNET_bloomfilter_free (bloom);
   if (cls == NULL)
     GNUNET_free (result);
   return GNUNET_OK;
@@ -553,71 +539,47 @@ add_route (const GNUNET_PeerIdentity * sender,
            GNUNET_ResultProcessor handler, void *cls,
            const DV_DHT_MESSAGE * get)
 {
+
+/*
+ * TODO: Eventually change to using a hash
+ * map for more efficient lookup of return routing information!
+ */
   DV_DHTQueryRecord *q;
-  unsigned int i;
-  unsigned int rt_pos;
   unsigned int diameter;
-  GNUNET_CronTime expire;
-  GNUNET_CronTime now;
   unsigned int hops;
   struct DV_DHT_Source_Route *pos;
 
   hops = ntohl (get->hop_count);
   diameter = GNUNET_DV_DHT_estimate_network_diameter ();
   /*if (hops > 2 * diameter) */
-  if (hops > 8 * diameter)
+  if (hops > 2 * diameter)
     {
       fprintf (stderr,
                "hops (%d) > 2 * diameter (%d) so failing (diameter %d)\n",
                hops, 2 * diameter, diameter);
       return GNUNET_SYSERR;
     }
-  now = GNUNET_get_time ();
-  expire = now + DV_DHT_DELAY * diameter * 20;
+
   GNUNET_mutex_lock (lock);
-  rt_pos = rt_size;
-  for (i = 0; i < rt_size; i++)
+
+  q = &records[next_record];
+#if DEBUG_ROUTING
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Tracking request in slot %u\n",
+                 next_record);
+#endif
+  if (q->sources != NULL)
     {
-      q = &records[i];
-      if ((q->expire > now) &&
-          ((0 != memcmp (&q->get.key,
-                         &get->key,
-                         sizeof (GNUNET_HashCode))) ||
-           (q->get.type == get->type)))
-        continue;               /* used and not an identical request */
-      if (q->expire < now)
+      while (q->sources != NULL)
         {
-          rt_pos = i;
-          while (q->sources != NULL)
-            {
-              pos = q->sources;
-              q->sources = pos->next;
-              GNUNET_free (pos);
-            }
-          GNUNET_array_grow (q->results, q->result_count, 0);
-          q->expire = 0;
+          pos = q->sources;
+          q->sources = pos->next;
+          GNUNET_free (pos);
         }
-      if ((0 == memcmp (&q->get.key,
-                        &get->key,
-                        sizeof (GNUNET_HashCode)) &&
-           (q->get.type == get->type)))
-        {
-          GNUNET_array_grow (q->results, q->result_count, 0);
-          rt_pos = i;
-          break;
-        }
+      GNUNET_array_grow (q->results, q->result_count, 0);
     }
-  if (rt_pos == rt_size)
-    {
-      /* do not route, no slot available */
-      fprintf (stderr, "rt_pos (%d) == rt_size (%d) so failing\n", rt_pos,
-               rt_size);
-      GNUNET_mutex_unlock (lock);
-      return GNUNET_SYSERR;
-    }
-  q = &records[rt_pos];
-  if (q->expire < expire)
-    q->expire = expire;
+
   q->get = *get;
   pos = GNUNET_malloc (sizeof (DV_DHT_Source_Route));
   pos->next = q->sources;
@@ -626,14 +588,20 @@ add_route (const GNUNET_PeerIdentity * sender,
     pos->source = *sender;
   else
     pos->source = *coreAPI->my_identity;
-  pos->expire = expire;
   pos->receiver = handler;
   pos->receiver_closure = cls;
-#if DEBUG_ROUTING
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK, "Tracking request in slot %u\n", rt_pos);
-#endif
+
+  /* We loop through the records, allows peer
+   * to control how many concurrent responses
+   * are known about.
+   */
+  if (next_record == rt_size - 1)
+    {
+      next_record = 0;
+    }
+  else
+    next_record++;
+
   GNUNET_mutex_unlock (lock);
   if (stats != NULL)
     stats->change (stat_requests_routed, 1);
@@ -652,6 +620,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
   DV_DHT_MESSAGE aget;
   unsigned int target_value;
   unsigned int hop_count;
+  struct GNUNET_BloomFilter *bloom;
   int total;
   int i;
   int j;
@@ -720,7 +689,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
                                 &get->key);
         }
 
-        if ((debug_routes_extended) && (dhtlog != NULL))
+      if ((debug_routes_extended) && (dhtlog != NULL))
         {
           queryuid = ntohl (get->queryuid);
           dhtlog->insert_route (NULL, ntohl (get->queryuid), DHTLOG_GET,
@@ -741,6 +710,14 @@ handle_get (const GNUNET_PeerIdentity * sender,
       return GNUNET_OK;
     }
   aget = *get;
+
+  bloom =
+    GNUNET_bloomfilter_init (NULL, &aget.bloomfilter[0], DV_DHT_BLOOM_SIZE,
+                             DV_DHT_BLOOM_K);
+  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
+  GNUNET_bloomfilter_get_raw_data (bloom, &aget.bloomfilter[0],
+                                   DV_DHT_BLOOM_SIZE);
+
   hop_count = ntohl (get->hop_count);
   target_value = get_forward_count (hop_count, GET_TRIES);
   aget.hop_count = htonl (1 + hop_count);
@@ -755,7 +732,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
-          GNUNET_DV_DHT_select_peer (&next[j], &get->key, &next[0], j))
+          GNUNET_DV_DHT_select_peer (&next[j], &get->key, &next[0], j, bloom))
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
@@ -784,6 +761,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
       dvapi->dv_send (&next[j], &aget.header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       j++;
     }
+
+  GNUNET_bloomfilter_free (bloom);
   return GNUNET_OK;
 }
 
@@ -798,6 +777,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
   const DV_DHT_MESSAGE *put;
   DV_DHT_MESSAGE *aput;
   GNUNET_CronTime now;
+  struct GNUNET_BloomFilter *bloom;
   unsigned int hop_count;
   unsigned int target_value;
   int store;
@@ -836,10 +816,18 @@ handle_put (const GNUNET_PeerIdentity * sender,
   j = 0;
   if (sender != NULL)
     next[j++] = *sender;        /* do not send back to sender! */
+
+  bloom =
+    GNUNET_bloomfilter_init (NULL, &aput->bloomfilter[0], DV_DHT_BLOOM_SIZE,
+                             DV_DHT_BLOOM_K);
+  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
+  GNUNET_bloomfilter_get_raw_data (bloom, &aput->bloomfilter[0],
+                                   DV_DHT_BLOOM_SIZE);
+
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
-          GNUNET_DV_DHT_select_peer (&next[j], &put->key, &next[0], j))
+          GNUNET_DV_DHT_select_peer (&next[j], &put->key, &next[0], j, bloom))
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
@@ -848,13 +836,8 @@ handle_put (const GNUNET_PeerIdentity * sender,
                          "Failed to select peer for PUT fowarding in round %d/%d\n",
                          i + 1, PUT_TRIES);
 #endif
-          store = 1;
           continue;
         }
-      if (1 == GNUNET_hash_xorcmp (&next[j].hashPubKey,
-                                   &coreAPI->my_identity->hashPubKey,
-                                   &put->key))
-        store = 1;              /* we're closer than the selected target */
 #if DEBUG_ROUTING
       GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
@@ -873,20 +856,22 @@ handle_put (const GNUNET_PeerIdentity * sender,
       dvapi->dv_send (&next[j], &aput->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       j++;
     }
+
+  GNUNET_bloomfilter_free (bloom);
   GNUNET_free (aput);
 
   store = 0;
   if (GNUNET_YES == GNUNET_DV_DHT_am_closest_peer (&put->key))
     store = 1;
 
-  if ((store == 0) && (target_value == 0) && (debug_routes_extended) && (dhtlog != NULL))
-  {
-    queryuid = ntohl (put->queryuid);
-    dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
-                          hop_count, GNUNET_NO,
-                          coreAPI->my_identity, &put->key, sender,
-                          NULL);
-  }
+  if ((store == 0) && (target_value == 0) && (debug_routes_extended)
+      && (dhtlog != NULL))
+    {
+      queryuid = ntohl (put->queryuid);
+      dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
+                            hop_count, GNUNET_NO,
+                            coreAPI->my_identity, &put->key, sender, NULL);
+    }
 
   if (store != 0)
     {
@@ -908,7 +893,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
                                 coreAPI->my_identity, &put->key);
         }
 
-        if ((debug_routes_extended) && (dhtlog != NULL))
+      if ((debug_routes_extended) && (dhtlog != NULL))
         {
           queryuid = ntohl (put->queryuid);
           dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
@@ -992,6 +977,7 @@ GNUNET_DV_DHT_get_start (const GNUNET_HashCode * key,
   get.hop_count = htonl (0);
   get.network_size = htonl (GNUNET_DV_DHT_estimate_network_diameter ());
   get.key = *key;
+  memset (&get.bloomfilter, 0, DV_DHT_BLOOM_SIZE);
   if ((debug_routes) && (dhtlog != NULL))
     {
       dhtlog->insert_query (&queryuid, 0, DHTLOG_GET, 0, GNUNET_NO,
@@ -1054,7 +1040,6 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
       if (records[i].sources == NULL)
         {
           GNUNET_array_grow (records[i].results, records[i].result_count, 0);
-          records[i].expire = 0;
         }
       if (done == GNUNET_YES)
         break;
@@ -1089,7 +1074,13 @@ GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
   put->key = *key;
   put->type = htonl (type);
   put->hop_count = htonl (0);
+  memset (&put->bloomfilter, 0, DV_DHT_BLOOM_SIZE);
   put->network_size = htonl (GNUNET_DV_DHT_estimate_network_diameter ());
+#if DEBUG_ROUTING
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Insert called\n");
+#endif
   if ((debug_routes) && (dhtlog != NULL))
     {
       dhtlog->insert_dhtkey (&keyuid, key);
@@ -1097,9 +1088,11 @@ GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
                             ntohl (put->hop_count), GNUNET_NO,
                             coreAPI->my_identity, key);
 #if DEBUG_ROUTING
-      fprintf (stderr,
-               "Inserted dhtkey, uid: %llu, inserted query, uid: %llu\n",
-               keyuid, queryuid);
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Inserted dhtkey, uid: %llu, inserted query, uid: %llu\n",
+                     keyuid, queryuid);
 #endif
     }
 #if DEBUG_ROUTING

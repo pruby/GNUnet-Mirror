@@ -46,7 +46,8 @@
 int GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
                                const GNUNET_HashCode * target,
                                const GNUNET_PeerIdentity * blocked,
-                               unsigned int blocked_size);
+                               unsigned int blocked_size,
+                               struct GNUNET_BloomFilter *bloom);
 
 /**
  * Compute a (rough) estimate of the networks diameter.
