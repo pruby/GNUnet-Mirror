@@ -39,7 +39,6 @@
 /* How long to allow a message to be delayed */
 #define DV_DELAY (500 * GNUNET_CRON_MILLISECONDS)
 #define DV_PRIORITY 0
-#define FORWARDS_PER_SECOND 10
 
 /**
  * Statistics service.
@@ -153,7 +152,7 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
   GNUNET_free (neighbor);
 
   if (stats != NULL)
-    update_stats();
+    update_stats ();
 
   return GNUNET_OK;
 }
@@ -280,8 +279,8 @@ send_message (const GNUNET_PeerIdentity * recipient,
               unsigned int importance, unsigned int maxdelay)
 {
   p2p_dv_MESSAGE_Data *toSend;
-  int ret = GNUNET_OK;
   unsigned int msg_size;
+  unsigned int cost;
   struct GNUNET_dv_neighbor *neighbor;
 #if DEBUG_DV_FORWARD
   GNUNET_EncName encVia;
@@ -299,6 +298,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
       neighbor =
         GNUNET_multi_hash_map_get (ctx->extended_neighbors,
                                    &recipient->hashPubKey);
+      cost = neighbor->cost;
       msg_size = ntohs (message->size) + sizeof (p2p_dv_MESSAGE_Data);
       if (msg_size > GNUNET_MAX_BUFFER_SIZE - 8)
         return GNUNET_SYSERR;
@@ -345,7 +345,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
                                     importance, maxdelay);
         }
       GNUNET_free (toSend);
-      return ret;
+      return (int) cost;
     }
   else
     {
@@ -358,9 +358,8 @@ send_message (const GNUNET_PeerIdentity * recipient,
                      "%s: I AM:\n%s\nAsked to send message to unknown peer:\n%s\n\n",
                      &shortID, (char *) &encMe, (char *) &encRecipient);
 #endif
-      return GNUNET_NO;
+      return GNUNET_SYSERR;
     }
-
 }
 
 /*
@@ -511,6 +510,7 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
  *
  * @recipient for which peer is this message intended
  * @message message being sent
+ * return cost of sent message, GNUNET_SYSERR on error
  */
 int
 GNUNET_DV_send_message (const GNUNET_PeerIdentity * recipient,
@@ -638,31 +638,37 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
            GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
                                            &peer->hashPubKey))
     {
-      if (ctx->max_table_size > GNUNET_multi_hash_map_size(ctx->extended_neighbors))
-      {
-        neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
-        neighbor->cost = cost;
-        neighbor->last_activity = now;
-        neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
-        memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      if (ctx->max_table_size >
+          GNUNET_multi_hash_map_size (ctx->extended_neighbors))
+        {
+          neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+          neighbor->cost = cost;
+          neighbor->last_activity = now;
+          neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+          memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
 
-        if (referrer == NULL)
-          neighbor->referrer = NULL;
-        else
-          {
-            neighbor->referrer = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
-            memcpy (neighbor->referrer, referrer, sizeof (GNUNET_PeerIdentity));
-          }
+          if (referrer == NULL)
+            neighbor->referrer = NULL;
+          else
+            {
+              neighbor->referrer =
+                GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+              memcpy (neighbor->referrer, referrer,
+                      sizeof (GNUNET_PeerIdentity));
+            }
 
-        GNUNET_multi_hash_map_put (ctx->extended_neighbors, &peer->hashPubKey,
-                                   neighbor, GNUNET_MultiHashMapOption_REPLACE);
+          GNUNET_multi_hash_map_put (ctx->extended_neighbors,
+                                     &peer->hashPubKey, neighbor,
+                                     GNUNET_MultiHashMapOption_REPLACE);
 
-        GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor, cost);
-        GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor, cost);
+          GNUNET_CONTAINER_heap_insert (ctx->neighbor_max_heap, neighbor,
+                                        cost);
+          GNUNET_CONTAINER_heap_insert (ctx->neighbor_min_heap, neighbor,
+                                        cost);
 
-        if (stats != NULL)
-          stats->change (stat_dv_total_peers, 1);
-      }
+          if (stats != NULL)
+            stats->change (stat_dv_total_peers, 1);
+        }
     }
   else
     {
@@ -970,15 +976,16 @@ chooseToNeighbor ()
 static struct GNUNET_dv_neighbor *
 chooseAboutNeighbor ()
 {
-  if (GNUNET_CONTAINER_heap_get_size (ctx->neighbor_min_heap) == 0)
+  unsigned int heap_size;
+  heap_size = GNUNET_CONTAINER_heap_get_size (ctx->neighbor_min_heap);
+  if (heap_size == 0)
     return NULL;
 
 #if DEBUG_DV
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK, "%s: Min heap size %d\nMax heap size %d\n",
-                 &shortID, ctx->neighbor_min_heap.size,
-                 ctx->neighbor_max_heap.size);
+                 GNUNET_GE_BULK, "%s: Min heap size %d\n",
+                 &shortID, heap_size);
 #endif
 
   return GNUNET_CONTAINER_heap_walk_get_next (ctx->neighbor_min_heap);
@@ -1089,7 +1096,7 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
   ctx->neighbor_min_heap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
   ctx->neighbor_max_heap = GNUNET_CONTAINER_heap_create (GNUNET_MAX_HEAP);
   ctx->send_interval = GNUNET_DV_DEFAULT_SEND_INTERVAL;
-  ctx->dvMutex = GNUNET_mutex_create (GNUNET_YES);
+  ctx->dvMutex = capi->global_lock_get ();
   coreAPI = capi;
   GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
   strncpy ((char *) &shortID, (char *) &encMe, 4);
@@ -1190,9 +1197,7 @@ release_module_dv ()
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dv_job,
                        GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
 
-  GNUNET_mutex_destroy (ctx->dvMutex);
-
-  coreAPI->service_release(stats);
+  coreAPI->service_release (stats);
   stats = NULL;
   coreAPI = NULL;
 }
