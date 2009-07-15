@@ -347,6 +347,7 @@ route_result (const GNUNET_HashCode * key,
   unsigned int routed;
   unsigned int tracked;
   unsigned int i;
+  int match;
   DV_DHT_Source_Route *pos;
   DV_DHT_Source_Route *prev;
 #if DEBUG_ROUTING
@@ -478,6 +479,13 @@ route_result (const GNUNET_HashCode * key,
                                         coreAPI->my_identity, key, NULL,
                                         &pos->source);
                 }
+              match = GNUNET_NO;
+              match = GNUNET_bloomfilter_test (bloom, &pos->source.hashPubKey);
+              if (match == GNUNET_YES)
+              {
+                pos = pos->next;
+                continue;
+              }
               dvapi->dv_send (&pos->source,
                               &result->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
 
@@ -1012,9 +1020,11 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
   struct DV_DHT_Source_Route *pos;
   struct DV_DHT_Source_Route *prev;
   int done;
+  unsigned int records_removed;
 
   done = GNUNET_NO;
   GNUNET_mutex_lock (lock);
+  records_removed = 0;
   for (i = 0; i < rt_size; i++)
     {
       prev = NULL;
@@ -1024,16 +1034,19 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
           if ((pos->receiver == handler) &&
               (pos->receiver_closure == cls) &&
               (0 == memcmp (key,
-                            &records[i].get.key, sizeof (GNUNET_HashCode))))
-            {
+                            &records[i].get.key, sizeof (GNUNET_HashCode)))
+                            &&
+              (0 == memcmp (&pos->source.hashPubKey,
+                            &coreAPI->my_identity->hashPubKey, sizeof (GNUNET_HashCode))))
+          {
               if (prev == NULL)
                 records[i].sources = pos->next;
               else
                 prev->next = pos->next;
               GNUNET_free (pos);
-              done = GNUNET_YES;
+              records_removed++;
               break;
-            }
+          }
           prev = pos;
           pos = prev->next;
         }
@@ -1041,10 +1054,13 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
         {
           GNUNET_array_grow (records[i].results, records[i].result_count, 0);
         }
-      if (done == GNUNET_YES)
-        break;
     }
   GNUNET_mutex_unlock (lock);
+#if DEBUG_ROUTING
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Removed %u total records\n", records_removed);
+#endif
   if (done != GNUNET_YES)
     return GNUNET_SYSERR;
   return GNUNET_OK;
