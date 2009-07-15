@@ -57,16 +57,16 @@ static struct GNUNET_MysqlStatementHandle *insert_query;
                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_route;
 
-#define INSERT_NODES_STMT "INSERT INTO nodes (trialuid, nodeid) "\
-                          "VALUES (?, ?)"
+#define INSERT_NODES_STMT "INSERT INTO nodes (trialuid, nodeid, nodebits) "\
+                          "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
 #define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, message) "\
                           "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
-#define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid) "\
-                          "VALUES (?, ?)"
+#define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid, keybits) "\
+                          "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_dhtkey;
 
 #define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW() where trialuid = ?"
@@ -113,6 +113,7 @@ itable ()
              "dhtkeyuid int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Key given to each query',"
              "`dhtkey` varchar(255) NOT NULL COMMENT 'The ASCII value of the key being searched for',"
              "trialuid int(10) unsigned NOT NULL,"
+             "keybits blob NOT NULL,"
              "UNIQUE KEY `dhtkeyuid` (`dhtkeyuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
@@ -303,9 +304,10 @@ add_dhtkey (unsigned long long *dhtkeyuid, const GNUNET_HashCode * dhtkey)
   int ret;
   GNUNET_EncName encKey;
   unsigned long long k_len;
+  unsigned long long h_len;
   GNUNET_hash_to_enc (dhtkey, &encKey);
   k_len = strlen ((char *) &encKey);
-
+  h_len = sizeof (GNUNET_HashCode);
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_dhtkey,
                                                   dhtkeyuid,
@@ -315,7 +317,11 @@ add_dhtkey (unsigned long long *dhtkeyuid, const GNUNET_HashCode * dhtkey)
                                                   &k_len,
                                                   MYSQL_TYPE_LONG,
                                                   &current_trial,
-                                                  GNUNET_YES, -1)))
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_BLOB,
+                                                  &dhtkey,
+                                                  sizeof (GNUNET_HashCode),
+                                                  &h_len, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
@@ -405,6 +411,7 @@ add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
 {
   GNUNET_EncName encPeer;
   unsigned long p_len;
+  unsigned long h_len;
   int ret;
 
   if (node == NULL)
@@ -412,6 +419,7 @@ add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
 
   GNUNET_hash_to_enc (&node->hashPubKey, &encPeer);
   p_len = (unsigned long) strlen ((char *) &encPeer);
+  h_len = sizeof (GNUNET_HashCode);
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (insert_node,
                                                   nodeuid,
@@ -421,7 +429,11 @@ add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
                                                   MYSQL_TYPE_VAR_STRING,
                                                   &encPeer,
                                                   max_varchar_len,
-                                                  &p_len, -1)))
+                                                  &p_len,
+                                                  MYSQL_TYPE_BLOB,
+                                                  &node->hashPubKey,
+                                                  sizeof (GNUNET_HashCode),
+                                                  &h_len, -1)))
     {
       if (ret == GNUNET_SYSERR)
         {
