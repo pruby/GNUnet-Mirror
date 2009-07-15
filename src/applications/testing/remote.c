@@ -383,7 +383,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 #if VERBOSE
   fprintf (stdout, "Have %llu machines, need to start %llu daemons\n",
            num_machines, number_of_daemons);
-  fprintf(stdout, "Total started without extra is %llu\n", daemons_per_machine * num_machines);
+  fprintf (stdout, "Total started without extra is %llu\n",
+           daemons_per_machine * num_machines);
   fprintf (stdout, "Will start %llu per machine, and %llu extra\n",
            daemons_per_machine, extra_daemons);
 #endif
@@ -911,10 +912,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                                    friend_pos->hostentry->
                                                    port, dotOutFile);
               if (ret != GNUNET_OK)
-              {
-                connectFailures++;
-              }
-              if (connectFailures > totalConnections/2)
+                {
+                  connectFailures++;
+                }
+              if (connectFailures > totalConnections / 2)
                 break;
               friend_pos = friend_pos->next;
             }
