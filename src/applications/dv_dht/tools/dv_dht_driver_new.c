@@ -34,6 +34,7 @@
 #include "gnunet_remote_lib.h"
 #include "gnunet_dhtlog_service.h"
 
+#define MAX_THREADS 100
 
 struct GNUNET_DV_DHT_keys
 {
@@ -60,7 +61,7 @@ static unsigned long long get_requests;
 static unsigned long long concurrent_requests;
 static unsigned long long requests_per_second;
 static unsigned long long requests_wait_time;
-static unsigned long long randomized_gets;
+static int randomized_gets;
 
 static char *dotOutFileName = NULL;
 static char *trialmessage = NULL;
@@ -164,12 +165,12 @@ new_do_testing (int argc, char *const *argv)
 {
   struct GNUNET_REMOTE_TESTING_DaemonContext *peers;
   struct GNUNET_REMOTE_TESTING_DaemonContext *peer_array[num_peers];
-  struct GNUNET_DV_DHT_Context *dctx[concurrent_requests];
-  struct GNUNET_DV_DHT_GetRequest *gets[concurrent_requests];
+  struct GNUNET_DV_DHT_Context *dctx[MAX_THREADS];
+  struct GNUNET_DV_DHT_GetRequest *gets[MAX_THREADS];
   struct GNUNET_DV_DHT_keys keys[put_items];
   struct GNUNET_REMOTE_TESTING_DaemonContext *pos;
   int ret = 0;
-
+  unsigned int thread_count = 0;
   struct GNUNET_ClientServerConnection *sock;
 
   int i;
@@ -180,7 +181,7 @@ new_do_testing (int argc, char *const *argv)
 
   int key_count;
 
-  int random_peers[concurrent_requests];
+  int random_peers[MAX_THREADS];
   int random_peer;
   int random_key;
   int totalConnections;
@@ -304,12 +305,15 @@ new_do_testing (int argc, char *const *argv)
   fprintf (stdout, "Inserted %d items\n",
            (int) put_items - (int) failed_inserts);
 
+  thread_count = 0;
   for (i = 0; i < get_requests / concurrent_requests; i++)
     {
+      if (i > 0)
+        GNUNET_thread_sleep (10 * GNUNET_CRON_SECONDS);
       new_found = 0;
       for (j = 0; j < concurrent_requests; j++)
         {
-          random_peers[j] =
+          random_peers[thread_count] =
             GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
           if (randomized_gets == GNUNET_YES)
             {
@@ -318,19 +322,21 @@ new_do_testing (int argc, char *const *argv)
             }
           else
             {
-              random_key = (i + 1) * (j + 1) - 1;
+              random_key = j + (i * concurrent_requests);
+              if (random_key >= put_items)
+                random_key = random_key % put_items;
             }
-          dctx[j] =
+          dctx[thread_count] =
             GNUNET_DV_DHT_context_create (peer_array[random_peers[j]]->config,
                                           ectx, &result_callback,
                                           &keys[random_key]);
           fprintf (stdout, "Searching for key %d from peer %d\n", random_key,
-                   random_peers[j]);
-          gets[j] =
-            GNUNET_DV_DHT_get_start (dctx[j],
+                   random_peers[thread_count]);
+          gets[thread_count] =
+            GNUNET_DV_DHT_get_start (dctx[thread_count],
                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                      &keys[random_key].key);
-          GNUNET_GE_ASSERT (NULL, gets[j] != NULL);
+          GNUNET_GE_ASSERT (NULL, gets[thread_count] != NULL);
         }
 
       for (k = 0; k < num_rounds; k++)
@@ -346,15 +352,24 @@ new_do_testing (int argc, char *const *argv)
           GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
         }
 
-      for (j = 0; j < concurrent_requests; j++)
-        {
-          GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
-          GNUNET_DV_DHT_context_destroy (dctx[j]);
-        }
       printf ("Found %u out of %llu attempts.\n", new_found,
               concurrent_requests);
 
+      if (thread_count >= MAX_THREADS)
+      {
+        for (j = 0; j < thread_count; j++)
+        {
+          printf ("Stopping request %d\n", j);
+          GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
+          GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+          GNUNET_DV_DHT_context_destroy (dctx[j]);
+        }
+        thread_count = 0;
+      }
+      else
+        thread_count++;
     }
+
   printf ("Found %u out of %llu attempts.\n", found, get_requests);
 
   pos = peers;
@@ -449,6 +464,9 @@ main (int argc, char *const *argv)
                                             1,
                                             -1,
                                             DEFAULT_NUM_REPEAT, &num_repeat);
+  randomized_gets = GNUNET_GC_get_configuration_value_yesno (cfg,
+                                         "MULTIPLE_SERVER_TESTING",
+                                         "RANDOMIZED_GETS", 0);
 
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
