@@ -100,7 +100,7 @@ access_handler_callback (void *cls,
                          const char *method,
                          const char *version,
                          const char *upload_data,
-                         unsigned int *upload_data_size, void **con_cls)
+			 size_t *upload_data_size, void **con_cls)
 {
   static int dummy;
   struct MHD_Response *response;
