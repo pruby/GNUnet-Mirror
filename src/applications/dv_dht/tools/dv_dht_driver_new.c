@@ -170,7 +170,7 @@ new_do_testing (int argc, char *const *argv)
   struct GNUNET_DV_DHT_keys keys[put_items];
   struct GNUNET_REMOTE_TESTING_DaemonContext *pos;
   int ret = 0;
-  unsigned int thread_count = 0;
+  int thread_count = 0;
   struct GNUNET_ClientServerConnection *sock;
 
   int i;
@@ -209,14 +209,14 @@ new_do_testing (int argc, char *const *argv)
           ret =
             sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
                                   get_requests, concurrent_requests,
-                                  settle_time, trialmessage);
+                                  settle_time, num_rounds, trialmessage);
         }
       else
         {
           ret =
             sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
                                   get_requests, concurrent_requests,
-                                  settle_time, "");
+                                  settle_time, num_rounds, "");
         }
     }
   if (ret != GNUNET_OK)
@@ -337,6 +337,7 @@ new_do_testing (int argc, char *const *argv)
                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                      &keys[random_key].key);
           GNUNET_GE_ASSERT (NULL, gets[thread_count] != NULL);
+          thread_count++;
         }
 
       for (k = 0; k < num_rounds; k++)
@@ -367,11 +368,17 @@ new_do_testing (int argc, char *const *argv)
         thread_count = 0;
       }
       else
-        thread_count++;
+        printf("Thread count is %d\n", thread_count);
     }
 
   printf ("Found %u out of %llu attempts.\n", found, get_requests);
-
+  for (j = 0; j < thread_count; j++)
+    {
+      printf ("Stopping request %d\n", j);
+      GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+      GNUNET_DV_DHT_context_destroy (dctx[j]);
+    }
   pos = peers;
   while (pos != NULL)
     {
