@@ -63,7 +63,7 @@ libgnunetutil_la_LIBADD = \
   threads/libthreads.la \
   $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
   $(LIBGCRYPT_LIBS) \
-  -lgmp \
+  -lgmp -lm \
   $(GN_LIBINTL) \
   $(LTLIBICONV) \
   $(LIBLTDL) \
