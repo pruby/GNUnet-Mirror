@@ -61,8 +61,8 @@ static struct GNUNET_MysqlStatementHandle *insert_route;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
-#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, message) "\
-                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?)"
+#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, num_rounds, message) "\
+                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
 #define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid, keybits) "\
@@ -166,6 +166,7 @@ itable ()
              "`starttime` datetime NOT NULL,"
              "`endtime` datetime NOT NULL,"
              "`settle_time` int(10) unsigned NOT NULL,"
+             "`num_rounds` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
              "UNIQUE KEY `trialuid` (`trialuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
@@ -247,7 +248,7 @@ get_current_trial (unsigned long long *trialuid)
  */
 int
 add_trial (unsigned long long *trialuid, int num_nodes, int topology,
-           int puts, int gets, int concurrent, int settle_time, char *message)
+           int puts, int gets, int concurrent, int settle_time, int num_rounds, char *message)
 {
   int ret;
   unsigned long long m_len;
@@ -272,6 +273,9 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &settle_time,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &num_rounds,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_BLOB,
                                                   message,
