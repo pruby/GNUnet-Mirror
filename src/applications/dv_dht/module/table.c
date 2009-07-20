@@ -421,6 +421,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
                            struct GNUNET_BloomFilter *bloom)
 {
   unsigned long long total_distance;
+  unsigned long long largest_distance;
   unsigned long long selected;
   unsigned int distance;
   unsigned int bc;
@@ -429,8 +430,53 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
   int match;
   const PeerBucket *bucket;
   const PeerInfo *pi;
+  const PeerInfo *chosen;
 
-  //return find_closest_peer(set, target);
+  GNUNET_mutex_lock (lock);
+  largest_distance = 0;
+  total_distance = 0;
+  for (bc = 0; bc < bucketCount; bc++)
+    {
+      bucket = &buckets[bc];
+      for (ec = 0; ec < bucket->peers_size; ec++)
+        {
+          pi = bucket->peers[ec];
+          match = GNUNET_NO;
+          match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
+          if (match == GNUNET_YES)
+            {
+              continue;
+            }
+          for (i = 0; i < blocked_size; i++)
+            {
+              if (0 ==
+                  memcmp (&pi->id, &blocked[i], sizeof (GNUNET_PeerIdentity)))
+                {
+                  match = GNUNET_YES;
+                  break;
+                }
+            }
+          if (match == GNUNET_YES)
+            continue;
+
+          if (inverse_distance (target, &pi->id.hashPubKey) >
+              largest_distance)
+            {
+              chosen = bucket->peers[ec];
+              largest_distance = inverse_distance (target, &pi->id.hashPubKey);
+            }
+        }
+    }
+
+  GNUNET_mutex_unlock (lock);
+  if ((largest_distance > 0) && (chosen != NULL))
+    {
+      *set = chosen->id;
+      return GNUNET_OK;
+    }
+  else
+    return GNUNET_SYSERR;
+
   GNUNET_mutex_lock (lock);
   if (stats != NULL)
     stats->change (stat_dht_route_looks, 1);
@@ -536,7 +582,10 @@ find_closest_peer (GNUNET_PeerIdentity * set, const GNUNET_HashCode * target)
           pi = bucket->peers[ec];
           if (inverse_distance (target, &pi->id.hashPubKey) >
               largest_distance)
-            chosen = bucket->peers[ec];
+            {
+              chosen = bucket->peers[ec];
+              largest_distance = inverse_distance (target, &pi->id.hashPubKey);
+            }
         }
     }
 
@@ -605,8 +654,11 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
 {
 
   GNUNET_PeerIdentity closest;
-
+  memset(&closest, 0, sizeof(GNUNET_PeerIdentity));
   find_closest_peer (&closest, target);
+  if (&closest == NULL)
+    return GNUNET_SYSERR;
+
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "closest peer\n");
@@ -626,8 +678,8 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
                  inverse_distance (target, &closest.hashPubKey),
                  inverse_distance (target,
                                    &coreAPI->my_identity->hashPubKey));
-  if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >
-      inverse_distance (target, &closest.hashPubKey))
+  if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >=
+      inverse_distance (target, &closest.hashPubKey) && (inverse_distance (target, &coreAPI->my_identity->hashPubKey) > 0))
     {
       return GNUNET_YES;
     }

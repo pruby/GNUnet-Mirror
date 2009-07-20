@@ -348,6 +348,7 @@ route_result (const GNUNET_HashCode * key,
   unsigned int tracked;
   unsigned int i;
   int match;
+  int cost;
   DV_DHT_Source_Route *pos;
   DV_DHT_Source_Route *prev;
 #if DEBUG_ROUTING
@@ -470,15 +471,6 @@ route_result (const GNUNET_HashCode * key,
                              GNUNET_GE_USER | GNUNET_GE_BULK,
                              "Routing result to `%s'\n", &enc);
 #endif
-              if ((debug_routes_extended) && (dhtlog != NULL))
-                {
-                  queryuid = ntohl (result->queryuid);
-                  dhtlog->insert_route (NULL, queryuid,
-                                        DHTLOG_RESULT,
-                                        ntohl (result->hop_count), GNUNET_NO,
-                                        coreAPI->my_identity, key, NULL,
-                                        &pos->source);
-                }
               match = GNUNET_NO;
               match = GNUNET_bloomfilter_test (bloom, &pos->source.hashPubKey);
               if (match == GNUNET_YES)
@@ -486,8 +478,20 @@ route_result (const GNUNET_HashCode * key,
                 pos = pos->next;
                 continue;
               }
-              dvapi->dv_send (&pos->source,
+
+              cost = dvapi->dv_send (&pos->source,
                               &result->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
+
+
+              if ((debug_routes_extended) && (dhtlog != NULL))
+                {
+                  queryuid = ntohl (result->queryuid);
+                  dhtlog->insert_route (NULL, queryuid,
+                                        DHTLOG_RESULT,
+                                        ntohl (result->hop_count), cost, GNUNET_NO,
+                                        coreAPI->my_identity, key, NULL,
+                                        &pos->source);
+                }
 
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
@@ -515,7 +519,7 @@ route_result (const GNUNET_HashCode * key,
                   queryuid = ntohl (result->queryuid);
                   dhtlog->insert_route (NULL, queryuid,
                                         DHTLOG_RESULT,
-                                        ntohl (result->hop_count), GNUNET_YES,
+                                        ntohl (result->hop_count), 0, GNUNET_YES,
                                         coreAPI->my_identity, key, NULL,
                                         NULL);
                 }
@@ -632,6 +636,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
   int total;
   int i;
   int j;
+  int cost;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   GNUNET_EncName henc;
@@ -701,7 +706,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
         {
           queryuid = ntohl (get->queryuid);
           dhtlog->insert_route (NULL, ntohl (get->queryuid), DHTLOG_GET,
-                                hop_count, GNUNET_YES, coreAPI->my_identity,
+                                hop_count, 0, GNUNET_YES, coreAPI->my_identity,
                                 &get->key, sender, NULL);
         }
     }
@@ -747,9 +752,9 @@ handle_get (const GNUNET_PeerIdentity * sender,
                          GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
                          | GNUNET_GE_BULK,
                          "Failed to select peer for fowarding in round %d/%d\n",
-                         i + 1, GET_TRIES);
+                         i + 1, target_value);
 #endif
-          break;
+          continue;
         }
 #if DEBUG_ROUTING
       GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
@@ -758,15 +763,15 @@ handle_get (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_BULK,
                      "Forwarding DV_DHT GET request to peer `%s'.\n", &enc);
 #endif
+
+      cost = dvapi->dv_send (&next[j], &aget.header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
           queryuid = ntohl (get->queryuid);
           dhtlog->insert_route (NULL, ntohl (get->queryuid), DHTLOG_GET,
-                                hop_count, GNUNET_NO, coreAPI->my_identity,
+                                hop_count, cost, GNUNET_NO, coreAPI->my_identity,
                                 &get->key, sender, &next[j]);
         }
-
-      dvapi->dv_send (&next[j], &aget.header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       j++;
     }
 
@@ -790,6 +795,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
   unsigned int target_value;
   int store;
   int i;
+  int cost;
   unsigned int j;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
@@ -841,8 +847,8 @@ handle_put (const GNUNET_PeerIdentity * sender,
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
                          | GNUNET_GE_BULK,
-                         "Failed to select peer for PUT fowarding in round %d/%d\n",
-                         i + 1, PUT_TRIES);
+                         "Failed to select peer for PUT forwarding in round %d/%d\n",
+                         i + 1, target_value);
 #endif
           continue;
         }
@@ -853,15 +859,25 @@ handle_put (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_BULK,
                      "Forwarding DV_DHT PUT request to peer `%s'.\n", &enc);
 #endif
+      cost = dvapi->dv_send (&next[j], &aput->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
+#if DEBUG_ROUTING
+  if (cost == GNUNET_SYSERR)
+  {
+      GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Forwarding DV_DHT PUT request FAILED (dv unknown) to peer `%s'.\n", &enc);
+  }
+#endif
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
           queryuid = ntohl (put->queryuid);
           dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
-                                hop_count, GNUNET_NO,
+                                hop_count, cost, GNUNET_NO,
                                 coreAPI->my_identity, &put->key, sender,
                                 &next[j]);
         }
-      dvapi->dv_send (&next[j], &aput->header, DV_DHT_PRIORITY, DV_DHT_DELAY);
       j++;
     }
 
@@ -877,7 +893,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
     {
       queryuid = ntohl (put->queryuid);
       dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
-                            hop_count, GNUNET_NO,
+                            hop_count, 0, GNUNET_NO,
                             coreAPI->my_identity, &put->key, sender, NULL);
     }
 
@@ -905,7 +921,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
         {
           queryuid = ntohl (put->queryuid);
           dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
-                                hop_count, GNUNET_YES,
+                                hop_count, 0, GNUNET_YES,
                                 coreAPI->my_identity, &put->key, sender,
                                 NULL);
         }
