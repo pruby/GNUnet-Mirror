@@ -115,7 +115,7 @@ typedef struct
   int (*insert_route) (unsigned long long *sqlqueryuid,
                        unsigned long long queryid,
                        unsigned int type, unsigned int hops,
-                       int succeeded,
+                       unsigned int dvhops, int succeeded,
                        const GNUNET_PeerIdentity * node,
                        const GNUNET_HashCode * key,
                        const GNUNET_PeerIdentity * from_node,
