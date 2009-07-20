@@ -53,8 +53,8 @@ static struct GNUNET_MysqlDatabaseHandle *db;
                           "VALUES (?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_query;
 
-#define INSERT_ROUTES_STMT "INSERT INTO routes (trialuid, querytype, hops, dhtkeyuid, dhtqueryid, succeeded, nodeuid, from_node, to_node) "\
-                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define INSERT_ROUTES_STMT "INSERT INTO routes (trialuid, querytype, hops, dvhops, dhtkeyuid, dhtqueryid, succeeded, nodeuid, from_node, to_node) "\
+                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_route;
 
 #define INSERT_NODES_STMT "INSERT INTO nodes (trialuid, nodeid, nodebits) "\
@@ -323,7 +323,7 @@ add_dhtkey (unsigned long long *dhtkeyuid, const GNUNET_HashCode * dhtkey)
                                                   &current_trial,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_BLOB,
-                                                  &dhtkey,
+                                                  dhtkey,
                                                   sizeof (GNUNET_HashCode),
                                                   &h_len, -1)))
     {
@@ -585,7 +585,7 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
  */
 int
 add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
-           unsigned int type, unsigned int hops,
+           unsigned int type, unsigned int hops, unsigned int dvhops,
            int succeeded, const GNUNET_PeerIdentity * node,
            const GNUNET_HashCode * key, const GNUNET_PeerIdentity * from_node,
            const GNUNET_PeerIdentity * to_node)
@@ -637,6 +637,9 @@ add_route (unsigned long long *sqlqueryuid, unsigned long long queryid,
                                                   GNUNET_NO,
                                                   MYSQL_TYPE_LONG,
                                                   &hops,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &dvhops,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &key_uid,
