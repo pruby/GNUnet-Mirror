@@ -248,7 +248,8 @@ get_current_trial (unsigned long long *trialuid)
  */
 int
 add_trial (unsigned long long *trialuid, int num_nodes, int topology,
-           int puts, int gets, int concurrent, int settle_time, int num_rounds, char *message)
+           int puts, int gets, int concurrent, int settle_time,
+           int num_rounds, char *message)
 {
   int ret;
   unsigned long long m_len;
