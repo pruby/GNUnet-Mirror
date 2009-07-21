@@ -42,7 +42,7 @@
 /**
  * gcc-ism to get packed structs.
  */
-#define GNUNET_PACKED __attribute__((packed)) 
+#define GNUNET_PACKED __attribute__((packed))
 
 
 /**

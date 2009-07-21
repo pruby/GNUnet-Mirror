@@ -93,13 +93,13 @@ typedef struct
    * Total size of the structure, in bytes, in big-endian!
    */
   unsigned short len GNUNET_PACKED;
-  unsigned short sizen GNUNET_PACKED;         /*  in big-endian! */
-  unsigned short sizee GNUNET_PACKED;         /*  in big-endian! */
-  unsigned short sized GNUNET_PACKED;         /*  in big-endian! */
-  unsigned short sizep GNUNET_PACKED;         /*  in big-endian! */
-  unsigned short sizeq GNUNET_PACKED;         /*  in big-endian! */
-  unsigned short sizedmp1 GNUNET_PACKED;      /*  in big-endian! */
-  unsigned short sizedmq1 GNUNET_PACKED;      /*  in big-endian! */
+  unsigned short sizen GNUNET_PACKED;   /*  in big-endian! */
+  unsigned short sizee GNUNET_PACKED;   /*  in big-endian! */
+  unsigned short sized GNUNET_PACKED;   /*  in big-endian! */
+  unsigned short sizep GNUNET_PACKED;   /*  in big-endian! */
+  unsigned short sizeq GNUNET_PACKED;   /*  in big-endian! */
+  unsigned short sizedmp1 GNUNET_PACKED;        /*  in big-endian! */
+  unsigned short sizedmq1 GNUNET_PACKED;        /*  in big-endian! */
   /* followed by the actual values */
 } GNUNET_RSA_PrivateKeyEncoded;
 

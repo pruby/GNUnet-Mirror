@@ -118,7 +118,7 @@ int GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
  * @return number of connections
  */
 unsigned long long
-GNUNET_DHT_test_connected(struct GNUNET_ClientServerConnection *sock);
+GNUNET_DHT_test_connected (struct GNUNET_ClientServerConnection *sock);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

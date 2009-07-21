@@ -70,7 +70,7 @@ typedef enum
   GNUNET_CHAT_MSG_AUTHENTICATED = 4,
 
   /**
-   * Require signed acknowledgement before
+   * Require signed acknowledgment before
    * completing delivery (and of course, only
    * acknowledge if delivery is guaranteed).
    */

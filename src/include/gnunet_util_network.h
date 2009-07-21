@@ -313,10 +313,13 @@ struct GNUNET_SocketHandle *GNUNET_socket_create (struct GNUNET_GE_Context
  * The OS socket should henceforth be no longer used
  * directly.  GNUNET_socket_destroy will close it.
  */
-struct GNUNET_SocketHandle *
-GNUNET_socket_create_connect_to_host (struct GNUNET_LoadMonitor *mon, 
-				      const char *hostname,
-				      unsigned short port);
+struct GNUNET_SocketHandle *GNUNET_socket_create_connect_to_host (struct
+                                                                  GNUNET_LoadMonitor
+                                                                  *mon,
+                                                                  const char
+                                                                  *hostname,
+                                                                  unsigned
+                                                                  short port);
 
 /**
  * Close the socket (does NOT destroy it)
@@ -402,7 +405,8 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  * @param address IP address of the remote peer, freed by caller
  * @return GNUNET_YES on success, GNUNET_SYSERR otherwise
  */
-int GNUNET_socket_getpeername_string(struct GNUNET_SocketHandle *s, char **address);
+int GNUNET_socket_getpeername_string (struct GNUNET_SocketHandle *s,
+                                      char **address);
 
 
 /* ********************* select operations **************** */

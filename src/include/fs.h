@@ -314,7 +314,7 @@ typedef struct
   /**
    * Always zero (for now).
    */
-  unsigned int reserved GNUNET_PACKED;        /* for 64-bit alignment */
+  unsigned int reserved GNUNET_PACKED;  /* for 64-bit alignment */
 
   /**
    * When does this result expire?  The given time
