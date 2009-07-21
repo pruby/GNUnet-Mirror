@@ -67,19 +67,12 @@ static unsigned int indentation;
  * How often should the cron job for maintaining the DV_DHT
  * run?
  */
-#define MAINTAIN_FREQUENCY 5000 * GNUNET_CRON_MILLISECONDS
-
-/**
- * What is the chance (1 in XXX) that we send DISCOVERY messages
- * to another peer?
- */
-#define MAINTAIN_CHANCE (10 + 75 * total_peers)
-/*#define MAINTAIN_CHANCE (10 + 100 * total_peers)*/
+#define MAINTAIN_FREQUENCY 10000 * GNUNET_CRON_MILLISECONDS
 
 /**
  * How long can a peer be inactive before we time it out?
  */
-#define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4
+#define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * 4
 
 /**
  * What is the maximum number of known DV_DHT-enabled peers
@@ -329,10 +322,7 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
   i = bucketCount - 1;
   while ((buckets[i].bstart > index) && (i > 0))
     i--;
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK, "index is %d, bucket start is %d\n", index,
-                 buckets[i].bstart);
+
   if ((buckets[i].bstart <= index) && (buckets[i].bend >= index))
     return &buckets[i];
   GNUNET_GE_BREAK (NULL, 0);
@@ -463,7 +453,8 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
               largest_distance)
             {
               chosen = bucket->peers[ec];
-              largest_distance = inverse_distance (target, &pi->id.hashPubKey);
+              largest_distance =
+                inverse_distance (target, &pi->id.hashPubKey);
             }
         }
     }
@@ -584,7 +575,8 @@ find_closest_peer (GNUNET_PeerIdentity * set, const GNUNET_HashCode * target)
               largest_distance)
             {
               chosen = bucket->peers[ec];
-              largest_distance = inverse_distance (target, &pi->id.hashPubKey);
+              largest_distance =
+                inverse_distance (target, &pi->id.hashPubKey);
             }
         }
     }
@@ -654,7 +646,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
 {
 
   GNUNET_PeerIdentity closest;
-  memset(&closest, 0, sizeof(GNUNET_PeerIdentity));
+  memset (&closest, 0, sizeof (GNUNET_PeerIdentity));
   find_closest_peer (&closest, target);
   if (&closest == NULL)
     return GNUNET_SYSERR;
@@ -679,7 +671,8 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
                  inverse_distance (target,
                                    &coreAPI->my_identity->hashPubKey));
   if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >=
-      inverse_distance (target, &closest.hashPubKey) && (inverse_distance (target, &coreAPI->my_identity->hashPubKey) > 0))
+      inverse_distance (target, &closest.hashPubKey)
+      && (inverse_distance (target, &coreAPI->my_identity->hashPubKey) > 0))
     {
       return GNUNET_YES;
     }
@@ -915,16 +908,6 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 #endif
 
   considerPeer (other, other);
-  /*
-     if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, MAINTAIN_CHANCE) > (MAINTAIN_CHANCE / 2))
-     {
-     #if DEBUG_TABLE
-     print_exit ("broadcast_dht_discovery_prob");
-     #endif
-     return;
-     } */
-  /*fprintf(stderr, "sending discovery message\n");
-     broadcast_dht_discovery (other, cls); */
 
 #if DEBUG_TABLE
   print_exit ("broadcast_dht_discovery_prob");
@@ -941,18 +924,8 @@ maintain_dht_job (void *unused)
 #if DEBUG_TABLE
   print_entry ("maintain_dht_job");
 #endif
-  P2P_DV_DHT_Discovery disc;
-  if (total_peers == 0)
-    {
-      disc.header.size = htons (sizeof (P2P_DV_DHT_Discovery));
-      disc.header.type = htons (GNUNET_P2P_PROTO_DHT_DISCOVERY);
-      disc.space_available = -1;        /* FIXME */
-      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, &disc);
-    }
-  else
-    {
-      dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
-    }
+  dvapi->dv_connections_iterate (&broadcast_dht_discovery_prob, NULL);
+
 #if DEBUG_TABLE
   print_exit ("maintain_dht_job");
 #endif
@@ -1191,8 +1164,6 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_cron_add_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,
                        MAINTAIN_FREQUENCY, NULL);
 
-  GNUNET_cron_add_job (coreAPI->cron, &print_buckets, MAINTAIN_FREQUENCY * 30,
-                       MAINTAIN_FREQUENCY * 30, NULL);
   return GNUNET_OK;
 }
 
