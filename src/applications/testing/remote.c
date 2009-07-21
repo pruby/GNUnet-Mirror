@@ -470,16 +470,18 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                     temp_remote_config_path);
 
           temp_host_string_length =
-            snprintf (NULL, 0, "%s:%llu", curr_host, starting_port + ((unsigned long long)j * port_increment));
-          temp_host_string =
-            GNUNET_malloc (temp_host_string_length + 1);
+            snprintf (NULL, 0, "%s:%llu", curr_host,
+                      starting_port +
+                      ((unsigned long long) j * port_increment));
+          temp_host_string = GNUNET_malloc (temp_host_string_length + 1);
           snprintf (temp_host_string,
-                    temp_host_string_length + 1, "%s:%llu", curr_host, starting_port + ((unsigned long long)j * port_increment));
+                    temp_host_string_length + 1, "%s:%llu", curr_host,
+                    starting_port +
+                    ((unsigned long long) j * port_increment));
 
           GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                     "NETWORK",
-                                                    "HOST",
-                                                    temp_host_string);
+                                                    "HOST", temp_host_string);
 
           GNUNET_GC_set_configuration_value_number (basecfg, NULL, "NETWORK",
                                                     "PORT",
@@ -506,7 +508,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                            temp_path);
               GNUNET_free (temp_path);
               GNUNET_free (temp_remote_config_path);
-              GNUNET_free(temp_host_string);
+              GNUNET_free (temp_host_string);
               break;
             }
           CLOSE (ret);
@@ -514,7 +516,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
             {
               GNUNET_free (temp_path);
               GNUNET_free (temp_remote_config_path);
-              GNUNET_free(temp_host_string);
+              GNUNET_free (temp_host_string);
               break;
             }
 
@@ -573,7 +575,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
           GNUNET_free (temp_pid_file);
           GNUNET_free (temp_remote_config_path);
           GNUNET_free (temp);
-          GNUNET_free(temp_host_string);
+          GNUNET_free (temp_host_string);
           //UNLINK (temp_path);
           GNUNET_free (temp_path);
 
@@ -658,11 +660,14 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                          port_increment));
 
               temp_host_string_length =
-              snprintf (NULL, 0, "%s:%llu", curr_host, starting_port + ((unsigned long long)(j+1) * port_increment));
-              temp_host_string =
-                GNUNET_malloc (temp_host_string_length + 1);
+                snprintf (NULL, 0, "%s:%llu", curr_host,
+                          starting_port +
+                          ((unsigned long long) (j + 1) * port_increment));
+              temp_host_string = GNUNET_malloc (temp_host_string_length + 1);
               snprintf (temp_host_string, temp_host_string_length + 1,
-                        "%s:%llu", curr_host, starting_port + ((unsigned long long)(j+1) * port_increment));
+                        "%s:%llu", curr_host,
+                        starting_port +
+                        ((unsigned long long) (j + 1) * port_increment));
 
               GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                         "NETWORK",
@@ -694,7 +699,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                temp_path);
                   GNUNET_free (temp_path);
                   GNUNET_free (temp_remote_config_path);
-                  GNUNET_free(temp_host_string);
+                  GNUNET_free (temp_host_string);
                   break;
                 }
               CLOSE (ret);
@@ -702,7 +707,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                 {
                   GNUNET_free (temp_path);
                   GNUNET_free (temp_remote_config_path);
-                  GNUNET_free(temp_host_string);
+                  GNUNET_free (temp_host_string);
                   break;
                 }
 
@@ -763,7 +768,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
               GNUNET_free (temp_pid_file);
               GNUNET_free (temp_remote_config_path);
-              GNUNET_free(temp_host_string);
+              GNUNET_free (temp_host_string);
               //UNLINK (temp_path);
               GNUNET_free (temp_path);
               GNUNET_free (temp);
