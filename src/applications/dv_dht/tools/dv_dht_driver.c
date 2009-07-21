@@ -190,7 +190,8 @@ do_testing (int argc, char *const *argv)
     {
       ret =
         sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
-                              get_requests, 1, settle_time, DEFAULT_NUM_ROUNDS, "");
+                              get_requests, 1, settle_time,
+                              DEFAULT_NUM_ROUNDS, "");
     }
   if (ret != GNUNET_OK)
     return GNUNET_SYSERR;

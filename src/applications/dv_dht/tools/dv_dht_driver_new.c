@@ -97,7 +97,6 @@ static struct GNUNET_CommandLineOption gnunetDHTDriverOptions[] = {
  */
 #define DEFAULT_NUM_REPEAT 5
 
-static int ok;
 static int found;
 static int new_found;
 
@@ -149,12 +148,11 @@ getPeers (const char *name, unsigned long long value, void *cls)
     {
       fprintf (stderr, "%s : %llu\n", name, value);
     }
-
-  if ((value > 0) && (0 == strcmp (_("# dv_dht connections"), name)))
+  else if ((value > 0) && (strstr (name, _("dropped")) != NULL))
     {
-      ok = 1;
-      return GNUNET_OK;
+      fprintf (stderr, "%s : %llu\n", name, value);
     }
+
   return GNUNET_OK;
 }
 
@@ -306,6 +304,12 @@ new_do_testing (int argc, char *const *argv)
            (int) put_items - (int) failed_inserts);
 
   thread_count = 0;
+  if (concurrent_requests > get_requests)
+    concurrent_requests = get_requests;
+  fprintf (stdout,
+           "Will perform %llu total gets, in request blocks of size %llu\n",
+           (get_requests / concurrent_requests) * concurrent_requests,
+           concurrent_requests);
   for (i = 0; i < get_requests / concurrent_requests; i++)
     {
       if (i > 0)
@@ -357,18 +361,18 @@ new_do_testing (int argc, char *const *argv)
               concurrent_requests);
 
       if (thread_count >= MAX_THREADS)
-      {
-        for (j = 0; j < thread_count; j++)
         {
-          printf ("Stopping request %d\n", j);
-          GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
-          GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
-          GNUNET_DV_DHT_context_destroy (dctx[j]);
+          for (j = 0; j < thread_count; j++)
+            {
+              printf ("Stopping request %d\n", j);
+              GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
+              GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+              GNUNET_DV_DHT_context_destroy (dctx[j]);
+            }
+          thread_count = 0;
         }
-        thread_count = 0;
-      }
       else
-        printf("Thread count is %d\n", thread_count);
+        printf ("Thread count is %d\n", thread_count);
     }
 
   printf ("Found %u out of %llu attempts.\n", found, get_requests);
@@ -379,6 +383,25 @@ new_do_testing (int argc, char *const *argv)
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       GNUNET_DV_DHT_context_destroy (dctx[j]);
     }
+
+  for (i = 0; i < num_peers; i++)
+    {
+      if (GNUNET_shutdown_test () == GNUNET_YES)
+        break;
+      fprintf (stderr, "Peer %d (%s:%d, pid %s):\n", i,
+               peer_array[i]->hostname, peer_array[i]->port,
+               peer_array[i]->pid);
+      sock = GNUNET_client_connection_create (NULL, peer_array[i]->config);
+
+      if (GNUNET_SYSERR ==
+          GNUNET_STATS_get_statistics (NULL, sock, &getPeers, NULL))
+        {
+          fprintf (stderr, "Problem connecting to peer %d!\n", i);
+        }
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+      GNUNET_client_connection_destroy (sock);
+    }
+
   pos = peers;
   while (pos != NULL)
     {
@@ -472,8 +495,9 @@ main (int argc, char *const *argv)
                                             -1,
                                             DEFAULT_NUM_REPEAT, &num_repeat);
   randomized_gets = GNUNET_GC_get_configuration_value_yesno (cfg,
-                                         "MULTIPLE_SERVER_TESTING",
-                                         "RANDOMIZED_GETS", 0);
+                                                             "MULTIPLE_SERVER_TESTING",
+                                                             "RANDOMIZED_GETS",
+                                                             0);
 
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
