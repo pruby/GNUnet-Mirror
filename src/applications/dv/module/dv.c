@@ -48,6 +48,7 @@ static int stat_dv_total_peers;
 static int stat_dv_sent_messages;
 static int stat_dv_received_messages;
 static int stat_dv_forwarded_messages;
+static int stat_dv_failed_forwards;
 static int stat_dv_sent_gossips;
 static int stat_dv_received_gossips;
 
@@ -495,7 +496,12 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
 #endif
       ret = forward_message (incoming);
       if (stats != NULL)
-        stats->change (stat_dv_forwarded_messages, 1);
+        {
+          if (ret != GNUNET_SYSERR)
+            stats->change (stat_dv_forwarded_messages, 1);
+          else
+            stats->change (stat_dv_failed_forwards, 1);
+        }
     }
   GNUNET_free (message_content);
   return ret;
@@ -1044,7 +1050,8 @@ neighbor_send_thread (void *rcls)
           message->cost = htonl (about->cost);
           memcpy (&message->neighbor, about->neighbor,
                   sizeof (GNUNET_PeerIdentity));
-          coreAPI->ciphertext_send (to->neighbor, &message->header, 0,
+          coreAPI->ciphertext_send (to->neighbor, &message->header,
+                                    GNUNET_DV_DHT_GOSSIP_PRIORITY,
                                     ctx->send_interval *
                                     GNUNET_CRON_MILLISECONDS);
           if (stats != NULL)
@@ -1086,6 +1093,8 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# dv messages received"));
       stat_dv_forwarded_messages =
         stats->create (gettext_noop ("# dv messages forwarded"));
+      stat_dv_failed_forwards =
+        stats->create (gettext_noop ("# dv forwards failed"));
       stat_dv_received_gossips =
         stats->create (gettext_noop ("# dv gossips received"));
       stat_dv_sent_gossips =
