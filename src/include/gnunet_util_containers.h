@@ -578,7 +578,7 @@ void *GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap
     (element)->next->prev = (element)->prev;
 
 
-typedef unsigned int GNUNET_CostType;
+typedef unsigned long long GNUNET_CostType;
 
 /*
  * Heap type, either max or min.  Hopefully makes the
