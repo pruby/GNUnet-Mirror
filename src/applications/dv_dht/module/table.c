@@ -383,7 +383,7 @@ inverse_distance (const GNUNET_HashCode * target,
      will appropriately tell us whether one loc is closer than
      another.  I also don't get why we want 2^(d/512)!!  Say we
      should be in bucket 5 (5 matching bits), then we get 1
-     as a retrun value, just as if we have 15 matching bits!!!
+     as a return value, just as if we have 15 matching bits!!!
      15 matching should be closer than 5!!!!!!! */
   d = exp2 (bucket);
   if (d > ((unsigned int) -1))
@@ -832,12 +832,12 @@ checkExpiration (PeerBucket * bucket)
     }
 }
 
+
 /**
  * Consider adding the given peer to the DV_DHT.
  */
-static void
-considerPeer (const GNUNET_PeerIdentity * sender,
-              const GNUNET_PeerIdentity * peer)
+void
+GNUNET_DV_DHT_considerPeer (const GNUNET_PeerIdentity * peer)
 {
   PeerInfo *pi;
   PeerBucket *bucket;
@@ -855,27 +855,6 @@ considerPeer (const GNUNET_PeerIdentity * sender,
     }
   /* do we know how to contact this peer? */
   /* This may not work with the dv implementation... */
-#if 0
-  P2P_DV_DHT_ASK_HELLO ask;
-  GNUNET_MessageHello *hello;
-
-  hello =
-    identity->identity2Hello (peer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
-                              GNUNET_NO);
-  if (hello == NULL)
-    {
-      /* if identity not known, ask sender for HELLO of other peer */
-      ask.header.size = htons (sizeof (P2P_DV_DHT_ASK_HELLO));
-      ask.header.type = htons (sizeof (GNUNET_P2P_PROTO_DHT_ASK_HELLO));
-      ask.reserved = 0;
-      ask.peer = *peer;
-      dvapi->dv_send (peer, &ask.header, 0,     /* FIXME: priority */
-                      5 * GNUNET_CRON_SECONDS);
-      return;
-    }
-
-  GNUNET_free (hello);
-#endif
 
   /* check if connected, if not, send discovery */
   /* coreAPI->p2p_connection_status_check (peer, NULL, NULL); */
@@ -888,6 +867,7 @@ considerPeer (const GNUNET_PeerIdentity * sender,
       return;
     }
   /* we are connected (in dv), add to bucket */
+  GNUNET_mutex_lock (lock);
   pi = GNUNET_malloc (sizeof (PeerInfo));
   memset (pi, 0, sizeof (PeerInfo));
   pi->id = *peer;
@@ -898,6 +878,7 @@ considerPeer (const GNUNET_PeerIdentity * sender,
   total_peers++;
   if (stats != NULL)
     stats->change (stat_dht_total_peers, 1);
+  GNUNET_mutex_unlock (lock);
 }
 
 static void
@@ -907,7 +888,7 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
   print_entry ("broadcast_dht_discovery_prob");
 #endif
 
-  considerPeer (other, other);
+  GNUNET_DV_DHT_considerPeer (other);
 
 #if DEBUG_TABLE
   print_exit ("broadcast_dht_discovery_prob");
@@ -930,51 +911,6 @@ maintain_dht_job (void *unused)
   print_exit ("maintain_dht_job");
 #endif
 }
-
-#ifdef DISCOVERY
-/**
- * Handle discovery message.
- */
-static int
-handleDiscovery (const GNUNET_PeerIdentity * sender,
-                 const GNUNET_MessageHeader * msg)
-{
-  unsigned int pc;
-  unsigned int i;
-  const P2P_DV_DHT_Discovery *disco;
-  const GNUNET_PeerIdentity *peers;
-
-  pc =
-    (ntohs (msg->size) -
-     sizeof (P2P_DV_DHT_Discovery)) / sizeof (GNUNET_PeerIdentity);
-  if (pc > MAINTAIN_ADV_CAP * 8)
-    {
-      GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
-      return GNUNET_SYSERR;     /* far too big */
-    }
-  if (ntohs (msg->size) !=
-      sizeof (P2P_DV_DHT_Discovery) + pc * sizeof (GNUNET_PeerIdentity))
-    {
-      GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
-      return GNUNET_SYSERR;     /* malformed */
-    }
-  disco = (const P2P_DV_DHT_Discovery *) msg;
-  if (stats != NULL)
-    stats->change (stat_dht_discoveries, 1);
-  if (pc == 0)
-    {
-      /* if peer has 0 connections, be sure to send discovery back */
-      broadcast_dht_discovery (sender, NULL);
-    }
-  GNUNET_mutex_lock (lock);
-  considerPeer (sender, sender);
-  peers = (const GNUNET_PeerIdentity *) &disco[1];
-  for (i = 0; i < pc; i++)
-    considerPeer (sender, &peers[i]);
-  GNUNET_mutex_unlock (lock);
-  return GNUNET_OK;
-}
-#endif
 
 /**
  * Handle ask hello message.

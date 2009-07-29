@@ -79,4 +79,9 @@ int GNUNET_DV_DHT_table_done (void);
  */
 int GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target);
 
+/*
+ * Consider adding the peer to table
+ */
+void GNUNET_DV_DHT_consider_peer (const GNUNET_PeerIdentity * peer);
+
 #endif

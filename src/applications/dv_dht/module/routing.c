@@ -362,11 +362,15 @@ route_result (const GNUNET_HashCode * key,
   struct GNUNET_BloomFilter *bloom;
   unsigned int routed;
   unsigned int tracked;
+  unsigned int sent_other;
 
   int match;
   int cost;
   DV_DHT_Source_Route *pos;
   DV_DHT_Source_Route *prev;
+
+  GNUNET_PeerIdentity set;
+
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   unsigned long long queryuid;
@@ -452,6 +456,7 @@ route_result (const GNUNET_HashCode * key,
   GNUNET_hash (data, size, &hc);
   routed = 0;
   tracked = 0;
+  sent_other = 0;
   GNUNET_mutex_lock (lock);
 
   if (GNUNET_multi_hash_map_contains (new_records.hashmap, key))
@@ -469,6 +474,7 @@ route_result (const GNUNET_HashCode * key,
       prev = NULL;
       while (pos != NULL)
         {
+          tracked++;
           if (0 != memcmp (&pos->source,
                            coreAPI->my_identity,
                            sizeof (GNUNET_PeerIdentity)))
@@ -489,16 +495,35 @@ route_result (const GNUNET_HashCode * key,
                   continue;
                 }
 
+              GNUNET_bloomfilter_add (bloom, &pos->source.hashPubKey);
+
               cost = dvapi->dv_send (&pos->source,
                                      &result->header, DV_DHT_PRIORITY,
                                      DV_DHT_DELAY);
 
-              /* Need to change this piece, because we may want to try another path for the reply in the case of failure from
-               * the DV subsystem. (Likely to another close peer that may know of this request)
-               */
               if (cost == GNUNET_SYSERR)
-                break;
-
+                {
+                  if (GNUNET_OK ==
+                      GNUNET_DV_DHT_select_peer (&set,
+                                                 &pos->source.hashPubKey,
+                                                 NULL, 0, bloom))
+                    {
+#if DEBUG_ROUTING
+                      GNUNET_GE_LOG (coreAPI->ectx,
+                                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                                     GNUNET_GE_USER | GNUNET_GE_BULK,
+                                     "Failed to send result along return path, choosing nearby peer!\n");
+#endif
+                      cost = dvapi->dv_send (&set,
+                                             &result->header, DV_DHT_PRIORITY,
+                                             DV_DHT_DELAY);
+                      if (cost != GNUNET_SYSERR)
+                        sent_other++;
+                    }
+                  pos = pos->next;
+                  continue;
+                }
+              routed++;
 
               if ((debug_routes_extended) && (dhtlog != NULL))
                 {
@@ -543,6 +568,8 @@ route_result (const GNUNET_HashCode * key,
                 }
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
+
+              routed++;
             }
           pos = pos->next;
         }
@@ -552,8 +579,8 @@ route_result (const GNUNET_HashCode * key,
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
-                 "Routed result to %u out of %u pending requests\n",
-                 routed, tracked);
+                 "Routed result to %u out of %u pending requests. Sent %u to nearest peer due to route failure.\n",
+                 routed, tracked, sent_other);
 #endif
   GNUNET_bloomfilter_free (bloom);
   if (cls == NULL)
@@ -569,17 +596,13 @@ add_route (const GNUNET_PeerIdentity * sender,
            GNUNET_ResultProcessor handler, void *cls,
            const DV_DHT_MESSAGE * get)
 {
-
-/*
- * TODO: Eventually change to using a hash
- * map for more efficient lookup of return routing information!
- */
   DV_DHTQueryRecord *q;
   unsigned int diameter;
   unsigned int hops;
   struct DV_DHT_Source_Route *pos;
   unsigned int routes_size;
   unsigned int heap_size;
+  unsigned int found;
   GNUNET_CronTime now;
 
   hops = ntohl (get->hop_count);
@@ -652,15 +675,49 @@ add_route (const GNUNET_PeerIdentity * sender,
     }
 
   q->get = *get;
-  pos = GNUNET_malloc (sizeof (DV_DHT_Source_Route));
-  pos->next = q->sources;
-  q->sources = pos;
-  if (sender != NULL)
-    pos->source = *sender;
+  pos = q->sources;
+  found = GNUNET_NO;
+  while (pos != NULL)
+    {
+      /* Check for return peer already in set */
+      if ((sender != NULL
+           && memcmp (&pos->source, sender,
+                      sizeof (GNUNET_PeerIdentity)) == 0) || (sender == NULL
+                                                              &&
+                                                              memcmp (&pos->
+                                                                      source,
+                                                                      coreAPI->
+                                                                      my_identity,
+                                                                      sizeof
+                                                                      (GNUNET_PeerIdentity))
+                                                              == 0))
+        {
+          found = GNUNET_YES;
+        }
+      pos = pos->next;
+    }
+
+  if (found == GNUNET_NO)
+    {
+      pos = GNUNET_malloc (sizeof (DV_DHT_Source_Route));
+      pos->next = q->sources;
+      q->sources = pos;
+      if (sender != NULL)
+        pos->source = *sender;
+      else
+        pos->source = *coreAPI->my_identity;
+      pos->receiver = handler;
+      pos->receiver_closure = cls;
+    }
   else
-    pos->source = *coreAPI->my_identity;
-  pos->receiver = handler;
-  pos->receiver_closure = cls;
+    {
+#if DEBUG_ROUTING
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Already have this peer in return route!\n");
+#endif
+    }
 
   GNUNET_CONTAINER_heap_insert (new_records.minHeap, q, now);
   GNUNET_multi_hash_map_put (new_records.hashmap, &get->key, q,
@@ -700,6 +757,9 @@ handle_get (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
+  if (sender != NULL)
+    GNUNET_DV_DHT_considerPeer (sender);
+
   get = (const DV_DHT_MESSAGE *) msg;
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&get->key, &enc);
@@ -820,8 +880,14 @@ handle_get (const GNUNET_PeerIdentity * sender,
       cost =
         dvapi->dv_send (&next[j], &aget.header, DV_DHT_PRIORITY,
                         DV_DHT_DELAY);
+
+      GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
+
       if (cost == GNUNET_SYSERR)
         continue;
+
+      GNUNET_bloomfilter_get_raw_data (bloom, &aget.bloomfilter[0],
+                                       DV_DHT_BLOOM_SIZE);
 
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
@@ -867,6 +933,9 @@ handle_put (const GNUNET_PeerIdentity * sender,
     }
   if (stats != NULL)
     stats->change (stat_put_requests_received, 1);
+  if (sender != NULL)
+    GNUNET_DV_DHT_considerPeer (sender);
+
   put = (const DV_DHT_MESSAGE *) msg;
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&put->key, &enc);
@@ -918,6 +987,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_BULK,
                      "Forwarding DV_DHT PUT request to peer `%s'.\n", &enc);
 #endif
+      GNUNET_bloomfilter_add (bloom, &next[j].hashPubKey);
       cost =
         dvapi->dv_send (&next[j], &aput->header, DV_DHT_PRIORITY,
                         DV_DHT_DELAY);
@@ -936,6 +1006,9 @@ handle_put (const GNUNET_PeerIdentity * sender,
 
       if (cost == GNUNET_SYSERR)
         continue;
+
+      GNUNET_bloomfilter_get_raw_data (bloom, &aput->bloomfilter[0],
+                                       DV_DHT_BLOOM_SIZE);
 
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
@@ -1039,6 +1112,8 @@ handle_result (const GNUNET_PeerIdentity * sender,
                  GNUNET_GE_BULK,
                  "Received REMOTE DV_DHT RESULT for key `%s'.\n", &enc);
 #endif
+  if (sender != NULL)
+    GNUNET_DV_DHT_considerPeer (sender);
 
   route_result (&result->key,
                 ntohl (result->type),
