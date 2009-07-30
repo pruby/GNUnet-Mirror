@@ -198,15 +198,9 @@ typedef struct DV_DHTQueryRecord
   DV_DHT_MESSAGE get;
 
   /**
-   * Hashcodes of the results that we have sent back
-   * so far.
+   * Bloomfilter of the peers we've replied to so far
    */
-  GNUNET_HashCode *results;
-
-  /**
-   * Number of entries in results.
-   */
-  unsigned int result_count;
+  struct GNUNET_BloomFilter *bloom_results;
 
 } DV_DHTQueryRecord;
 
@@ -495,6 +489,18 @@ route_result (const GNUNET_HashCode * key,
                   continue;
                 }
 
+              match = GNUNET_NO;
+              match =
+                GNUNET_bloomfilter_test (q->bloom_results,
+                                         &pos->source.hashPubKey);
+              if (match == GNUNET_YES)
+                {
+                  pos = pos->next;
+                  continue;
+                }
+
+              GNUNET_bloomfilter_add (q->bloom_results,
+                                      &pos->source.hashPubKey);
               GNUNET_bloomfilter_add (bloom, &pos->source.hashPubKey);
 
               cost = dvapi->dv_send (&pos->source,
@@ -643,8 +649,8 @@ add_route (const GNUNET_PeerIdentity * sender,
               q->sources = pos->next;
               GNUNET_free (pos);
             }
-          GNUNET_array_grow (q->results, q->result_count, 0);
         }
+      GNUNET_bloomfilter_free (q->bloom_results);
       GNUNET_multi_hash_map_remove_all (new_records.hashmap, &q->get.key);
     }
 
@@ -671,6 +677,9 @@ add_route (const GNUNET_PeerIdentity * sender,
   else
     {
       q = GNUNET_malloc (sizeof (DV_DHTQueryRecord));
+      q->bloom_results =
+        GNUNET_bloomfilter_init (NULL, NULL, DV_DHT_BLOOM_SIZE,
+                                 DV_DHT_BLOOM_K);
       q->sources = NULL;
     }
 
@@ -738,7 +747,9 @@ handle_get (const GNUNET_PeerIdentity * sender,
 {
   GNUNET_PeerIdentity next[GET_TRIES + 1];
   const DV_DHT_MESSAGE *get;
+  DV_DHTQueryRecord *q;
   DV_DHT_MESSAGE aget;
+  DV_DHT_MESSAGE *oldget;
   unsigned int target_value;
   unsigned int hop_count;
   struct GNUNET_BloomFilter *bloom;
@@ -761,6 +772,16 @@ handle_get (const GNUNET_PeerIdentity * sender,
     GNUNET_DV_DHT_considerPeer (sender);
 
   get = (const DV_DHT_MESSAGE *) msg;
+
+  if (GNUNET_multi_hash_map_contains (new_records.hashmap, &get->key))
+    {
+      q = GNUNET_multi_hash_map_get (new_records.hashmap, &get->key);
+      oldget = &q->get;
+    }
+  else
+    {
+      oldget = NULL;
+    }
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&get->key, &enc);
   if (sender != NULL)
@@ -841,6 +862,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
     GNUNET_bloomfilter_init (NULL, &aget.bloomfilter[0], DV_DHT_BLOOM_SIZE,
                              DV_DHT_BLOOM_K);
   GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
+  if (oldget != NULL)
+    GNUNET_bloomfilter_or (bloom, &oldget->bloomfilter[0], DV_DHT_BLOOM_SIZE);
   GNUNET_bloomfilter_get_raw_data (bloom, &aget.bloomfilter[0],
                                    DV_DHT_BLOOM_SIZE);
 
@@ -881,7 +904,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
         dvapi->dv_send (&next[j], &aget.header, DV_DHT_PRIORITY,
                         DV_DHT_DELAY);
 
-      GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
+      GNUNET_bloomfilter_add (bloom, &next[j].hashPubKey);
 
       if (cost == GNUNET_SYSERR)
         continue;
@@ -1194,7 +1217,6 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
               q->sources = pos->next;
               GNUNET_free (pos);
             }
-          GNUNET_array_grow (q->results, q->result_count, 0);
         }
       GNUNET_multi_hash_map_remove (new_records.hashmap, key, q);
       GNUNET_CONTAINER_heap_remove_node (new_records.minHeap, q);
