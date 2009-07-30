@@ -51,6 +51,7 @@ static int stat_dv_forwarded_messages;
 static int stat_dv_failed_forwards;
 static int stat_dv_sent_gossips;
 static int stat_dv_received_gossips;
+static int stat_dv_unknown_peer;
 
 /*
  * Global construct
@@ -211,6 +212,11 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
   now = GNUNET_get_time ();
   struct GNUNET_dv_neighbor *neighbor;
   neighbor = (struct GNUNET_dv_neighbor *) element;
+  /*
+   * Why do we check if it is a direct neighbor? delete_neighbor
+   * only deletes from the extended list anyways...
+   */
+  GNUNET_mutex_lock (ctx->dvMutex);
   if ((GNUNET_NO ==
        GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
                                        &neighbor->neighbor->hashPubKey))
@@ -229,7 +235,7 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
 #endif
       delete_neighbor (neighbor);
     }
-
+  GNUNET_mutex_unlock (ctx->dvMutex);
   return GNUNET_OK;
 }
 
@@ -282,6 +288,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
   p2p_dv_MESSAGE_Data *toSend;
   unsigned int msg_size;
   unsigned int cost;
+  int ret;
   struct GNUNET_dv_neighbor *neighbor;
 #if DEBUG_DV_FORWARD
   GNUNET_EncName encVia;
@@ -292,6 +299,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "%s: Entered send_message!\n", &shortID);
 #endif
+  GNUNET_mutex_lock (ctx->dvMutex);
   if (GNUNET_YES ==
       GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
                                       &recipient->hashPubKey))
@@ -346,7 +354,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
                                     importance, maxdelay);
         }
       GNUNET_free (toSend);
-      return (int) cost;
+      ret = (int) cost;
     }
   else
     {
@@ -359,8 +367,13 @@ send_message (const GNUNET_PeerIdentity * recipient,
                      "%s: I AM:\n%s\nAsked to send message to unknown peer:\n%s\n\n",
                      &shortID, (char *) &encMe, (char *) &encRecipient);
 #endif
-      return GNUNET_SYSERR;
+      if (stats != NULL)
+        stats->change (stat_dv_unknown_peer, 1);
+
+      ret = GNUNET_SYSERR;
     }
+  GNUNET_mutex_unlock (ctx->dvMutex);
+  return ret;
 }
 
 /*
@@ -621,9 +634,12 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
     {
       ret = GNUNET_NO;
 
-      if (GNUNET_YES ==
-          GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
-                                          &peer->hashPubKey))
+      if ((GNUNET_YES ==
+           GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                           &peer->hashPubKey))
+          && (GNUNET_NO ==
+              GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
+                                              &peer->hashPubKey)))
         {
           neighbor =
             GNUNET_multi_hash_map_get (ctx->extended_neighbors,
@@ -730,7 +746,6 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
           neighbor->last_activity = now;
         }
     }
-
 
 #if DEBUG_DV
   print_tables ();
@@ -1099,6 +1114,8 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# dv gossips received"));
       stat_dv_sent_gossips =
         stats->create (gettext_noop ("# dv gossips sent"));
+      stat_dv_unknown_peer =
+        stats->create (gettext_noop ("# dv messages to unknown peers"));
     }
 
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
