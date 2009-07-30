@@ -159,38 +159,15 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
   return GNUNET_OK;
 }
 
-#if DEBUG_DV
-/*
- * Prints out the known neighbor routing tables.
- */
-static void
-print_tables ()
-{
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK,
-                 "%s: Printing directly connected neighbors:\n", &shortID);
-  GNUNET_multi_hash_map_iterate (ctx->direct_neighbors, &printTableEntry,
-                                 "DIRECT");
-
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK, "%s: Printing extended neighbors:\n",
-                 &shortID);
-  GNUNET_multi_hash_map_iterate (ctx->extended_neighbors, &printTableEntry,
-                                 "EXTENDED");
-  return;
-}
-#endif
-
 /*
  * A callback for iterating over all known nodes.
  */
 static int
-connection_iterate_callback (const GNUNET_HashCode * key, void *value,
-                             void *cls)
+connection_iterate_callback (void *element, GNUNET_CostType cost,
+                         struct GNUNET_CONTAINER_Heap *root, void *cls)
 {
-  struct GNUNET_dv_neighbor *neighbor = (struct GNUNET_dv_neighbor *) value;
+  struct GNUNET_dv_neighbor *neighbor;
+  neighbor = (struct GNUNET_dv_neighbor *) element;
   struct callbackWrapper *wrap = (struct callbackWrapper *) cls;
   wrap->method (neighbor->neighbor, wrap->arg);
   return GNUNET_OK;
@@ -245,11 +222,8 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
 static void
 maintain_dv_job (void *unused)
 {
-  GNUNET_mutex_lock (ctx->dvMutex);
   GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                  &delete_expired_callback, NULL);
-
-  GNUNET_mutex_unlock (ctx->dvMutex);
 }
 
 /**
@@ -269,9 +243,10 @@ GNUNET_DV_connection_iterate_peers (GNUNET_NodeIteratorCallback method,
   wrap.arg = arg;
 
   GNUNET_mutex_lock (ctx->dvMutex);
-  ret =
+  /*ret =
     GNUNET_multi_hash_map_iterate (ctx->extended_neighbors,
-                                   &connection_iterate_callback, &wrap);
+                                   &connection_iterate_callback, &wrap);*/
+  ret = GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap, &connection_iterate_callback, &wrap);
   GNUNET_mutex_unlock (ctx->dvMutex);
   return ret;
 }
@@ -748,7 +723,6 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer,
     }
 
 #if DEBUG_DV
-  print_tables ();
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "%s: Exiting addUpdateNeighbor\n", &shortID);
@@ -817,9 +791,6 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "%s: Entering peer_connect_handler:\n",
                  &shortID);
-  GNUNET_mutex_lock (ctx->dvMutex);
-  print_tables ();
-  GNUNET_mutex_unlock (ctx->dvMutex);
 
 #endif
   struct GNUNET_dv_neighbor *neighbor;
@@ -853,11 +824,6 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_unlock (ctx->dvMutex);
   addUpdateNeighbor (peer, NULL, cost);
 
-#if DEBUG_DV
-  GNUNET_mutex_lock (ctx->dvMutex);
-  print_tables ();
-  GNUNET_mutex_unlock (ctx->dvMutex);
-#endif
   return;
 
 }
@@ -932,9 +898,6 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "%s: disconnected peer: %s\n", &shortID,
                  (char *) &myself);
-  GNUNET_mutex_lock (ctx->dvMutex);
-  print_tables ();
-  GNUNET_mutex_unlock (ctx->dvMutex);
 #endif
 
   GNUNET_mutex_lock (ctx->dvMutex);
@@ -959,15 +922,10 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
             GNUNET_free (neighbor->referrer);
 
           GNUNET_free (neighbor);
-
         }
     }
-
   GNUNET_mutex_unlock (ctx->dvMutex);
 #if DEBUG_DV
-  GNUNET_mutex_lock (ctx->dvMutex);
-  print_tables ();
-  GNUNET_mutex_unlock (ctx->dvMutex);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "%s: Exiting peer_disconnect_handler\n",
@@ -1045,6 +1003,7 @@ neighbor_send_thread (void *rcls)
        * TODO: Once we have more information about how to
        * control the sending interval change this.
        */
+      GNUNET_mutex_lock(ctx->dvMutex);
       about = chooseAboutNeighbor ();
       to = chooseToNeighbor ();
 
@@ -1072,6 +1031,7 @@ neighbor_send_thread (void *rcls)
           if (stats != NULL)
             stats->change (stat_dv_sent_gossips, 1);
         }
+      GNUNET_mutex_unlock(ctx->dvMutex);
       GNUNET_thread_sleep (ctx->send_interval * GNUNET_CRON_MILLISECONDS);
     }
 
