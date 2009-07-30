@@ -34,7 +34,7 @@
 #include "dv.h"
 
 #define DEBUG_DV_MAINTAIN GNUNET_YES
-#define DEBUG_DV GNUNET_NO
+#define DEBUG_DV GNUNET_YES
 #define DEBUG_DV_FORWARD GNUNET_NO
 /* How long to allow a message to be delayed */
 #define DV_DELAY (500 * GNUNET_CRON_MILLISECONDS)
