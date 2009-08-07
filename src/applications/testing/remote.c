@@ -217,6 +217,55 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
   return GNUNET_OK;
 }
 
+static int
+get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
+{
+  char *cmd;
+  int length;
+  unsigned int is_local = 0;
+  FILE *output;
+  pid_t pid;
+
+  if (strcmp (daemon->hostname, "localhost") == 0)
+    {
+      is_local = 1;
+    }
+
+  if (is_local)
+    {
+      length = snprintf (NULL, 0, "cat %s", daemon->pid);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "cat %s", daemon->pid);
+    }
+  else
+    {
+      length =
+        snprintf (NULL, 0, "ssh %s@%s cat %s", daemon->username,
+                  daemon->hostname, daemon->pid);
+      cmd = GNUNET_malloc (length + 1);
+      snprintf (cmd, length + 1, "ssh %s@%s cat %s", daemon->username,
+                daemon->hostname, daemon->pid);
+    }
+#if VERBOSE
+  fprintf (stderr, _("exec command is : %s \n"), cmd);
+#endif
+
+  output = popen (cmd, "r");
+  GNUNET_free (cmd);
+  if (fscanf (output, "%d", &pid) == 1)
+    {
+#if VERBOSE
+      fprintf (stderr, _("Got pid %d\n"), pid);
+#endif
+    }
+  else
+    {
+      pid = -1;
+    }
+
+  return pid;
+}
+
 
 int
 GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
@@ -568,6 +617,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         &temp_port);
               temp_pos->port = (unsigned short) temp_port;
               temp_pos->next = head;
+              temp_pos->context = new_ret_peers;
               head = temp_pos;
               array_of_pointers[count_started] = temp_pos;
               count_started++;
@@ -761,6 +811,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
                   temp_pos->port = (unsigned short) temp_port;
                   temp_pos->next = head;
+                  temp_pos->context = new_ret_peers;
                   head = temp_pos;
                   array_of_pointers[count_started] = temp_pos;
                   count_started++;
@@ -815,6 +866,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int length;
   int totalConnections;
   int connectFailures;
+  int pid1;
+  int pid2;
   ret = GNUNET_OK;
   switch (type)
     {
@@ -938,11 +991,13 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
+              pid1 = get_pid(pos->context);
+              pid2 = get_pid(friend_pos->hostentry->context);
 #if VERBOSE
-              fprintf (stderr, _("connecting peer %s:%d to peer %s:%d\n"),
-                       pos->hostname, pos->port,
+              fprintf (stderr, _("connecting peer %s:%d pid=%d to peer %s:%d pid=%d\n"),
+                       pos->hostname, pos->port, pid1,
                        friend_pos->hostentry->hostname,
-                       friend_pos->hostentry->port);
+                       friend_pos->hostentry->port, pid2);
 #endif
               ret = GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
                                                    friend_pos->hostentry->

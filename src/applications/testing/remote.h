@@ -46,6 +46,7 @@ struct GNUNET_REMOTE_host_list
   char *remote_friend_file_path;
   char *username;
   unsigned short port;
+  struct GNUNET_REMOTE_TESTING_DaemonContext *context;
 };
 
 /* Simple linked list to store friends lists for each node,
