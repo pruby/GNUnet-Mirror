@@ -250,18 +250,21 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
   fprintf (stderr, _("exec command is : %s \n"), cmd);
 #endif
 
-  output = popen (cmd, "r");
-  GNUNET_free (cmd);
-  if (fscanf (output, "%d", &pid) == 1)
+  if ((cmd != NULL) && (strcmp(cmd, "") != 0))
+  {
+    output = popen (cmd, "r");
+    GNUNET_free (cmd);
+    if ((output != NULL) && (fscanf (output, "%d", &pid) == 1))
     {
 #if VERBOSE
       fprintf (stderr, _("Got pid %d\n"), pid);
 #endif
     }
-  else
+    else
     {
-      pid = -1;
+        pid = -1;
     }
+  }
 
   return pid;
 }
@@ -617,7 +620,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         &temp_port);
               temp_pos->port = (unsigned short) temp_port;
               temp_pos->next = head;
-              temp_pos->context = new_ret_peers;
+              temp_pos->pid = get_pid(new_ret_peers);
               head = temp_pos;
               array_of_pointers[count_started] = temp_pos;
               count_started++;
@@ -811,7 +814,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
                   temp_pos->port = (unsigned short) temp_port;
                   temp_pos->next = head;
-                  temp_pos->context = new_ret_peers;
+                  temp_pos->pid = get_pid(new_ret_peers);
                   head = temp_pos;
                   array_of_pointers[count_started] = temp_pos;
                   count_started++;
@@ -991,8 +994,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           friend_pos = pos->friend_entries;
           while (friend_pos != NULL)
             {
-              pid1 = get_pid(pos->context);
-              pid2 = get_pid(friend_pos->hostentry->context);
+              pid1 = pos->pid;
+              pid2 = friend_pos->hostentry->pid;
 #if VERBOSE
               fprintf (stderr, _("connecting peer %s:%d pid=%d to peer %s:%d pid=%d\n"),
                        pos->hostname, pos->port, pid1,

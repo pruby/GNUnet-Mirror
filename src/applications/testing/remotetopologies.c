@@ -632,8 +632,11 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
 
         }
 
-      GNUNET_hash_to_enc (&h1->senderIdentity.hashPubKey, host1entry);
-      GNUNET_hash_to_enc (&h2->senderIdentity.hashPubKey, host2entry);
+      if (ret == GNUNET_OK)
+      {
+        GNUNET_hash_to_enc (&h1->senderIdentity.hashPubKey, host1entry);
+        GNUNET_hash_to_enc (&h2->senderIdentity.hashPubKey, host2entry);
+      }
 
       GNUNET_free_non_null (h1);
       GNUNET_free_non_null (h2);
