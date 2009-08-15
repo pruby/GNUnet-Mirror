@@ -387,7 +387,8 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
 int
 GNUNET_REMOTE_connect_small_world (int number_of_daemons,
                                    struct GNUNET_REMOTE_host_list
-                                   **list_as_array, FILE * dotOutFile, double percentage)
+                                   **list_as_array, FILE * dotOutFile,
+                                   double percentage)
 {
   unsigned int i, j, k;
   unsigned int square;
@@ -485,11 +486,13 @@ GNUNET_REMOTE_connect_small_world (int number_of_daemons,
 
   natLog = log (number_of_daemons);
 #if VERBOSE
-  fprintf (stderr, _("natural log of %d is %d, will run %d iterations\n"), number_of_daemons, natLog, (int)(natLog * percentage));
-  fprintf (stderr, _("Total connections added thus far: %d!\n"), smallWorldConnections);
+  fprintf (stderr, _("natural log of %d is %d, will run %d iterations\n"),
+           number_of_daemons, natLog, (int) (natLog * percentage));
+  fprintf (stderr, _("Total connections added thus far: %d!\n"),
+           smallWorldConnections);
 #endif
   smallWorldConnections = 0;
-  for (i = 0; i < (int)(natLog * percentage); i++)
+  for (i = 0; i < (int) (natLog * percentage); i++)
     {
       for (j = 0; j < number_of_daemons; j++)
         {
@@ -634,10 +637,10 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
         }
 
       if (ret == GNUNET_OK)
-      {
-        GNUNET_hash_to_enc (&h1->senderIdentity.hashPubKey, host1entry);
-        GNUNET_hash_to_enc (&h2->senderIdentity.hashPubKey, host2entry);
-      }
+        {
+          GNUNET_hash_to_enc (&h1->senderIdentity.hashPubKey, host1entry);
+          GNUNET_hash_to_enc (&h2->senderIdentity.hashPubKey, host2entry);
+        }
 
       GNUNET_free_non_null (h1);
       GNUNET_free_non_null (h2);
