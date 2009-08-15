@@ -55,6 +55,7 @@
  */
 #define DV_DHT_BLOOM_SIZE 4
 
+#define MAGIC_MALICIOUS_NUMBER 42
 
 /**
  * What is the estimated per-hop delay for DV_DHT operations
@@ -70,7 +71,7 @@
 #define MAX_RESULTS 64
 
 /**
- * How many peers should a DV_DHT GET request reach on averge?
+ * How many peers should a DV_DHT GET request reach on average?
  *
  * Larger factors will result in more aggressive routing of GET
  * operations (each peer will either forward to GET_TRIES peers that
@@ -93,6 +94,16 @@
  * How long do we keep content after receiving a PUT request for it?
  */
 #define CONTENT_LIFETIME (12 * GNUNET_CRON_HOURS)
+
+/*
+ * Default frequency for sending malicious get messages
+ */
+#define DEFAULT_MALICIOUS_GET_FREQUENCY (1 * GNUNET_CRON_SECONDS)
+
+/*
+ * Default frequency for sending malicious put messages
+ */
+#define DEFAULT_MALICIOUS_PUT_FREQUENCY (1 * GNUNET_CRON_SECONDS)
 
 /**
  * @brief record used for sending response back
@@ -231,6 +242,26 @@ static DV_DHTResults new_records;
  */
 static unsigned int rt_size;
 
+/*
+ * frequency for malicious get sending thread
+ */
+static unsigned long long malicious_get_frequency;
+
+/*
+ * Malicious get thread, if needed
+ */
+static struct GNUNET_ThreadHandle *malicious_get_threadHandle;
+
+/*
+ * frequency for malicious put sending thread
+ */
+static unsigned long long malicious_put_frequency;
+
+/*
+ * Malicious put thread, if needed
+ */
+static struct GNUNET_ThreadHandle *malicious_put_threadHandle;
+
 #if DEBUG_INSANE
 static unsigned int indentation;
 #endif
@@ -247,12 +278,35 @@ static unsigned int debug_routes;
  */
 static unsigned int debug_routes_extended;
 
+/*
+ * GNUNET_YES or GNUNET_NO, whether or not to act as
+ * a malicious node which drops all messages
+ */
+static unsigned int malicious_drop;
+
+/*
+ * GNUNET_YES or GNUNET_NO, whether or not to act as
+ * a malicious node which sends out lots of GETS
+ */
+static unsigned int malicious_get;
+
+/*
+ * GNUNET_YES or GNUNET_NO, whether or not to act as
+ * a malicious node which sends out lots of PUTS
+ */
+static unsigned int malicious_put;
+
 /**
  * Statistics service.
  */
 static GNUNET_Stats_ServiceAPI *stats;
 
 static GNUNET_Dstore_ServiceAPI *dstore;
+
+/*
+ * Stop condition for threads
+ */
+static unsigned int routing_stop;
 
 /*
  * DHT Logging service.
@@ -274,6 +328,8 @@ static unsigned int stat_requests_routed;
 static unsigned int stat_get_requests_received;
 
 static unsigned int stat_put_requests_received;
+
+static char nulldata[8];
 
 #if DEBUG_INSANE
 static void
@@ -845,6 +901,11 @@ handle_get (const GNUNET_PeerIdentity * sender,
         }
     }
 
+  if (malicious_drop == GNUNET_YES)
+    {
+      return GNUNET_OK;
+    }
+
   if (total > MAX_RESULTS)
     {
 #if DEBUG_ROUTING
@@ -945,6 +1006,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
   int i;
   int cost;
   unsigned int j;
+
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   unsigned long long queryuid;
@@ -954,6 +1016,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
+
   if (stats != NULL)
     stats->change (stat_put_requests_received, 1);
   if (sender != NULL)
@@ -967,8 +1030,23 @@ handle_put (const GNUNET_PeerIdentity * sender,
                  GNUNET_GE_BULK,
                  _("Received DV_DHT PUT for key `%s'.\n"), &enc);
 #endif
-  store = 0;
+
   hop_count = htonl (put->hop_count);
+
+  if (malicious_drop == GNUNET_YES)
+    {
+      if ((debug_routes_extended) && (dhtlog != NULL))
+        {
+          queryuid = ntohl (put->queryuid);
+          dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
+                                hop_count, 0, GNUNET_NO,
+                                coreAPI->my_identity, &put->key, sender,
+                                NULL);
+        }
+      return GNUNET_OK;
+    }
+
+  store = 0;
   target_value = get_forward_count (hop_count, PUT_TRIES);
   aput = GNUNET_malloc (ntohs (msg->size));
   memcpy (aput, put, ntohs (msg->size));
@@ -1050,6 +1128,9 @@ handle_put (const GNUNET_PeerIdentity * sender,
   store = 0;
   if (GNUNET_YES == GNUNET_DV_DHT_am_closest_peer (&put->key))
     store = 1;
+
+  if (memcmp (&put[1], &nulldata, sizeof (nulldata)) == 0)
+    store = 0;
 
   if ((store == 0) && (target_value == 0) && (debug_routes_extended)
       && (dhtlog != NULL))
@@ -1137,6 +1218,11 @@ handle_result (const GNUNET_PeerIdentity * sender,
 #endif
   if (sender != NULL)
     GNUNET_DV_DHT_considerPeer (sender);
+
+  if (malicious_drop == GNUNET_YES)
+    {
+      return GNUNET_OK;
+    }
 
   route_result (&result->key,
                 ntohl (result->type),
@@ -1283,6 +1369,7 @@ GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
   put->queryuid = htonl (queryuid);
 #endif
+
   memcpy (&put[1], data, size);
   handle_put (NULL, &put->header);
   GNUNET_free (put);
@@ -1303,6 +1390,75 @@ extra_get_callback (const GNUNET_PeerIdentity * receiver,
 {
   /* FIXME */
   return 0;
+}
+
+/*
+ * Thread which will be created if this node is meant to
+ * be a malicious putter, will attempt to put data (with
+ * random keys) but NULL data so that other nodes do not
+ * actually store data.
+ */
+static void *
+malicious_put_thread (void *cls)
+{
+  char data[8];
+  GNUNET_HashCode key;
+  int l;
+  while (routing_stop == GNUNET_NO)
+    {
+      for (l = 0; l < 8; l++)
+        {
+          data[l] = rand ();
+        }
+      GNUNET_hash (data, 8, &key);
+      memset (&data, 0, sizeof (data));
+      GNUNET_DV_DHT_put (&key, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                         sizeof (data), data);
+      GNUNET_thread_sleep (malicious_put_frequency);
+    }
+
+  return NULL;
+}
+
+/*
+ * Thread which will be created if this node is a malicious
+ * getter.  Will attempt to get data (need to know what
+ * data exists...?) at specified interval in order to mimic
+ * a peer trying to fill the network with messages.
+ */
+static void *
+malicious_get_thread (void *cls)
+{
+  char data[8];
+  GNUNET_HashCode key;
+  int get_num;
+  get_num = -1;
+  int l;
+  while (routing_stop == GNUNET_NO)
+    {
+      if (get_num > 0)
+        {
+          GNUNET_DV_DHT_get_stop (&key,
+                                  GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                  NULL, NULL);
+        }
+      for (l = 0; l < 8; l++)
+        {
+          data[l] = rand ();
+        }
+
+      GNUNET_hash (data, 8, &key);
+      key.bits[(512 / 8 / sizeof (unsigned int)) - 1] =
+        MAGIC_MALICIOUS_NUMBER;
+
+      get_num =
+        GNUNET_DV_DHT_get_start (&key,
+                                 GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                 NULL, NULL);
+      GNUNET_thread_sleep (malicious_get_frequency);
+    }
+
+  return NULL;
 }
 
 /**
@@ -1338,6 +1494,7 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
 
   new_records.hashmap = GNUNET_multi_hash_map_create ((unsigned int) rts);
   new_records.minHeap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
+  memset (&nulldata, 0, sizeof (nulldata));
 
   lock = GNUNET_mutex_create (GNUNET_NO);
   stats = capi->service_request ("stats");
@@ -1369,6 +1526,55 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
                                             &handle_result);
   coreAPI->send_callback_register (sizeof (DV_DHT_MESSAGE), 0,
                                    &extra_get_callback);
+
+  routing_stop = GNUNET_NO;
+  if (GNUNET_YES ==
+      GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg, "DHT",
+                                               "MALICIOUS_DROPPER",
+                                               GNUNET_NO))
+    {
+      malicious_drop = GNUNET_YES;
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _("%s: Setting malicious drop flag\n"), "dv_dht");
+    }
+
+  if (GNUNET_YES ==
+      GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg, "DHT",
+                                               "MALICIOUS_GETTER", GNUNET_NO))
+    {
+      malicious_get = GNUNET_YES;
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _("%s: Setting malicious get flag\n"), "dv_dht");
+      GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "DHT",
+                                                "MALICIOUS_GET_FREQUENCY", 1,
+                                                -1,
+                                                DEFAULT_MALICIOUS_GET_FREQUENCY,
+                                                &malicious_get_frequency);
+      malicious_get_threadHandle =
+        GNUNET_thread_create (&malicious_get_thread, NULL, 1024 * 128);
+    }
+
+  if (GNUNET_YES ==
+      GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg, "DHT",
+                                               "MALICIOUS_PUTTER", GNUNET_NO))
+    {
+      malicious_put = GNUNET_YES;
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _("%s: Setting malicious put flag\n"), "dv_dht");
+      GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "DHT",
+                                                "MALICIOUS_PUT_FREQUENCY", 1,
+                                                -1,
+                                                DEFAULT_MALICIOUS_PUT_FREQUENCY,
+                                                &malicious_put_frequency);
+      malicious_put_threadHandle =
+        GNUNET_thread_create (&malicious_put_thread, NULL, 1024 * 128);
+    }
 
   if (GNUNET_YES ==
       GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg, "DHT", "LOGSQL",
@@ -1441,7 +1647,7 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
 int
 GNUNET_DV_DHT_done_routing ()
 {
-
+  routing_stop = GNUNET_YES;
   coreAPI->send_callback_unregister (sizeof (DV_DHT_MESSAGE),
                                      &extra_get_callback);
   coreAPI->p2p_ciphertext_handler_unregister (GNUNET_P2P_PROTO_DHT_GET,
