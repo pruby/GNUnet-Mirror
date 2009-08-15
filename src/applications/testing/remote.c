@@ -317,6 +317,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   unsigned long long temp_port;
   unsigned long long topology;
 
+  unsigned long long malicious_getters;
+  unsigned long long malicious_putters;
+  unsigned long long malicious_droppers;
+
   unsigned long long extra_daemons;
   unsigned int count;
   unsigned int count_started;
@@ -333,6 +337,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   char *ipk_dir;
   double percentage;
 
+  double malicious_getter_num;
+  double malicious_putter_num;
+  double malicious_dropper_num;
+
   length = 0;
   ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
   if (ipk_dir == NULL)
@@ -347,6 +355,24 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "TOPOLOGY", 0, -1, 0, &topology);
+
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MALICIOUS_GETTERS", 0, number_of_daemons, 0, &malicious_getters);
+
+  if (malicious_getters > 0)
+    malicious_getter_num = number_of_daemons/malicious_getters;
+
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MALICIOUS_PUTTERS", 0, number_of_daemons, 0, &malicious_putters);
+
+  if (malicious_putters > 0)
+    malicious_putter_num = number_of_daemons/malicious_putters;
+
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MALICIOUS_DROPPERS", 0, number_of_daemons, 0, &malicious_droppers);
+
+  if (malicious_droppers > 0)
+    malicious_dropper_num = number_of_daemons/malicious_droppers;
 
   type_of_topology = (unsigned int) topology;
 
@@ -497,6 +523,55 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
       for (j = 0; j < daemons_per_machine; ++j)
         {
+
+          /*
+           * Indicates that the first node should be set as a malicious getter
+           */
+          if ((malicious_getters > 0) && ( (((count_started + 1) % (int)malicious_getter_num) == 0 )))
+          {
+            GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                    "DHT", "MALICIOUS_GETTER",
+                                                    "YES");
+          }
+          else
+          {
+            GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                    "DHT", "MALICIOUS_GETTER",
+                                                    "NO");
+          }
+
+          /*
+           * Indicates that the first node should be set as a malicious putter
+           */
+          if ((malicious_putters > 0) && ( (((count_started + 1) % (int)malicious_putter_num) == 0 )))
+          {
+            GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                    "DHT", "MALICIOUS_PUTTER",
+                                                    "YES");
+          }
+          else
+          {
+            GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                    "DHT", "MALICIOUS_PUTTER",
+                                                    "NO");
+          }
+
+          /*
+           * Indicates that the first node should be set as a malicious dropper
+           */
+          if ((malicious_droppers > 0) && ( (((count_started + 1) % (int)malicious_dropper_num) == 0 )))
+          {
+            GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                    "DHT", "MALICIOUS_DROPPER",
+                                                    "YES");
+          }
+          else
+          {
+            GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                    "DHT", "MALICIOUS_DROPPER",
+                                                    "NO");
+          }
+
           length_temp =
             snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j);
           temp_pid_file = GNUNET_malloc (length_temp + 1);
@@ -642,6 +717,54 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                   ret = GNUNET_SYSERR;
                   break;
                 }
+
+              /*
+               * Indicates that the first node should be set as a malicious getter
+               */
+              if ((malicious_getters > 0) && ( (((count_started + 1) % (int)malicious_getter_num) == 0 )))
+              {
+                GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "DHT", "MALICIOUS_GETTER",
+                                                        "YES");
+              }
+              else
+              {
+                GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "DHT", "MALICIOUS_GETTER",
+                                                        "NO");
+              }
+
+              /*
+               * Indicates that the first node should be set as a malicious putter
+               */
+              if ((malicious_putters > 0) && ( (((count_started + 1) % (int)malicious_putter_num) == 0 )))
+              {
+                GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "DHT", "MALICIOUS_PUTTER",
+                                                        "YES");
+              }
+              else
+              {
+                GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "DHT", "MALICIOUS_PUTTER",
+                                                        "NO");
+              }
+
+              /*
+               * Indicates that the first node should be set as a malicious dropper
+               */
+              if ((malicious_droppers > 0) && ( (((count_started + 1) % (int)malicious_dropper_num) == 0 )))
+              {
+                GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "DHT", "MALICIOUS_DROPPER",
+                                                        "YES");
+              }
+              else
+              {
+                GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "DHT", "MALICIOUS_DROPPER",
+                                                        "NO");
+              }
 
               GNUNET_GC_set_configuration_value_number (basecfg, NULL,
                                                         "NETWORK", "PORT",
@@ -886,7 +1009,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 #endif
       ret =
         GNUNET_REMOTE_connect_small_world (number_of_daemons, list_as_array,
-                                           dotOutFile);
+                                           dotOutFile, percentage);
       break;
     case GNUNET_REMOTE_RING:
 #if VERBOSE
