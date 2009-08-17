@@ -47,6 +47,7 @@ struct GNUNET_REMOTE_host_list
   char *username;
   unsigned short port;
   pid_t pid;
+  GNUNET_PeerIdentity *peer;
 };
 
 /* Simple linked list to store friends lists for each node,

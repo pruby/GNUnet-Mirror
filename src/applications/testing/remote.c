@@ -27,12 +27,37 @@
 #include "remote.h"
 #include "remotetopologies.c"
 
+#define GET_MASK 1
+#define PUT_MASK 2
+#define DROP_MASK 4
+#define MAX_CONNECT_THREADS 10
+
+struct ConnectedEntry
+{
+  struct ConnectedEntry *next;
+  GNUNET_HashCode key;
+};
+
+struct threadInfo
+{
+  struct threadInfo *next;
+  struct GNUNET_ThreadHandle *thread;
+};
+
+static struct GNUNET_Mutex *connectMutex;
+struct GNUNET_MultiHashMap *connected;
+
 /* Yes this is ugly, but for now it is nice to
  * have a linked list and an array
  */
 static struct GNUNET_REMOTE_host_list *head;
 static struct GNUNET_REMOTE_host_list **list_as_array;
 
+static int threadCount;
+static int totalConnections;
+static int connectFailures;
+
+static FILE *globalDotFile;
 /**
  * Starts a single gnunet daemon on a remote machine
  *
@@ -318,7 +343,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   unsigned long long topology;
 
   unsigned long long malicious_getters;
+  unsigned long long malicious_get_frequency;
   unsigned long long malicious_putters;
+  unsigned long long malicious_put_frequency;
   unsigned long long malicious_droppers;
 
   unsigned long long extra_daemons;
@@ -330,6 +357,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   unsigned int i;
   unsigned int j;
   unsigned int pos;
+  unsigned short malicious_mask;
   int temp_remote_config_path_length;
   int temp_host_string_length;
   int friend_location_length;
@@ -423,6 +451,16 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             "MYSQL_PORT",
                                             1, -1, 3306, &mysql_port);
 
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MALICIOUS_GET_FREQUENCY",
+                                            0, -1, 0,
+                                            &malicious_get_frequency);
+
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MALICIOUS_PUT_FREQUENCY",
+                                            0, -1, 0,
+                                            &malicious_put_frequency);
+
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "REMOTE_CONFIG_PATH", "/tmp/",
                                             &remote_config_path);
@@ -487,12 +525,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
           break;
         }
 
-      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "NETWORK",
-                                                "PORT", starting_port);
-      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "TCP",
-                                                "PORT", starting_port + 1);
-      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "UDP",
-                                                "PORT", starting_port + 1);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL, "NETWORK",
                                                 "TRUSTED", control_host);
       GNUNET_GC_set_configuration_value_string (basecfg, NULL, "PATHS",
@@ -529,9 +561,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
       for (j = 0; j < daemons_per_machine; ++j)
         {
-
+          malicious_mask = 0;
           /*
-           * Indicates that the first node should be set as a malicious getter
+           * Indicates that this node should be set as a malicious getter
            */
           if ((malicious_getters > 0)
               && ((((count_started + 1) % (int) malicious_getter_num) == 0)))
@@ -540,6 +572,16 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         "DHT",
                                                         "MALICIOUS_GETTER",
                                                         "YES");
+
+              if (malicious_get_frequency > 0)
+                {
+                  GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                            "DHT",
+                                                            "MALICIOUS_GET_FREQUENCY",
+                                                            malicious_get_frequency);
+
+                }
+              malicious_mask |= GET_MASK;
             }
           else
             {
@@ -550,7 +592,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
             }
 
           /*
-           * Indicates that the first node should be set as a malicious putter
+           * Indicates that this node should be set as a malicious putter
            */
           if ((malicious_putters > 0)
               && ((((count_started + 1) % (int) malicious_putter_num) == 0)))
@@ -559,6 +601,15 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         "DHT",
                                                         "MALICIOUS_PUTTER",
                                                         "YES");
+              if (malicious_put_frequency > 0)
+                {
+                  GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                            "DHT",
+                                                            "MALICIOUS_PUT_FREQUENCY",
+                                                            malicious_put_frequency);
+
+                }
+              malicious_mask |= PUT_MASK;
             }
           else
             {
@@ -569,7 +620,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
             }
 
           /*
-           * Indicates that the first node should be set as a malicious dropper
+           * Indicates that this node should be set as a malicious dropper
            */
           if ((malicious_droppers > 0)
               && ((((count_started + 1) % (int) malicious_dropper_num) == 0)))
@@ -578,6 +629,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         "DHT",
                                                         "MALICIOUS_DROPPER",
                                                         "YES");
+              malicious_mask |= DROP_MASK;
             }
           else
             {
@@ -690,6 +742,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               next_peer->username = GNUNET_strdup (ssh_username);
               next_peer->port = starting_port + (j * port_increment);
               next_peer->pid = GNUNET_strdup (temp_pid_file);
+              next_peer->malicious_val = malicious_mask;
               tempcfg = GNUNET_GC_create ();
               GNUNET_snprintf (host, 128, "%s:%u", next_peer->hostname,
                                next_peer->port);
@@ -711,6 +764,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               temp_pos->port = (unsigned short) temp_port;
               temp_pos->next = head;
               temp_pos->pid = get_pid (new_ret_peers);
+              temp_pos->peer =
+                GNUNET_REMOTE_get_daemon_information (next_peer->hostname,
+                                                      next_peer->port);
               head = temp_pos;
               array_of_pointers[count_started] = temp_pos;
               count_started++;
@@ -724,7 +780,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 
           if ((i < extra_daemons) && (j == daemons_per_machine - 1))
             {
-
+              malicious_mask = 0;
               basecfg = GNUNET_GC_create ();
 
               if (-1 == GNUNET_GC_parse_configuration (basecfg, base_config))
@@ -734,7 +790,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                 }
 
               /*
-               * Indicates that the first node should be set as a malicious getter
+               * Indicates that this node should be set as a malicious getter
                */
               if ((malicious_getters > 0)
                   &&
@@ -744,6 +800,15 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                             "DHT",
                                                             "MALICIOUS_GETTER",
                                                             "YES");
+                  if (malicious_get_frequency > 0)
+                    {
+                      GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                                "DHT",
+                                                                "MALICIOUS_GET_FREQUENCY",
+                                                                malicious_get_frequency);
+
+                    }
+                  malicious_mask |= GET_MASK;
                 }
               else
                 {
@@ -754,7 +819,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                 }
 
               /*
-               * Indicates that the first node should be set as a malicious putter
+               * Indicates that this node should be set as a malicious putter
                */
               if ((malicious_putters > 0)
                   &&
@@ -764,6 +829,15 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                             "DHT",
                                                             "MALICIOUS_PUTTER",
                                                             "YES");
+                  if (malicious_put_frequency > 0)
+                    {
+                      GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                                "DHT",
+                                                                "MALICIOUS_PUT_FREQUENCY",
+                                                                malicious_put_frequency);
+
+                    }
+                  malicious_mask |= PUT_MASK;
                 }
               else
                 {
@@ -774,7 +848,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                 }
 
               /*
-               * Indicates that the first node should be set as a malicious dropper
+               * Indicates that this node should be set as a malicious dropper
                */
               if ((malicious_droppers > 0)
                   &&
@@ -785,6 +859,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                             "DHT",
                                                             "MALICIOUS_DROPPER",
                                                             "YES");
+                  malicious_mask |= DROP_MASK;
                 }
               else
                 {
@@ -945,6 +1020,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                     starting_port + ((j + 1) * port_increment);
                   next_peer->username = GNUNET_strdup (ssh_username);
                   next_peer->pid = GNUNET_strdup (temp_pid_file);
+                  next_peer->malicious_val = malicious_mask;
                   tempcfg = GNUNET_GC_create ();
                   GNUNET_snprintf (host, 128, "%s:%u", next_peer->hostname,
                                    next_peer->port);
@@ -966,6 +1042,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                   temp_pos->port = (unsigned short) temp_port;
                   temp_pos->next = head;
                   temp_pos->pid = get_pid (new_ret_peers);
+                  temp_pos->peer =
+                    GNUNET_REMOTE_get_daemon_information (next_peer->hostname,
+                                                          next_peer->port);
                   head = temp_pos;
                   array_of_pointers[count_started] = temp_pos;
                   count_started++;
@@ -1006,6 +1085,130 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   return ret;
 }
 
+static void *
+connect_peer_thread (void *cls)
+{
+  struct GNUNET_REMOTE_host_list *pos = cls;
+  struct GNUNET_REMOTE_friends_list *friend_pos;
+  struct ConnectedEntry *tempEntry;
+  struct ConnectedEntry *tempFriendEntry;
+  struct ConnectedEntry *tempEntryPos;
+
+  int ret;
+  int pid1;
+  int pid2;
+  int match;
+
+  tempEntry = NULL;
+  tempFriendEntry = NULL;
+
+  GNUNET_mutex_lock (connectMutex);
+#if VERBOSE
+  fprintf (stdout, "Starting thread %d\n", threadCount);
+#endif
+  threadCount++;
+  GNUNET_mutex_unlock (connectMutex);
+  friend_pos = pos->friend_entries;
+  while (friend_pos != NULL)
+    {
+      GNUNET_mutex_lock (connectMutex);
+      match = GNUNET_NO;
+      if (GNUNET_YES ==
+          GNUNET_multi_hash_map_contains (connected, &pos->peer->hashPubKey))
+        {
+          tempEntryPos =
+            GNUNET_multi_hash_map_get (connected, &pos->peer->hashPubKey);
+          while (tempEntryPos != NULL)
+            {
+              if (memcmp
+                  (&tempEntryPos->key,
+                   &friend_pos->hostentry->peer->hashPubKey,
+                   sizeof (GNUNET_HashCode)) == 0)
+                match = GNUNET_YES;
+
+              tempEntryPos = tempEntryPos->next;
+            }
+        }
+      GNUNET_mutex_unlock (connectMutex);
+
+      if (match == GNUNET_YES)
+        {
+#if VERBOSE
+          fprintf (stderr,
+                   _
+                   ("NOT connecting peer %s:%d pid=%d to peer %s:%d pid=%d (already connected!)\n"),
+                   pos->hostname, pos->port, pid1,
+                   friend_pos->hostentry->hostname,
+                   friend_pos->hostentry->port, pid2);
+#endif
+          friend_pos = friend_pos->next;
+          continue;
+        }
+
+      pid1 = pos->pid;
+      pid2 = friend_pos->hostentry->pid;
+#if VERBOSE
+      fprintf (stderr,
+               _
+               ("connecting peer %s:%d pid=%d to peer %s:%d pid=%d\n"),
+               pos->hostname, pos->port, pid1,
+               friend_pos->hostentry->hostname,
+               friend_pos->hostentry->port, pid2);
+#endif
+      ret = GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
+                                           friend_pos->hostentry->
+                                           hostname,
+                                           friend_pos->hostentry->
+                                           port, globalDotFile);
+      if (ret != GNUNET_OK)
+        {
+          GNUNET_mutex_lock (connectMutex);
+          connectFailures++;
+          GNUNET_mutex_unlock (connectMutex);
+        }
+      if (connectFailures > totalConnections / 2)
+        break;
+
+      if (ret == GNUNET_OK)
+        {
+          GNUNET_mutex_lock (connectMutex);
+          tempEntryPos = GNUNET_malloc (sizeof (struct ConnectedEntry));
+          memcpy (&tempEntryPos->key,
+                  &friend_pos->hostentry->peer->hashPubKey,
+                  sizeof (GNUNET_HashCode));
+          tempEntryPos->next = tempEntry;
+          GNUNET_multi_hash_map_put (connected, &pos->peer->hashPubKey,
+                                     tempEntryPos,
+                                     GNUNET_MultiHashMapOption_REPLACE);
+
+          tempFriendEntry =
+            GNUNET_multi_hash_map_get (connected,
+                                       &friend_pos->hostentry->peer->
+                                       hashPubKey);
+          tempEntryPos = GNUNET_malloc (sizeof (struct ConnectedEntry));
+          memcpy (&tempEntryPos->key, &pos->peer->hashPubKey,
+                  sizeof (GNUNET_HashCode));
+          tempEntryPos->next = tempFriendEntry;
+          GNUNET_multi_hash_map_put (connected,
+                                     &friend_pos->hostentry->peer->hashPubKey,
+                                     tempEntryPos,
+                                     GNUNET_MultiHashMapOption_REPLACE);
+          GNUNET_mutex_unlock (connectMutex);
+        }
+
+      friend_pos = friend_pos->next;
+    }
+
+  GNUNET_mutex_lock (connectMutex);
+  threadCount--;
+#if VERBOSE
+  fprintf (stdout, "Exiting thread %d\n", threadCount);
+#endif
+  GNUNET_mutex_unlock (connectMutex);
+
+  return NULL;
+}
+
 int
 GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                int number_of_daemons, FILE * dotOutFile,
@@ -1015,14 +1218,19 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int ret;
   struct GNUNET_REMOTE_host_list *pos;
   struct GNUNET_REMOTE_friends_list *friend_pos;
+  struct threadInfo *threadHead;
+  struct threadInfo *connectThreadPos;
+
   int unused;
   char *cmd;
   int length;
-  int totalConnections;
-  int connectFailures;
-  int pid1;
-  int pid2;
+
+  void *unusedVoid;
+  globalDotFile = dotOutFile;
   ret = GNUNET_OK;
+  connected = GNUNET_multi_hash_map_create (number_of_daemons * 3);
+  threadHead = NULL;
+
   switch (type)
     {
     case GNUNET_REMOTE_CLIQUE:
@@ -1077,7 +1285,6 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   totalConnections = 0;
   if (ret == GNUNET_OK)
     {
-
       pos = head;
       while (pos != NULL)
         {
@@ -1138,39 +1345,44 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
        * the two are connected, the second doesn't really need to try to connect
        * to the first later, but this IS simple.  If performance becomes a problem
        * with MANY conns, we'll see...
+       *
+       * 8-2009 - it is now a problem (-:  Options:
+       *  1. Use hashmap and list of previously connected peers (cuts down number of attempts by half)
+       *  2. Use multiple threads for connecting.  Start X threads, one per peer with max of Y and connect that peers friends.
+       *  3. Combine both of these ideas into new fun way of doing stuff.
+       *
+       *  Okay, Combined both solutions for a fix... Just need to test on large
+       *  scale testbed (lab) to confirm it actually helps.
        */
+      connectMutex = GNUNET_mutex_create (GNUNET_YES);
       connectFailures = 0;
+
       while ((pos != NULL) && (ret == GNUNET_OK))
         {
-          friend_pos = pos->friend_entries;
-          while (friend_pos != NULL)
+          while (threadCount >= MAX_CONNECT_THREADS)
             {
-              pid1 = pos->pid;
-              pid2 = friend_pos->hostentry->pid;
-#if VERBOSE
-              fprintf (stderr,
-                       _
-                       ("connecting peer %s:%d pid=%d to peer %s:%d pid=%d\n"),
-                       pos->hostname, pos->port, pid1,
-                       friend_pos->hostentry->hostname,
-                       friend_pos->hostentry->port, pid2);
-#endif
-              ret = GNUNET_REMOTE_connect_daemons (pos->hostname, pos->port,
-                                                   friend_pos->hostentry->
-                                                   hostname,
-                                                   friend_pos->hostentry->
-                                                   port, dotOutFile);
-              if (ret != GNUNET_OK)
-                {
-                  connectFailures++;
-                }
-              if (connectFailures > totalConnections / 2)
-                break;
-              friend_pos = friend_pos->next;
+              GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
             }
+          connectThreadPos = GNUNET_malloc (sizeof (struct threadInfo));
+          connectThreadPos->thread =
+            GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 128);
+          connectThreadPos->next = threadHead;
+          threadHead = connectThreadPos;
+
           pos = pos->next;
         }
 
+      connectThreadPos = threadHead;
+      while (connectThreadPos != NULL)
+        {
+#if VERBOSE
+          fprintf (stdout, "Joining thread...\n");
+#endif
+          GNUNET_thread_join (connectThreadPos->thread, &unusedVoid);
+          connectThreadPos = connectThreadPos->next;
+        }
+
+      GNUNET_mutex_destroy (connectMutex);
     }
   else
     {
@@ -1183,6 +1395,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   fprintf (stderr, _("Total connections: %d!\n"), totalConnections);
   fprintf (stderr, _("Total failed connections: %d!\n"), connectFailures);
 #endif
+
+  GNUNET_multi_hash_map_destroy (connected);
   if (ret != GNUNET_OK)
     return ret;
   else
