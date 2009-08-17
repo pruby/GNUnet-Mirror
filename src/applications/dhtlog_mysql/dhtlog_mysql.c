@@ -61,8 +61,8 @@ static struct GNUNET_MysqlStatementHandle *insert_route;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
-#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, num_rounds, message) "\
-                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?)"
+#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, num_rounds, malicious_getters, malicious_putters, malicious_droppers, message) "\
+                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
 #define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid, keybits) "\
@@ -83,22 +83,6 @@ static struct GNUNET_MysqlStatementHandle *get_dhtkeyuid;
 
 #define GET_NODEUID_STMT "SELECT nodeuid FROM nodes where trialuid = ? and nodeid = ?"
 static struct GNUNET_MysqlStatementHandle *get_nodeuid;
-
-#define DEL_QUERIES_STMT "DELETE FROM queries where trialuid = ?"
-static struct GNUNET_MysqlStatementHandle *del_queries;
-
-#define DEL_NODES_STMT "DELETE FROM nodes where trialuid = ?"
-static struct GNUNET_MysqlStatementHandle *del_nodes;
-
-#define DEL_TRIALS_STMT "DELETE FROM trials where trialuid = ?"
-static struct GNUNET_MysqlStatementHandle *del_trials;
-
-#define DEL_ROUTES_STMT "DELETE FROM routes where trialuid = ?"
-static struct GNUNET_MysqlStatementHandle *del_routes;
-
-#define DEL_DHTKEYS_STMT "DELETE FROM dhtkeys where trialuid = ?"
-static struct GNUNET_MysqlStatementHandle *del_dhtkeys;
-
 
 
 /*
@@ -167,6 +151,10 @@ itable ()
              "`endtime` datetime NOT NULL,"
              "`settle_time` int(10) unsigned NOT NULL,"
              "`num_rounds` int(10) unsigned NOT NULL,"
+             "`malicious_getters` int(10) unsigned NOT NULL,"
+             "`malicious_putters` int(10) unsigned NOT NULL,"
+             "`malicious_droppers` int(10) unsigned NOT NULL,"
+             "`message` text NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
              "UNIQUE KEY `trialuid` (`trialuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
@@ -249,7 +237,8 @@ get_current_trial (unsigned long long *trialuid)
 int
 add_trial (unsigned long long *trialuid, int num_nodes, int topology,
            int puts, int gets, int concurrent, int settle_time,
-           int num_rounds, char *message)
+           int num_rounds, int malicious_getters, int malicious_putters,
+           int malicious_droppers, char *message)
 {
   int ret;
   unsigned long long m_len;
@@ -277,6 +266,15 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &num_rounds,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &malicious_getters,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &malicious_putters,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &malicious_droppers,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_BLOB,
                                                   message,
@@ -540,6 +538,10 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
   if ((key != NULL) && (GNUNET_OK == get_dhtkey_uid (&key_uid, key)))
     {
 
+    }
+  else if (key->bits[(512 / 8 / sizeof (unsigned int)) - 1] == 42)      /* Malicious marker */
+    {
+      key_uid = 0;
     }
   else
     {
