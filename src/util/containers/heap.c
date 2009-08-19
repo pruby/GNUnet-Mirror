@@ -88,15 +88,15 @@ next_power_of_2(int v)
 void
 internal_print (struct GNUNET_CONTAINER_heap_node *root)
 {
-  fprintf (stdout, "%d\n", root->cost);
+  fprintf (stdout, "%d\n", (int)root->cost);
   if (root->left_child != NULL)
     {
-      fprintf (stdout, "LEFT of %d\n", root->cost);
+      fprintf (stdout, "LEFT of %d\n", (int)root->cost);
       internal_print (root->left_child);
     }
   if (root->right_child != NULL)
     {
-      fprintf (stdout, "RIGHT of %d\n", root->cost);
+      fprintf (stdout, "RIGHT of %d\n", (int)root->cost);
       internal_print (root->right_child);
     }
 }
