@@ -1224,6 +1224,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int unused;
   char *cmd;
   int length;
+  int tempThreadCount;
 
   void *unusedVoid;
   globalDotFile = dotOutFile;
@@ -1354,14 +1355,20 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
        *  Okay, Combined both solutions for a fix... Just need to test on large
        *  scale testbed (lab) to confirm it actually helps.
        */
-      connectMutex = GNUNET_mutex_create (GNUNET_YES);
+      connectMutex = GNUNET_mutex_create (GNUNET_NO);
       connectFailures = 0;
 
       while ((pos != NULL) && (ret == GNUNET_OK))
         {
-          while (threadCount >= MAX_CONNECT_THREADS)
+          GNUNET_mutex_lock(connectMutex);
+          tempThreadCount = threadCount;
+          GNUNET_mutex_unlock(connectMutex);
+          while (tempThreadCount >= MAX_CONNECT_THREADS)
             {
               GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
+              GNUNET_mutex_lock(connectMutex);
+              tempThreadCount = threadCount;
+              GNUNET_mutex_unlock(connectMutex);
             }
           connectThreadPos = GNUNET_malloc (sizeof (struct threadInfo));
           connectThreadPos->thread =
