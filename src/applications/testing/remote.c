@@ -1365,7 +1365,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
             }
           connectThreadPos = GNUNET_malloc (sizeof (struct threadInfo));
           connectThreadPos->thread =
-            GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 128);
+            GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
           connectThreadPos->next = threadHead;
           threadHead = connectThreadPos;
 
