@@ -83,7 +83,9 @@ typedef struct
    */
   int (*insert_trial) (unsigned long long *trialuid, int num_nodes,
                        int topology, int puts, int gets, int concurrent,
-                       int settle_time, int num_rounds, char *message);
+                       int settle_time, int num_rounds, int malicious_getters,
+                       int malicious_putters, int malicious_droppers,
+                       char *message);
 
   /*
    * Update the trial information with the ending time

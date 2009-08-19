@@ -61,6 +61,7 @@ struct GNUNET_REMOTE_TESTING_DaemonContext
   char *pid;
   char *hostname;
   char *username;
+  unsigned short malicious_val;
 };
 
 /**
