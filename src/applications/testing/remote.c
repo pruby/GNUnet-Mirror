@@ -38,12 +38,6 @@ struct ConnectedEntry
   GNUNET_HashCode key;
 };
 
-struct threadInfo
-{
-  struct threadInfo *next;
-  struct GNUNET_ThreadHandle *thread;
-};
-
 static struct GNUNET_Mutex *connectMutex;
 struct GNUNET_MultiHashMap *connected;
 
@@ -1218,9 +1212,6 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int ret;
   struct GNUNET_REMOTE_host_list *pos;
   struct GNUNET_REMOTE_friends_list *friend_pos;
-  struct threadInfo *threadHead;
-  struct threadInfo *connectThreadPos;
-
   struct GNUNET_ThreadHandle *threads[MAX_CONNECT_THREADS];
   int unused;
   char *cmd;
@@ -1232,7 +1223,6 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   globalDotFile = dotOutFile;
   ret = GNUNET_OK;
   connected = GNUNET_multi_hash_map_create (number_of_daemons * 3);
-  threadHead = NULL;
 
   switch (type)
     {
@@ -1357,54 +1347,40 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
        *  Okay, Combined both solutions for a fix... Just need to test on large
        *  scale testbed (lab) to confirm it actually helps.
        */
-      connectMutex = GNUNET_mutex_create (GNUNET_NO);
+      connectMutex = GNUNET_mutex_create (GNUNET_YES);
       connectFailures = 0;
-
+      tempThreadCount = 0;
       while ((pos != NULL) && (ret == GNUNET_OK))
         {
-          /*
-          GNUNET_mutex_lock(connectMutex);
-          tempThreadCount = threadCount;
-          GNUNET_mutex_unlock(connectMutex);
-          while (tempThreadCount >= MAX_CONNECT_THREADS)
-            {
-              GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
-              GNUNET_mutex_lock(connectMutex);
-              tempThreadCount = threadCount;
-              GNUNET_mutex_unlock(connectMutex);
-            }
-
-          connectThreadPos = GNUNET_malloc (sizeof (struct threadInfo));
-          connectThreadPos->thread =
-            GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
-          connectThreadPos->next = threadHead;
-          threadHead = connectThreadPos;
-          */
           if (tempThreadCount > MAX_CONNECT_THREADS)
-          {
-            for (i = 0; i < tempThreadCount; i++)
             {
+              for (i = 0; i < tempThreadCount; i++)
+                {
 #if VERBOSE
-              fprintf (stdout, "Joining thread %d...\n", i);
+                  fprintf (stdout, "Joining thread %d...\n", i);
 #endif
-              GNUNET_thread_join (threads[i], &unusedVoid);
+                  GNUNET_thread_join (threads[i], &unusedVoid);
 
+                }
+              tempThreadCount = 0;
             }
-            tempThreadCount = 0;
-          }
-
-          threads[tempThreadCount] = GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
+#if VERBOSE
+          fprintf (stdout, "Creating real thread %d...\n", tempThreadCount);
+#endif
+          threads[tempThreadCount] =
+            GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
+          tempThreadCount++;
           pos = pos->next;
         }
 
-/*
-      connectThreadPos = threadHead;
-      while (connectThreadPos != NULL)
+      for (i = 0; i < tempThreadCount; i++)
         {
-          GNUNET_thread_join (connectThreadPos->thread, &unusedVoid);
-          connectThreadPos = connectThreadPos->next;
+#if VERBOSE
+          fprintf (stdout, "Joining thread %d...\n", i);
+#endif
+          GNUNET_thread_join (threads[i], &unusedVoid);
+
         }
-*/
       GNUNET_mutex_destroy (connectMutex);
     }
   else
