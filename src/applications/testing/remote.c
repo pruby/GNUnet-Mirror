@@ -1218,12 +1218,15 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int length;
   int tempThreadCount;
   int i;
+  int j;
+  unsigned int *daemon_list;
 
   void *unusedVoid;
   globalDotFile = dotOutFile;
   ret = GNUNET_OK;
   connected = GNUNET_multi_hash_map_create (number_of_daemons * 3);
 
+  daemon_list = GNUNET_permute(GNUNET_RANDOM_QUALITY_WEAK, number_of_daemons);
   switch (type)
     {
     case GNUNET_REMOTE_CLIQUE:
@@ -1350,7 +1353,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       connectMutex = GNUNET_mutex_create (GNUNET_YES);
       connectFailures = 0;
       tempThreadCount = 0;
-      while ((pos != NULL) && (ret == GNUNET_OK))
+      for(j = 0; j < number_of_daemons; j++)
         {
           if (tempThreadCount > MAX_CONNECT_THREADS)
             {
@@ -1368,16 +1371,18 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           fprintf (stdout, "Creating real thread %d...\n", tempThreadCount);
 #endif
           threads[tempThreadCount] =
-            GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
+            GNUNET_thread_create (&connect_peer_thread, list_as_array[daemon_list[j]], 1024 * 16);
           tempThreadCount++;
-          pos = pos->next;
+
         }
 
+      GNUNET_thread_sleep(2000 * GNUNET_CRON_MILLISECONDS);
       for (i = 0; i < tempThreadCount; i++)
         {
 #if VERBOSE
           fprintf (stdout, "Joining thread %d...\n", i);
 #endif
+          GNUNET_thread_stop_sleep(threads[i]);
           GNUNET_thread_join (threads[i], &unusedVoid);
 
         }
