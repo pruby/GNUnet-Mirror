@@ -1221,10 +1221,12 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   struct threadInfo *threadHead;
   struct threadInfo *connectThreadPos;
 
+  struct GNUNET_ThreadHandle *threads[MAX_CONNECT_THREADS];
   int unused;
   char *cmd;
   int length;
   int tempThreadCount;
+  int i;
 
   void *unusedVoid;
   globalDotFile = dotOutFile;
@@ -1360,6 +1362,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 
       while ((pos != NULL) && (ret == GNUNET_OK))
         {
+          /*
           GNUNET_mutex_lock(connectMutex);
           tempThreadCount = threadCount;
           GNUNET_mutex_unlock(connectMutex);
@@ -1370,25 +1373,38 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
               tempThreadCount = threadCount;
               GNUNET_mutex_unlock(connectMutex);
             }
+
           connectThreadPos = GNUNET_malloc (sizeof (struct threadInfo));
           connectThreadPos->thread =
             GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
           connectThreadPos->next = threadHead;
           threadHead = connectThreadPos;
+          */
+          if (tempThreadCount > MAX_CONNECT_THREADS)
+          {
+            for (i = 0; i < tempThreadCount; i++)
+            {
+#if VERBOSE
+              fprintf (stdout, "Joining thread %d...\n", i);
+#endif
+              GNUNET_thread_join (threads[i], &unusedVoid);
 
+            }
+            tempThreadCount = 0;
+          }
+
+          threads[tempThreadCount] = GNUNET_thread_create (&connect_peer_thread, pos, 1024 * 4);
           pos = pos->next;
         }
 
+/*
       connectThreadPos = threadHead;
       while (connectThreadPos != NULL)
         {
-#if VERBOSE
-          fprintf (stdout, "Joining thread...\n");
-#endif
           GNUNET_thread_join (connectThreadPos->thread, &unusedVoid);
           connectThreadPos = connectThreadPos->next;
         }
-
+*/
       GNUNET_mutex_destroy (connectMutex);
     }
   else
