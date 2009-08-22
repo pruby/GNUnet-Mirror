@@ -311,6 +311,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   char *ssh_username;
   char *control_host;
   char *percentage_string;
+  char *logNModifier_string;
   char *remote_config_path;
   char *remote_gnunetd_path;
   char *remote_pid_path;
@@ -358,6 +359,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   int ret;
   char *ipk_dir;
   double percentage;
+  double logNModifier;
 
   double malicious_getter_num;
   double malicious_putter_num;
@@ -408,6 +410,11 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             "PERCENTAGE", "1.0",
                                             &percentage_string);
   percentage = atof (percentage_string);
+
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "LOGNMODIFIER", "1.0",
+                                            &logNModifier_string);
+  logNModifier = atof (logNModifier_string);
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "CONTROL_HOST", "localhost",
@@ -1058,7 +1065,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
     }
   ret =
     GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons,
-                                   dotOutFile, percentage);
+                                   dotOutFile, percentage, logNModifier);
   if (dotOutFile != NULL)
     {
       fprintf (dotOutFile, "}\n");
@@ -1206,7 +1213,7 @@ connect_peer_thread (void *cls)
 int
 GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                int number_of_daemons, FILE * dotOutFile,
-                               double percentage)
+                               double percentage, double logNModifier)
 {
   FILE *temp_friend_handle;
   int ret;
@@ -1240,8 +1247,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       fprintf (stderr, _("Creating small world topology\n"));
 #endif
       ret =
-        GNUNET_REMOTE_connect_small_world (number_of_daemons, list_as_array,
-                                           dotOutFile, percentage);
+        GNUNET_REMOTE_connect_small_world_ring (number_of_daemons, list_as_array,
+                                           dotOutFile, percentage, logNModifier);
       break;
     case GNUNET_REMOTE_RING:
 #if VERBOSE

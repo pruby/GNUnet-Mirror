@@ -99,7 +99,7 @@ GNUNET_REMOTE_get_daemons_information (char *hostname1, unsigned short port1,
 int
 GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                int number_of_daemons, FILE * dotOufFile,
-                               double percentage);
+                               double percentage, double logNModifier);
 
 GNUNET_PeerIdentity *GNUNET_REMOTE_get_daemon_information (char *hostname,
                                                            unsigned short

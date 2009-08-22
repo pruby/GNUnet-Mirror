@@ -300,7 +300,7 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
 }
 
 int
-GNUNET_REMOTE_connect_small_world (int number_of_daemons,
+GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
                                    struct GNUNET_REMOTE_host_list
                                    **list_as_array, FILE * dotOutFile,
                                    double percentage)
@@ -422,6 +422,98 @@ GNUNET_REMOTE_connect_small_world (int number_of_daemons,
 #if VERBOSE
   fprintf (stderr, _("Total connections added for small world: %d!\n"),
            smallWorldConnections);
+#endif
+
+  return GNUNET_OK;
+}
+
+int
+GNUNET_REMOTE_connect_small_world_ring (unsigned int number_of_daemons,
+                                   struct GNUNET_REMOTE_host_list
+                                   **list_as_array, FILE * dotOutFile,
+                                   double percentage, double logNModifier)
+{
+  unsigned int i, j;
+  int nodeToConnect;
+  unsigned int natLog;
+  unsigned int randomPeer;
+  double random;
+  unsigned int totalConnections, smallWorldConnections;
+  int connsPerPeer;
+  int distance;
+  natLog = log (number_of_daemons);
+  connsPerPeer = ceil(natLog * logNModifier);
+  int max;
+  int min;
+  unsigned int useAnd;
+
+  if (connsPerPeer % 2 == 1)
+    connsPerPeer += 1;
+
+  srand((unsigned int)GNUNET_get_time());
+  smallWorldConnections = 0;
+  totalConnections = 0;
+  for (i = 0; i < number_of_daemons; i++)
+  {
+    useAnd = 0;
+    max = i + connsPerPeer/2;
+    min = i - connsPerPeer/2;
+
+    if (max > number_of_daemons - 1)
+    {
+      max = max - number_of_daemons;
+      useAnd = 1;
+    }
+
+    if (min < 0)
+    {
+      min = number_of_daemons - 1 + min;
+      useAnd = 1;
+    }
+#if VERBOSE
+        fprintf (stderr, _("For peer %d, number must be less than %d or greater than %d (%d)\n"), i, min, max, useAnd);
+#endif
+    for (j = 0; j < connsPerPeer/2; j++)
+    {
+      random = ((double) rand() / RAND_MAX);
+      if (random < percentage)
+      {
+        /* Connect to uniformly selected random peer */
+        randomPeer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, number_of_daemons);
+        while ((((randomPeer < max) && (randomPeer > min)) && (useAnd == 0)) || (((randomPeer > min) || (randomPeer < max)) && (useAnd == 1)))
+        {
+#if VERBOSE
+          fprintf (stderr, _("NOT connecting node %u to %u (already existing connection!)\n"), i, randomPeer);
+#endif
+          randomPeer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, number_of_daemons);
+        }
+#if VERBOSE
+        fprintf (stderr, _("connecting node (rewire) %u to %u\n"), i, randomPeer);
+#endif
+        smallWorldConnections += addNodeRefs(list_as_array[i], list_as_array[randomPeer]);
+      }
+      else
+      {
+        nodeToConnect = i + j + 1;
+        if (nodeToConnect > number_of_daemons - 1)
+          {
+            nodeToConnect = nodeToConnect - number_of_daemons;
+          }
+#if VERBOSE
+        fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
+#endif
+        totalConnections += addNodeRefs(list_as_array[i], list_as_array[nodeToConnect]);
+      }
+    }
+
+  }
+
+  totalConnections += smallWorldConnections;
+#if VERBOSE
+  fprintf (stderr, _("Total connections added for small world: %d!\n"),
+           smallWorldConnections);
+  fprintf (stderr, _("Total connections: %d!\n"),
+           totalConnections);
 #endif
 
   return GNUNET_OK;
