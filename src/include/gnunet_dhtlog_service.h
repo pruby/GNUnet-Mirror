@@ -88,9 +88,11 @@ typedef struct
                        char *message);
 
   /*
-   * Update the trial information with the ending time
+   * Update the trial information with the ending time and dropped message stats
    */
-  int (*update_trial) (unsigned long long trialuid);
+  int (*update_trial) (unsigned long long trialuid,
+                       unsigned long long totalMessagesDropped,
+                       unsigned long long totalBytesDropped);
 
   /*
    * Update the trial information with the total connections
