@@ -74,7 +74,7 @@ struct GNUNET_CONTAINER_Heap
 };
 
 int
-next_power_of_2(int v)
+next_power_of_2 (int v)
 {
   v |= v >> 1;
   v |= v >> 2;
@@ -88,15 +88,15 @@ next_power_of_2(int v)
 void
 internal_print (struct GNUNET_CONTAINER_heap_node *root)
 {
-  fprintf (stdout, "%d\n", (int)root->cost);
+  fprintf (stdout, "%d\n", (int) root->cost);
   if (root->left_child != NULL)
     {
-      fprintf (stdout, "LEFT of %d\n", (int)root->cost);
+      fprintf (stdout, "LEFT of %d\n", (int) root->cost);
       internal_print (root->left_child);
     }
   if (root->right_child != NULL)
     {
-      fprintf (stdout, "RIGHT of %d\n", (int)root->cost);
+      fprintf (stdout, "RIGHT of %d\n", (int) root->cost);
       internal_print (root->right_child);
     }
 }
@@ -178,7 +178,7 @@ getNextPos (struct GNUNET_CONTAINER_Heap *root)
   else
     {
       parent = root->root;
-      for (i = next_power_of_2(pos) >> 2; i > 1; i >>= 1)
+      for (i = next_power_of_2 (pos) >> 2; i > 1; i >>= 1)
         {
           if (((pos / i) % 2) == 0)
             parent = parent->left_child;
@@ -212,7 +212,7 @@ getPos (struct GNUNET_CONTAINER_Heap *root, unsigned int pos)
   else
     {
       ret = root->root;
-      for (i = next_power_of_2(pos) >> 2; i > 0; i >>= 1)
+      for (i = next_power_of_2 (pos) >> 2; i > 0; i >>= 1)
         {
           if (((pos / i) % 2) == 0)
             ret = ret->left_child;

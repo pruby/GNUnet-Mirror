@@ -301,6 +301,8 @@ void *
 GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map)
 {
   unsigned int rand;
+  unsigned int rand_entry;
+  unsigned int count;
   struct MapEntry *e;
   e = NULL;
 
@@ -311,6 +313,22 @@ GNUNET_multi_hash_map_get_random (const struct GNUNET_MultiHashMap *map)
     {
       rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, map->map_length);
       e = map->map[rand];
+    }
+
+  count = 0;
+  while (e != NULL)
+    {
+      e = e->next;
+      count++;
+    }
+
+  rand_entry = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, count);
+  e = map->map[rand];
+  count = 0;
+  while (count < rand_entry)
+    {
+      e = e->next;
+      count++;
     }
 
   return e->value;
