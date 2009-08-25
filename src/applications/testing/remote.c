@@ -239,7 +239,7 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
 static int
 get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
 {
-  char *cmd;
+  char *tempcmd;
   int length;
   unsigned int is_local = 0;
   FILE *output;
@@ -253,26 +253,25 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
   if (is_local)
     {
       length = snprintf (NULL, 0, "cat %s", daemon->pid);
-      cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "cat %s", daemon->pid);
+      tempcmd = GNUNET_malloc (length + 1);
+      snprintf (tempcmd, length + 1, "cat %s", daemon->pid);
     }
   else
     {
       length =
         snprintf (NULL, 0, "ssh %s@%s cat %s", daemon->username,
                   daemon->hostname, daemon->pid);
-      cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "ssh %s@%s cat %s", daemon->username,
+      tempcmd = GNUNET_malloc (length + 1);
+      snprintf (tempcmd, length + 1, "ssh %s@%s cat %s", daemon->username,
                 daemon->hostname, daemon->pid);
     }
 #if VERBOSE
-  fprintf (stderr, _("exec command is : %s \n"), cmd);
+  fprintf (stderr, _("exec command is : %s \n"), tempcmd);
 #endif
-
-  if ((cmd != NULL) && (strcmp (cmd, "") != 0))
+  pid = -1;
+  if ((tempcmd != NULL) && (strcmp (tempcmd, "") != 0))
     {
-      output = popen (cmd, "r");
-      GNUNET_free (cmd);
+      output = popen (tempcmd, "r");
       if ((output != NULL) && (fscanf (output, "%d", &pid) == 1))
         {
 #if VERBOSE
@@ -284,7 +283,10 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
           pid = -1;
         }
     }
-
+  if (output != NULL)
+    fclose(output);
+  if (tempcmd != NULL)
+    GNUNET_free(tempcmd);
   return pid;
 }
 
@@ -1082,6 +1084,14 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_free (hostnames);
   GNUNET_free (remote_config_path);
   GNUNET_free (remote_gnunetd_path);
+  GNUNET_free(mysql_user);
+  GNUNET_free(mysql_db);
+  GNUNET_free(mysql_password);
+  GNUNET_free(mysql_server);
+  GNUNET_free(logNModifier_string);
+  if (temp_pid_file != NULL)
+    GNUNET_free(temp_pid_file);
+
   *ret_peers = new_ret_peers;
   return ret;
 }
