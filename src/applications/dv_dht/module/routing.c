@@ -88,7 +88,7 @@
  * peer will either forward to PUT_TRIES peers that
  * are closer to the key, or replicate the content).
  */
-#define PUT_TRIES 3
+#define PUT_TRIES 5
 
 /**
  * How long do we keep content after receiving a PUT request for it?
@@ -936,6 +936,10 @@ handle_get (const GNUNET_PeerIdentity * sender,
            GNUNET_DV_DHT_estimate_network_diameter ());
   if (target_value > GET_TRIES)
     target_value = GET_TRIES;
+
+  if ((target_value == 0) && (sender == NULL))
+    target_value = GET_TRIES;
+
   j = 0;
   if (sender != NULL)
     next[j++] = *sender;        /* do not send back to sender! */
@@ -966,9 +970,11 @@ handle_get (const GNUNET_PeerIdentity * sender,
                         DV_DHT_DELAY);
 
       GNUNET_bloomfilter_add (bloom, &next[j].hashPubKey);
-
       if (cost == GNUNET_SYSERR)
-        continue;
+        {
+          i--;
+          continue;
+        }
 
       GNUNET_bloomfilter_get_raw_data (bloom, &aget.bloomfilter[0],
                                        DV_DHT_BLOOM_SIZE);
@@ -1048,6 +1054,9 @@ handle_put (const GNUNET_PeerIdentity * sender,
 
   store = 0;
   target_value = get_forward_count (hop_count, PUT_TRIES);
+  if ((target_value == 0) && (sender == NULL))
+    target_value = PUT_TRIES;
+
   aput = GNUNET_malloc (ntohs (msg->size));
   memcpy (aput, put, ntohs (msg->size));
   aput->hop_count = htonl (hop_count + 1);
@@ -1106,7 +1115,10 @@ handle_put (const GNUNET_PeerIdentity * sender,
 #endif
 
       if (cost == GNUNET_SYSERR)
-        continue;
+        {
+          i--;
+          continue;
+        }
 
       GNUNET_bloomfilter_get_raw_data (bloom, &aput->bloomfilter[0],
                                        DV_DHT_BLOOM_SIZE);
@@ -1345,6 +1357,7 @@ GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
   put->key = *key;
   put->type = htonl (type);
   put->hop_count = htonl (0);
+  queryuid = 0;
   memset (&put->bloomfilter, 0, DV_DHT_BLOOM_SIZE);
   put->network_size = htonl (GNUNET_DV_DHT_estimate_network_diameter ());
 #if DEBUG_ROUTING
@@ -1411,6 +1424,9 @@ malicious_put_thread (void *cls)
           data[l] = rand ();
         }
       GNUNET_hash (data, 8, &key);
+
+      key.bits[(512 / 8 / sizeof (unsigned int)) - 1] =
+        MAGIC_MALICIOUS_NUMBER;
       memset (&data, 0, sizeof (data));
       GNUNET_DV_DHT_put (&key, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                          sizeof (data), data);

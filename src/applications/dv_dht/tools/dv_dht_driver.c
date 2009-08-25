@@ -34,7 +34,7 @@
 #include "gnunet_remote_lib.h"
 #include "gnunet_dhtlog_service.h"
 
-#define MAX_THREADS 100
+#define DEFAULT_MAX_THREADS 100
 
 struct GNUNET_DV_DHT_keys
 {
@@ -62,8 +62,11 @@ static unsigned long long concurrent_requests;
 static unsigned long long malicious_putters;
 static unsigned long long malicious_getters;
 static unsigned long long malicious_droppers;
+static unsigned long long totalBytesDropped;
+static unsigned long long totalMessagesDropped;
 
 static int randomized_gets;
+static int max_threads;
 
 static double malicious_putter_num;
 static double malicious_getter_num;
@@ -154,6 +157,19 @@ getPeers (const char *name, unsigned long long value, void *cls)
     {
       fprintf (stderr, "%s : %llu\n", name, value);
     }
+  else if ((value > 0)
+           && (strstr (name, _("# outgoing messages dropped")) != NULL))
+    {
+      totalMessagesDropped += value;
+      fprintf (stderr, "%s : %llu\n", name, value);
+    }
+  else if ((value > 0)
+           && (strstr (name, _("# bytes of outgoing messages dropped")) !=
+               NULL))
+    {
+      totalBytesDropped += value;
+      fprintf (stderr, "%s : %llu\n", name, value);
+    }
   else if ((value > 0) && (strstr (name, _("dropped")) != NULL))
     {
       fprintf (stderr, "%s : %llu\n", name, value);
@@ -169,8 +185,8 @@ do_testing (int argc, char *const *argv)
 {
   struct GNUNET_REMOTE_TESTING_DaemonContext *peers;
   struct GNUNET_REMOTE_TESTING_DaemonContext *peer_array[num_peers];
-  struct GNUNET_DV_DHT_Context *dctx[MAX_THREADS];
-  struct GNUNET_DV_DHT_GetRequest *gets[MAX_THREADS];
+  struct GNUNET_DV_DHT_Context *dctx[max_threads];
+  struct GNUNET_DV_DHT_GetRequest *gets[max_threads];
   struct GNUNET_DV_DHT_keys keys[put_items];
   struct GNUNET_REMOTE_TESTING_DaemonContext *pos;
   int ret = 0;
@@ -185,7 +201,7 @@ do_testing (int argc, char *const *argv)
 
   int key_count;
 
-  int random_peers[MAX_THREADS];
+  int random_peers[max_threads];
   int random_peer;
   int random_key;
   int totalConnections;
@@ -391,7 +407,7 @@ do_testing (int argc, char *const *argv)
       printf ("Found %u out of %llu attempts.\n", new_found,
               concurrent_requests);
 
-      if (thread_count >= MAX_THREADS)
+      if (thread_count >= max_threads)
         {
           for (j = 0; j < thread_count; j++)
             {
@@ -440,7 +456,8 @@ do_testing (int argc, char *const *argv)
       pos = pos->next;
     }
 
-  ret = sqlapi->update_trial (trialuid);
+  ret =
+    sqlapi->update_trial (trialuid, totalMessagesDropped, totalBytesDropped);
   return ret;
 }
 
@@ -463,6 +480,7 @@ main (int argc, char *const *argv)
     GNUNET_init (argc, argv, "dvdhtdriver", &configFile,
                  gnunetDHTDriverOptions, &ectx, &driverConfig);
 
+  max_threads = DEFAULT_MAX_THREADS;
   if (ret == -1)
     {
       GNUNET_fini (ectx, cfg);
@@ -551,6 +569,11 @@ main (int argc, char *const *argv)
 
   if (malicious_droppers > 0)
     malicious_dropper_num = num_peers / malicious_droppers;
+
+  while (max_threads % concurrent_requests != 0)
+    {
+      max_threads++;
+    }
 
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
