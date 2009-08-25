@@ -37,7 +37,7 @@
 #define DEBUG_DV GNUNET_YES
 #define DEBUG_DV_FORWARD GNUNET_NO
 /* How long to allow a message to be delayed */
-#define DV_DELAY (500 * GNUNET_CRON_MILLISECONDS)
+#define DV_DELAY (1000 * GNUNET_CRON_MILLISECONDS)
 #define DV_PRIORITY 0
 
 /**
@@ -83,39 +83,6 @@ static char shortID[5];
 static struct GNUNET_DV_Context *ctx;
 static struct GNUNET_ThreadHandle *sendingThread;
 static GNUNET_CoreAPIForPlugins *coreAPI;
-
-#if DEBUG_DV
-/*
- * Callback for printing a single entry in one of the
- * DV routing tables
- */
-static int
-printTableEntry (const GNUNET_HashCode * key, void *value, void *cls)
-{
-  struct GNUNET_dv_neighbor *neighbor = (struct GNUNET_dv_neighbor *) value;
-  char *type = (char *) cls;
-  GNUNET_EncName encPeer;
-  GNUNET_EncName encReferrer;
-
-  GNUNET_hash_to_enc (&neighbor->neighbor->hashPubKey, &encPeer);
-  if (neighbor->referrer == NULL)
-    GNUNET_GE_LOG (coreAPI->ectx,
-                   GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                   GNUNET_GE_BULK, "%s\tNeighbor: %s\nCost: %d\n", &shortID,
-                   type, (char *) &encPeer, neighbor->cost);
-  else
-    {
-      GNUNET_hash_to_enc (&neighbor->referrer->hashPubKey, &encReferrer);
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "%s\tNeighbor: %s\nCost: %d Referred by: %s\n", &shortID,
-                     type, (char *) &encPeer, neighbor->cost,
-                     (char *) &encReferrer);
-    }
-  return GNUNET_OK;
-}
-#endif
 
 /*
  * Update the statistics about dv routing
@@ -164,7 +131,7 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
  */
 static int
 connection_iterate_callback (void *element, GNUNET_CostType cost,
-                         struct GNUNET_CONTAINER_Heap *root, void *cls)
+                             struct GNUNET_CONTAINER_Heap *root, void *cls)
 {
   struct GNUNET_dv_neighbor *neighbor;
   neighbor = (struct GNUNET_dv_neighbor *) element;
@@ -244,9 +211,11 @@ GNUNET_DV_connection_iterate_peers (GNUNET_NodeIteratorCallback method,
 
   GNUNET_mutex_lock (ctx->dvMutex);
   /*ret =
-    GNUNET_multi_hash_map_iterate (ctx->extended_neighbors,
-                                   &connection_iterate_callback, &wrap);*/
-  ret = GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap, &connection_iterate_callback, &wrap);
+     GNUNET_multi_hash_map_iterate (ctx->extended_neighbors,
+     &connection_iterate_callback, &wrap); */
+  ret =
+    GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
+                                   &connection_iterate_callback, &wrap);
   GNUNET_mutex_unlock (ctx->dvMutex);
   return ret;
 }
@@ -972,6 +941,46 @@ chooseAboutNeighbor ()
 }
 
 /*
+ * Method which changes how often peer sends neighbor information
+ * to other peers.  Basically, if we know how many peers we have
+ * and want to gossip all of them to all of our direct neighbors
+ * we will need to send them such that they will all reach their
+ * destinations within the timeout frequency.  We assume all
+ * peers share our timeout frequency so it's a simple calculation.
+ * May need revisiting if we want to specify a maximum or minimum
+ * value for this interval.
+ */
+static void *
+updateSendInterval ()
+{
+  unsigned int direct_neighbors;
+  unsigned int total_neighbors;
+  unsigned int total_messages;
+
+  direct_neighbors = GNUNET_multi_hash_map_size (ctx->direct_neighbors);
+  total_neighbors = GNUNET_multi_hash_map_size (ctx->extended_neighbors);
+
+  if (direct_neighbors == 0)
+    return NULL;
+
+  total_messages = direct_neighbors * total_neighbors;
+#if DEBUG_DV
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                 | GNUNET_GE_BULK,
+                 "%s: Updated send_interval. Was %llu, now is %llu\n",
+                 &shortID, ctx->send_interval,
+                 (unsigned
+                  int) ((GNUNET_DV_PEER_EXPIRATION_TIME / total_messages) /
+                        2));
+#endif
+  ctx->send_interval =
+    (unsigned int) ((GNUNET_DV_PEER_EXPIRATION_TIME / total_messages) / 2);
+  if (ctx->send_interval > GNUNET_DV_MAX_SEND_INTERVAL)
+    ctx->send_interval = GNUNET_DV_MAX_SEND_INTERVAL;
+}
+
+/*
  * Thread which chooses a peer to gossip about and
  * a peer to gossip to, then constructs the message
  * and sends it out.  Will run until done_module_dv
@@ -990,20 +999,19 @@ neighbor_send_thread (void *rcls)
 #endif
   struct GNUNET_dv_neighbor *about;
   struct GNUNET_dv_neighbor *to;
-
+  unsigned int count;
   p2p_dv_MESSAGE_NeighborInfo *message =
     GNUNET_malloc (sizeof (p2p_dv_MESSAGE_NeighborInfo));
 
   message->header.size = htons (sizeof (p2p_dv_MESSAGE_NeighborInfo));
   message->header.type = htons (GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
-
+  count = 1;
   while (!ctx->closing)
     {
-      /*updateSendInterval();
-       * TODO: Once we have more information about how to
-       * control the sending interval change this.
-       */
-      GNUNET_mutex_lock(ctx->dvMutex);
+      if (count % 20 == 0)
+        updateSendInterval ();
+
+      GNUNET_mutex_lock (ctx->dvMutex);
       about = chooseAboutNeighbor ();
       to = chooseToNeighbor ();
 
@@ -1026,13 +1034,13 @@ neighbor_send_thread (void *rcls)
                   sizeof (GNUNET_PeerIdentity));
           coreAPI->ciphertext_send (to->neighbor, &message->header,
                                     GNUNET_DV_DHT_GOSSIP_PRIORITY,
-                                    ctx->send_interval *
-                                    GNUNET_CRON_MILLISECONDS);
+                                    ctx->send_interval);
           if (stats != NULL)
             stats->change (stat_dv_sent_gossips, 1);
         }
-      GNUNET_mutex_unlock(ctx->dvMutex);
-      GNUNET_thread_sleep (ctx->send_interval * GNUNET_CRON_MILLISECONDS);
+      GNUNET_mutex_unlock (ctx->dvMutex);
+      GNUNET_thread_sleep (ctx->send_interval);
+      count++;
     }
 
   GNUNET_free (message);
