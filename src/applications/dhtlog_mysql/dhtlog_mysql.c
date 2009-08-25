@@ -69,7 +69,7 @@ static struct GNUNET_MysqlStatementHandle *insert_trial;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_dhtkey;
 
-#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW() where trialuid = ?"
+#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW(), totalMessagesDropped = ?, totalBytesDropped = ? where trialuid = ?"
 static struct GNUNET_MysqlStatementHandle *update_trial;
 
 #define UPDATE_CONNECTIONS_STMT "UPDATE trials set totalConnections = ? where trialuid = ?"
@@ -155,6 +155,8 @@ itable ()
              "`malicious_putters` int(10) unsigned NOT NULL,"
              "`malicious_droppers` int(10) unsigned NOT NULL,"
              "`message` text NOT NULL,"
+             "`totalMessagesDropped` int(10) unsigned NOT NULL,"
+             "`totalBytesDropped` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
              "UNIQUE KEY `trialuid` (`trialuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
@@ -450,7 +452,9 @@ add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
  * Update dhttests.trials table with current server time as end time
  */
 int
-update_trials (unsigned long long trialuid)
+update_trials (unsigned long long trialuid,
+               unsigned long long totalMessagesDropped,
+               unsigned long long totalBytesDropped)
 {
   int ret;
 #if DEBUG_DHTLOG
@@ -463,6 +467,12 @@ update_trials (unsigned long long trialuid)
   if (GNUNET_OK !=
       (ret = GNUNET_MYSQL_prepared_statement_run (update_trial,
                                                   NULL,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &totalMessagesDropped,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &totalBytesDropped,
+                                                  GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &trialuid, GNUNET_YES, -1)))
     {
@@ -757,6 +767,10 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _
                      ("Failed to initialize MySQL database connection for dhtlog.\n"));
+      GNUNET_free (mysql_user);
+      GNUNET_free (mysql_password);
+      GNUNET_free (mysql_db);
+      GNUNET_free (mysql_server);
       return NULL;
     }
 
@@ -771,6 +785,10 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, _("current trial is %llu\n"), current_trial);
+  GNUNET_free (mysql_user);
+  GNUNET_free (mysql_password);
+  GNUNET_free (mysql_db);
+  GNUNET_free (mysql_server);
   return &api;
 }
 
