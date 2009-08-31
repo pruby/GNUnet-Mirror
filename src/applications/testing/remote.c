@@ -284,9 +284,9 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
         }
     }
   if (output != NULL)
-    fclose(output);
+    fclose (output);
   if (tempcmd != NULL)
-    GNUNET_free(tempcmd);
+    GNUNET_free (tempcmd);
   return pid;
 }
 
@@ -1084,13 +1084,11 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_free (hostnames);
   GNUNET_free (remote_config_path);
   GNUNET_free (remote_gnunetd_path);
-  GNUNET_free(mysql_user);
-  GNUNET_free(mysql_db);
-  GNUNET_free(mysql_password);
-  GNUNET_free(mysql_server);
-  GNUNET_free(logNModifier_string);
-  if (temp_pid_file != NULL)
-    GNUNET_free(temp_pid_file);
+  GNUNET_free (mysql_user);
+  GNUNET_free (mysql_db);
+  GNUNET_free (mysql_password);
+  GNUNET_free (mysql_server);
+  GNUNET_free (logNModifier_string);
 
   *ret_peers = new_ret_peers;
   return ret;
@@ -1243,7 +1241,8 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   ret = GNUNET_OK;
   connected = GNUNET_multi_hash_map_create (number_of_daemons * 3);
 
-  daemon_list = GNUNET_permute(GNUNET_RANDOM_QUALITY_WEAK, number_of_daemons);
+  daemon_list =
+    GNUNET_permute (GNUNET_RANDOM_QUALITY_WEAK, number_of_daemons);
   switch (type)
     {
     case GNUNET_REMOTE_CLIQUE:
@@ -1257,8 +1256,9 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       fprintf (stderr, _("Creating small world topology\n"));
 #endif
       ret =
-        GNUNET_REMOTE_connect_small_world_ring (number_of_daemons, list_as_array,
-                                           dotOutFile, percentage, logNModifier);
+        GNUNET_REMOTE_connect_small_world_ring (number_of_daemons,
+                                                list_as_array, dotOutFile,
+                                                percentage, logNModifier);
       break;
     case GNUNET_REMOTE_RING:
 #if VERBOSE
@@ -1370,7 +1370,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       connectMutex = GNUNET_mutex_create (GNUNET_YES);
       connectFailures = 0;
       tempThreadCount = 0;
-      for(j = 0; j < number_of_daemons; j++)
+      for (j = 0; j < number_of_daemons; j++)
         {
           if (tempThreadCount > MAX_CONNECT_THREADS)
             {
@@ -1388,18 +1388,19 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           fprintf (stdout, "Creating real thread %d...\n", tempThreadCount);
 #endif
           threads[tempThreadCount] =
-            GNUNET_thread_create (&connect_peer_thread, list_as_array[daemon_list[j]], 1024 * 16);
+            GNUNET_thread_create (&connect_peer_thread,
+                                  list_as_array[daemon_list[j]], 1024 * 16);
           tempThreadCount++;
 
         }
 
-      GNUNET_thread_sleep(2000 * GNUNET_CRON_MILLISECONDS);
+      GNUNET_thread_sleep (2000 * GNUNET_CRON_MILLISECONDS);
       for (i = 0; i < tempThreadCount; i++)
         {
 #if VERBOSE
           fprintf (stdout, "Joining thread %d...\n", i);
 #endif
-          GNUNET_thread_stop_sleep(threads[i]);
+          GNUNET_thread_stop_sleep (threads[i]);
           GNUNET_thread_join (threads[i], &unusedVoid);
 
         }
