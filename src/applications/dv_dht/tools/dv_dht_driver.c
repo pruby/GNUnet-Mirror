@@ -309,11 +309,11 @@ do_testing (int argc, char *const *argv)
     }
 
   if (GNUNET_shutdown_test () == GNUNET_YES)
-  {
-  	GNUNET_free(peers);
-  	GNUNET_free(pos);
-    return GNUNET_SYSERR;
-  }
+    {
+      GNUNET_free (peers);
+      GNUNET_free (pos);
+      return GNUNET_SYSERR;
+    }
 
   for (i = 0; i < put_items; i++)
     {
@@ -467,7 +467,7 @@ do_testing (int argc, char *const *argv)
 
   ret =
     sqlapi->update_trial (trialuid, totalMessagesDropped, totalBytesDropped);
-	GNUNET_free(peers);    
+  GNUNET_free (peers);
   return ret;
 }
 
