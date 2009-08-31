@@ -602,6 +602,9 @@ init_params (struct GNUNET_MysqlStatementHandle *s, va_list ap)
       qbind[off].buffer_type = ft;
       switch (ft)
         {
+        case MYSQL_TYPE_FLOAT:
+          qbind[off].buffer = va_arg (ap, float *);
+          break;
         case MYSQL_TYPE_LONGLONG:
           qbind[off].buffer = va_arg (ap, unsigned long long *);
           qbind[off].is_unsigned = va_arg (ap, int);
