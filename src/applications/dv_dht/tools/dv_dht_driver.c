@@ -68,6 +68,9 @@ static unsigned long long totalMessagesDropped;
 static int randomized_gets;
 static int max_threads;
 
+static float logNModifier = 0.0;
+static float topology_modifier = 0.0;
+
 static double malicious_putter_num;
 static double malicious_getter_num;
 static double malicious_dropper_num;
@@ -227,7 +230,8 @@ do_testing (int argc, char *const *argv)
       if (trialmessage != NULL)
         {
           ret =
-            sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
+            sqlapi->insert_trial (&trialuid, num_peers, topology,
+                                  topology_modifier, logNModifier, put_items,
                                   get_requests, concurrent_requests,
                                   settle_time, num_rounds, malicious_getters,
                                   malicious_putters, malicious_droppers,
@@ -236,7 +240,8 @@ do_testing (int argc, char *const *argv)
       else
         {
           ret =
-            sqlapi->insert_trial (&trialuid, num_peers, topology, put_items,
+            sqlapi->insert_trial (&trialuid, num_peers, topology,
+                                  topology_modifier, logNModifier, put_items,
                                   get_requests, concurrent_requests,
                                   settle_time, num_rounds, malicious_getters,
                                   malicious_putters, malicious_droppers, "");
@@ -473,6 +478,8 @@ main (int argc, char *const *argv)
   struct GNUNET_PluginHandle *plugin;
   struct GNUNET_GC_Configuration *driverConfig;
 
+  char *topology_modifier_string;
+  char *logNModifier_string;
   ectx = NULL;
   cfg = GNUNET_GC_create ();
   lock = GNUNET_mutex_create (GNUNET_YES);
@@ -502,6 +509,22 @@ main (int argc, char *const *argv)
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "MULTIPLE_SERVER_TESTING",
                                             "TOPOLOGY", 0, -1, 0, &topology);
+
+  GNUNET_GC_get_configuration_value_string (cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "PERCENTAGE", "",
+                                            &topology_modifier_string);
+
+  if (strcmp (topology_modifier_string, "") != 0)
+    topology_modifier = atof (topology_modifier_string);
+
+  GNUNET_GC_get_configuration_value_string (cfg,
+                                            "MULTIPLE_SERVER_TESTING",
+                                            "LOGNMODIFIER", "",
+                                            &logNModifier_string);
+
+  if (strcmp (logNModifier_string, "") != 0)
+    logNModifier = atof (logNModifier_string);
 
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "MULTIPLE_SERVER_TESTING",
