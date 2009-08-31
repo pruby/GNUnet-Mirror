@@ -63,7 +63,8 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   memset (&k1, 0, sizeof (GNUNET_HashCode));
   memset (&k2, 1, sizeof (GNUNET_HashCode));
 
-  ret = api->insert_trial (&trialuid, i, 5, 0, 0, 0, 0);
+  ret =
+    api->insert_trial (&trialuid, i, 5, .75, .25, 0, 0, 0, 0, 0, 0, 0, 0, "");
   fprintf (stderr, "Trial uid is %llu\n", trialuid);
 
   if (ret != GNUNET_OK)
@@ -96,21 +97,21 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   fprintf (stderr, "Sql uid for dht query is %llu\n", sqlqueryuid);
 
   ret =
-    api->insert_route (&sqlrouteuid, sqlqueryuid, 1, 3, 1, &p1, &k2,
+    api->insert_route (&sqlrouteuid, sqlqueryuid, 1, 3, 1, 0, &p1, &k2,
                        &p4, &p3);
   fprintf (stderr, "Sql uid for dht route is %llu\n", sqlrouteuid);
   ret =
-    api->insert_route (&sqlrouteuid, sqlqueryuid, 2, 7, 0, &p3, &k1,
+    api->insert_route (&sqlrouteuid, sqlqueryuid, 2, 7, 0, 0, &p3, &k1,
                        &p4, &p2);
   fprintf (stderr, "Sql uid for dht route is %llu\n", sqlrouteuid);
   ret =
-    api->insert_route (&sqlrouteuid, sqlqueryuid, 3, 9, 1, &p3, &k2,
+    api->insert_route (&sqlrouteuid, sqlqueryuid, 3, 9, 1, 0, &p3, &k2,
                        &p2, NULL);
   fprintf (stderr, "Sql uid for dht route is %llu\n", sqlrouteuid);
 
   sleep (1);
   fprintf (stderr, "Updating trial %llu with endtime of now\n", trialuid);
-  ret = api->update_trial (trialuid);
+  ret = api->update_trial (trialuid, 0, 0);
 
   if (ret != GNUNET_OK)
     {

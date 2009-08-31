@@ -61,8 +61,8 @@ static struct GNUNET_MysqlStatementHandle *insert_route;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
-#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, puts, gets, concurrent, settle_time, num_rounds, malicious_getters, malicious_putters, malicious_droppers, message) "\
-                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, topology_modifier, logNMultiplier, puts, gets, concurrent, settle_time, num_rounds, malicious_getters, malicious_putters, malicious_droppers, message) "\
+                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
 #define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid, keybits) "\
@@ -238,6 +238,7 @@ get_current_trial (unsigned long long *trialuid)
  */
 int
 add_trial (unsigned long long *trialuid, int num_nodes, int topology,
+           float topology_modifier, float logNMultiplier,
            int puts, int gets, int concurrent, int settle_time,
            int num_rounds, int malicious_getters, int malicious_putters,
            int malicious_droppers, char *message)
@@ -254,6 +255,10 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
                                                   MYSQL_TYPE_LONG,
                                                   &topology,
                                                   GNUNET_YES,
+                                                  MYSQL_TYPE_FLOAT,
+                                                  &topology_modifier,
+                                                  MYSQL_TYPE_FLOAT,
+                                                  &logNMultiplier,
                                                   MYSQL_TYPE_LONG,
                                                   &puts,
                                                   GNUNET_YES,
