@@ -678,7 +678,7 @@ add_route (const GNUNET_PeerIdentity * sender,
                hops, 2 * diameter, diameter);
       return GNUNET_SYSERR;
     }
-
+  GNUNET_mutex_lock (lock);
   routes_size = GNUNET_multi_hash_map_size (new_records.hashmap);
   heap_size = GNUNET_CONTAINER_heap_get_size (new_records.minHeap);
   if (routes_size != heap_size)
@@ -691,9 +691,10 @@ add_route (const GNUNET_PeerIdentity * sender,
                      routes_size,
                      GNUNET_CONTAINER_heap_get_size (new_records.minHeap));
 #endif
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
-  GNUNET_mutex_lock (lock);
+
   while (routes_size >= (rt_size - 1))
     {
       q = GNUNET_CONTAINER_heap_remove_root (new_records.minHeap);
@@ -708,6 +709,9 @@ add_route (const GNUNET_PeerIdentity * sender,
         }
       GNUNET_bloomfilter_free (q->bloom_results);
       GNUNET_multi_hash_map_remove_all (new_records.hashmap, &q->get.key);
+
+      routes_size = GNUNET_multi_hash_map_size (new_records.hashmap);
+      heap_size = GNUNET_CONTAINER_heap_get_size (new_records.minHeap);
     }
 
   routes_size = GNUNET_multi_hash_map_size (new_records.hashmap);
@@ -722,6 +726,7 @@ add_route (const GNUNET_PeerIdentity * sender,
                      routes_size,
                      GNUNET_CONTAINER_heap_get_size (new_records.minHeap));
 #endif
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
 
