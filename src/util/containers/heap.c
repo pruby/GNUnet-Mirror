@@ -112,6 +112,8 @@ GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HeapType type)
 {
   struct GNUNET_CONTAINER_Heap *heap;
   heap = malloc (sizeof (struct GNUNET_CONTAINER_Heap));
+  if (heap == NULL)
+    return heap;
   heap->max_size = -1;
   heap->type = type;
   heap->root = NULL;
@@ -144,12 +146,12 @@ find_element (struct GNUNET_CONTAINER_heap_node *node, void *element)
       ret = node;
     }
 
-  if ((ret == NULL) && (node->left_child != NULL))
+  if ((ret == NULL) && (node != NULL) && (node->left_child != NULL))
     {
       ret = find_element (node->left_child, element);
     }
 
-  if ((ret == NULL) && (node->right_child != NULL))
+  if ((ret == NULL) && (node != NULL) && (node->right_child != NULL))
     {
       ret = find_element (node->right_child, element);
     }
@@ -415,12 +417,14 @@ GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *root)
   struct GNUNET_CONTAINER_heap_node *root_node;
   struct GNUNET_CONTAINER_heap_node *last;
 
+  if (root == NULL)
+    return NULL;
+  if ((root->size == 0) || (root_node == NULL))
+    return NULL;
+
   root_node = root->root;
   ret = root_node->element;
   last = getPos (root, root->size);
-
-  if ((root->size == 0) || (root_node == NULL))
-    return NULL;
 
   if ((root_node == last) && (root->size == 1)) /* We are removing the last node in the heap! */
     {
