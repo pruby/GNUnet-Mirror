@@ -978,6 +978,7 @@ updateSendInterval ()
     (unsigned int) ((GNUNET_DV_PEER_EXPIRATION_TIME / total_messages) / 2);
   if (ctx->send_interval > GNUNET_DV_MAX_SEND_INTERVAL)
     ctx->send_interval = GNUNET_DV_MAX_SEND_INTERVAL;
+	return NULL;    
 }
 
 /*
