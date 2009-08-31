@@ -244,7 +244,7 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
   unsigned int is_local = 0;
   FILE *output;
   pid_t pid;
-
+  output = NULL;
   if (strcmp (daemon->hostname, "localhost") == 0)
     {
       is_local = 1;
@@ -254,7 +254,8 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
     {
       length = snprintf (NULL, 0, "cat %s", daemon->pid);
       tempcmd = GNUNET_malloc (length + 1);
-      snprintf (tempcmd, length + 1, "cat %s", daemon->pid);
+      if (tempcmd != NULL)
+        snprintf (tempcmd, length + 1, "cat %s", daemon->pid);
     }
   else
     {
@@ -262,8 +263,9 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
         snprintf (NULL, 0, "ssh %s@%s cat %s", daemon->username,
                   daemon->hostname, daemon->pid);
       tempcmd = GNUNET_malloc (length + 1);
-      snprintf (tempcmd, length + 1, "ssh %s@%s cat %s", daemon->username,
-                daemon->hostname, daemon->pid);
+      if (tempcmd != NULL)
+        snprintf (tempcmd, length + 1, "ssh %s@%s cat %s", daemon->username,
+                  daemon->hostname, daemon->pid);
     }
 #if VERBOSE
   fprintf (stderr, _("exec command is : %s \n"), tempcmd);
@@ -706,6 +708,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               GNUNET_free (temp_path);
               GNUNET_free (temp_remote_config_path);
               GNUNET_free (temp_host_string);
+              GNUNET_free (temp_pid_file);
               break;
             }
           CLOSE (ret);
@@ -714,6 +717,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               GNUNET_free (temp_path);
               GNUNET_free (temp_remote_config_path);
               GNUNET_free (temp_host_string);
+              GNUNET_free (temp_pid_file);
               break;
             }
 
@@ -979,6 +983,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                GNUNET_GE_USER |
                                                GNUNET_GE_BULK, "mkstemp",
                                                temp_path);
+                  GNUNET_free (temp_pid_file);
                   GNUNET_free (temp_path);
                   GNUNET_free (temp_remote_config_path);
                   GNUNET_free (temp_host_string);
@@ -987,6 +992,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               CLOSE (ret);
               if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
                 {
+                  GNUNET_free (temp_pid_file);
                   GNUNET_free (temp_path);
                   GNUNET_free (temp_remote_config_path);
                   GNUNET_free (temp_host_string);
@@ -1089,7 +1095,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_free (mysql_password);
   GNUNET_free (mysql_server);
   GNUNET_free (logNModifier_string);
-
   *ret_peers = new_ret_peers;
   return ret;
 }
@@ -1110,7 +1115,8 @@ connect_peer_thread (void *cls)
 
   tempEntry = NULL;
   tempFriendEntry = NULL;
-
+  pid1 = 0;
+  pid2 = 0;
   GNUNET_mutex_lock (connectMutex);
 #if VERBOSE
   fprintf (stdout, "Starting thread %d\n", threadCount);
@@ -1140,6 +1146,9 @@ connect_peer_thread (void *cls)
         }
       GNUNET_mutex_unlock (connectMutex);
 
+      pid1 = pos->pid;
+      pid2 = friend_pos->hostentry->pid;
+
       if (match == GNUNET_YES)
         {
 #if VERBOSE
@@ -1154,8 +1163,6 @@ connect_peer_thread (void *cls)
           continue;
         }
 
-      pid1 = pos->pid;
-      pid2 = friend_pos->hostentry->pid;
 #if VERBOSE
       fprintf (stderr,
                _
@@ -1289,6 +1296,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                                               head, dotOutFile);
       break;
     case GNUNET_REMOTE_NONE:
+      GNUNET_free (daemon_list);
       return ret;
       break;
     default:
@@ -1372,7 +1380,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       tempThreadCount = 0;
       for (j = 0; j < number_of_daemons; j++)
         {
-          if (tempThreadCount > MAX_CONNECT_THREADS)
+          if (tempThreadCount >= MAX_CONNECT_THREADS)
             {
               for (i = 0; i < tempThreadCount; i++)
                 {
@@ -1422,7 +1430,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   if (ret != GNUNET_OK)
     return ret;
   else
-    return totalConnections;
+    {
+      GNUNET_free (daemon_list);
+      return totalConnections;
+    }
 }
 
 /* end of remote.c */
