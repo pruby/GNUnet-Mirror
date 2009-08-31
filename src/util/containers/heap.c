@@ -419,6 +419,9 @@ GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *root)
   ret = root_node->element;
   last = getPos (root, root->size);
 
+  if ((root->size == 0) || (root_node == NULL))
+    return NULL;
+
   if ((root_node == last) && (root->size == 1)) /* We are removing the last node in the heap! */
     {
       root->root = NULL;
