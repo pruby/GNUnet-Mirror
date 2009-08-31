@@ -1301,11 +1301,8 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
                         void *cls)
 {
   struct DV_DHT_Source_Route *pos;
-  int done;
   unsigned int records_removed;
   DV_DHTQueryRecord *q;
-
-  done = GNUNET_NO;
   GNUNET_mutex_lock (lock);
   records_removed = 0;
   while (GNUNET_YES ==
@@ -1333,8 +1330,7 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
                  GNUNET_GE_BULK, "Removed %u total records\n",
                  records_removed);
 #endif
-  if (done != GNUNET_YES)
-    return GNUNET_SYSERR;
+
   return GNUNET_OK;
 }
 

@@ -969,8 +969,7 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_GE_BULK,
                  "core_slots_count returns %d, using %d buckets\n",
                  coreAPI->core_slots_count (), i);
-  if (i < 4)
-    i = 4;
+
   GNUNET_array_grow (buckets, bucketCount, i);
   /* I think this is wrong.  First, we have just increased the
    * number of buckets to i, but then we iterate only over whatever
