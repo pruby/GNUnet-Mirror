@@ -414,12 +414,19 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             "PERCENTAGE", "1.0",
                                             &percentage_string);
   percentage = atof (percentage_string);
+  if (strcmp(percentage_string, "") != 0)
+    percentage = atof (percentage_string);
+  else
+    percentage = 1.0;
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "LOGNMODIFIER", "1.0",
                                             &logNModifier_string);
 
-  logNModifier = atof (logNModifier_string);
+  if (strcmp(logNModifier_string, "") != 0)
+    logNModifier = atof (logNModifier_string);
+  else
+    logNModifier = 1.0;
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "CONTROL_HOST", "localhost",
