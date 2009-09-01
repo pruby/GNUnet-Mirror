@@ -418,6 +418,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "LOGNMODIFIER", "1.0",
                                             &logNModifier_string);
+
   logNModifier = atof (logNModifier_string);
 
   GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
