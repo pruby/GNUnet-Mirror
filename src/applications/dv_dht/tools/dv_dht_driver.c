@@ -517,7 +517,7 @@ main (int argc, char *const *argv)
 
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "MULTIPLE_SERVER_TESTING",
-                                            "PERCENTAGE", "",
+                                            "PERCENTAGE", "1.0",
                                             &topology_modifier_string);
 
   if (strcmp (topology_modifier_string, "") != 0)
@@ -525,7 +525,7 @@ main (int argc, char *const *argv)
 
   GNUNET_GC_get_configuration_value_string (cfg,
                                             "MULTIPLE_SERVER_TESTING",
-                                            "LOGNMODIFIER", "",
+                                            "LOGNMODIFIER", "1.0",
                                             &logNModifier_string);
 
   if (strcmp (logNModifier_string, "") != 0)
