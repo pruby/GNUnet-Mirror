@@ -125,7 +125,7 @@ GNUNET_REMOTE_connect_nated_internet (double nat_percentage,
         is_nat = GNUNET_YES;
       else
         is_nat = GNUNET_NO;
-      inner_count = 0;
+      inner_count = count + 1;
       iter_pos = pos->next;
       while (iter_pos != NULL)
         {

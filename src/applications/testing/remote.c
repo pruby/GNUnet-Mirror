@@ -1297,7 +1297,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       break;
     case GNUNET_REMOTE_INTERNAT:
 #if VERBOSE
-      fprintf (stderr, _("Creating Erdos-Renyi topology\n"));
+      fprintf (stderr, _("Creating InterNAT topology\n"));
 #endif
       ret =
         GNUNET_REMOTE_connect_nated_internet (percentage, number_of_daemons,
