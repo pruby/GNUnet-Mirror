@@ -346,6 +346,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   unsigned long long malicious_putters;
   unsigned long long malicious_put_frequency;
   unsigned long long malicious_droppers;
+  unsigned long long maxnetbps;
 
   unsigned long long extra_daemons;
   unsigned int count;
@@ -414,7 +415,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             "PERCENTAGE", "1.0",
                                             &percentage_string);
   percentage = atof (percentage_string);
-  if (strcmp(percentage_string, "") != 0)
+  if (strcmp (percentage_string, "") != 0)
     percentage = atof (percentage_string);
   else
     percentage = 1.0;
@@ -423,7 +424,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             "LOGNMODIFIER", "1.0",
                                             &logNModifier_string);
 
-  if (strcmp(logNModifier_string, "") != 0)
+  if (strcmp (logNModifier_string, "") != 0)
     logNModifier = atof (logNModifier_string);
   else
     logNModifier = 1.0;
@@ -459,6 +460,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "PORT_INCREMENT",
                                             1, -1, 2, &port_increment);
+
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "MAXNETBPS",
+                                            1, -1, 50000000, &maxnetbps);
 
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "MYSQL_PORT",
@@ -559,6 +564,13 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
       GNUNET_GC_set_configuration_value_number (basecfg, NULL,
                                                 "MULTIPLE_SERVER_TESTING",
                                                 "MYSQL_PORT", mysql_port);
+      GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                "LOAD",
+                                                "MAXNETDOWNBPSTOTAL",
+                                                maxnetbps);
+      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "LOAD",
+                                                "MAXNETUPBPSTOTAL",
+                                                maxnetbps);
 
       while (hostnames[pos] != ' ' && pos > 0)
         pos--;
@@ -920,6 +932,13 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                         "MULTIPLE_SERVER_TESTING",
                                                         "MYSQL_PORT",
                                                         mysql_port);
+              GNUNET_GC_set_configuration_value_number (basecfg, NULL,
+                                                        "LOAD",
+                                                        "MAXNETDOWNBPSTOTAL",
+                                                        maxnetbps);
+              GNUNET_GC_set_configuration_value_number (basecfg, NULL, "LOAD",
+                                                        "MAXNETUPBPSTOTAL",
+                                                        maxnetbps);
               length_temp =
                 snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j + 1);
               temp_pid_file = GNUNET_malloc (length_temp + 1);
