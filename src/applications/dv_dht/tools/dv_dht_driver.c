@@ -64,6 +64,7 @@ static unsigned long long malicious_getters;
 static unsigned long long malicious_droppers;
 static unsigned long long totalBytesDropped;
 static unsigned long long totalMessagesDropped;
+static unsigned long long maxnetbps;
 
 static int randomized_gets;
 static int max_threads;
@@ -235,7 +236,7 @@ do_testing (int argc, char *const *argv)
                                   get_requests, concurrent_requests,
                                   settle_time, num_rounds, malicious_getters,
                                   malicious_putters, malicious_droppers,
-                                  trialmessage);
+                                  maxnetbps, trialmessage);
         }
       else
         {
@@ -244,7 +245,8 @@ do_testing (int argc, char *const *argv)
                                   topology_modifier, logNModifier, put_items,
                                   get_requests, concurrent_requests,
                                   settle_time, num_rounds, malicious_getters,
-                                  malicious_putters, malicious_droppers, "");
+                                  malicious_putters, malicious_droppers,
+                                  maxnetbps, "");
         }
     }
   if (ret != GNUNET_OK)
@@ -597,6 +599,10 @@ main (int argc, char *const *argv)
 
   if (malicious_droppers > 0)
     malicious_dropper_num = num_peers / malicious_droppers;
+
+  GNUNET_GC_get_configuration_value_number (cfg, "MULTIPLE_SERVER_TESTING",
+                                            "MAXNETBPS", 0,
+                                            -1, 0, &maxnetbps);
 
   while (max_threads % concurrent_requests != 0)
     {
