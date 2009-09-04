@@ -86,7 +86,7 @@ typedef struct
                        float logNMultiplier, int puts, int gets,
                        int concurrent, int settle_time, int num_rounds,
                        int malicious_getters, int malicious_putters,
-                       int malicious_droppers, char *message);
+                       int malicious_droppers, int maxnetbps, char *message);
 
   /*
    * Update the trial information with the ending time and dropped message stats

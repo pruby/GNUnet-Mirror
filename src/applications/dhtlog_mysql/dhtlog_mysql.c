@@ -61,8 +61,8 @@ static struct GNUNET_MysqlStatementHandle *insert_route;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_node;
 
-#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, topology_modifier, logNMultiplier, puts, gets, concurrent, settle_time, num_rounds, malicious_getters, malicious_putters, malicious_droppers, message) "\
-                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#define INSERT_TRIALS_STMT "INSERT INTO trials (starttime, numnodes, topology, topology_modifier, logNMultiplier, puts, gets, concurrent, settle_time, num_rounds, malicious_getters, malicious_putters, malicious_droppers, maxnetbps, message) "\
+                          "VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_trial;
 
 #define INSERT_DHTKEY_STMT "INSERT INTO dhtkeys (dhtkey, trialuid, keybits) "\
@@ -241,7 +241,7 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
            float topology_modifier, float logNMultiplier,
            int puts, int gets, int concurrent, int settle_time,
            int num_rounds, int malicious_getters, int malicious_putters,
-           int malicious_droppers, char *message)
+           int malicious_droppers, int maxnetbps, char *message)
 {
   int ret;
   unsigned long long m_len;
@@ -282,6 +282,9 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONG,
                                                   &malicious_droppers,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONG,
+                                                  &maxnetbps,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_BLOB,
                                                   message,
