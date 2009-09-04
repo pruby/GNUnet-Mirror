@@ -164,7 +164,7 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
      handle accordingly */
   if ( (num_keywords == 1) &&
        (strlen(keywords[0]) > strlen(GNUNET_ECRS_URI_PREFIX)) &&
-       (strncmp(keywords[0], GNUNET_ECRS_URI_PREFIX, strlen(GNUNET_ECRS_URI_PREFIX)) ) &&
+       (strncmp(keywords[0], GNUNET_ECRS_URI_PREFIX, strlen(GNUNET_ECRS_URI_PREFIX)) == 0) &&
        (NULL != (uri = GNUNET_ECRS_string_to_uri(ectx, keywords[0])) ) )
     return uri;
   uri = GNUNET_malloc (sizeof (URI));
