@@ -64,6 +64,7 @@ static unsigned long long malicious_getters;
 static unsigned long long malicious_droppers;
 static unsigned long long totalBytesDropped;
 static unsigned long long totalMessagesDropped;
+static unsigned long long unknownPeers;
 static unsigned long long maxnetbps;
 
 static int randomized_gets;
@@ -179,6 +180,11 @@ getPeers (const char *name, unsigned long long value, void *cls)
       fprintf (stderr, "%s : %llu\n", name, value);
     }
 
+  if ((value > 0)
+      && (strstr (name, _("# dv messages to unknown peers")) != NULL))
+    {
+      unknownPeers += value;
+    }
   return GNUNET_OK;
 }
 
@@ -442,6 +448,9 @@ do_testing (int argc, char *const *argv)
       GNUNET_DV_DHT_context_destroy (dctx[j]);
     }
 
+  totalMessagesDropped = 0;
+  totalBytesDropped = 0;
+  unknownPeers = 0;
   for (i = 0; i < num_peers; i++)
     {
       if (GNUNET_shutdown_test () == GNUNET_YES)
@@ -466,9 +475,12 @@ do_testing (int argc, char *const *argv)
       GNUNET_REMOTE_kill_daemon (pos);
       pos = pos->next;
     }
-
+  fprintf (stdout,
+           "Updating trial with end information.\nTrialuid: %llu\nMessages Dropped: %llu\nBytes Dropped: %llu\nDV Messages to Unknown Peers: %llu\n",
+           trialuid, totalMessagesDropped, totalBytesDropped, unknownPeers);
   ret =
-    sqlapi->update_trial (trialuid, totalMessagesDropped, totalBytesDropped);
+    sqlapi->update_trial (trialuid, totalMessagesDropped, totalBytesDropped,
+                          unknownPeers);
   GNUNET_free (peers);
   return ret;
 }
