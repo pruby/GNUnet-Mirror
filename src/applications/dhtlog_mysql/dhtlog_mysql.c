@@ -69,7 +69,7 @@ static struct GNUNET_MysqlStatementHandle *insert_trial;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_dhtkey;
 
-#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW(), totalMessagesDropped = ?, totalBytesDropped = ? where trialuid = ?"
+#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW(), totalMessagesDropped = ?, totalBytesDropped = ?, unknownPeers = ?, where trialuid = ?"
 static struct GNUNET_MysqlStatementHandle *update_trial;
 
 #define UPDATE_CONNECTIONS_STMT "UPDATE trials set totalConnections = ? where trialuid = ?"
@@ -157,6 +157,7 @@ itable ()
              "`message` text NOT NULL,"
              "`totalMessagesDropped` int(10) unsigned NOT NULL,"
              "`totalBytesDropped` int(10) unsigned NOT NULL,"
+             "`unknownPeers` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`trialuid`),"
              "UNIQUE KEY `trialuid` (`trialuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
@@ -241,7 +242,8 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
            float topology_modifier, float logNMultiplier,
            int puts, int gets, int concurrent, int settle_time,
            int num_rounds, int malicious_getters, int malicious_putters,
-           int malicious_droppers, int maxnetbps, char *message)
+           int malicious_droppers, unsigned long long maxnetbps,
+           char *message)
 {
   int ret;
   unsigned long long m_len;
@@ -462,7 +464,8 @@ add_node (unsigned long long *nodeuid, GNUNET_PeerIdentity * node)
 int
 update_trials (unsigned long long trialuid,
                unsigned long long totalMessagesDropped,
-               unsigned long long totalBytesDropped)
+               unsigned long long totalBytesDropped,
+               unsigned long long unknownPeers)
 {
   int ret;
 #if DEBUG_DHTLOG
@@ -480,6 +483,9 @@ update_trials (unsigned long long trialuid,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &totalBytesDropped,
+                                                  GNUNET_YES,
+                                                  MYSQL_TYPE_LONGLONG,
+                                                  &unknownPeers,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_LONGLONG,
                                                   &trialuid, GNUNET_YES, -1)))
