@@ -35,6 +35,7 @@
 #include "gnunet_dhtlog_service.h"
 
 #define DEFAULT_MAX_THREADS 100
+#define DEBUG_TESTING GNUNET_NO
 
 struct GNUNET_DV_DHT_keys
 {
@@ -160,24 +161,32 @@ getPeers (const char *name, unsigned long long value, void *cls)
 {
   if ((value > 0) && (strstr (name, _("# dv")) != NULL))
     {
+#if DEBUG_TESTING
       fprintf (stderr, "%s : %llu\n", name, value);
+#endif
     }
   else if ((value > 0)
            && (strstr (name, _("# outgoing messages dropped")) != NULL))
     {
       totalMessagesDropped += value;
+#if DEBUG_TESTING
       fprintf (stderr, "%s : %llu\n", name, value);
+#endif
     }
   else if ((value > 0)
            && (strstr (name, _("# bytes of outgoing messages dropped")) !=
                NULL))
     {
       totalBytesDropped += value;
+#if DEBUG_TESTING
       fprintf (stderr, "%s : %llu\n", name, value);
+#endif
     }
   else if ((value > 0) && (strstr (name, _("dropped")) != NULL))
     {
+#if DEBUG_TESTING
       fprintf (stderr, "%s : %llu\n", name, value);
+#endif
     }
 
   if ((value > 0)
@@ -209,8 +218,10 @@ do_testing (int argc, char *const *argv)
   int l;
   int j;
 
+  int modnum;
+  int dotnum;
   int key_count;
-
+  int total_get_count;
   int random_peers[max_threads];
   int random_peer;
   int random_key;
@@ -297,9 +308,11 @@ do_testing (int argc, char *const *argv)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
+#if DEBUG_TESTING
           fprintf (stderr, "Peer %d (%s:%d, pid %s):\n", i,
                    peer_array[i]->hostname, peer_array[i]->port,
                    peer_array[i]->pid);
+#endif
           sock =
             GNUNET_client_connection_create (NULL, peer_array[i]->config);
 
@@ -323,6 +336,9 @@ do_testing (int argc, char *const *argv)
       return GNUNET_SYSERR;
     }
 
+  modnum = put_items / 4;
+  dotnum = put_items / 50;
+  fprintf(stdout, "Insert Progress:\n\[");
   for (i = 0; i < put_items; i++)
     {
       random_peer = 0;
@@ -332,14 +348,20 @@ do_testing (int argc, char *const *argv)
           random_peer =
             GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
           if (peer_array[random_peer]->malicious_val != 0)
+          {
+#if DEBUG_TESTING
             fprintf (stdout,
                      "Skipping peer %d because it is set to be malicious!\n",
                      random_peer);
+#endif
+          }
         }
 
       random_key = i;
+#if DEBUG_TESTING
       fprintf (stdout, "Inserting key %d at peer %d\n", random_key,
                random_peer);
+#endif
       if (GNUNET_OK !=
           GNUNET_DV_DHT_put (peer_array[random_peer]->config, ectx,
                              &keys[random_key].key,
@@ -350,8 +372,24 @@ do_testing (int argc, char *const *argv)
           fprintf (stdout, "Insert FAILED at peer %d\n", random_peer);
           failed_inserts++;
         }
+
+      if (i % modnum == 0)
+      {
+        if (i == 0)
+          fprintf(stdout, "0%%");
+        else
+          fprintf(stdout, "%d%%", (int)(((float)(i + 1)/put_items)*100));
+
+      }
+      else if (i % dotnum == 0)
+      {
+        fprintf(stdout, ".");
+      }
+      fflush(stdout);
       GNUNET_thread_sleep (500 * GNUNET_CRON_MILLISECONDS);
     }
+  fprintf(stdout, "%d%%", (int)(((float)i/put_items)*100));
+  fprintf(stdout, "]");
   fprintf (stdout, "Inserted %d items\n",
            (int) put_items - (int) failed_inserts);
 
@@ -362,6 +400,10 @@ do_testing (int argc, char *const *argv)
            "Will perform %llu total gets, in request blocks of size %llu\n",
            (get_requests / concurrent_requests) * concurrent_requests,
            concurrent_requests);
+  modnum = ((get_requests / concurrent_requests) * concurrent_requests) / 4;
+  dotnum = ((get_requests / concurrent_requests) * concurrent_requests) / 50;
+  fprintf(stdout, "GET Progress:\n\[");
+  total_get_count = 0;
   for (i = 0; i < get_requests / concurrent_requests; i++)
     {
       if (i > 0)
@@ -377,9 +419,13 @@ do_testing (int argc, char *const *argv)
               random_peers[thread_count] =
                 GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
               if (peer_array[random_peers[thread_count]]->malicious_val != 0)
+              {
+#if DEBUG_TESTING
                 fprintf (stdout,
                          "Skipping peer %d because it is set to be malicious!\n",
                          random_peers[thread_count]);
+#endif
+              }
             }
 
           if (randomized_gets == GNUNET_YES)
@@ -398,13 +444,30 @@ do_testing (int argc, char *const *argv)
                                           [random_peers[thread_count]]->
                                           config, ectx, &result_callback,
                                           &keys[random_key]);
+#if DEBUG_TESTING
           fprintf (stdout, "Searching for key %d from peer %d\n", random_key,
                    random_peers[thread_count]);
+#endif
           gets[thread_count] =
             GNUNET_DV_DHT_get_start (dctx[thread_count],
                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                      &keys[random_key].key);
           GNUNET_GE_ASSERT (NULL, gets[thread_count] != NULL);
+          if (total_get_count % modnum == 0)
+          {
+            if (total_get_count == 0)
+            {
+              fprintf(stdout, "0%%");
+            }
+            else
+              fprintf(stdout, "%d%%", (int)(((float)total_get_count/((get_requests / concurrent_requests) * concurrent_requests))*100));
+          }
+          else if (total_get_count % dotnum == 0)
+          {
+            fprintf(stdout, ".");
+          }
+          total_get_count++;
+          fflush(stdout);
           thread_count++;
         }
 
@@ -420,29 +483,37 @@ do_testing (int argc, char *const *argv)
           fflush (stdout);
           GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
         }
-
+#if DEBUG_TESTING
       printf ("Found %u out of %llu attempts.\n", new_found,
               concurrent_requests);
+#endif
 
       if (thread_count >= max_threads)
         {
           for (j = 0; j < thread_count; j++)
             {
+#if DEBUG_TESTING
               printf ("Stopping request %d\n", j);
+#endif
               GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
               GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
               GNUNET_DV_DHT_context_destroy (dctx[j]);
             }
           thread_count = 0;
         }
+#if DEBUG_TESTING
       else
         printf ("Thread count is %d\n", thread_count);
+#endif
     }
+  fprintf(stdout, "%d%%]", (int)(((float)i/((get_requests / concurrent_requests) * concurrent_requests))*100));
 
-  printf ("Found %u out of %llu attempts.\n", found, get_requests);
+  printf ("Found %u out of %llu attempts.\n", found, (get_requests / concurrent_requests) * concurrent_requests);
   for (j = 0; j < thread_count; j++)
     {
+#if DEBUG_TESTING
       printf ("Stopping request %d\n", j);
+#endif
       GNUNET_DV_DHT_get_stop (dctx[j], gets[j]);
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       GNUNET_DV_DHT_context_destroy (dctx[j]);
@@ -455,9 +526,11 @@ do_testing (int argc, char *const *argv)
     {
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
+#if DEBUG_TESTING
       fprintf (stderr, "Peer %d (%s:%d, pid %s):\n", i,
                peer_array[i]->hostname, peer_array[i]->port,
                peer_array[i]->pid);
+#endif
       sock = GNUNET_client_connection_create (NULL, peer_array[i]->config);
 
       if (GNUNET_SYSERR ==
