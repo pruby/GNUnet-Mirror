@@ -69,7 +69,7 @@ static struct GNUNET_MysqlStatementHandle *insert_trial;
                           "VALUES (?, ?, ?)"
 static struct GNUNET_MysqlStatementHandle *insert_dhtkey;
 
-#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW(), totalMessagesDropped = ?, totalBytesDropped = ?, unknownPeers = ?, where trialuid = ?"
+#define UPDATE_TRIALS_STMT "UPDATE trials set endtime=NOW(), totalMessagesDropped = ?, totalBytesDropped = ?, unknownPeers = ? where trialuid = ?"
 static struct GNUNET_MysqlStatementHandle *update_trial;
 
 #define UPDATE_CONNECTIONS_STMT "UPDATE trials set totalConnections = ? where trialuid = ?"
@@ -285,7 +285,7 @@ add_trial (unsigned long long *trialuid, int num_nodes, int topology,
                                                   MYSQL_TYPE_LONG,
                                                   &malicious_droppers,
                                                   GNUNET_YES,
-                                                  MYSQL_TYPE_LONG,
+                                                  MYSQL_TYPE_LONGLONG,
                                                   &maxnetbps,
                                                   GNUNET_YES,
                                                   MYSQL_TYPE_BLOB,
