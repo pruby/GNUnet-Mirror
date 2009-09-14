@@ -62,12 +62,13 @@ static FILE *globalDotFile;
  * @param hostname hostname or ip address of remote machine
  * @param username username to use for ssh (assumed to be used with ssh-agent)
  * @param remote_friend_file_path path for friend file on remote machine
+ * @param prepend_exec prepend gnunetd command with prepend_exec (such as valgrind)
  */
 int
 GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                             char *localConfigPath, char *configFileName,
                             char *remote_config_path, char *hostname,
-                            char *username, char *remote_friend_file_path)
+                            char *username, char *remote_friend_file_path, char *prepend_exec)
 {
   char *cmd;
   int length;
@@ -135,20 +136,20 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   if (is_local)
     {
       length =
-        snprintf (NULL, 0, "%sgnunetd -c %s%s &",
+        snprintf (NULL, 0, "%s %sgnunetd -c %s%s &", prepend_exec,
                   gnunetd_home, remote_config_path, configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "%sgnunetd -c %s%s &", gnunetd_home,
+      snprintf (cmd, length + 1, "%s %sgnunetd -c %s%s &", prepend_exec, gnunetd_home,
                 remote_config_path, configFileName);
     }
   else
     {
       length =
-        snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s &", username,
-                  hostname, gnunetd_home, remote_config_path, configFileName);
+        snprintf (NULL, 0, "ssh %s@%s %s %sgnunetd -c %s%s &", username,
+                  hostname, prepend_exec, gnunetd_home, remote_config_path, configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s &",
-                username, hostname, gnunetd_home, remote_config_path,
+      snprintf (cmd, length + 1, "ssh %s@%s %s %sgnunetd -c %s%s &",
+                username, hostname, prepend_exec, gnunetd_home, remote_config_path,
                 configFileName);
 
     }
@@ -333,6 +334,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   char *temp_host_string;
   char *temp_remote_config_path;
   char *dotOutFileName;
+  char *prepend_exec;
 
   unsigned long long starting_port;
   unsigned long long port_increment;
@@ -366,9 +368,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   double percentage;
   double logNModifier;
 
-  double malicious_getter_num;
-  double malicious_putter_num;
-  double malicious_dropper_num;
+  int malicious_getter_num;
+  int malicious_putter_num;
+  int malicious_dropper_num;
 
   length = 0;
   ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
@@ -382,6 +384,10 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             "SSH_USERNAME", "",
                                             &ssh_username);
 
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "PREPEND_EXECUTABLE", "",
+                                            &prepend_exec);
+
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "TOPOLOGY", 0, -1, 0, &topology);
 
@@ -391,7 +397,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             &malicious_getters);
 
   if (malicious_getters > 0)
-    malicious_getter_num = number_of_daemons / malicious_getters;
+    malicious_getter_num = (int)(number_of_daemons / malicious_getters);
+  else
+    malicious_getter_num = 0;
 
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "MALICIOUS_PUTTERS", 0,
@@ -399,7 +407,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             &malicious_putters);
 
   if (malicious_putters > 0)
-    malicious_putter_num = number_of_daemons / malicious_putters;
+    malicious_putter_num = (int)(number_of_daemons / malicious_putters);
+  else
+    malicious_putter_num = 0;
 
   GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
                                             "MALICIOUS_DROPPERS", 0,
@@ -407,7 +417,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             &malicious_droppers);
 
   if (malicious_droppers > 0)
-    malicious_dropper_num = number_of_daemons / malicious_droppers;
+    malicious_dropper_num = (int)(number_of_daemons / malicious_droppers);
+  else
+    malicious_dropper_num = 0;
 
   type_of_topology = (unsigned int) topology;
 
@@ -759,7 +771,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
                                           temp, remote_config_path,
                                           curr_host, ssh_username,
-                                          temp_pos->remote_friend_file_path);
+                                          temp_pos->remote_friend_file_path, prepend_exec);
 
               next_peer =
                 GNUNET_malloc (sizeof
@@ -1044,7 +1056,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                               temp, remote_config_path,
                                               curr_host, ssh_username,
                                               temp_pos->
-                                              remote_friend_file_path);
+                                              remote_friend_file_path, prepend_exec);
 
                   next_peer =
                     GNUNET_malloc (sizeof

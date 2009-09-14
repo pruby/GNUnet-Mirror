@@ -78,7 +78,7 @@ int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                                 char *localConfigPath, char *configFileName,
                                 char *remote_config_path, char *ip_address,
                                 char *username,
-                                char *remote_friend_file_path);
+                                char *remote_friend_file_path, char *prepend_exec);
 
 /**
  * Main start function to be called.  Needs a remote config specified, as well
