@@ -69,6 +69,11 @@ typedef struct
    */
   GNUNET_PeerIdentity neighbor GNUNET_PACKED;
 
+  /*
+   * Neighbor ID to use when sending to this peer
+   */
+  unsigned int neighbor_id;
+
 } p2p_dv_MESSAGE_NeighborInfo;
 
 /**
@@ -80,13 +85,24 @@ typedef struct
 
   /**
    * Identity of peer that sent the message
-   */
+
   GNUNET_PeerIdentity sender GNUNET_PACKED;
+  */
+  /**
+   * Identity of neighbor this message is going to
+
+  GNUNET_PeerIdentity recipient GNUNET_PACKED;
+   */
+
+  /**
+   * Identity of peer that sent the message
+   */
+  unsigned int sender GNUNET_PACKED;
 
   /**
    * Identity of neighbor this message is going to
-   */
-  GNUNET_PeerIdentity recipient GNUNET_PACKED;
+  */
+  unsigned int recipient GNUNET_PACKED;
 
 } p2p_dv_MESSAGE_Data;
 
@@ -126,6 +142,12 @@ struct GNUNET_dv_neighbor
    * Last time we received routing information from this peer
    */
   GNUNET_CronTime last_activity;
+
+  /*
+   * Random identifier we use for this peer, to be used as shortcut
+   * instead of sending full peer id for each message
+   */
+  unsigned int neighbor_id;
 };
 
 #endif
