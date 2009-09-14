@@ -233,7 +233,7 @@ main (int argc, char **argv)
         ret =
           test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer7->peer);
-      sleep (300);
+      sleep (60);
     }
   GNUNET_client_connection_destroy (sock);
 #if START_PEERS
