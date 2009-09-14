@@ -36,7 +36,9 @@ div {color:black;font-family:verdana}
       <td><b>Malicious<br/>Getters</b></td>
       <td><b>Malicious<br/>Putters</b></td>
       <td><b>Malicious<br/>Droppers</b></td>
-      <td><b>Trial<br/>Comment</b></td>
+			<td><b>Max BPS</b></td>
+			<td><b>Messages Dropped</b></td>
+      <td style="width:150px"><b>Trial<br/>Comment</b></td>
     </tr>
 
 ENDHTML
@@ -51,7 +53,7 @@ while($data = $rth->fetchrow_hashref())
   <td><a href=\"trial.cgi?trialuid=$$data{'trialuid'}\">$$data{'trialuid'}</a></td>
   <td>$$data{'numnodes'}</td>
   <td>$topologies{$topology_int}</td>
-  <td class=\"inner\">$$data{'topology_modifier'}</td>
+  <td class=\"inner\">" . (int($$data{'topology_modifier'} * 10000) / 10000) . "</td>
   <td class=\"inner\">$$data{'logNMultiplier'}</td>
   <td>$$data{'puts'}</td>
   <td>$$data{'gets'}</td>
@@ -61,7 +63,9 @@ while($data = $rth->fetchrow_hashref())
   <td>$$data{'malicious_getters'}</td>
   <td>$$data{'malicious_putters'}</td>
   <td>$$data{'malicious_droppers'}</td>
-  <td>$$data{'message'}</td>
+	<td>$$data{'maxnetbps'}</td>
+	<td>$$data{'totalMessagesDropped'}</td>
+  <td style=\"width:150px\">$$data{'message'}</td>
   </tr>";
   print $table_line . "\n";
 }

@@ -26,8 +26,9 @@ if ($numnodes > 0)
   my $malicious_putters = $c->param("malicious_putters");
   my $malicious_get_frequency = $c->param("malicious_get_frequency");
   my $malicious_put_frequency = $c->param("malicious_put_frequency");
+	my $maxnetbps = $c->param("maxnetbps");
   my $message = $c->param("message");
-  $sqlinsert = "insert into trialsToRun (numnodes, concurrent, settle_time, puts, gets, topology, topology_modifier, logNMultiplier, malicious_getters, malicious_get_frequency, malicious_putters, malicious_put_frequency, malicious_droppers, message) values (\'$numnodes\', \'$concurrent\', \'$settle_time\', \'$puts\', \'$gets\', \'$topology\', \'$topology_modifier\', \'$logNMultiplier\', \'$malicious_getters\', \'$malicious_get_frequency\', \'$malicious_putters\', \'$malicious_put_frequency\', \'$malicious_droppers\', \'$message\')";
+  $sqlinsert = "insert into trialsToRun (numnodes, concurrent, settle_time, puts, gets, topology, topology_modifier, logNMultiplier, malicious_getters, malicious_get_frequency, malicious_putters, malicious_put_frequency, malicious_droppers, maxnetbps, message) values (\'$numnodes\', \'$concurrent\', \'$settle_time\', \'$puts\', \'$gets\', \'$topology\', \'$topology_modifier\', \'$logNMultiplier\', \'$malicious_getters\', \'$malicious_get_frequency\', \'$malicious_putters\', \'$malicious_put_frequency\', \'$malicious_droppers\', \'$maxnetbps\', \'$message\')";
   my $rth = $dbh->prepare($sqlinsert);
   $rth->execute();
 
@@ -68,6 +69,7 @@ td.inner {text-align:center}
       <td><b>Malicious Putters</b></td>
       <td><b>Malicious Put Frequency</b></td>
       <td><b>Malicious Droppers</b></td>
+			<td><b>Maxnetbps</b></td>
       <td><b>Message</b></td>
     </tr>
 
@@ -91,13 +93,14 @@ while($data = $rth->fetchrow_hashref())
   <td class=\"inner\">$$data{'malicious_putters'}</td>
   <td class=\"inner\">$$data{'malicious_put_frequency'}</td>
   <td class=\"inner\">$$data{'malicious_droppers'}</td>
+	<td class=\"inner\">$$data{'maxnetbps'}</td>
   <td class=\"inner\">$$data{'message'}</td></tr>";
   print $table_line . "\n";
 }
 print <<ENDHTML;
 <form name="add_row" type=get>
     <tr>
-      <td>----</td><td><input size=3 type="text" name="numnodes"/></td><td><select name="topology">
+      <td>----</td><td><input size=3 type="text" name="numnodes" value="100" /></td><td><select name="topology">
 ENDHTML
   foreach $key (keys(%topologies))
   { 
@@ -112,17 +115,18 @@ ENDHTML
   }
 print <<ENDHTML;
       </select></td>
-      <td><input size=4 type="text" name="topology_modifier"</td>
-      <td><input size=4 type="text" name="logNMultiplier"</td>
-      <td><input size=5 type="text" name="puts" /></td>
-      <td><input size=5 type="text" name="gets"/></td>
-      <td><input size=3 type="text" name="concurrent" /></td>
-      <td><input size=3 type="text" name="settle_time"/></td>
-      <td><input size=3 type="text" name="malicious_getters"/></td>
+      <td><input size=4 type="text" name="topology_modifier" value="1"</td>
+      <td><input size=4 type="text" name="logNMultiplier" value="1"</td>
+      <td><input size=5 type="text" name="puts" value="100" /></td>
+      <td><input size=5 type="text" name="gets" value="100" /></td>
+      <td><input size=3 type="text" name="concurrent" value="20" /></td>
+      <td><input size=3 type="text" name="settle_time" value="5" /></td>
+      <td><input size=3 type="text" name="malicious_getters" value="0" /></td>
       <td><input size=3 type="text" name="malicious_get_frequency"/></td>
-      <td><input size=3 type="text" name="malicious_putters"/></td>
+      <td><input size=3 type="text" name="malicious_putters" value="0" /></td>
       <td><input size=3 type="text" name="malicious_put_frequency"/></td>
-      <td><input size=3 type="text" name="malicious_droppers"/></td>
+      <td><input size=3 type="text" name="malicious_droppers" value="0" /></td>
+			<td><input size=20 type="text" name="maxnetbps"/></td>
       <td><input type="text" name="message"/></td>
     </tr>
     <tr><td colspan=14 class="inner"><input type="submit" value="Add Trial" /></td></tr>

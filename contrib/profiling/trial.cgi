@@ -34,6 +34,7 @@ td.inner {text-align:center}
       <td class="inner"><b>Topology</b></td>
       <td class="inner"><b>Topology<br/>Modifier</b></td>
       <td class="inner"><b>Log<br/>Multiplier</b></td>
+      <td class="inner"><b>BPM</b></td>
       <td><b># Puts</b></td><td><b>#Gets</b></td>
       <td class="inner"><b>Concurrent<br/>Requests</b></td>
       <td class="inner"><b>Settle<br/>Time</b></td>
@@ -42,6 +43,7 @@ td.inner {text-align:center}
       <td class="inner"><b>ln(N)<br/>Multiplier</b></td>
       <td class="inner"><b>Messages<br/>Dropped</b></td>
       <td class="inner"><b>Bytes<br/>Dropped</b></td>
+			<td class="inner"><b>DV Messages<br/>to Unknown<br/>Peers</b></td>
       <td class="inner"><b>Trial<br/>Comment</b></td>
     </tr>
 
@@ -66,6 +68,7 @@ while($data = $rth->fetchrow_hashref())
   <td class=\"inner\">$topologies{$topology_int}</td>
   <td class=\"inner\">$$data{'topology_modifier'}</td>
   <td class=\"inner\">$$data{'logNMultiplier'}</td>
+	<td class=\"inner\">$$data{'maxnetbps'}</td>
   <td class=\"inner\">$$data{'puts'}</td>
   <td class=\"inner\">$$data{'gets'}</td>
   <td class=\"inner\">$$data{'concurrent'}</td>
@@ -75,6 +78,7 @@ while($data = $rth->fetchrow_hashref())
   <td class=\"inner\">" . int(100 * log($$data{'numnodes'}))/100 . "</td>
   <td class=\"inner\">$$data{'totalMessagesDropped'}</td>
   <td class=\"inner\">$$data{'totalBytesDropped'}</td>
+	<td class=\"inner\">$$data{'unknownPeers'}</td>
   <td class=\"inner\">$$data{'message'}</td>
   </tr>";
   print $table_line . "\n";
