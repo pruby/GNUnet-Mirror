@@ -475,12 +475,7 @@ do_testing (int argc, char *const *argv)
         {
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
-          if (9 == (k % 10))
-            {
-              printf (".");
-              fflush (stdout);
-            }
-          fflush (stdout);
+
           GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
         }
 #if DEBUG_TESTING
