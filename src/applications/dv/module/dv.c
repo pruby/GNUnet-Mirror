@@ -46,6 +46,7 @@
 static GNUNET_Stats_ServiceAPI *stats;
 static int stat_dv_total_peers;
 static int stat_dv_sent_messages;
+static int stat_dv_actual_sent_messages;
 static int stat_dv_received_messages;
 static int stat_dv_forwarded_messages;
 static int stat_dv_failed_forwards;
@@ -269,8 +270,8 @@ send_message (const GNUNET_PeerIdentity * recipient,
       recipient_id = 0;
     }
   else if (GNUNET_YES ==
-      GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
-                                      &recipient->hashPubKey))
+           GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                           &recipient->hashPubKey))
     {
       neighbor =
         GNUNET_multi_hash_map_get (ctx->extended_neighbors,
@@ -278,7 +279,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
       recipient_id = neighbor->neighbor_id;
     }
   else
-  {
+    {
 #if DEBUG_DV_FORWARD
       GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
       GNUNET_hash_to_enc (&recipient->hashPubKey, &encRecipient);
@@ -288,28 +289,30 @@ send_message (const GNUNET_PeerIdentity * recipient,
                      "%s: I AM:\n%s\nAsked to send message to unknown peer:\n%s\n\n",
                      &shortID, (char *) &encMe, (char *) &encRecipient);
 #endif
-    if (stats != NULL)
-      stats->change (stat_dv_unknown_peer, 1);
+      if (stats != NULL)
+        stats->change (stat_dv_unknown_peer, 1);
 
-    ret = GNUNET_SYSERR;
-    GNUNET_mutex_unlock (ctx->dvMutex);
-    return ret;
-  }
+      ret = GNUNET_SYSERR;
+      GNUNET_mutex_unlock (ctx->dvMutex);
+      return ret;
+    }
 
-  if (memcmp(&coreAPI->my_identity->hashPubKey, &original_sender->hashPubKey, sizeof (GNUNET_HashCode)) == 0)
-  {
-    original_sender_id = 0;
-  }
+  if (memcmp
+      (&coreAPI->my_identity->hashPubKey, &original_sender->hashPubKey,
+       sizeof (GNUNET_HashCode)) == 0)
+    {
+      original_sender_id = 0;
+    }
   else if (GNUNET_YES ==
-      GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
-                                      &original_sender->hashPubKey))
+           GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                           &original_sender->hashPubKey))
     {
       neighbor = GNUNET_multi_hash_map_get (ctx->extended_neighbors,
                                             &original_sender->hashPubKey);
       original_sender_id = neighbor->neighbor_id;
     }
   else
-  {
+    {
 #if DEBUG_DV_FORWARD
       GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
       GNUNET_hash_to_enc (&original_sender->hashPubKey, &encSender);
@@ -319,13 +322,13 @@ send_message (const GNUNET_PeerIdentity * recipient,
                      "%s: I AM:\n%s\nAsked to send message from unknown peer:\n%s\n\n",
                      &shortID, (char *) &encMe, (char *) &encSender);
 #endif
-    if (stats != NULL)
-      stats->change (stat_dv_unknown_peer, 1);
+      if (stats != NULL)
+        stats->change (stat_dv_unknown_peer, 1);
 
-    ret = GNUNET_SYSERR;
-    GNUNET_mutex_unlock (ctx->dvMutex);
-    return ret;
-  }
+      ret = GNUNET_SYSERR;
+      GNUNET_mutex_unlock (ctx->dvMutex);
+      return ret;
+    }
 
   if (GNUNET_YES ==
       GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
@@ -344,8 +347,8 @@ send_message (const GNUNET_PeerIdentity * recipient,
       toSend = GNUNET_malloc (msg_size);
       toSend->header.size = htons (msg_size);
       toSend->header.type = htons (GNUNET_P2P_PROTO_DV_DATA_MESSAGE);
-      toSend->sender = htonl(original_sender_id);
-      toSend->recipient = htonl(recipient_id);
+      toSend->sender = htonl (original_sender_id);
+      toSend->recipient = htonl (recipient_id);
       memcpy (&toSend[1], message, ntohs (message->size));
 #if DEBUG_DV_FORWARD
       GNUNET_hash_to_enc (&original_sender->hashPubKey, &encMe);
@@ -383,13 +386,15 @@ send_message (const GNUNET_PeerIdentity * recipient,
           coreAPI->ciphertext_send (neighbor->neighbor, &toSend->header,
                                     importance, maxdelay);
         }
+      if (stats != NULL)
+        stats->change (stat_dv_actual_sent_messages, 1);
       GNUNET_free (toSend);
       ret = (int) cost;
     }
   else
-  {
-    ret = GNUNET_SYSERR;
-  }
+    {
+      ret = GNUNET_SYSERR;
+    }
 
   GNUNET_mutex_unlock (ctx->dvMutex);
   return ret;
@@ -404,7 +409,8 @@ send_message (const GNUNET_PeerIdentity * recipient,
  * @message message being forwarded
  */
 static int
-forward_message (const p2p_dv_MESSAGE_Data * message, GNUNET_PeerIdentity *sender)
+forward_message (const p2p_dv_MESSAGE_Data * message,
+                 GNUNET_PeerIdentity * sender)
 {
 #if DEBUG_DV_FORWARD
   GNUNET_EncName encMe;
@@ -434,61 +440,64 @@ forward_message (const p2p_dv_MESSAGE_Data * message, GNUNET_PeerIdentity *sende
       return GNUNET_SYSERR;
     }
 
-  GNUNET_mutex_lock(ctx->dvMutex);
+  GNUNET_mutex_lock (ctx->dvMutex);
   original_sender = NULL;
-  if (ntohl(message->sender) == 0)
-  {
-    original_sender = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-    memcpy(original_sender, sender, sizeof(GNUNET_PeerIdentity));
-  }
-  else
-  {
-    for (i = 0; i < ctx->max_table_size * 2; i++)
+  if (ntohl (message->sender) == 0)
     {
-      if (ntohl(message->sender) == ctx->neighbor_id_array[i].neighbor_id)
-      {
-        original_sender = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-        memcpy(original_sender, &ctx->neighbor_id_array[i].identity, sizeof(GNUNET_PeerIdentity));
-      }
+      original_sender = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+      memcpy (original_sender, sender, sizeof (GNUNET_PeerIdentity));
     }
-  }
+  else
+    {
+      for (i = 0; i < ctx->max_table_size * 2; i++)
+        {
+          if (ntohl (message->sender) ==
+              ctx->neighbor_id_array[i].neighbor_id)
+            {
+              original_sender = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+              memcpy (original_sender, &ctx->neighbor_id_array[i].identity,
+                      sizeof (GNUNET_PeerIdentity));
+            }
+        }
+    }
 
   recipient = NULL;
   for (i = 0; i < ctx->max_table_size * 2; i++)
-  {
-    if (ntohl(message->recipient) == ctx->neighbor_id_array[i].neighbor_id)
     {
-      recipient = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-      memcpy(recipient, &ctx->neighbor_id_array[i].identity, sizeof(GNUNET_PeerIdentity));
+      if (ntohl (message->recipient) == ctx->neighbor_id_array[i].neighbor_id)
+        {
+          recipient = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+          memcpy (recipient, &ctx->neighbor_id_array[i].identity,
+                  sizeof (GNUNET_PeerIdentity));
+        }
     }
-  }
-  GNUNET_mutex_unlock(ctx->dvMutex);
+  GNUNET_mutex_unlock (ctx->dvMutex);
 
 #if DEBUG_DV_FORWARD
-      GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
-      GNUNET_hash_to_enc (&recipient->hashPubKey, &encRecipient);
-      GNUNET_hash_to_enc (&original_sender->hashPubKey, &encOrigin);
+  GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
+  GNUNET_hash_to_enc (&recipient->hashPubKey, &encRecipient);
+  GNUNET_hash_to_enc (&original_sender->hashPubKey, &encOrigin);
 
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     "%s: Received message for:\n%s\nI am:\n%s\nOriginal Sender:\n%s\n",
-                     &shortID, (char *) &encRecipient, (char *) &encMe,
-                     (char *) &encOrigin);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "%s: Received message for:\n%s\nI am:\n%s\nOriginal Sender:\n%s\n",
+                 &shortID, (char *) &encRecipient, (char *) &encMe,
+                 (char *) &encOrigin);
 #endif
 
   if ((recipient != NULL) && (original_sender != NULL))
-  {
-    ret = send_message (recipient, original_sender,
-                        packed_message, DV_PRIORITY, DV_DELAY);
-  }
+    {
+      ret = send_message (recipient, original_sender,
+                          packed_message, DV_PRIORITY, DV_DELAY);
+    }
   else
-  {
-    ret = GNUNET_SYSERR;
-  }
+    {
+      ret = GNUNET_SYSERR;
+    }
 
-  GNUNET_free_non_null(original_sender);
-  GNUNET_free_non_null(recipient);
+  GNUNET_free_non_null (original_sender);
+  GNUNET_free_non_null (recipient);
   return ret;
 }
 
@@ -517,12 +526,13 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
   int i;
 
 #if DEBUG_DV_FORWARD
-        GNUNET_hash_to_enc (&sender->hashPubKey, &encSender);
-        GNUNET_GE_LOG (coreAPI->ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                       GNUNET_GE_BULK,
-                       "%s: Received data message:\nImmediate sender:\n%s\nOriginal Sender ID:\n%d\nDestination ID:%d\n",
-                       &shortID, (char *)&encSender, ntohl(incoming->sender), ntohl(incoming->recipient));
+  GNUNET_hash_to_enc (&sender->hashPubKey, &encSender);
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "%s: Received data message:\nImmediate sender:\n%s\nOriginal Sender ID:\n%d\nDestination ID:%d\n",
+                 &shortID, (char *) &encSender, ntohl (incoming->sender),
+                 ntohl (incoming->recipient));
 
 #endif
   ret = GNUNET_OK;
@@ -556,63 +566,83 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
   if (stats != NULL)
     stats->change (stat_dv_received_messages, 1);
 
-  GNUNET_mutex_lock(ctx->dvMutex);
+  GNUNET_mutex_lock (ctx->dvMutex);
   original_sender = NULL;
-  if (ntohl(incoming->sender) == 0)
-  {
-    original_sender = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-    memcpy(original_sender, sender, sizeof (GNUNET_PeerIdentity));
-  }
-  else
-  {
-    for (i = 0; i < ctx->max_table_size * 2; i++)
+  if (ntohl (incoming->sender) == 0)
     {
-      if (ntohl(incoming->sender) == ctx->neighbor_id_array[i].neighbor_id)
-      {
-        original_sender = GNUNET_malloc(sizeof(GNUNET_PeerIdentity));
-        memcpy(original_sender, &ctx->neighbor_id_array[i].identity, sizeof (GNUNET_PeerIdentity));
-      }
+      original_sender = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+      memcpy (original_sender, sender, sizeof (GNUNET_PeerIdentity));
     }
-  }
-  GNUNET_mutex_unlock(ctx->dvMutex);
+  else
+    {
+      for (i = 0; i < ctx->max_table_size * 2; i++)
+        {
+          if (ntohl (incoming->sender) ==
+              ctx->neighbor_id_array[i].neighbor_id)
+            {
+              original_sender = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
+              memcpy (original_sender, &ctx->neighbor_id_array[i].identity,
+                      sizeof (GNUNET_PeerIdentity));
+            }
+        }
+    }
+  GNUNET_mutex_unlock (ctx->dvMutex);
 
-  if (ntohl(incoming->recipient) == 0)
+  if (ntohl (incoming->recipient) == 0)
     {
       if (original_sender != NULL)
-      {
-        coreAPI->loopback_send (original_sender, (char *) packed_message,
-                                ntohs (packed_message->size), GNUNET_YES, NULL);
+        {
+          coreAPI->loopback_send (original_sender, (char *) packed_message,
+                                  ntohs (packed_message->size), GNUNET_YES,
+                                  NULL);
 #if DEBUG_DV_FORWARD
-        GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
-        GNUNET_hash_to_enc (&sender->hashPubKey, &encSender);
-        GNUNET_hash_to_enc (&original_sender->hashPubKey, &encOrigin);
+          GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
+          GNUNET_hash_to_enc (&sender->hashPubKey, &encSender);
+          GNUNET_hash_to_enc (&original_sender->hashPubKey, &encOrigin);
 
-        GNUNET_GE_LOG (coreAPI->ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                       GNUNET_GE_BULK,
-                       "%s: Received message for me:\nI am:\n%s\nImmediate sender:\n%s\nOriginal Sender:\n%s\n",
-                       &shortID, (char *) &encMe,
-                       (char *) &encSender, (char *) &encOrigin);
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                         | GNUNET_GE_BULK,
+                         "%s: Received message for me:\nI am:\n%s\nImmediate sender:\n%s\nOriginal Sender:\n%s\n",
+                         &shortID, (char *) &encMe, (char *) &encSender,
+                         (char *) &encOrigin);
 
 #endif
-      }
+        }
     }
   else
     {
       if (original_sender != NULL)
-      {
-        ret = forward_message (incoming, original_sender);
-        if (stats != NULL)
-          {
-            if (ret != GNUNET_SYSERR)
-              stats->change (stat_dv_forwarded_messages, 1);
-            else
-              stats->change (stat_dv_failed_forwards, 1);
-          }
-      }
+        {
+          ret = forward_message (incoming, original_sender);
+          if (stats != NULL)
+            {
+              if (ret != GNUNET_SYSERR)
+                stats->change (stat_dv_forwarded_messages, 1);
+              else
+                stats->change (stat_dv_failed_forwards, 1);
+            }
+        }
     }
 
-  GNUNET_free_non_null(original_sender);
+  if (original_sender == NULL)
+    {
+#if DEBUG_DV_FORWARD
+      GNUNET_hash_to_enc (&coreAPI->my_identity->hashPubKey, &encMe);
+      GNUNET_hash_to_enc (&sender->hashPubKey, &encSender);
+
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "%s: Received message:\nI am:\n%s\nImmediate sender:\n%s\nOriginal Sender UNKNOWN\n",
+                     &shortID, (char *) &encMe, (char *) &encSender);
+
+#endif
+      if (stats != NULL)
+        stats->change (stat_dv_unknown_peer, 1);
+    }
+
+  GNUNET_free_non_null (original_sender);
   GNUNET_free (message_content);
   return ret;
 }
@@ -674,16 +704,19 @@ GNUNET_DV_connection_get_bandwidth_assigned_to_peer (const
  * Adds a peer to the temporary mapping between neighbor_id's and
  * GNUNET_PeerIdentity's
  */
-static int addToNeighborMap (unsigned int neighbor_id, const GNUNET_PeerIdentity *identity)
+static int
+addToNeighborMap (unsigned int neighbor_id,
+                  const GNUNET_PeerIdentity * identity)
 {
 
   if (ctx->neighbor_id_loc == ctx->max_table_size * 2)
-  {
-    ctx->neighbor_id_loc = 0;
-  }
+    {
+      ctx->neighbor_id_loc = 0;
+    }
 
   ctx->neighbor_id_array[ctx->neighbor_id_loc].neighbor_id = neighbor_id;
-  memcpy(&ctx->neighbor_id_array[ctx->neighbor_id_loc].identity, identity, sizeof(GNUNET_PeerIdentity));
+  memcpy (&ctx->neighbor_id_array[ctx->neighbor_id_loc].identity, identity,
+          sizeof (GNUNET_PeerIdentity));
   ctx->neighbor_id_loc++;
   return GNUNET_OK;
 }
@@ -772,7 +805,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer, unsigned int neighbor_id,
           neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
           neighbor->neighbor_id = neighbor_id;
           memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
-          addToNeighborMap(neighbor_id, peer);
+          addToNeighborMap (neighbor_id, peer);
 
           if (referrer == NULL)
             neighbor->referrer = NULL;
@@ -827,7 +860,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer, unsigned int neighbor_id,
           neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
           neighbor->neighbor_id = neighbor_id;
           memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
-          addToNeighborMap(neighbor_id, peer);
+          addToNeighborMap (neighbor_id, peer);
 
           if (referrer == NULL)
             neighbor->referrer = NULL;
@@ -888,7 +921,9 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
     }
   nmsg = (const p2p_dv_MESSAGE_NeighborInfo *) message;
 
-  ret = addUpdateNeighbor (&nmsg->neighbor, ntohl (nmsg->neighbor_id), sender, ntohl (nmsg->cost) + 1);
+  ret =
+    addUpdateNeighbor (&nmsg->neighbor, ntohl (nmsg->neighbor_id), sender,
+                       ntohl (nmsg->cost) + 1);
   if (stats != NULL)
     stats->change (stat_dv_received_gossips, 1);
   if (GNUNET_OK != ret)
@@ -938,7 +973,8 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       neighbor->cost = cost;
       neighbor->last_activity = GNUNET_get_time ();
       neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
-      neighbor->neighbor_id = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, RAND_MAX - 1) + 1;
+      neighbor->neighbor_id =
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, RAND_MAX - 1) + 1;
       memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
       GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
                                  neighbor, GNUNET_MultiHashMapOption_REPLACE);
@@ -1243,6 +1279,8 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
       stat_dv_total_peers = stats->create (gettext_noop ("# dv connections"));
       stat_dv_sent_messages =
         stats->create (gettext_noop ("# dv messages sent"));
+      stat_dv_sent_messages =
+        stats->create (gettext_noop ("# dv actual messages sent"));
       stat_dv_received_messages =
         stats->create (gettext_noop ("# dv messages received"));
       stat_dv_forwarded_messages =
@@ -1254,7 +1292,7 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
       stat_dv_sent_gossips =
         stats->create (gettext_noop ("# dv gossips sent"));
       stat_dv_unknown_peer =
-        stats->create (gettext_noop ("# dv messages to unknown peers"));
+        stats->create (gettext_noop ("# dv messages to/from unknown peers"));
     }
 
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
@@ -1284,12 +1322,14 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
                                             "TABLESIZE",
                                             0, -1, 100, &ctx->max_table_size);
 
-  ctx->neighbor_id_array = GNUNET_malloc (sizeof(struct NeighborID) * ctx->max_table_size * 2);
+  ctx->neighbor_id_array =
+    GNUNET_malloc (sizeof (struct NeighborID) * ctx->max_table_size * 2);
   for (i = 0; i < ctx->max_table_size * 2; i++)
-  {
-    ctx->neighbor_id_array[i].neighbor_id = 0;
-    memset(&ctx->neighbor_id_array[i].identity, 0, sizeof (GNUNET_PeerIdentity));
-  }
+    {
+      ctx->neighbor_id_array[i].neighbor_id = 0;
+      memset (&ctx->neighbor_id_array[i].identity, 0,
+              sizeof (GNUNET_PeerIdentity));
+    }
   ctx->neighbor_id_loc = 0;
 
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
@@ -1372,12 +1412,12 @@ release_module_dv ()
                        GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
 
   coreAPI->service_release (stats);
-  GNUNET_multi_hash_map_destroy(ctx->direct_neighbors);
-  GNUNET_multi_hash_map_destroy(ctx->extended_neighbors);
-  GNUNET_CONTAINER_heap_destroy(ctx->neighbor_max_heap);
-  GNUNET_CONTAINER_heap_destroy(ctx->neighbor_min_heap);
+  GNUNET_multi_hash_map_destroy (ctx->direct_neighbors);
+  GNUNET_multi_hash_map_destroy (ctx->extended_neighbors);
+  GNUNET_CONTAINER_heap_destroy (ctx->neighbor_max_heap);
+  GNUNET_CONTAINER_heap_destroy (ctx->neighbor_min_heap);
 
-  GNUNET_free(ctx->neighbor_id_array);
+  GNUNET_free (ctx->neighbor_id_array);
   stats = NULL;
   coreAPI = NULL;
 }
