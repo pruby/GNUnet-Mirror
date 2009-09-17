@@ -66,6 +66,10 @@ static unsigned long long malicious_droppers;
 static unsigned long long totalBytesDropped;
 static unsigned long long totalMessagesDropped;
 static unsigned long long unknownPeers;
+static unsigned long long forwardsFailed;
+static unsigned long long dvMessagesSent;
+static unsigned long long dvMessagesForwarded;
+static unsigned long long actualDVMessagesSent;
 static unsigned long long maxnetbps;
 
 static int randomized_gets;
@@ -190,9 +194,39 @@ getPeers (const char *name, unsigned long long value, void *cls)
     }
 
   if ((value > 0)
-      && (strstr (name, _("# dv messages to unknown peers")) != NULL))
+      && (strstr (name, _("# dv messages to/from unknown peers")) != NULL))
     {
       unknownPeers += value;
+    }
+  else if ((value > 0) && (strstr (name, _("# dv forwards failed")) != NULL))
+    {
+#if DEBUG_TESTING
+      fprintf (stderr, "%s : %llu\n", name, value);
+#endif
+      forwardsFailed += value;
+    }
+  else if ((value > 0)
+           && (strstr (name, _("# dv actual messages sent")) != NULL))
+    {
+#if DEBUG_TESTING
+      fprintf (stderr, "%s : %llu\n", name, value);
+#endif
+      actualDVMessagesSent += value;
+    }
+  else if ((value > 0) && (strstr (name, _("# dv messages sent")) != NULL))
+    {
+#if DEBUG_TESTING
+      fprintf (stderr, "%s : %llu\n", name, value);
+#endif
+      dvMessagesSent += value;
+    }
+  else if ((value > 0)
+           && (strstr (name, _("# dv messages forwarded")) != NULL))
+    {
+#if DEBUG_TESTING
+      fprintf (stderr, "%s : %llu\n", name, value);
+#endif
+      dvMessagesForwarded += value;
     }
   return GNUNET_OK;
 }
@@ -338,7 +372,7 @@ do_testing (int argc, char *const *argv)
 
   modnum = put_items / 4;
   dotnum = put_items / 50;
-  fprintf(stdout, "Insert Progress:\n\[");
+  fprintf (stdout, "Insert Progress:\n\[");
   for (i = 0; i < put_items; i++)
     {
       random_peer = 0;
@@ -348,13 +382,13 @@ do_testing (int argc, char *const *argv)
           random_peer =
             GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
           if (peer_array[random_peer]->malicious_val != 0)
-          {
+            {
 #if DEBUG_TESTING
-            fprintf (stdout,
-                     "Skipping peer %d because it is set to be malicious!\n",
-                     random_peer);
+              fprintf (stdout,
+                       "Skipping peer %d because it is set to be malicious!\n",
+                       random_peer);
 #endif
-          }
+            }
         }
 
       random_key = i;
@@ -374,22 +408,23 @@ do_testing (int argc, char *const *argv)
         }
 
       if (i % modnum == 0)
-      {
-        if (i == 0)
-          fprintf(stdout, "0%%");
-        else
-          fprintf(stdout, "%d%%", (int)(((float)(i + 1)/put_items)*100));
+        {
+          if (i == 0)
+            fprintf (stdout, "0%%");
+          else
+            fprintf (stdout, "%d%%",
+                     (int) (((float) (i + 1) / put_items) * 100));
 
-      }
+        }
       else if (i % dotnum == 0)
-      {
-        fprintf(stdout, ".");
-      }
-      fflush(stdout);
+        {
+          fprintf (stdout, ".");
+        }
+      fflush (stdout);
       GNUNET_thread_sleep (500 * GNUNET_CRON_MILLISECONDS);
     }
-  fprintf(stdout, "%d%%", (int)(((float)i/put_items)*100));
-  fprintf(stdout, "]");
+  fprintf (stdout, "%d%%", (int) (((float) i / put_items) * 100));
+  fprintf (stdout, "]");
   fprintf (stdout, "Inserted %d items\n",
            (int) put_items - (int) failed_inserts);
 
@@ -402,7 +437,7 @@ do_testing (int argc, char *const *argv)
            concurrent_requests);
   modnum = ((get_requests / concurrent_requests) * concurrent_requests) / 4;
   dotnum = ((get_requests / concurrent_requests) * concurrent_requests) / 50;
-  fprintf(stdout, "GET Progress:\n\[");
+  fprintf (stdout, "GET Progress:\n\[");
   total_get_count = 0;
   for (i = 0; i < get_requests / concurrent_requests; i++)
     {
@@ -419,13 +454,13 @@ do_testing (int argc, char *const *argv)
               random_peers[thread_count] =
                 GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, num_peers);
               if (peer_array[random_peers[thread_count]]->malicious_val != 0)
-              {
+                {
 #if DEBUG_TESTING
-                fprintf (stdout,
-                         "Skipping peer %d because it is set to be malicious!\n",
-                         random_peers[thread_count]);
+                  fprintf (stdout,
+                           "Skipping peer %d because it is set to be malicious!\n",
+                           random_peers[thread_count]);
 #endif
-              }
+                }
             }
 
           if (randomized_gets == GNUNET_YES)
@@ -454,20 +489,23 @@ do_testing (int argc, char *const *argv)
                                      &keys[random_key].key);
           GNUNET_GE_ASSERT (NULL, gets[thread_count] != NULL);
           if (total_get_count % modnum == 0)
-          {
-            if (total_get_count == 0)
             {
-              fprintf(stdout, "0%%");
+              if (total_get_count == 0)
+                {
+                  fprintf (stdout, "0%%");
+                }
+              else
+                fprintf (stdout, "%d%%",
+                         (int) (((float) total_get_count /
+                                 ((get_requests / concurrent_requests) *
+                                  concurrent_requests)) * 100));
             }
-            else
-              fprintf(stdout, "%d%%", (int)(((float)total_get_count/((get_requests / concurrent_requests) * concurrent_requests))*100));
-          }
           else if (total_get_count % dotnum == 0)
-          {
-            fprintf(stdout, ".");
-          }
+            {
+              fprintf (stdout, ".");
+            }
           total_get_count++;
-          fflush(stdout);
+          fflush (stdout);
           thread_count++;
         }
 
@@ -501,9 +539,13 @@ do_testing (int argc, char *const *argv)
         printf ("Thread count is %d\n", thread_count);
 #endif
     }
-  fprintf(stdout, "%d%%]", (int)(((float)i/((get_requests / concurrent_requests) * concurrent_requests))*100));
+  fprintf (stdout, "%d%%]",
+           (int) (((float) total_get_count /
+                   ((get_requests / concurrent_requests) *
+                    concurrent_requests)) * 100));
 
-  printf ("Found %u out of %llu attempts.\n", found, (get_requests / concurrent_requests) * concurrent_requests);
+  printf ("Found %u out of %llu attempts.\n", found,
+          (get_requests / concurrent_requests) * concurrent_requests);
   for (j = 0; j < thread_count; j++)
     {
 #if DEBUG_TESTING
@@ -715,6 +757,11 @@ main (int argc, char *const *argv)
            "# Inserts: %llu\n# Gets: %llu\nSettle time: %llu\n# Nodes: %llu\n# Concurrent: %llu\n# Wait time: %llu\n# Successful: %d\n",
            put_items, get_requests, settle_time, num_peers,
            concurrent_requests, num_rounds, found);
+
+  fprintf (stdout,
+           "# DV Messages sent (from api): %llu\n# DV Forwards: %llu\n# DV Forwards Failed: %llu\n# DV Actual Messages Sent:%llu\n",
+           dvMessagesSent, dvMessagesForwarded, forwardsFailed,
+           actualDVMessagesSent);
   GNUNET_plugin_unload (plugin);
   GNUNET_mutex_destroy (lock);
   return ret;
