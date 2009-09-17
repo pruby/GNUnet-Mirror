@@ -105,7 +105,8 @@ addNodeRefs (struct GNUNET_REMOTE_host_list *node1pos,
 }
 
 int
-GNUNET_REMOTE_connect_nated_internet (double nat_percentage,
+GNUNET_REMOTE_connect_nated_internet (unsigned int *totalConnections,
+                                      double nat_percentage,
                                       int number_of_daemons,
                                       struct GNUNET_REMOTE_host_list
                                       *main_list, FILE * dotOutFile)
@@ -156,7 +157,8 @@ GNUNET_REMOTE_connect_nated_internet (double nat_percentage,
 
 
 int
-GNUNET_REMOTE_connect_erdos_renyi (double probability,
+GNUNET_REMOTE_connect_erdos_renyi (unsigned int *totalConnections,
+                                   double probability,
                                    struct GNUNET_REMOTE_host_list *main_list,
                                    FILE * dotOutFile)
 {
@@ -188,7 +190,8 @@ GNUNET_REMOTE_connect_erdos_renyi (double probability,
 }
 
 int
-GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list,
+GNUNET_REMOTE_connect_clique (unsigned int *totalConnections,
+                              struct GNUNET_REMOTE_host_list *main_list,
                               FILE * dotOutFile)
 {
   struct GNUNET_REMOTE_host_list *pos = main_list;
@@ -209,7 +212,8 @@ GNUNET_REMOTE_connect_clique (struct GNUNET_REMOTE_host_list *main_list,
 }
 
 int
-GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
+GNUNET_REMOTE_connect_ring (unsigned int *totalConnections,
+                            struct GNUNET_REMOTE_host_list *main_list,
                             FILE * dotOutFile)
 {
   struct GNUNET_REMOTE_host_list *pos = main_list;
@@ -228,7 +232,8 @@ GNUNET_REMOTE_connect_ring (struct GNUNET_REMOTE_host_list *main_list,
 }
 
 int
-GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
+GNUNET_REMOTE_connect_2d_torus (unsigned int *totalConnections,
+                                unsigned int number_of_daemons,
                                 struct GNUNET_REMOTE_host_list
                                 **list_as_array, FILE * dotOutFile)
 {
@@ -300,7 +305,8 @@ GNUNET_REMOTE_connect_2d_torus (unsigned int number_of_daemons,
 }
 
 int
-GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
+GNUNET_REMOTE_connect_small_world (unsigned int *totalConnections,
+                                   unsigned int number_of_daemons,
                                    struct GNUNET_REMOTE_host_list
                                    **list_as_array, FILE * dotOutFile,
                                    double percentage)
@@ -318,7 +324,7 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
   unsigned int node2Col;
   unsigned int distance;
   double probability, random;
-  unsigned int totalConnections, smallWorldConnections;
+  unsigned int smallWorldConnections;
 
   square = floor (sqrt (number_of_daemons));
   rows = square;
@@ -342,7 +348,7 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
            rows, cols);
 #endif
 
-  totalConnections = 0;
+  *totalConnections = 0;
   /* Rows and columns are all sorted out, now iterate over all nodes and connect each
    * to the node to its right and above.  Once this is over, we'll have our torus!
    * Special case for the last node (if the rows and columns are not equal), connect
@@ -360,8 +366,8 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
 #if VERBOSE
       fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
 #endif
-      totalConnections += addNodeRefs (list_as_array[i],
-                                       list_as_array[nodeToConnect]);
+      *totalConnections += addNodeRefs (list_as_array[i],
+                                        list_as_array[nodeToConnect]);
 
       if (i < cols)
         nodeToConnect = (rows * cols) - cols + i;
@@ -373,8 +379,8 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
 #if VERBOSE
           fprintf (stderr, _("connecting node %u to %u\n"), i, nodeToConnect);
 #endif
-          totalConnections += addNodeRefs (list_as_array[i],
-                                           list_as_array[nodeToConnect]);
+          *totalConnections += addNodeRefs (list_as_array[i],
+                                            list_as_array[nodeToConnect]);
         }
 
     }
@@ -383,8 +389,8 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
 #if VERBOSE
   fprintf (stderr, _("natural log of %d is %d, will run %d iterations\n"),
            number_of_daemons, natLog, (int) (natLog * percentage));
-  fprintf (stderr, _("Total connections added thus far: %d!\n"),
-           totalConnections);
+  fprintf (stderr, _("Total connections added thus far: %u!\n"),
+           *totalConnections);
 #endif
   smallWorldConnections = 0;
   for (i = 0; i < (int) (natLog * percentage); i++)
@@ -418,7 +424,7 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
             }
         }
     }
-  totalConnections += smallWorldConnections;
+  *totalConnections += smallWorldConnections;
 #if VERBOSE
   fprintf (stderr, _("Total connections added for small world: %d!\n"),
            smallWorldConnections);
@@ -428,7 +434,8 @@ GNUNET_REMOTE_connect_small_world (unsigned int number_of_daemons,
 }
 
 int
-GNUNET_REMOTE_connect_small_world_ring (unsigned int number_of_daemons,
+GNUNET_REMOTE_connect_small_world_ring (unsigned int *totalConnections,
+                                        unsigned int number_of_daemons,
                                         struct GNUNET_REMOTE_host_list
                                         **list_as_array, FILE * dotOutFile,
                                         double percentage,
@@ -439,7 +446,7 @@ GNUNET_REMOTE_connect_small_world_ring (unsigned int number_of_daemons,
   unsigned int natLog;
   unsigned int randomPeer;
   double random;
-  unsigned int totalConnections, smallWorldConnections;
+  unsigned int smallWorldConnections;
   int connsPerPeer;
   natLog = log (number_of_daemons);
   connsPerPeer = ceil (natLog * logNModifier);
@@ -452,7 +459,7 @@ GNUNET_REMOTE_connect_small_world_ring (unsigned int number_of_daemons,
 
   srand ((unsigned int) GNUNET_get_time ());
   smallWorldConnections = 0;
-  totalConnections = 0;
+  *totalConnections = 0;
   for (i = 0; i < number_of_daemons; i++)
     {
       useAnd = 0;
@@ -518,18 +525,18 @@ GNUNET_REMOTE_connect_small_world_ring (unsigned int number_of_daemons,
               fprintf (stderr, _("connecting node %u to %u\n"), i,
                        nodeToConnect);
 #endif
-              totalConnections +=
+              *totalConnections +=
                 addNodeRefs (list_as_array[i], list_as_array[nodeToConnect]);
             }
         }
 
     }
 
-  totalConnections += smallWorldConnections;
+  *totalConnections += smallWorldConnections;
 #if VERBOSE
   fprintf (stderr, _("Total connections added for small world: %d!\n"),
            smallWorldConnections);
-  fprintf (stderr, _("Total connections: %d!\n"), totalConnections);
+  fprintf (stderr, _("Total connections: %d!\n"), *totalConnections);
 #endif
 
   return GNUNET_OK;
@@ -607,7 +614,6 @@ GNUNET_REMOTE_connect_daemons (char *hostname1, unsigned short port1,
                                                       h2)) &&
               (GNUNET_OK == GNUNET_IDENTITY_peer_add (sock2, h1)))
             {
-              fprintf (stderr, ".");
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock1,
                                                                  &h2->
                                                                  senderIdentity))

@@ -68,7 +68,8 @@ int
 GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                             char *localConfigPath, char *configFileName,
                             char *remote_config_path, char *hostname,
-                            char *username, char *remote_friend_file_path, char *prepend_exec)
+                            char *username, char *remote_friend_file_path,
+                            char *prepend_exec)
 {
   char *cmd;
   int length;
@@ -83,20 +84,21 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   if (is_local)
     {
       length =
-        snprintf (NULL, 0, "cp %s%s %s", localConfigPath, configFileName,
-                  remote_config_path);
+        snprintf (NULL, 0, "cp %s%s %s > /dev/null 2>&1", localConfigPath,
+                  configFileName, remote_config_path);
       cmd = GNUNET_malloc (length + 1);
-      GNUNET_snprintf (cmd, length + 1, "cp %s%s %s", localConfigPath,
-                       configFileName, remote_config_path);
+      GNUNET_snprintf (cmd, length + 1, "cp %s%s %s > /dev/null 2>&1",
+                       localConfigPath, configFileName, remote_config_path);
     }
   else
     {
       length =
-        snprintf (NULL, 0, "scp %s%s %s@%s:%s", localConfigPath,
-                  configFileName, username, hostname, remote_config_path);
+        snprintf (NULL, 0, "scp %s%s %s@%s:%s > /dev/null 2>&1",
+                  localConfigPath, configFileName, username, hostname,
+                  remote_config_path);
       cmd = GNUNET_malloc (length + 1);
-      GNUNET_snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
-                       configFileName, username, hostname,
+      GNUNET_snprintf (cmd, length + 1, "scp %s%s %s@%s:%s > /dev/null 2>&1",
+                       localConfigPath, configFileName, username, hostname,
                        remote_config_path);
     }
 
@@ -110,19 +112,22 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   if (is_local)
     {
       length =
-        snprintf (NULL, 0, "%sgnunet-update -c %s%s", gnunetd_home,
-                  remote_config_path, configFileName);
+        snprintf (NULL, 0, "%sgnunet-update -c %s%s > /dev/null 2>&1",
+                  gnunetd_home, remote_config_path, configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "%sgnunet-update -c %s%s", gnunetd_home,
-                remote_config_path, configFileName);
+      snprintf (cmd, length + 1, "%sgnunet-update -c %s%s > /dev/null 2>&1",
+                gnunetd_home, remote_config_path, configFileName);
     }
   else
     {
       length =
-        snprintf (NULL, 0, "ssh %s@%s %sgnunet-update -c %s%s", username,
-                  hostname, gnunetd_home, remote_config_path, configFileName);
+        snprintf (NULL, 0,
+                  "ssh %s@%s %sgnunet-update -c %s%s > /dev/null 2>&1",
+                  username, hostname, gnunetd_home, remote_config_path,
+                  configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "ssh %s@%s %sgnunet-update -c %s%s",
+      snprintf (cmd, length + 1,
+                "ssh %s@%s %sgnunet-update -c %s%s > /dev/null 2>&1",
                 username, hostname, gnunetd_home, remote_config_path,
                 configFileName);
     }
@@ -136,20 +141,25 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
   if (is_local)
     {
       length =
-        snprintf (NULL, 0, "%s %sgnunetd -c %s%s &", prepend_exec,
-                  gnunetd_home, remote_config_path, configFileName);
+        snprintf (NULL, 0, "%s %sgnunetd -c %s%s > /dev/null 2>&1 &",
+                  prepend_exec, gnunetd_home, remote_config_path,
+                  configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "%s %sgnunetd -c %s%s &", prepend_exec, gnunetd_home,
-                remote_config_path, configFileName);
+      snprintf (cmd, length + 1, "%s %sgnunetd -c %s%s 2>&1 > /dev/null &",
+                prepend_exec, gnunetd_home, remote_config_path,
+                configFileName);
     }
   else
     {
       length =
-        snprintf (NULL, 0, "ssh %s@%s %s %sgnunetd -c %s%s &", username,
-                  hostname, prepend_exec, gnunetd_home, remote_config_path, configFileName);
+        snprintf (NULL, 0,
+                  "ssh %s@%s %s %sgnunetd -c %s%s > /dev/null 2>&1 &",
+                  username, hostname, prepend_exec, gnunetd_home,
+                  remote_config_path, configFileName);
       cmd = GNUNET_malloc (length + 1);
-      snprintf (cmd, length + 1, "ssh %s@%s %s %sgnunetd -c %s%s &",
-                username, hostname, prepend_exec, gnunetd_home, remote_config_path,
+      snprintf (cmd, length + 1,
+                "ssh %s@%s %s %sgnunetd -c %s%s > /dev/null 2>&1 &", username,
+                hostname, prepend_exec, gnunetd_home, remote_config_path,
                 configFileName);
 
     }
@@ -358,6 +368,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   unsigned long long num_machines;
   unsigned int i;
   unsigned int j;
+  unsigned int modnum;
+  unsigned int dotnum;
   unsigned int pos;
   unsigned short malicious_mask;
   int temp_remote_config_path_length;
@@ -397,7 +409,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             &malicious_getters);
 
   if (malicious_getters > 0)
-    malicious_getter_num = (int)(number_of_daemons / malicious_getters);
+    malicious_getter_num = (int) (number_of_daemons / malicious_getters);
   else
     malicious_getter_num = 0;
 
@@ -407,7 +419,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             &malicious_putters);
 
   if (malicious_putters > 0)
-    malicious_putter_num = (int)(number_of_daemons / malicious_putters);
+    malicious_putter_num = (int) (number_of_daemons / malicious_putters);
   else
     malicious_putter_num = 0;
 
@@ -417,7 +429,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                             &malicious_droppers);
 
   if (malicious_droppers > 0)
-    malicious_dropper_num = (int)(number_of_daemons / malicious_droppers);
+    malicious_dropper_num = (int) (number_of_daemons / malicious_droppers);
   else
     malicious_dropper_num = 0;
 
@@ -544,7 +556,11 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
 #endif
   i = 0;
   count_started = 0;
+  modnum = number_of_daemons / 4;
+  dotnum = number_of_daemons / 50;
   pos = length;
+  fprintf (stdout, "Daemon start progress: [");
+  fflush (stdout);
   while (i < num_machines)
     {
       basecfg = GNUNET_GC_create ();
@@ -771,8 +787,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
                                           temp, remote_config_path,
                                           curr_host, ssh_username,
-                                          temp_pos->remote_friend_file_path, prepend_exec);
-
+                                          temp_pos->remote_friend_file_path,
+                                          prepend_exec);
+              GNUNET_thread_sleep (500 * GNUNET_CRON_MILLISECONDS);
               next_peer =
                 GNUNET_malloc (sizeof
                                (struct GNUNET_REMOTE_TESTING_DaemonContext));
@@ -808,6 +825,21 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                       next_peer->port);
               head = temp_pos;
               array_of_pointers[count_started] = temp_pos;
+              if (count_started % modnum == 0)
+                {
+                  if (count_started == 0)
+                    fprintf (stdout, "0%%");
+                  else
+                    fprintf (stdout, "%d%%",
+                             (int) (((float) (count_started + 1) /
+                                     number_of_daemons) * 100));
+
+                }
+              else if (count_started % dotnum == 0)
+                {
+                  fprintf (stdout, ".");
+                }
+              fflush (stdout);
               count_started++;
             }
           GNUNET_free (temp_pid_file);
@@ -1056,8 +1088,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                               temp, remote_config_path,
                                               curr_host, ssh_username,
                                               temp_pos->
-                                              remote_friend_file_path, prepend_exec);
-
+                                              remote_friend_file_path,
+                                              prepend_exec);
+                  GNUNET_thread_sleep (500 * GNUNET_CRON_MILLISECONDS);
                   next_peer =
                     GNUNET_malloc (sizeof
                                    (struct
@@ -1095,6 +1128,21 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
                                                           next_peer->port);
                   head = temp_pos;
                   array_of_pointers[count_started] = temp_pos;
+                  if (count_started % modnum == 0)
+                    {
+                      if (count_started == 0)
+                        fprintf (stdout, "0%%");
+                      else
+                        fprintf (stdout, "%d%%",
+                                 (int) (((float) (count_started + 1) /
+                                         number_of_daemons) * 100));
+
+                    }
+                  else if (count_started % dotnum == 0)
+                    {
+                      fprintf (stdout, ".");
+                    }
+                  fflush (stdout);
                   count_started++;
                 }
 
@@ -1106,10 +1154,12 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
               GNUNET_free (temp);
             }
         }
-
       GNUNET_GC_free (basecfg);
       ++i;
     }
+
+  fprintf (stdout, "%d%%]\n",
+           (int) (((float) count_started / number_of_daemons) * 100));
   ret =
     GNUNET_REMOTE_create_topology (type_of_topology, number_of_daemons,
                                    dotOutFile, percentage, logNModifier);
@@ -1280,8 +1330,12 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   int tempThreadCount;
   int i;
   int j;
+  unsigned int totalConnections;
+  unsigned int totalConnectAttempts;
+  unsigned int totalCreatedConnections;
   unsigned int *daemon_list;
-
+  unsigned int modnum;
+  unsigned int dotnum;
   void *unusedVoid;
   globalDotFile = dotOutFile;
   ret = GNUNET_OK;
@@ -1292,47 +1346,42 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   switch (type)
     {
     case GNUNET_REMOTE_CLIQUE:
-#if VERBOSE
-      fprintf (stderr, _("Creating clique topology\n"));
-#endif
-      ret = GNUNET_REMOTE_connect_clique (head, dotOutFile);
+      fprintf (stderr, _("Creating clique topology (may take a bit!)\n"));
+      ret =
+        GNUNET_REMOTE_connect_clique (&totalConnections, head, dotOutFile);
       break;
     case GNUNET_REMOTE_SMALL_WORLD:
-#if VERBOSE
-      fprintf (stderr, _("Creating small world topology\n"));
-#endif
+      fprintf (stderr,
+               _("Creating small world topology (may take a bit!)\n"));
       ret =
-        GNUNET_REMOTE_connect_small_world_ring (number_of_daemons,
+        GNUNET_REMOTE_connect_small_world_ring (&totalConnections,
+                                                number_of_daemons,
                                                 list_as_array, dotOutFile,
                                                 percentage, logNModifier);
       break;
     case GNUNET_REMOTE_RING:
-#if VERBOSE
-      fprintf (stderr, _("Creating ring topology\n"));
-#endif
-      ret = GNUNET_REMOTE_connect_ring (head, dotOutFile);
+      fprintf (stderr, _("Creating ring topology (may take a bit!)\n"));
+      ret = GNUNET_REMOTE_connect_ring (&totalConnections, head, dotOutFile);
       break;
     case GNUNET_REMOTE_2D_TORUS:
-#if VERBOSE
-      fprintf (stderr, _("Creating 2d torus topology\n"));
-#endif
+      fprintf (stderr, _("Creating 2d torus topology (may take a bit!)\n"));
       ret =
-        GNUNET_REMOTE_connect_2d_torus (number_of_daemons, list_as_array,
-                                        dotOutFile);
+        GNUNET_REMOTE_connect_2d_torus (&totalConnections, number_of_daemons,
+                                        list_as_array, dotOutFile);
       break;
     case GNUNET_REMOTE_ERDOS_RENYI:
-#if VERBOSE
-      fprintf (stderr, _("Creating Erdos-Renyi topology\n"));
-#endif
-      ret = GNUNET_REMOTE_connect_erdos_renyi (percentage, head, dotOutFile);
+      fprintf (stderr,
+               _("Creating Erdos-Renyi topology (may take a bit!)\n"));
+      ret =
+        GNUNET_REMOTE_connect_erdos_renyi (&totalConnections, percentage,
+                                           head, dotOutFile);
       break;
     case GNUNET_REMOTE_INTERNAT:
-#if VERBOSE
-      fprintf (stderr, _("Creating InterNAT topology\n"));
-#endif
+      fprintf (stderr, _("Creating InterNAT topology (may take a bit!)\n"));
       ret =
-        GNUNET_REMOTE_connect_nated_internet (percentage, number_of_daemons,
-                                              head, dotOutFile);
+        GNUNET_REMOTE_connect_nated_internet (&totalConnections, percentage,
+                                              number_of_daemons, head,
+                                              dotOutFile);
       break;
     case GNUNET_REMOTE_NONE:
       GNUNET_free (daemon_list);
@@ -1342,10 +1391,15 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       ret = GNUNET_SYSERR;
       break;
     }
-  totalConnections = 0;
+  totalCreatedConnections = 0;
+  totalConnectAttempts = 0;
+  modnum = totalConnections / 4;
+  dotnum = totalConnections / 50;
+
   if (ret == GNUNET_OK)
     {
       pos = head;
+      fprintf (stdout, "Friend file creation progress: \[");
       while (pos != NULL)
         {
           /* Printing out the friends isn't necessary, but it's nice */
@@ -1363,28 +1417,44 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
               fprintf (temp_friend_handle, "%s\n",
                        (const char *) friend_pos->nodeid);
               friend_pos = friend_pos->next;
-              totalConnections++;
+
+              if (totalCreatedConnections % modnum == 0)
+                {
+                  if (totalCreatedConnections == 0)
+                    fprintf (stdout, "0%%");
+                  else
+                    fprintf (stdout, "%d%%",
+                             (int) (((float) totalCreatedConnections /
+                                     totalConnections) * 100));
+
+                }
+              else if (totalCreatedConnections % dotnum == 0)
+                {
+                  fprintf (stdout, ".");
+                }
+              fflush (stdout);
+              totalCreatedConnections++;
             }
 
           fclose (temp_friend_handle);
           if (strcmp (pos->hostname, "localhost") == 0)
             {
               length =
-                snprintf (NULL, 0, "cp %s %s", "friend.temp",
+                snprintf (NULL, 0, "cp %s %s > /dev/null 2>&1", "friend.temp",
                           pos->remote_friend_file_path);
               cmd = GNUNET_malloc (length + 1);
-              snprintf (cmd, length + 1, "cp %s %s", "friend.temp",
-                        pos->remote_friend_file_path);
+              snprintf (cmd, length + 1, "cp %s %s > /dev/null 2>&1",
+                        "friend.temp", pos->remote_friend_file_path);
             }
           else
             {
               length =
-                snprintf (NULL, 0, "scp %s %s@%s:%s", "friend.temp",
-                          pos->username, pos->hostname,
+                snprintf (NULL, 0, "scp %s %s@%s:%s > /dev/null 2>&1",
+                          "friend.temp", pos->username, pos->hostname,
                           pos->remote_friend_file_path);
               cmd = GNUNET_malloc (length + 1);
-              snprintf (cmd, length + 1, "scp %s %s@%s:%s", "friend.temp",
-                        pos->username, pos->hostname,
+              snprintf (cmd, length + 1, "scp %s %s@%s:%s > /dev/null 2>&1",
+                        "friend.temp", pos->username, pos->hostname,
                         pos->remote_friend_file_path);
             }
 #if VERBOSE
@@ -1395,28 +1465,18 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
           GNUNET_free (cmd);
           pos = pos->next;
         }
-
+      fprintf (stdout, "%d%%]\n",
+               (int) (((float) totalCreatedConnections / totalConnections) *
+                      100));
       unused = system ("rm friend.temp");
-
       pos = head;
 
-      /* This loop goes over the friend entries of each peer and connects that
-       * peer to each friend in the list.  Note this is redundant, i.e. once
-       * the two are connected, the second doesn't really need to try to connect
-       * to the first later, but this IS simple.  If performance becomes a problem
-       * with MANY conns, we'll see...
-       *
-       * 8-2009 - it is now a problem (-:  Options:
-       *  1. Use hashmap and list of previously connected peers (cuts down number of attempts by half)
-       *  2. Use multiple threads for connecting.  Start X threads, one per peer with max of Y and connect that peers friends.
-       *  3. Combine both of these ideas into new fun way of doing stuff.
-       *
-       *  Okay, Combined both solutions for a fix... Just need to test on large
-       *  scale testbed (lab) to confirm it actually helps.
-       */
       connectMutex = GNUNET_mutex_create (GNUNET_YES);
       connectFailures = 0;
       tempThreadCount = 0;
+      modnum = number_of_daemons / 4;
+      dotnum = number_of_daemons / 50;
+      fprintf (stdout, "Friend connection progress: \[");
       for (j = 0; j < number_of_daemons; j++)
         {
           if (tempThreadCount >= MAX_CONNECT_THREADS)
@@ -1427,7 +1487,6 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
                   fprintf (stdout, "Joining thread %d...\n", i);
 #endif
                   GNUNET_thread_join (threads[i], &unusedVoid);
-
                 }
               tempThreadCount = 0;
             }
@@ -1438,9 +1497,26 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
             GNUNET_thread_create (&connect_peer_thread,
                                   list_as_array[daemon_list[j]], 1024 * 16);
           tempThreadCount++;
+          if (totalConnectAttempts % modnum == 0)
+            {
+              if (totalConnectAttempts == 0)
+                fprintf (stdout, "0%%");
+              else
+                fprintf (stdout, "%d%%",
+                         (int) (((float) totalConnectAttempts /
+                                 number_of_daemons) * 100));
 
+            }
+          else if (totalConnectAttempts % dotnum == 0)
+            {
+              fprintf (stdout, ".");
+            }
+          fflush (stdout);
+          totalConnectAttempts++;
         }
-
+      fprintf (stdout, "%d%%]\n",
+               (int) (((float) totalConnectAttempts / number_of_daemons) *
+                      100));
       GNUNET_thread_sleep (2000 * GNUNET_CRON_MILLISECONDS);
       for (i = 0; i < tempThreadCount; i++)
         {
@@ -1461,7 +1537,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
     }
 
 #if VERBOSE
-  fprintf (stderr, _("Total connections: %d!\n"), totalConnections);
+  fprintf (stderr, _("Total connections: %d!\n"), totalCreatedConnections);
   fprintf (stderr, _("Total failed connections: %d!\n"), connectFailures);
 #endif
 
@@ -1471,7 +1547,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   else
     {
       GNUNET_free (daemon_list);
-      return totalConnections;
+      return totalCreatedConnections;
     }
 }
 
