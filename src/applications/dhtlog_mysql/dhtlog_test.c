@@ -54,7 +54,7 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   unsigned long long nodeuid = 0;
   unsigned long long internaluid = 1010223344;
   unsigned long long dhtkeyuid = 0;
-	unsigned long long bps = 10000000000000000;
+  unsigned long long bps = 10000000000000000;
   memset (&p1.hashPubKey, 3, sizeof (GNUNET_HashCode));
   memset (&p2.hashPubKey, 4, sizeof (GNUNET_HashCode));
   memset (&p3.hashPubKey, 5, sizeof (GNUNET_HashCode));
@@ -64,7 +64,8 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   memset (&k2, 1, sizeof (GNUNET_HashCode));
 
   ret =
-    api->insert_trial (&trialuid, i, 5, .75, .25, 0, 0, 0, 0, 0, 0, 0, 0, bps, "");
+    api->insert_trial (&trialuid, i, 5, .75, .25, 0, 0, 0, 0, 0, 0, 0, 0, bps,
+                       "");
   fprintf (stderr, "Trial uid is %llu\n", trialuid);
 
   if (ret != GNUNET_OK)
