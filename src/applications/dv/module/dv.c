@@ -1279,7 +1279,7 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
       stat_dv_total_peers = stats->create (gettext_noop ("# dv connections"));
       stat_dv_sent_messages =
         stats->create (gettext_noop ("# dv messages sent"));
-      stat_dv_sent_messages =
+      stat_dv_actual_sent_messages =
         stats->create (gettext_noop ("# dv actual messages sent"));
       stat_dv_received_messages =
         stats->create (gettext_noop ("# dv messages received"));
