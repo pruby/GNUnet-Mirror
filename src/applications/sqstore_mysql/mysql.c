@@ -418,6 +418,11 @@ assembleDatum (MYSQL_BIND * result)
   contentSize = *(unsigned int *) result[0].buffer;
   if (contentSize < sizeof (GNUNET_DatastoreValue))
     return NULL;                /* error */
+  if (contentSize > GNUNET_MAX_BUFFER_SIZE)
+    {
+       GNUNET_GE_BREAK (NULL, 0); /* far too big */
+       return NULL;
+    }
   contentSize -= sizeof (GNUNET_DatastoreValue);
   type = *(unsigned int *) result[1].buffer;
   prio = *(unsigned int *) result[2].buffer;
