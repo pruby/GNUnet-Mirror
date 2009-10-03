@@ -52,12 +52,13 @@
 
 #define GNUNET_DV_DHT_GOSSIP_PRIORITY GNUNET_EXTREME_PRIORITY / 10
 
+
 /**
  * Message that gets sent between nodes updating dv infos
  */
 typedef struct
 {
-  GNUNET_MessageHeader header GNUNET_PACKED;
+  GNUNET_MessageHeader header;
 
   /**
    * Cost from received from node to neighbor node, takes distance into account
@@ -67,7 +68,7 @@ typedef struct
   /**
    * Identity of neighbor we learned information about
    */
-  GNUNET_PeerIdentity neighbor GNUNET_PACKED;
+  GNUNET_PeerIdentity neighbor;
 
   /*
    * Neighbor ID to use when sending to this peer
@@ -81,7 +82,7 @@ typedef struct
  */
 typedef struct
 {
-  GNUNET_MessageHeader header GNUNET_PACKED;
+  GNUNET_MessageHeader header;
 
   /**
    * Identity of peer that sent the message
