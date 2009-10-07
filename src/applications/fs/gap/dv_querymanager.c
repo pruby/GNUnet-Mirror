@@ -212,8 +212,8 @@ GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
       request->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
-  if (anonymityLevel == 0)
-    GNUNET_FS_DV_DHT_execute_query (type, query);
+  if ((anonymityLevel == 0) && (type == 0)) /* Cannot search the dht with type 0 */
+    GNUNET_FS_DV_DHT_execute_query (GNUNET_ECRS_BLOCKTYPE_KEYWORD, query);
 }
 
 /**

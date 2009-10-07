@@ -915,7 +915,7 @@ initialize_module_dv_fs (GNUNET_CoreAPIForPlugins * capi)
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
                                                                    "ABOUT",
-                                                                   "fs",
+                                                                   "dv_fs",
                                                                    gettext_noop
                                                                    ("enables (anonymous) file-sharing")));
   return GNUNET_OK;
@@ -925,7 +925,7 @@ void
 done_module_dv_fs ()
 {
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "fs shutdown\n");
+                 "dv_fs shutdown\n");
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=

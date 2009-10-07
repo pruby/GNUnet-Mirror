@@ -173,11 +173,13 @@ GNUNET_FS_DV_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query
 
   if (dv_dht == NULL)
     return;
+
   now = GNUNET_get_time ();
   record = GNUNET_malloc (sizeof (struct ActiveRequestRecords));
   record->end_time = now + GNUNET_GAP_MAX_DHT_DELAY;
   record->type = type;
-  record->handle = dv_dht->get_start (type, query, &response_callback, record);
+  /*record->type = GNUNET_ECRS_BLOCKTYPE_KEYWORD;*/ /* Anonymous query should only get this type, right? */
+  record->handle = dv_dht->get_start (record->type, query, &response_callback, record);
   if (record->handle == NULL)
     {
       GNUNET_free (record);
