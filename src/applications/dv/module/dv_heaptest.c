@@ -31,7 +31,7 @@
 #include "../../../util/crypto/hostkey_gcrypt.c"
 
 #define MAX_SIZE 100
-#define TESTS 10
+#define TESTS 75
 static int tempmaxsize;
 static int tempminsize;
 static int heapverify;
@@ -51,8 +51,7 @@ main (int argc, char **argv)
   int cur_pos = 0;
   unsigned int temp_rand;
   unsigned int temp_node;
-  //int seq[6] = {0, 0, 0, 3, 3, 0};
-  //int vals[6] = {70, 26, 53, 100, 35, 95};
+
   struct GNUNET_dv_neighbor *neighbors[TESTS];
   ret = GNUNET_OK;
   maxHeap = GNUNET_CONTAINER_heap_create (GNUNET_MAX_HEAP);
@@ -64,12 +63,10 @@ main (int argc, char **argv)
     }
 
   for (i = 0; i < TESTS; i++)
-    //for (i = 0;i<6;i++)
     {
       temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
       while ((cur_pos <= 1) && (temp_rand != 0))
         temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
-      //temp_rand = seq[i];
       switch (temp_rand)
         {
         case 0:
@@ -83,7 +80,6 @@ main (int argc, char **argv)
           GNUNET_RSA_get_public_key (hostkey, &pubkey);
           GNUNET_hash (&pubkey, sizeof (GNUNET_RSA_PublicKey),
                        &neighbors[cur_pos]->neighbor->hashPubKey);
-          //neighbors[cur_pos]->cost = temp_rand;
           neighbors[cur_pos]->cost = temp_rand;
           GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos],
                                         temp_rand);
@@ -113,7 +109,6 @@ main (int argc, char **argv)
           cur_pos--;
           break;
         case 4:
-          //fprintf(stderr, "Removing matching nodes\n");
           break;
         }
 
@@ -121,7 +116,7 @@ main (int argc, char **argv)
         return GNUNET_SYSERR;
 
     }
-
+  GNUNET_CONTAINER_heap_destroy(minHeap);
   return 0;
 }
 
