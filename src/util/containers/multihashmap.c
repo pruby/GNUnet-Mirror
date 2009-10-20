@@ -264,7 +264,10 @@ GNUNET_multi_hash_map_put (struct GNUNET_MultiHashMap *map,
         }
     }
   if (map->size / 3 > map->map_length / 4)
-    grow (map);
+    {
+      grow (map);
+      i = idx_of (map, key);
+    }
   e = GNUNET_malloc (sizeof (struct MapEntry));
   e->key = *key;
   e->value = value;
