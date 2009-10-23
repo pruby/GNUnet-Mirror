@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/gap/test_multi_results.c
+ * @file applications/gap/test_multi_results_dv.c
  * @brief GAP routing testcase, linear topology
  * @author Christian Grothoff
  */
@@ -32,6 +32,7 @@
 #include "gnunet_util.h"
 #include "gnunet_stats_lib.h"
 #include "../ecrs/ecrs.h"
+#include "gnunet_identity_lib.h"
 
 #define START_PEERS 1
 #define DEBUG 1
@@ -80,7 +81,9 @@ uploadFile (int size)
   int fd;
   char *buf;
   struct GNUNET_ECRS_URI *uri;
-
+  struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_ECRS_URI *locURI;
+  GNUNET_MessageHello *hello;
   name = makeName (size);
   fd =
     GNUNET_disk_file_open (ectx, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
@@ -95,10 +98,11 @@ uploadFile (int size)
   GNUNET_free (buf);
   GNUNET_disk_file_close (ectx, name, fd);
   ret = GNUNET_ECRS_file_upload (ectx, cfg, name, GNUNET_YES,   /* index */
-                                 1,     /* anonymous */
+                                 0,     /* anonymity */
                                  0,     /* priority */
                                  GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,        /* expire */
                                  NULL, NULL, &testTerminate, NULL, &uri);
+
   if (ret != GNUNET_SYSERR)
     {
       struct GNUNET_MetaData *meta;
@@ -106,6 +110,26 @@ uploadFile (int size)
       meta = GNUNET_meta_data_create ();
       ret = GNUNET_ECRS_publish_under_keyword (ectx, cfg, key, 0, 0, GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,    /* expire */
                                                uri, meta);
+      sock = GNUNET_client_connection_create (ectx, cfg);
+      if (GNUNET_OK == GNUNET_IDENTITY_get_self (sock, &hello))
+        {
+          locURI = GNUNET_ECRS_location_to_uri (uri,
+                                                &hello->publicKey,
+                                                ntohl (hello->
+                                                       expiration_time),
+                                                (GNUNET_ECRS_SignFunction) &
+                                                GNUNET_IDENTITY_sign_function,
+                                                sock);
+          ret = GNUNET_ECRS_publish_under_keyword (ectx, cfg, key, 0, 0, GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,        /* expire */
+                                                   locURI, meta);
+          if (ret != GNUNET_OK)
+            fprintf (stderr, "Failed to publish locURI\n");
+          GNUNET_free (hello);
+        }
+      else
+        {
+          fprintf (stderr, "failed to create loc\n");
+        }
       GNUNET_meta_data_destroy (meta);
       GNUNET_free (name);
       if (ret == GNUNET_OK)
@@ -128,8 +152,28 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
   int i;
 
 #if DEBUG
+  GNUNET_EncName enc;
+  GNUNET_HashCode hc;
   if (fi->uri->type == loc)
-  	fprintf(stdout, "Got location information from search, great!\n");
+    {
+      fprintf (stdout,
+               "Got location information from search, great, isroot = %d!\n",
+               isRoot);
+/*  	if (GNUNET_OK == parseLocationURI(ectx, fi->uri, &uri->data.loc))
+  	{
+
+  	}*/
+      GNUNET_hash (&fi->uri->data.loc.peer, sizeof (GNUNET_RSA_PublicKey),
+                   &hc);
+      GNUNET_hash_to_enc (&hc, &enc);
+      fprintf (stdout, "Received locURI putting data at peer %s\n",
+               (char *) &enc);
+    }
+  else
+    {
+      fprintf (stdout, "Got type %d, isroot=%d\n", fi->uri->type, isRoot);
+    }
+
 #endif
 
   for (i = 0; i < TOTAL; i++)
@@ -201,11 +245,11 @@ main (int argc, char **argv)
     {
       uris[i] = uploadFile (i + 1);
       CHECK (uris[i] != NULL);
-      tmp = GNUNET_ECRS_uri_to_string(uris[i]);
+      tmp = GNUNET_ECRS_uri_to_string (uris[i]);
       //fprintf (stderr, "URI is %s\n", tmp);
-      GNUNET_free(tmp);
+      GNUNET_free (tmp);
     }
-  GNUNET_thread_sleep(360 * GNUNET_CRON_SECONDS);
+  GNUNET_thread_sleep (360 * GNUNET_CRON_SECONDS);
   fprintf (stderr, "\nSearching...");
   GNUNET_snprintf (buf, 128, "localhost:%u", 2077 + PEER_COUNT * 10);
   GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
@@ -214,6 +258,7 @@ main (int argc, char **argv)
   GNUNET_ECRS_search (ectx,
                       cfg, key, 0, &searchCB, NULL, &testTerminate, NULL);
   fprintf (stderr, "\n");
+  GNUNET_thread_sleep (120 * GNUNET_CRON_SECONDS);
   CHECK (found > (TOTAL * 90) / 100);
 FAILURE:
 #if START_PEERS

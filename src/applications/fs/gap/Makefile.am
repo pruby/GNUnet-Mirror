@@ -8,7 +8,8 @@ endif
 plugindir = $(libdir)/GNUnet
 
 plugin_LTLIBRARIES = \
-  libgnunetmodule_fs.la
+  libgnunetmodule_fs.la \
+  libgnunetmodule_dv_fs.la
 
 
 libgnunetmodule_fs_la_SOURCES = \
@@ -29,15 +30,35 @@ libgnunetmodule_fs_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lm \
   $(GN_LIBINTL)
-
+  
+libgnunetmodule_dv_fs_la_SOURCES = \
+  anonymity.c anonymity.h \
+  dv_fs.c  \
+  fs_dv_dht.c fs_dv_dht.h \
+  gap.c gap.h \
+  migration.c migration.h \
+  ondemand.c ondemand.h \
+  plan.c plan.h \
+  pid_table.c pid_table.h \
+  dv_querymanager.c dv_querymanager.h \
+  shared.c shared.h 
+libgnunetmodule_dv_fs_la_LDFLAGS = \
+  $(GN_PLUGIN_LDFLAGS)
+libgnunetmodule_dv_fs_la_LIBADD = \
+  $(top_builddir)/src/applications/fs/libgnunetecrscore.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -lm \
+  $(GN_LIBINTL)  
 
 
 check_PROGRAMS = \
   test_loopback \
   test_linear_topology \
   test_multi_results \
-  test_star_topology 
-
+  test_star_topology \
+	test_multi_results_dv \
+	test_gap_dv
+	
 TESTS = $(check_PROGRAMS)
 
 test_loopback_SOURCES = \
@@ -65,6 +86,13 @@ test_multi_results_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+test_multi_results_dv_SOURCES = \
+  test_multi_results_dv.c 
+test_multi_results_dv_LDADD = \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 test_star_topology_SOURCES = \
   test_star_topology.c 
@@ -75,6 +103,15 @@ test_star_topology_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+test_gap_dv_SOURCES = \
+  test_gap_dv.c 
+test_gap_dv_LDADD = \
+  $(top_builddir)/src/applications/identity/libgnunetidentityapi.la \
+  $(top_builddir)/src/applications/testing/libgnunettestingapi.la \
+  $(top_builddir)/src/applications/testing/libgnunetremoteapi.la \
+  $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
   check.conf

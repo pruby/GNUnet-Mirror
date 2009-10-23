@@ -166,7 +166,8 @@ response_callback (const GNUNET_HashCode * key,
  * @param query hash code of the query
  */
 void
-GNUNET_FS_DV_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query)
+GNUNET_FS_DV_DHT_execute_query (unsigned int type,
+                                const GNUNET_HashCode * query)
 {
   struct ActiveRequestRecords *record;
   GNUNET_CronTime now;
@@ -178,8 +179,9 @@ GNUNET_FS_DV_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query
   record = GNUNET_malloc (sizeof (struct ActiveRequestRecords));
   record->end_time = now + GNUNET_GAP_MAX_DHT_DELAY;
   record->type = type;
-  /*record->type = GNUNET_ECRS_BLOCKTYPE_KEYWORD;*/ /* Anonymous query should only get this type, right? */
-  record->handle = dv_dht->get_start (record->type, query, &response_callback, record);
+  /*record->type = GNUNET_ECRS_BLOCKTYPE_KEYWORD; *//* Anonymous query should only get this type, right? */
+  record->handle =
+    dv_dht->get_start (record->type, query, &response_callback, record);
   if (record->handle == NULL)
     {
       GNUNET_free (record);
@@ -217,9 +219,9 @@ push_callback (const GNUNET_HashCode * key,
     return GNUNET_SYSERR;
 
   dv_dht->put (key,
-            ntohl (value->type),
-            ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
-            (const char *) &value[1]);
+               ntohl (value->type),
+               ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
+               (const char *) &value[1]);
   if (stats != NULL)
     stats->change (stat_push_count, 1);
   if (GNUNET_YES == shutdown_requested)

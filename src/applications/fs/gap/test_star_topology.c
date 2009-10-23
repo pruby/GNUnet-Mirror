@@ -221,8 +221,7 @@ main (int argc, char **argv)
 
   ret = 0;
   cfg = GNUNET_GC_create ();
-  fprintf(stderr,
-	  "Setup...\n");
+  fprintf (stderr, "Setup...\n");
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
       GNUNET_GC_free (cfg);

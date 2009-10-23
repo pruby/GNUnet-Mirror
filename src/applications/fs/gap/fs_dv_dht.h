@@ -43,6 +43,6 @@ int GNUNET_FS_DV_DHT_done (void);
  */
 void
 GNUNET_FS_DV_DHT_execute_query (unsigned int type,
-                             const GNUNET_HashCode * query);
+                                const GNUNET_HashCode * query);
 
 #endif

@@ -46,23 +46,23 @@ int GNUNET_DV_FS_QUERYMANAGER_done (void);
  */
 void
 GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
-                                    unsigned int key_count,
-                                    unsigned int anonymityLevel,
-                                    unsigned int type,
-                                    struct GNUNET_ClientHandle *client,
-                                    const GNUNET_PeerIdentity * target,
-                                    const struct GNUNET_MultiHashMap *seen,
-                                    int have_more);
+                                       unsigned int key_count,
+                                       unsigned int anonymityLevel,
+                                       unsigned int type,
+                                       struct GNUNET_ClientHandle *client,
+                                       const GNUNET_PeerIdentity * target,
+                                       const struct GNUNET_MultiHashMap *seen,
+                                       int have_more);
 
 /**
  * A client is asking us to stop running a query (without disconnect).
  */
 int
 GNUNET_DV_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
-                                   unsigned int key_count,
-                                   unsigned int anonymityLevel,
-                                   unsigned int type,
-                                   struct GNUNET_ClientHandle *client);
+                                      unsigned int key_count,
+                                      unsigned int anonymityLevel,
+                                      unsigned int type,
+                                      struct GNUNET_ClientHandle *client);
 
 /**
  * Handle the given response (by forwarding it to
@@ -81,10 +81,11 @@ GNUNET_DV_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
  */
 unsigned int
 GNUNET_DV_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
-                                        const GNUNET_HashCode * primary_query,
-                                        GNUNET_CronTime expirationTime,
-                                        unsigned int size,
-                                        const GNUNET_EC_DBlock * data);
+                                           const GNUNET_HashCode *
+                                           primary_query,
+                                           GNUNET_CronTime expirationTime,
+                                           unsigned int size,
+                                           const GNUNET_EC_DBlock * data);
 
 
 #endif

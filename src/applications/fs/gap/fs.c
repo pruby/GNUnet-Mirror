@@ -693,8 +693,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                                query_count,
                                &req->queries[0],
                                ntohl (req->filter_mutator),
-                               bloomfilter_size,
-                               &req->queries[query_count]);
+                               bloomfilter_size, &req->queries[query_count]);
   return GNUNET_OK;
 }
 
