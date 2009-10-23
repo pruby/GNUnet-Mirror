@@ -666,7 +666,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
   int ret;
 
   ret = GNUNET_disk_file_test (shared->ctx->ectx, filename);
-  if(GNUNET_SYSERR == ret)
+  if (GNUNET_SYSERR == ret)
     {
       GNUNET_GE_LOG (shared->ctx->ectx,
                      GNUNET_GE_FATAL | GNUNET_GE_BULK | GNUNET_GE_USER,

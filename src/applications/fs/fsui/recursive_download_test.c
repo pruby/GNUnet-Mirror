@@ -278,8 +278,7 @@ main (int argc, char *argv[])
       GNUNET_GC_free (cfg);
       return -1;
     }
-  fprintf(stderr,
-	  "Setup...\n");
+  fprintf (stderr, "Setup...\n");
 #if START_DAEMON
   GNUNET_disk_directory_remove (NULL,
                                 "/tmp/gnunet-fsui-recursive_download_test/");
@@ -300,8 +299,7 @@ main (int argc, char *argv[])
   kuri =
     GNUNET_ECRS_keyword_command_line_to_uri (ectx, 2,
                                              (const char **) keywords);
-  fprintf(stderr,
-	  "Uploading...\n");
+  fprintf (stderr, "Uploading...\n");
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload = GNUNET_FSUI_upload_start (ctx,
                                      fn,
@@ -326,8 +324,7 @@ main (int argc, char *argv[])
   upload = NULL;
   CHECK (upURI != NULL);
 
-  fprintf(stderr,
-	  "Downloading...\n");
+  fprintf (stderr, "Downloading...\n");
   waitForEvent = GNUNET_FSUI_download_completed;
   fn43 = makeName (43);
   download = GNUNET_FSUI_download_start (ctx,
@@ -347,8 +344,7 @@ main (int argc, char *argv[])
         break;
     }
 FAILURE:
-  fprintf(stderr,
-	  "Cleanup...\n");
+  fprintf (stderr, "Cleanup...\n");
   if (meta != NULL)
     GNUNET_meta_data_destroy (meta);
   if (ctx != NULL)
