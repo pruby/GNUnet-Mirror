@@ -651,6 +651,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
   if (&closest == NULL)
     return GNUNET_SYSERR;
 
+#if DEBUG_TABLE
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "closest peer\n");
@@ -670,6 +671,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
                  inverse_distance (target, &closest.hashPubKey),
                  inverse_distance (target,
                                    &coreAPI->my_identity->hashPubKey));
+#endif
   if (inverse_distance (target, &coreAPI->my_identity->hashPubKey) >=
       inverse_distance (target, &closest.hashPubKey)
       && (inverse_distance (target, &coreAPI->my_identity->hashPubKey) > 0))

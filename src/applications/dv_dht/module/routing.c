@@ -679,9 +679,11 @@ add_route (const GNUNET_PeerIdentity * sender,
   /*if (hops > 2 * diameter) */
   if (hops > 2 * diameter)
     {
-      fprintf (stderr,
-               "hops (%d) > 2 * diameter (%d) so failing (diameter %d)\n",
-               hops, 2 * diameter, diameter);
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "hops (%d) > 2 * diameter (%d) so failing (diameter %d)\n",
+                     hops, 2 * diameter, diameter);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (lock);
@@ -887,7 +889,9 @@ handle_get (const GNUNET_PeerIdentity * sender,
   total =
     dstore->get (&get->key, ntohl (get->type), &route_result,
                  (void *) &queryuid);
-  fprintf(stderr, "Found %d local results for query %s, type %d\n", total, &enc, ntohl(get->type));
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "Found %d local results for query %s, type %d\n", total, (char *)&enc, ntohl(get->type));
 #else
   total = dstore->get (&get->key, ntohl (get->type), &route_result, NULL);
 #endif
@@ -1208,9 +1212,13 @@ handle_put (const GNUNET_PeerIdentity * sender,
                    (const char *) &put[1]);
 #if DEBUG_ROUTING
       if (ret != GNUNET_OK)
-      	fprintf(stderr, "Caching data failed!\n");
+        GNUNET_GE_LOG (coreAPI->ectx,
+                       GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                       GNUNET_GE_BULK, "Caching data failed!\n");
       else
-      	fprintf(stderr, "Data inserted key: %s, type %d\n", &enc, ntohl(put->type));
+        GNUNET_GE_LOG (coreAPI->ectx,
+                       GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                       GNUNET_GE_BULK, "Data inserted key: %s, type %d\n", (char *)&enc, ntohl(put->type));
 
 #endif
     }
