@@ -33,9 +33,10 @@
 #include "gnunet_stats_service.h"
 #include "dv.h"
 
-#define DEBUG_DV_MAINTAIN GNUNET_NO
-#define DEBUG_DV GNUNET_YES
+#define DEBUG_DV_MAINTAIN GNUNET_YES
+#define DEBUG_DV GNUNET_NO
 #define DEBUG_DV_FORWARD GNUNET_NO
+#define DEBUG_PEERS GNUNET_NO
 /* How long to allow a message to be delayed */
 #define DV_DELAY (5000 * GNUNET_CRON_MILLISECONDS)
 #define DV_PRIORITY 0
@@ -97,6 +98,18 @@ static struct GNUNET_DV_Context *ctx;
 static struct GNUNET_ThreadHandle *sendingThread;
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
+#if DEBUG_PEERS
+static int printPeer (const GNUNET_HashCode * key,
+    void *value, void *cls)
+{
+	GNUNET_EncName enc;
+  GNUNET_hash_to_enc (key, &enc);
+  GNUNET_GE_LOG (coreAPI->ectx,
+								 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+								 GNUNET_GE_BULK, "\tPeer: %s", (char *)&enc);
+}
+#endif
+
 /*
  * Update the statistics about dv routing
  */
@@ -111,6 +124,17 @@ update_stats ()
 
   stats->change (stat_dv_total_peers, delta);
 
+#if DEBUG_PEERS
+  current_stat = stats->get (stat_dv_total_peers);
+
+  GNUNET_GE_LOG (coreAPI->ectx,
+								 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+								 GNUNET_GE_BULK,
+								 "%s: Known Peers\n", &shortID);
+  GNUNET_multi_hash_map_iterate (ctx->extended_neighbors,
+       &printPeer, NULL);
+
+#endif
   return GNUNET_OK;
 }
 
@@ -204,6 +228,19 @@ maintain_dv_job (void *unused)
 {
   GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                  &delete_expired_callback, NULL);
+}
+
+/**
+ * Checks whether the given peer is known to us.
+ *
+ * Returns GNUNET_YES if known
+ * GNUNET_NO if not
+ */
+int
+GNUNET_DV_have_peer (GNUNET_PeerIdentity *peer)
+{
+	return GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+      &peer->hashPubKey);
 }
 
 /**
@@ -536,6 +573,13 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
 
 #endif
   ret = GNUNET_OK;
+  GNUNET_GE_LOG (coreAPI->ectx,
+								 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+								 GNUNET_GE_BULK,
+								 "%s: Received data message:\nOriginal Sender ID:\n%d\nDestination ID:%d, type: %d\n",
+								 &shortID, ntohl (incoming->sender),
+								 ntohl (incoming->recipient), ntohs(packed_message->type));
+
   if ((ntohs (incoming->header.size) < sizeof (p2p_dv_MESSAGE_Data))
       || (ntohs (incoming->header.size) !=
           (sizeof (p2p_dv_MESSAGE_Data) + ntohs (packed_message->size))))
@@ -1272,6 +1316,7 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
   api.dv_connections_iterate = &GNUNET_DV_connection_iterate_peers;
   api.p2p_connection_status_check =
     &GNUNET_DV_connection_get_bandwidth_assigned_to_peer;
+  api.have_peer = &GNUNET_DV_have_peer;
 
   stats = capi->service_request ("stats");
   if (stats != NULL)

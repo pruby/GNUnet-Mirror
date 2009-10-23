@@ -64,6 +64,14 @@ typedef struct
                                       unsigned int *bpm,
                                       GNUNET_CronTime * last_seen);
 
+  /**
+   * Checks whether the given peer is known to us.
+   *
+   * Returns GNUNET_YES if known
+   * GNUNET_NO if not
+   */
+  int (*have_peer) (const GNUNET_PeerIdentity * peer);
+
 } GNUNET_DV_ServiceAPI;
 
 #endif /* end of gnunet_dv_service.h */
