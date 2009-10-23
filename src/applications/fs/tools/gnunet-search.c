@@ -29,6 +29,7 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util.h"
 
+#define DEBUG 1
 
 static struct GNUNET_GE_Context *ectx;
 
@@ -71,6 +72,10 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
   char *uri;
   char *filename;
 
+#if DEBUG
+  GNUNET_EncName *enc;
+  enc = GNUNET_malloc (sizeof (GNUNET_EncName));
+#endif
   switch (event->type)
     {
     case GNUNET_FSUI_search_aborted:
@@ -86,6 +91,15 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         GNUNET_meta_data_duplicate (event->data.SearchResult.fi.meta);
 
       uri = GNUNET_ECRS_uri_to_string (event->data.SearchResult.fi.uri);
+#if DEBUG
+      if (GNUNET_ECRS_uri_test_loc (event->data.SearchResult.fi.uri))
+        {
+          GNUNET_ECRS_locURI_extract_peer (event->data.SearchResult.fi.uri,
+                                           &enc);
+          fprintf (stdout, "Received locURI putting data at peer %s\n",
+                   (char *) enc);
+        }
+#endif
       printf ("%s:\n", uri);
       filename =
         GNUNET_meta_data_get_by_type (event->data.SearchResult.fi.meta,
@@ -103,7 +117,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         printf ("gnunet-download %s\n", uri);
       printMeta (event->data.SearchResult.fi.meta);
       printf ("\n");
-      fflush(stdout);
+      fflush (stdout);
       GNUNET_free_non_null (filename);
       GNUNET_free (uri);
       break;

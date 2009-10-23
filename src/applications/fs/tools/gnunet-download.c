@@ -58,7 +58,7 @@ static struct GNUNET_FSUI_DownloadList *dl;
 #define EC_INCOMPLETE 1
 #define EC_ABORTED 2
 #define EC_DOWNLOAD_ERROR 3
-
+#define DEBUG GNUNET_NO
 static int errorCode;
 
 static unsigned int downloads_running;
@@ -222,6 +222,9 @@ main (int argc, char *const *argv)
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_MetaData *meta;
   int i;
+#if DEBUG
+  GNUNET_EncName *enc;
+#endif
 
   i = GNUNET_init (argc,
                    argv,
@@ -248,6 +251,17 @@ main (int argc, char *const *argv)
   if (!do_directory)
     {
       uri = GNUNET_ECRS_string_to_uri (ectx, argv[i]);
+#if DEBUG
+      if (GNUNET_ECRS_uri_test_loc (uri))
+        {
+          enc = GNUNET_malloc (sizeof (GNUNET_EncName));
+          GNUNET_ECRS_locURI_extract_peer (uri, &enc);
+          fprintf (stdout,
+                   "gnunet-download got locURI. Data located at peer %s.\n",
+                   (char *) enc);
+          GNUNET_free (enc);
+#endif
+        }
       if ((NULL == uri) ||
           (!(GNUNET_ECRS_uri_test_loc (uri)
              || GNUNET_ECRS_uri_test_chk (uri))))
