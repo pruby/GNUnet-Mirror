@@ -177,7 +177,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
     {
       fprintf (stderr, "Failed to confirm daemon running!\n");
       GNUNET_GC_free (cfg);
-      UNLINK (dpath);
+      //UNLINK (dpath);
       GNUNET_free (dpath);
       return GNUNET_SYSERR;
     }
@@ -416,7 +416,7 @@ GNUNET_TESTING_stop_daemons (struct GNUNET_TESTING_DaemonContext *peers)
       next = peers->next;
       if (GNUNET_OK != GNUNET_TESTING_stop_daemon (peers->port, peers->pid))
         ret = GNUNET_SYSERR;
-      UNLINK (peers->configFile);
+      //UNLINK (peers->configFile);
       GNUNET_free (peers->configFile);
       GNUNET_free (peers);
       peers = next;

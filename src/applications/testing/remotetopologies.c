@@ -222,11 +222,11 @@ GNUNET_REMOTE_connect_ring (unsigned int *totalConnections,
   while (pos->next != NULL)
     {
       iter_pos = pos->next;
-      addNodeRefs (pos, iter_pos);
+      (*totalConnections) += addNodeRefs (pos, iter_pos);
       pos = pos->next;
     }
   iter_pos = main_list;
-  addNodeRefs (pos, iter_pos);
+  (*totalConnections) += addNodeRefs (pos, iter_pos);
 
   return GNUNET_OK;
 }
