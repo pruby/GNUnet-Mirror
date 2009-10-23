@@ -30,7 +30,7 @@
 #include "fs.h"
 #include "ecrs_core.h"
 
-#define DEBUG_FSLIB GNUNET_NO
+#define DEBUG_FSLIB GNUNET_YES
 
 /**
  * How often should we automatically retry a request
@@ -376,6 +376,7 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
   CS_fs_request_search_MESSAGE *req;
 #if DEBUG_FSLIB
   GNUNET_EncName enc;
+  GNUNET_EncName target_enc;
 #endif
 
   ret = GNUNET_malloc (sizeof (struct GNUNET_FS_SearchHandle) +
@@ -384,7 +385,15 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
   req = (CS_fs_request_search_MESSAGE *) & ret[1];
 #if DEBUG_FSLIB
   GNUNET_hash_to_enc (keys, &enc);
-  fprintf (stderr, "FSLIB: start search for `%s' (%p)\n", (char *) &enc, ret);
+  if (target != NULL)
+    {
+      GNUNET_hash_to_enc (&target->hashPubKey, &target_enc);
+      fprintf (stderr, "FSLIB: start search for `%s' (%p), target is %s\n",
+               (char *) &enc, ret, (char *) &target_enc);
+    }
+  else
+    fprintf (stderr, "FSLIB: start search for `%s' (%p)\n", (char *) &enc,
+             ret);
 #endif
   req->header.size =
     htons (sizeof (CS_fs_request_search_MESSAGE) +
