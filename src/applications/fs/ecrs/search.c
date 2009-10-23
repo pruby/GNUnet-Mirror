@@ -314,7 +314,7 @@ receive_response_callback (const GNUNET_HashCode * key,
   GNUNET_CronTime expiration;
 
   expiration = GNUNET_ntohll (value->expiration_time);
-  if (expiration < GNUNET_get_time ())
+  if ((expiration > 0) && (expiration < GNUNET_get_time ()))
     return GNUNET_OK;           /* expired, ignore! */
   type = ntohl (value->type);
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);

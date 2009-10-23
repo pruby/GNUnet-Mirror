@@ -303,6 +303,9 @@ add_request (struct Node *node)
   struct GNUNET_ECRS_DownloadContext *rm = node->ctx;
 
   GNUNET_DLL_insert (rm->head, rm->tail, node);
+  GNUNET_GE_LOG (rm->ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "in add_request, rm->have_target is %d\n", rm->have_target);
   GNUNET_FS_start_search (rm->sctx,
                           rm->have_target == GNUNET_NO ? NULL : &rm->target,
                           GNUNET_ECRS_BLOCKTYPE_DATA, 1,
@@ -806,6 +809,9 @@ GNUNET_ECRS_file_download_partial_start (struct GNUNET_GE_Context *ectx,
     rm->handle = -1;
   if (GNUNET_ECRS_uri_test_loc (uri))
     {
+      GNUNET_GE_LOG (rm->ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "in GNUNET_ECRS_file_download_partial_start, uri is locURI\n");
       GNUNET_hash (&uri->data.loc.peer, sizeof (GNUNET_RSA_PublicKey),
                    &rm->target.hashPubKey);
       rm->have_target = GNUNET_YES;

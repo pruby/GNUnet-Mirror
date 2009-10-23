@@ -1159,5 +1159,18 @@ GNUNET_ECRS_location_to_uri (const struct GNUNET_ECRS_URI *baseUri,
   return uri;
 }
 
+int
+GNUNET_ECRS_locURI_extract_peer (const struct GNUNET_ECRS_URI *baseURI,
+                                 GNUNET_EncName ** ret)
+{
+  GNUNET_HashCode hc;
+  if (!GNUNET_ECRS_uri_test_loc (baseURI))
+    return GNUNET_NO;
+
+  GNUNET_hash (&baseURI->data.loc.peer, sizeof (GNUNET_RSA_PublicKey), &hc);
+  GNUNET_hash_to_enc (&hc, *ret);
+
+  return GNUNET_OK;
+}
 
 /* end of uri.c */

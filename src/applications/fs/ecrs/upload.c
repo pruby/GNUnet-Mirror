@@ -395,6 +395,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Query for current block at level %u is `%s'.\n", i,
                      &enc);
+      fprintf (stderr, "Query for current block at level %u is `%s'.\n", i,
+               &enc);
 #endif
       if (GNUNET_OK != pushBlock (sock,
                                   &mchk, i + 1, iblocks, priority,
@@ -423,10 +425,9 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       iblocks[i] = NULL;
     }
 #if DEBUG_UPLOAD
-  IF_GELOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-            GNUNET_hash_to_enc (&mchk.query, &enc));
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+  GNUNET_hash_to_enc (&mchk.query, &enc);
+  GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                 | GNUNET_GE_BULK | GNUNET_GE_DEBUG | GNUNET_GE_REQUEST,
                  "Query for top block is %s\n", &enc);
 #endif
   /* build URI */
