@@ -30,7 +30,7 @@
 #include "fs.h"
 #include "ecrs_core.h"
 
-#define DEBUG_FSLIB GNUNET_YES
+#define DEBUG_FSLIB GNUNET_NO
 
 /**
  * How often should we automatically retry a request
