@@ -671,14 +671,28 @@ tcp_connect (const GNUNET_MessageHello * hello,
       GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
                               GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
                               GNUNET_GE_USER | GNUNET_GE_BULK, "connect");
-
+      switch (soaddr->sa_family)
+	{
+	case AF_INET:
+	  inet_ntop (AF_INET,
+		     &((struct sockaddr_in *) soaddr)->sin_addr,
+		     buf, sizeof (buf));
+	  break;
+	case AF_INET6:
+	  inet_ntop (AF_INET6,
+		     &((struct sockaddr_in6 *) soaddr)->sin6_addr,
+		     buf, sizeof(buf));
+	  break;
+	default:
+	  GNUNET_GE_BREAK (NULL, 0);
+	  strcpy (buf, "<unknown type>");
+	  break;
+	}
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_ADMIN |
                      GNUNET_GE_USER | GNUNET_GE_BULK,
                      "IP address used was `%s'\n",
-                     inet_ntop (soaddr->sa_family,
-                                soaddr, buf, sizeof (buf)));
-
+                     buf);
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
