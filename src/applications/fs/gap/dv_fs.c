@@ -632,7 +632,7 @@ send_results_dv (const GNUNET_HashCode * key,
 
   ret =
     dv_api->dv_send (&original_msg->returnTo, &msg->header,
-                     htonl (original_msg->priority), et);
+                     htonl (original_msg->priority) * 2, et);
   if (stats != NULL)
     {
       //stats->change (stat_trust_earned, req->value_offered);
