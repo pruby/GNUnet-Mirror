@@ -462,6 +462,7 @@ main (int argc, const char **argv)
   int ret = 0;
   int i;
   int j;
+  int len;
 
   unsigned int rand_peer;
   unsigned int temp_rand_peer;
@@ -557,7 +558,7 @@ main (int argc, const char **argv)
 			if (ret != 0)
 			{
 				fprintf(stderr, "Got bad return (%d) from download, this one failed!\n", ret);
-				finish_time = -1;
+				finish_time = 0;
 			}
 			else
 			{
@@ -566,9 +567,10 @@ main (int argc, const char **argv)
 			}
 			if (fd != -1)
 			{
-				buf = GNUNET_malloc(snprintf(NULL, 0, "%d\t%d\t%llu\n", size, j, finish_time) + 1);
+			  len = snprintf(NULL, 0, "%d\t%d\t%llu\n", size, j, finish_time) + 1;
+				buf = GNUNET_malloc(len);
 				sprintf(buf, "%d\t%d\t%llu\n", size, j, finish_time);
-				ret = WRITE (fd, buf, snprintf(NULL, 0, "%d\t%d\t%llu\n", size, j, finish_time) + 1);
+				ret = WRITE (fd, buf, len - 1);
 				GNUNET_free(buf);
 			}
 			if (GNUNET_shutdown_test() == GNUNET_YES)
