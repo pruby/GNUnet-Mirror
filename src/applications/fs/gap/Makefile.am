@@ -50,14 +50,15 @@ libgnunetmodule_dv_fs_la_LIBADD = \
   -lm \
   $(GN_LIBINTL)  
 
+noinst_PROGRAMS = \
+  test_gap_dv
 
 check_PROGRAMS = \
   test_loopback \
   test_linear_topology \
   test_multi_results \
   test_star_topology \
-	test_multi_results_dv \
-	test_gap_dv
+  test_multi_results_dv
 	
 TESTS = $(check_PROGRAMS)
 
@@ -111,6 +112,7 @@ test_gap_dv_LDADD = \
   $(top_builddir)/src/applications/testing/libgnunetremoteapi.la \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \  
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

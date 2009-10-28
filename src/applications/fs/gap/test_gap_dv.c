@@ -36,7 +36,7 @@
 #include "gnunet_fsui_lib.h"
 #include "../fsui/fsui.h"
 
-#define VERBOSE GNUNET_YES
+#define VERBOSE GNUNET_NO
 /**
  * How many peers should the testcase run?
  */
@@ -45,17 +45,36 @@
 /**
  * How many files of size (size * i) should we insert?
  */
-#define NUM_FILES 20
+#define NUM_FILES 500
 /**
  * How many times will the info loop execute?
  * Approximate number of minutes for test (must be
  * long enough for fs/dht to get around to inserting)
  */
-#define NUM_REPEAT 20
+#define NUM_REPEAT 21
+
+#define DOWNLOAD_TIMEOUT_SECONDS 360
+
+#define EC_ARGUMENTS -1
+#define EC_COMPLETED 0
+#define EC_INCOMPLETE 1
+#define EC_ABORTED 2
+#define EC_DOWNLOAD_ERROR 3
+#define EC_DOWNLOAD_TIMEOUT 4
+
+#ifdef WAIT
 static int ok;
+#endif
+
 static int carry_on;
 static int errorCode;
+static int have_uri;
+static unsigned int downloads_running;
 
+/* Main URI to be assigned for each file */
+static struct GNUNET_ECRS_URI *file_uri;
+
+#ifdef WAIT
 static int
 getPeers (const char *name, unsigned long long value, void *cls)
 {
@@ -71,6 +90,7 @@ getPeers (const char *name, unsigned long long value, void *cls)
     }
   return GNUNET_OK;
 }
+#endif
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
@@ -86,6 +106,48 @@ makeName (unsigned int i)
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
+
+/**
+ * Handle the search result.
+ */
+static void *
+eventCallback (void *cls, const GNUNET_FSUI_Event * event)
+{
+#if VERBOSE
+  GNUNET_EncName *enc;
+  enc = GNUNET_malloc (sizeof (GNUNET_EncName));
+#endif
+  switch (event->type)
+    {
+    case GNUNET_FSUI_search_aborted:
+      errorCode = 4;
+      break;
+    case GNUNET_FSUI_search_result:
+      /*memcpy(&file_uri, event->data.SearchResult.fi.uri, sizeof(event->data.SearchResult.fi.uri));*/
+      file_uri = GNUNET_ECRS_uri_duplicate(event->data.SearchResult.fi.uri);
+      have_uri = GNUNET_YES;
+#if VERBOSE
+      if (GNUNET_ECRS_uri_test_loc (event->data.SearchResult.fi.uri))
+        {
+          GNUNET_ECRS_locURI_extract_peer (event->data.SearchResult.fi.uri,
+                                           &enc);
+          fprintf (stdout, "Received locURI putting data at peer %s\n",
+                   (char *) enc);
+        }
+#endif
+      fflush (stdout);
+      break;
+    case GNUNET_FSUI_search_started:
+    case GNUNET_FSUI_search_stopped:
+    case GNUNET_FSUI_search_update:
+      break;
+    default:
+      GNUNET_GE_BREAK (NULL, 0);
+      break;
+    }
+  return NULL;
+}
+
 
 /**
  * Print progress messages.
@@ -133,8 +195,6 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
                               / 1024.0 * GNUNET_CRON_SECONDS / delta));
         }
       fstring = GNUNET_ECRS_uri_to_string (event->data.UploadCompleted.uri);
-      printf (_("File `%s' has URI: %s\n"),
-              event->data.UploadCompleted.filename, fstring);
       GNUNET_free (fstring);
       errorCode = 0;
 			carry_on = GNUNET_YES;
@@ -213,7 +273,7 @@ uploadFile (struct GNUNET_GC_Configuration *cfg, struct GNUNET_GE_Context *ectx,
 
   if (ul != NULL)
     {
-      while (carry_on == GNUNET_NO)
+      while ((carry_on == GNUNET_NO) && (GNUNET_shutdown_test () != GNUNET_YES))
       {
       	GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
       	continue;
@@ -229,6 +289,161 @@ uploadFile (struct GNUNET_GC_Configuration *cfg, struct GNUNET_GE_Context *ectx,
 
 
 /**
+ * This method is called whenever data is received.
+ * The current incarnation just ensures that the main
+ * method exits once the download is complete.
+ */
+static void *
+progressModel (void *unused, const GNUNET_FSUI_Event * event)
+{
+	int verbose = VERBOSE;
+  switch (event->type)
+    {
+    case GNUNET_FSUI_download_progress:
+    	if (verbose)
+			{
+				PRINTF (_("Download of file `%s' at "
+									"%16llu out of %16llu bytes (%8.3f KiB/s)\n"),
+								event->data.DownloadProgress.filename,
+								event->data.DownloadProgress.completed,
+								event->data.DownloadProgress.total,
+								(event->data.DownloadProgress.completed / 1024.0) /
+								(((double) (GNUNET_get_time () - (event->data.DownloadStarted.dc.pos->startTime - 1)))
+								 / (double) GNUNET_CRON_SECONDS));
+			}
+      break;
+    case GNUNET_FSUI_download_aborted:
+			errorCode = EC_ABORTED;
+      break;
+    case GNUNET_FSUI_download_error:
+      printf (_("Error downloading: %s\n"),
+              event->data.DownloadError.message);
+      errorCode = EC_DOWNLOAD_ERROR;
+      break;
+    case GNUNET_FSUI_download_completed:
+    	if (verbose)
+    	{
+				PRINTF (_("Download of file `%s' complete.  "
+									"Speed was %8.3f KiB per second.\n"),
+								event->data.DownloadCompleted.filename,
+								(event->data.DownloadCompleted.total / 1024.0) /
+								(((double) (GNUNET_get_time () - (event->data.DownloadStarted.dc.pos->startTime - 1)))
+								 / (double) GNUNET_CRON_SECONDS));
+    	}
+      downloads_running--;
+
+      if (downloads_running == 0)
+        {
+          errorCode = 0;
+        }
+      break;
+    case GNUNET_FSUI_download_started:
+      downloads_running++;
+
+    case GNUNET_FSUI_download_stopped:
+      break;
+    default:
+      break;
+    }
+
+  return NULL;
+}
+
+static int
+downloadFile (struct GNUNET_GC_Configuration *cfg, struct GNUNET_GE_Context *ectx, struct GNUNET_ECRS_URI *uri)
+{
+  char *name;
+  struct GNUNET_MetaData *meta;
+  struct GNUNET_FSUI_DownloadList *dl;
+  GNUNET_CronTime start_time;
+  struct GNUNET_FSUI_Context *ctx;
+  int count;
+
+  name = strdup("/tmp/gaptestfile");
+
+  carry_on = GNUNET_NO;
+  downloads_running = 0;
+  ctx = GNUNET_FSUI_start (ectx,
+                           cfg,
+                           "gnunet-download",
+                           32,
+                           GNUNET_NO, &progressModel, NULL);
+
+	start_time = GNUNET_get_time ();
+	errorCode = 1;
+	meta = GNUNET_meta_data_create ();
+	dl = GNUNET_FSUI_download_start (ctx, (unsigned int)0, 0, uri, meta, name, NULL, NULL);
+
+	GNUNET_meta_data_destroy (meta);
+	if (dl == NULL)
+		{
+			GNUNET_FSUI_stop (ctx);
+			errorCode = -1;
+		}
+
+	count = 0;
+	while ((errorCode == 1) && (count < DOWNLOAD_TIMEOUT_SECONDS) && (GNUNET_shutdown_test () != GNUNET_YES))
+	{
+		GNUNET_thread_sleep (1 * GNUNET_CRON_SECONDS);
+		count++;
+	}
+
+	if (count >= DOWNLOAD_TIMEOUT_SECONDS)
+		errorCode = EC_DOWNLOAD_TIMEOUT;
+
+	if (dl != NULL)
+		{
+			GNUNET_FSUI_download_stop(dl);
+			GNUNET_FSUI_download_abort(dl);
+		}
+
+  GNUNET_FSUI_stop (ctx);
+
+  unlink (name);
+	return errorCode;
+}
+
+
+static int
+search (struct GNUNET_GC_Configuration *cfg, struct GNUNET_GE_Context *ectx, char *keyword)
+{
+  struct GNUNET_ECRS_URI *key;
+  struct GNUNET_FSUI_SearchList *s;
+  struct GNUNET_FSUI_Context *ctx;
+  unsigned long long verbose = VERBOSE;
+
+  have_uri = GNUNET_NO;
+  ctx =
+    GNUNET_FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO,
+                       &eventCallback, &verbose);
+
+  if (ctx == NULL)
+    {
+      GNUNET_fini (ectx, cfg);
+      return GNUNET_SYSERR;
+    }
+
+  key = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
+  errorCode = 1;
+
+  s = GNUNET_FSUI_search_start (ctx, 0, key);
+  GNUNET_ECRS_uri_destroy (key);
+  if (s == NULL)
+    {
+      errorCode = 2;
+      GNUNET_FSUI_stop (ctx);
+    }
+  while ((have_uri == GNUNET_NO) && (errorCode == 1) && (GNUNET_shutdown_test () != GNUNET_YES))
+  {
+  	GNUNET_thread_sleep(1 * GNUNET_CRON_SECONDS);
+  }
+  if (s != NULL)
+  	GNUNET_FSUI_search_stop (s);
+	GNUNET_FSUI_stop (ctx);
+	return errorCode;
+}
+
+/**
  * Testcase to test gap/dv_dht/fs_dv/dv integration
  * @return 0: ok, -1: error
  */
@@ -241,14 +456,33 @@ main (int argc, const char **argv)
   int ret = 0;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_ClientServerConnection *sock;
   int i;
-  int r;
+  int j;
   unsigned int rand_peer;
+  unsigned int temp_rand_peer;
   char *keyword;
   int size;
+  int fd;
+  const char *filename;
+  char *buf;
 
-  size = 250; /* Arbitrary */
+  fd = -1;
+	if ((argc == 3) && (strcmp(argv[1], "-o") == 0))
+	{
+		filename = argv[2];
+		fd = GNUNET_disk_file_open (NULL, filename, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
+		if (fd == -1)
+			return fd;
+	}
+
+  GNUNET_CronTime startTime;
+  GNUNET_CronTime endTime;
+#ifdef WAIT
+  struct GNUNET_ClientServerConnection *sock;
+	int r;
+#endif
+
+  size = 1500; /* Arbitrary */
   ectx = NULL;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "gap_test.conf"))
@@ -274,19 +508,71 @@ main (int argc, const char **argv)
     }
   sleep (30);
 
-  /* Insert some data */
-  rand_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, NUM_PEERS);
-
+  /* Insert at random peer, search for data (to get proper uri), then try to download
+   * from peers 0, 1, 2, and 3 hops away from upload peer to get speed results. */
   for (i = 0; i < NUM_FILES; i++)
   {
-  	keyword = GNUNET_malloc(snprintf(NULL, 0, "gaptest%d", i) + 1);
-  	sprintf(keyword, "gaptest%d", i);
-  	fprintf(stdout, "Inserting data size %d, keyword %s at peer %d\n", size, keyword, NUM_PEERS - rand_peer);
- 	  ret = uploadFile(peer_array[rand_peer]->config, ectx, (size * (i + 1))*(size * (i + 1)), keyword);
-  	GNUNET_free(keyword);
+  	if (GNUNET_shutdown_test() == GNUNET_YES)
+  		break;
+  	for (j = 0; j <= 3; j++)
+		{
+			rand_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, NUM_PEERS);
+			keyword = GNUNET_malloc(snprintf(NULL, 0, "gaptest%d", i) + 1);
+			sprintf(keyword, "gaptest%d%d", i, j);
+			fprintf(stdout, "Inserting data size %d, keyword %s at peer %d\n", (size * (i + 1)), keyword, NUM_PEERS - rand_peer - 1);
+			ret = uploadFile(peer_array[rand_peer]->config, ectx, (size * (i + 1)), keyword);
+			if (ret != 0)
+			{
+				fprintf(stderr, "Got bad return (%d) from uploadFile, moving to next test!\n", ret);
+				continue;
+			}
+
+			if (GNUNET_shutdown_test() == GNUNET_YES)
+				break;
+			ret = search(peer_array[rand_peer]->config, ectx, keyword);
+			if (((ret != 1) && (ret != 4)) || (have_uri == GNUNET_NO))
+			{
+				fprintf(stderr, "Got bad return (%d) from search (or have_uri %d is bad), moving to next test!\n", ret, have_uri);
+				continue;
+			}
+			if (GNUNET_shutdown_test() == GNUNET_YES)
+				break;
+
+			temp_rand_peer = rand_peer + j;
+			if (temp_rand_peer >= NUM_PEERS)
+			{
+				temp_rand_peer = temp_rand_peer - NUM_PEERS;
+			}
+			startTime = GNUNET_get_time();
+			fprintf (stdout, "Attempting download from %d (index of peer %d)\n", NUM_PEERS - temp_rand_peer - 1, temp_rand_peer);
+			ret = downloadFile(peer_array[temp_rand_peer]->config, ectx, file_uri);
+			endTime = GNUNET_get_time();
+			if (ret != 0)
+			{
+				fprintf(stderr, "Got bad return (%d) from download, stopping this set of download tests!\n", ret);
+				break;
+			}
+
+			fprintf (stdout, "Download from peer %d away took %llu milliseconds\n", j, (endTime - startTime));
+			if (fd != -1)
+			{
+				buf = GNUNET_malloc(snprintf(NULL, 0, "%d\t%d\t%llu\n", (size * (i + 1)), j, (endTime - startTime)) + 1);
+				sprintf(buf, "%d\t%d\t%llu\n", (size * (i + 1)), j, (endTime - startTime));
+				ret = WRITE (fd, buf, snprintf(NULL, 0, "%d\t%d\t%llu\n", (size * (i + 1)), j, (endTime - startTime)) + 1);
+				GNUNET_free(buf);
+			}
+			if (GNUNET_shutdown_test() == GNUNET_YES)
+				break;
+			GNUNET_free(file_uri);
+			GNUNET_free(keyword);
+ 	  }
 	}
 
-  fprintf (stdout, "Will run for %d minues\n", NUM_REPEAT);
+  if (fd != -1)
+  	CLOSE (fd);
+
+#ifdef WAIT
+  fprintf (stdout, "Will run for %d minutes\n", NUM_REPEAT);
   for (r = 0; r < NUM_REPEAT; r++)
     {
       fprintf (stderr, "After %d minutes\n", r);
@@ -306,6 +592,7 @@ main (int argc, const char **argv)
         break;
       sleep (60);
     }
+#endif
 
   pos = peers;
   while (pos != NULL)
