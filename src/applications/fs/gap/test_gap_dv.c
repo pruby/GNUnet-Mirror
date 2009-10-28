@@ -21,7 +21,6 @@
 /**
  * @file applications/fs/gap/test_gap_dv.c
  * @brief gap with distance vector testcase
- * @author Christian Grothoff
  * @author Nathan Evans
  */
 
@@ -45,7 +44,7 @@
 /**
  * How many files of size (size * i) should we insert?
  */
-#define NUM_FILES 500
+#define NUM_FILES 50
 /**
  * How many times will the info loop execute?
  * Approximate number of minutes for test (must be
@@ -53,7 +52,7 @@
  */
 #define NUM_REPEAT 21
 
-#define DOWNLOAD_TIMEOUT_SECONDS 360
+#define DOWNLOAD_TIMEOUT_SECONDS 60
 
 #define EC_ARGUMENTS -1
 #define EC_COMPLETED 0
@@ -61,6 +60,8 @@
 #define EC_ABORTED 2
 #define EC_DOWNLOAD_ERROR 3
 #define EC_DOWNLOAD_TIMEOUT 4
+#define START_SIZE 200000
+#define SIZE_INCREMENT 3000
 
 #ifdef WAIT
 static int ok;
@@ -453,18 +454,24 @@ main (int argc, const char **argv)
   struct GNUNET_REMOTE_TESTING_DaemonContext *peers;
   struct GNUNET_REMOTE_TESTING_DaemonContext *peer_array[NUM_PEERS];
   struct GNUNET_REMOTE_TESTING_DaemonContext *pos;
-  int ret = 0;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
-  int i;
-  int j;
-  unsigned int rand_peer;
-  unsigned int temp_rand_peer;
-  char *keyword;
+
   int size;
   int fd;
-  const char *filename;
+  int ret = 0;
+  int i;
+  int j;
+
+  unsigned int rand_peer;
+  unsigned int temp_rand_peer;
+
+  unsigned long long finish_time;
+
+  char *keyword;
   char *buf;
+
+  const char *filename;
 
   fd = -1;
 	if ((argc == 3) && (strcmp(argv[1], "-o") == 0))
@@ -482,7 +489,6 @@ main (int argc, const char **argv)
 	int r;
 #endif
 
-  size = 1500; /* Arbitrary */
   ectx = NULL;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "gap_test.conf"))
@@ -512,6 +518,7 @@ main (int argc, const char **argv)
    * from peers 0, 1, 2, and 3 hops away from upload peer to get speed results. */
   for (i = 0; i < NUM_FILES; i++)
   {
+    size = START_SIZE + (i * SIZE_INCREMENT);
   	if (GNUNET_shutdown_test() == GNUNET_YES)
   		break;
   	for (j = 0; j <= 3; j++)
@@ -519,8 +526,8 @@ main (int argc, const char **argv)
 			rand_peer = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, NUM_PEERS);
 			keyword = GNUNET_malloc(snprintf(NULL, 0, "gaptest%d", i) + 1);
 			sprintf(keyword, "gaptest%d%d", i, j);
-			fprintf(stdout, "Inserting data size %d, keyword %s at peer %d\n", (size * (i + 1)), keyword, NUM_PEERS - rand_peer - 1);
-			ret = uploadFile(peer_array[rand_peer]->config, ectx, (size * (i + 1)), keyword);
+			fprintf(stdout, "Inserting data size %d, keyword %s at peer %d\n", size, keyword, NUM_PEERS - rand_peer - 1);
+			ret = uploadFile(peer_array[rand_peer]->config, ectx, size, keyword);
 			if (ret != 0)
 			{
 				fprintf(stderr, "Got bad return (%d) from uploadFile, moving to next test!\n", ret);
@@ -549,16 +556,19 @@ main (int argc, const char **argv)
 			endTime = GNUNET_get_time();
 			if (ret != 0)
 			{
-				fprintf(stderr, "Got bad return (%d) from download, stopping this set of download tests!\n", ret);
-				break;
+				fprintf(stderr, "Got bad return (%d) from download, this one failed!\n", ret);
+				finish_time = -1;
 			}
-
-			fprintf (stdout, "Download from peer %d away took %llu milliseconds\n", j, (endTime - startTime));
+			else
+			{
+			  fprintf (stdout, "Download from peer %d away took %llu milliseconds\n", j, (endTime - startTime));
+			  finish_time = endTime - startTime;
+			}
 			if (fd != -1)
 			{
-				buf = GNUNET_malloc(snprintf(NULL, 0, "%d\t%d\t%llu\n", (size * (i + 1)), j, (endTime - startTime)) + 1);
-				sprintf(buf, "%d\t%d\t%llu\n", (size * (i + 1)), j, (endTime - startTime));
-				ret = WRITE (fd, buf, snprintf(NULL, 0, "%d\t%d\t%llu\n", (size * (i + 1)), j, (endTime - startTime)) + 1);
+				buf = GNUNET_malloc(snprintf(NULL, 0, "%d\t%d\t%llu\n", size, j, finish_time) + 1);
+				sprintf(buf, "%d\t%d\t%llu\n", size, j, finish_time);
+				ret = WRITE (fd, buf, snprintf(NULL, 0, "%d\t%d\t%llu\n", size, j, finish_time) + 1);
 				GNUNET_free(buf);
 			}
 			if (GNUNET_shutdown_test() == GNUNET_YES)
