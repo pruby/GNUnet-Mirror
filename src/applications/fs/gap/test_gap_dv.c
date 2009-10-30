@@ -72,6 +72,14 @@ static int errorCode;
 static int have_uri;
 static unsigned int downloads_running;
 
+static unsigned long long total_gap_queries_sent;
+static unsigned long long total_gap_requests_started;
+static unsigned long long total_gap_replies_to_client;
+static unsigned long long total_gap_dv_requests_sent;
+static unsigned long long total_gap_requests_dropped;
+static unsigned long long total_gap_requests_received;
+static unsigned long long total_gap_dv_replies;
+
 /* Main URI to be assigned for each file */
 static struct GNUNET_ECRS_URI *file_uri;
 
@@ -94,6 +102,26 @@ getPeers (const char *name, unsigned long long value, void *cls)
 #endif
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
+
+static int
+getGAPStats (const char *name, unsigned long long value, void *cls)
+{
+  if ((value > 0) && (strstr (name, _("# gap client requests injected")) != NULL))
+		total_gap_requests_started += value;
+  else if ((value > 0) && (strstr (name, _("# gap requests total sent")) != NULL))
+  	total_gap_queries_sent += value;
+	else if ((value > 0) && (strstr (name, _("# dv gap requests sent")) != NULL))
+		total_gap_dv_requests_sent += value;
+	else if ((value > 0) && (strstr (name, _("# gap replies sent to client")) != NULL))
+		total_gap_replies_to_client += value;
+	else if ((value > 0) && (strstr (name, _("# gap requests dropped due to load")) != NULL))
+		total_gap_requests_dropped += value;
+	else if ((value > 0) && (strstr (name, _("# gap requests total received")) != NULL))
+		total_gap_requests_received += value;
+	else if ((value > 0) && (strstr (name, _("# gap replies sent via dv")) != NULL))
+		total_gap_dv_replies += value;
+  return GNUNET_OK;
+}
 
 static char *
 makeName (unsigned int i)
@@ -261,7 +289,6 @@ uploadFile (struct GNUNET_GC_Configuration *cfg, struct GNUNET_GE_Context *ectx,
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,   /* make configurable */
 													 &printstatus, &verbose);
 
-	/* first insert all of the top-level files or directories */
 	GNUNET_meta_data_add_publication_date (meta);
 	start_time = GNUNET_get_time ();
 	ul = GNUNET_FSUI_upload_start (ctx,
@@ -464,6 +491,15 @@ main (int argc, const char **argv)
   int j;
   int len;
 
+  unsigned long long old_total_gap_queries_sent;
+  unsigned long long old_total_gap_requests_started;
+  unsigned long long old_total_gap_replies_to_client;
+  unsigned long long old_total_gap_dv_requests_sent;
+  unsigned long long new_total_gap_queries_sent;
+  unsigned long long new_total_gap_requests_started;
+  unsigned long long new_total_gap_replies_to_client;
+  unsigned long long new_total_gap_dv_requests_sent;
+
   unsigned int rand_peer;
   unsigned int temp_rand_peer;
 
@@ -474,6 +510,14 @@ main (int argc, const char **argv)
 
   const char *filename;
 
+  GNUNET_CronTime startTime;
+  GNUNET_CronTime endTime;
+
+  struct GNUNET_ClientServerConnection *sock;
+#ifdef WAIT
+	int r;
+#endif
+
   fd = -1;
 	if ((argc == 3) && (strcmp(argv[1], "-o") == 0))
 	{
@@ -482,13 +526,6 @@ main (int argc, const char **argv)
 		if (fd == -1)
 			return fd;
 	}
-
-  GNUNET_CronTime startTime;
-  GNUNET_CronTime endTime;
-#ifdef WAIT
-  struct GNUNET_ClientServerConnection *sock;
-	int r;
-#endif
 
   ectx = NULL;
   cfg = GNUNET_GC_create ();
@@ -513,7 +550,8 @@ main (int argc, const char **argv)
       peer_array[i] = pos;
       pos = pos->next;
     }
-  sleep (30);
+  fprintf(stdout, "Sleeping for ten minutes\n");
+  GNUNET_thread_sleep (600 * GNUNET_CRON_SECONDS);
 
   /* Insert at random peer, search for data (to get proper uri), then try to download
    * from peers 0, 1, 2, and 3 hops away from upload peer to get speed results. */
@@ -573,6 +611,36 @@ main (int argc, const char **argv)
 				ret = WRITE (fd, buf, len - 1);
 				GNUNET_free(buf);
 			}
+
+			old_total_gap_queries_sent = total_gap_queries_sent;
+			old_total_gap_requests_started = total_gap_requests_started;
+			old_total_gap_replies_to_client = total_gap_replies_to_client;
+			old_total_gap_dv_requests_sent = total_gap_dv_requests_sent;
+
+
+			total_gap_queries_sent = 0;
+			total_gap_requests_started = 0;
+			total_gap_replies_to_client = 0;
+			total_gap_dv_requests_sent = 0;
+
+
+			for (i = 0; i < NUM_PEERS; i++)
+				{
+					if (GNUNET_shutdown_test () == GNUNET_YES)
+						break;
+
+					sock =
+						GNUNET_client_connection_create (NULL, peer_array[i]->config);
+					GNUNET_STATS_get_statistics (NULL, sock, &getGAPStats, NULL);
+					GNUNET_client_connection_destroy (sock);
+				}
+
+			new_total_gap_queries_sent = total_gap_queries_sent - old_total_gap_queries_sent;
+			new_total_gap_requests_started = total_gap_requests_started - old_total_gap_requests_started;
+			new_total_gap_replies_to_client = total_gap_replies_to_client - old_total_gap_replies_to_client;
+			new_total_gap_dv_requests_sent = total_gap_dv_requests_sent - old_total_gap_dv_requests_sent;
+
+			fprintf(stdout, "Total gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\n", new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client);
 			if (GNUNET_shutdown_test() == GNUNET_YES)
 				break;
 			GNUNET_free(file_uri);

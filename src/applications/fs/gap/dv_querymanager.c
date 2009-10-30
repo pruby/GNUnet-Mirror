@@ -21,7 +21,8 @@
 /**
  * @file fs/gap/dv_querymanager.c
  * @brief management of queries from our clients
- * @author Christian Grothoff, Nathan Evans
+ * @author Christian Grothoff
+ * @author Nathan Evans
  *
  * This code forwards queries (using GAP and DHT) to other peers and
  * passes replies (from GAP or DHT) back to clients.

@@ -85,6 +85,8 @@ static int stat_gap_content_received;
 
 static int stat_gap_trust_awarded;
 
+static int stat_dv_replies_sent;
+
 /**
  * Hard CPU limit
  */
@@ -635,7 +637,7 @@ send_results_dv (const GNUNET_HashCode * key,
                      htonl (original_msg->priority) * 2, et);
   if (stats != NULL)
     {
-      //stats->change (stat_trust_earned, req->value_offered);
+      stats->change (stat_dv_replies_sent, 1);
     }
 
   GNUNET_free_non_null (enc);
@@ -982,6 +984,8 @@ initialize_module_dv_fs (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap content total received"));
       stat_gap_trust_awarded =
         stats->create (gettext_noop ("# gap total trust awarded"));
+      stat_dv_replies_sent =
+      	stats->create (gettext_noop ("# gap replies sent via dv"));
     }
   identity = coreAPI->service_request ("identity");
   if (identity == NULL)

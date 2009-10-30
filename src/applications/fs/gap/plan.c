@@ -529,6 +529,14 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   info = clients;
   while ((info != NULL) && ((info->client != client) || (info->peer != peer)))
     info = info->next;
+  /* We have a specific peer targeted for this request,
+   * abandon normal processing if we have DV available and
+   * try to send direct to this peer (provided we are using
+   * non-anonymous download) */
+  if ((request->primary_target != 0) && (request->anonymityLevel == 0))
+  {
+  	fprintf(stdout, "In plan.c, received non-anonymous request for data and we have a specific peer in mind to download from!\n");
+  }
 
   /* for all connected peers compute ranking */
   rpc.info = info;
