@@ -489,6 +489,7 @@ main (int argc, const char **argv)
   int ret = 0;
   int i;
   int j;
+  int r;
   int len;
 
   unsigned long long old_total_gap_queries_sent;
@@ -518,9 +519,6 @@ main (int argc, const char **argv)
   GNUNET_CronTime endTime;
 
   struct GNUNET_ClientServerConnection *sock;
-#ifdef WAIT
-	int r;
-#endif
 
   fd = -1;
 	if ((argc == 3) && (strcmp(argv[1], "-o") == 0))
@@ -622,7 +620,7 @@ main (int argc, const char **argv)
 			total_gap_dv_replies = 0;
 			total_gap_requests_dropped = 0;
 
-			for (i = 0; i < NUM_PEERS; i++)
+			for (r = 0; r < NUM_PEERS; r++)
 				{
 					if (GNUNET_shutdown_test () == GNUNET_YES)
 						break;
@@ -642,14 +640,14 @@ main (int argc, const char **argv)
 
 			fprintf(stdout, "Total gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\nTotal gap dv replies: %llu\nTotal gap requests dropped: %llu\n", new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client, new_total_gap_dv_replies, new_total_gap_requests_dropped);
 
-	     if (fd != -1)
-	      {
-	        len = snprintf(NULL, 0, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped) + 1;
-	        buf = GNUNET_malloc(len);
-	        sprintf(buf, "%d\t%d\t%llu\n", size, j, finish_time);
-	        ret = WRITE (fd, buf, len - 1);
-	        GNUNET_free(buf);
-	      }
+			if (fd != -1)
+        {
+          len = snprintf(NULL, 0, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped) + 1;
+          buf = GNUNET_malloc(len);
+          sprintf(buf, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped);
+          ret = WRITE (fd, buf, len - 1);
+          GNUNET_free(buf);
+        }
 
 			if (GNUNET_shutdown_test() == GNUNET_YES)
 				break;
