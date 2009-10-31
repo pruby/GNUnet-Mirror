@@ -607,14 +607,6 @@ main (int argc, const char **argv)
 			  fprintf (stdout, "Download from peer %d away took %llu milliseconds\n", j, (endTime - startTime));
 			  finish_time = endTime - startTime;
 			}
-			if (fd != -1)
-			{
-			  len = snprintf(NULL, 0, "%d\t%d\t%llu\n", size, j, finish_time) + 1;
-				buf = GNUNET_malloc(len);
-				sprintf(buf, "%d\t%d\t%llu\n", size, j, finish_time);
-				ret = WRITE (fd, buf, len - 1);
-				GNUNET_free(buf);
-			}
 
 			old_total_gap_queries_sent = total_gap_queries_sent;
 			old_total_gap_requests_started = total_gap_requests_started;
@@ -649,6 +641,16 @@ main (int argc, const char **argv)
 			new_total_gap_requests_dropped = total_gap_requests_dropped - old_total_gap_requests_dropped;
 
 			fprintf(stdout, "Total gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\nTotal gap dv replies: %llu\nTotal gap requests dropped: %llu\n", new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client, new_total_gap_dv_replies, new_total_gap_requests_dropped);
+
+	     if (fd != -1)
+	      {
+	        len = snprintf(NULL, 0, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped) + 1;
+	        buf = GNUNET_malloc(len);
+	        sprintf(buf, "%d\t%d\t%llu\n", size, j, finish_time);
+	        ret = WRITE (fd, buf, len - 1);
+	        GNUNET_free(buf);
+	      }
+
 			if (GNUNET_shutdown_test() == GNUNET_YES)
 				break;
 			GNUNET_free(file_uri);
