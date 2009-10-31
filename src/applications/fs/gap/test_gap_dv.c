@@ -498,12 +498,14 @@ main (int argc, const char **argv)
   unsigned long long old_total_gap_dv_requests_sent;
   unsigned long long old_total_gap_dv_replies;
   unsigned long long old_total_gap_requests_dropped;
+  unsigned long long old_total_gap_requests_received;
   unsigned long long new_total_gap_queries_sent;
   unsigned long long new_total_gap_requests_started;
   unsigned long long new_total_gap_replies_to_client;
   unsigned long long new_total_gap_dv_requests_sent;
   unsigned long long new_total_gap_dv_replies;
   unsigned long long new_total_gap_requests_dropped;
+  unsigned long long new_total_gap_requests_received;
 
   unsigned int rand_peer;
   unsigned int temp_rand_peer;
@@ -612,13 +614,15 @@ main (int argc, const char **argv)
 			old_total_gap_dv_requests_sent = total_gap_dv_requests_sent;
       old_total_gap_dv_replies = total_gap_dv_replies;
       old_total_gap_requests_dropped = total_gap_requests_dropped;
+      old_total_gap_requests_received = total_gap_requests_received;
 
-			total_gap_queries_sent = 0;
-			total_gap_requests_started = 0;
-			total_gap_replies_to_client = 0;
-			total_gap_dv_requests_sent = 0;
-			total_gap_dv_replies = 0;
-			total_gap_requests_dropped = 0;
+			total_gap_queries_sent = 0; /* gap requests total sent */
+			total_gap_requests_received = 0; /* gap requests total received */
+			total_gap_requests_started = 0; /* gap client requests injected */
+			total_gap_replies_to_client = 0; /* gap replies sent to client */
+			total_gap_dv_requests_sent = 0; /* dv gap requests sent */
+			total_gap_dv_replies = 0; /* gap replies sent via dv */
+			total_gap_requests_dropped = 0; /* gap requests dropped due to load */
 
 			for (r = 0; r < NUM_PEERS; r++)
 				{
@@ -626,11 +630,15 @@ main (int argc, const char **argv)
 						break;
 
 					sock =
-						GNUNET_client_connection_create (NULL, peer_array[i]->config);
+						GNUNET_client_connection_create (NULL, peer_array[r]->config);
 					GNUNET_STATS_get_statistics (NULL, sock, &getGAPStats, NULL);
 					GNUNET_client_connection_destroy (sock);
 				}
 
+      if (GNUNET_shutdown_test () == GNUNET_YES)
+        break;
+
+      new_total_gap_requests_received = total_gap_requests_received - old_total_gap_requests_received;
 			new_total_gap_queries_sent = total_gap_queries_sent - old_total_gap_queries_sent;
 			new_total_gap_requests_started = total_gap_requests_started - old_total_gap_requests_started;
 			new_total_gap_replies_to_client = total_gap_replies_to_client - old_total_gap_replies_to_client;
@@ -638,13 +646,13 @@ main (int argc, const char **argv)
 			new_total_gap_dv_replies = total_gap_dv_replies - old_total_gap_dv_replies;
 			new_total_gap_requests_dropped = total_gap_requests_dropped - old_total_gap_requests_dropped;
 
-			fprintf(stdout, "Total gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\nTotal gap dv replies: %llu\nTotal gap requests dropped: %llu\n", new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client, new_total_gap_dv_replies, new_total_gap_requests_dropped);
+			fprintf(stdout, "Total gap requests received: %llu\nTotal gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\nTotal gap dv replies: %llu\nTotal gap requests dropped: %llu\n", new_total_gap_requests_received, new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client, new_total_gap_dv_replies, new_total_gap_requests_dropped);
 
 			if (fd != -1)
         {
-          len = snprintf(NULL, 0, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped) + 1;
+          len = snprintf(NULL, 0, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_requests_received, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped) + 1;
           buf = GNUNET_malloc(len);
-          sprintf(buf, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped);
+          sprintf(buf, "%d\t%d\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\t%llu\n", size, j, finish_time, new_total_gap_requests_received, new_total_gap_queries_sent, new_total_gap_requests_started, new_total_gap_replies_to_client, new_total_gap_dv_requests_sent, new_total_gap_dv_replies, new_total_gap_requests_dropped);
           ret = WRITE (fd, buf, len - 1);
           GNUNET_free(buf);
         }
