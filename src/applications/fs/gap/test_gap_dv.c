@@ -495,10 +495,14 @@ main (int argc, const char **argv)
   unsigned long long old_total_gap_requests_started;
   unsigned long long old_total_gap_replies_to_client;
   unsigned long long old_total_gap_dv_requests_sent;
+  unsigned long long old_total_gap_dv_replies;
+  unsigned long long old_total_gap_requests_dropped;
   unsigned long long new_total_gap_queries_sent;
   unsigned long long new_total_gap_requests_started;
   unsigned long long new_total_gap_replies_to_client;
   unsigned long long new_total_gap_dv_requests_sent;
+  unsigned long long new_total_gap_dv_replies;
+  unsigned long long new_total_gap_requests_dropped;
 
   unsigned int rand_peer;
   unsigned int temp_rand_peer;
@@ -616,13 +620,15 @@ main (int argc, const char **argv)
 			old_total_gap_requests_started = total_gap_requests_started;
 			old_total_gap_replies_to_client = total_gap_replies_to_client;
 			old_total_gap_dv_requests_sent = total_gap_dv_requests_sent;
-
+      old_total_gap_dv_replies = total_gap_dv_replies;
+      old_total_gap_requests_dropped = total_gap_requests_dropped;
 
 			total_gap_queries_sent = 0;
 			total_gap_requests_started = 0;
 			total_gap_replies_to_client = 0;
 			total_gap_dv_requests_sent = 0;
-
+			total_gap_dv_replies = 0;
+			total_gap_requests_dropped = 0;
 
 			for (i = 0; i < NUM_PEERS; i++)
 				{
@@ -639,8 +645,10 @@ main (int argc, const char **argv)
 			new_total_gap_requests_started = total_gap_requests_started - old_total_gap_requests_started;
 			new_total_gap_replies_to_client = total_gap_replies_to_client - old_total_gap_replies_to_client;
 			new_total_gap_dv_requests_sent = total_gap_dv_requests_sent - old_total_gap_dv_requests_sent;
+			new_total_gap_dv_replies = total_gap_dv_replies - old_total_gap_dv_replies;
+			new_total_gap_requests_dropped = total_gap_requests_dropped - old_total_gap_requests_dropped;
 
-			fprintf(stdout, "Total gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\n", new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client);
+			fprintf(stdout, "Total gap requests initiated: %llu\nTotal gap queries sent: %llu\nTotal dv requests sent: %llu\nTotal replies to clients: %llu\nTotal gap dv replies: %llu\nTotal gap requests dropped: %llu\n", new_total_gap_requests_started, new_total_gap_requests_started, new_total_gap_dv_requests_sent, new_total_gap_replies_to_client, new_total_gap_dv_replies, new_total_gap_requests_dropped);
 			if (GNUNET_shutdown_test() == GNUNET_YES)
 				break;
 			GNUNET_free(file_uri);
