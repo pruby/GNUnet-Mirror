@@ -191,6 +191,7 @@ PatchSys (char *szFn)
   if (fseek (pFile, 0, SEEK_END))
     {
       printf ("failed.\n Cannot seek.\n");
+      fclose (pFile);
       return;
     }
 

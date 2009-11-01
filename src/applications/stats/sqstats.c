@@ -164,7 +164,7 @@ init_sqstore_stats ()
   stat_prio[0] = stats->create (gettext_noop ("# zero priority"));
   stat_prio[1] = stats->create (gettext_noop ("# priority one"));
   stat_prio[2] = stats->create (gettext_noop ("# priority larger than one"));
-  stat_anon[3] = stats->create (gettext_noop ("# no anonymity"));
+  stat_anon[0] = stats->create (gettext_noop ("# no anonymity"));
   stat_anon[1] = stats->create (gettext_noop ("# anonymity one"));
   stat_anon[2] = stats->create (gettext_noop ("# anonymity larger than one"));
   return GNUNET_OK;

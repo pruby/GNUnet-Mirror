@@ -295,7 +295,7 @@ get_pid (struct GNUNET_REMOTE_TESTING_DaemonContext *daemon)
         }
     }
   if (output != NULL)
-    fclose (output);
+    pclose (output);
   if (tempcmd != NULL)
     GNUNET_free (tempcmd);
   return pid;
