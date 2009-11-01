@@ -76,11 +76,6 @@ typedef struct FileContext
   int logrotate;
 
   /**
-   * Last day of year we logged anything.
-   */
-  int yday;
-
-  /**
    * Is this the first time we log anything for this
    * process?  Used with log rotation to delete old logs.
    */

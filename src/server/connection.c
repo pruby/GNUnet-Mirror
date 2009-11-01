@@ -957,7 +957,7 @@ solveKnapsack (BufferEntry * be, unsigned int available)
 {
   unsigned int i;
   int j;
-  int max;
+  unsigned int max;
   long long *v;
   int *efflen;
   SendEntry **entries;
@@ -1126,7 +1126,7 @@ static int
 checkSendFrequency (BufferEntry * be)
 {
   GNUNET_CronTime msf;
-  int load;
+  unsigned int load;
   unsigned int i;
 
   for (i = 0; i < be->sendBufferSize; i++)
@@ -1152,7 +1152,7 @@ checkSendFrequency (BufferEntry * be)
   if (msf > 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
     msf = 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
   load = GNUNET_cpu_get_load (ectx, cfg);
-  if (load == -1)
+  if (load == (unsigned int) -1)
     load = 50;
   /* adjust frequency based on send buffer size */
   i = be->sendBufferSize;

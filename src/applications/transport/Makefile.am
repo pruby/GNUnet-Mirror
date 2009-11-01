@@ -9,6 +9,8 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_transport.la 
 
 
+EXTRA_DIST = check.c
+
 libgnunetmodule_transport_la_SOURCES = \
   transport.c 
 libgnunetmodule_transport_la_LDFLAGS = \

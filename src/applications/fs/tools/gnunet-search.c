@@ -73,8 +73,7 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
   char *filename;
 
 #if DEBUG
-  GNUNET_EncName *enc;
-  enc = GNUNET_malloc (sizeof (GNUNET_EncName));
+  GNUNET_EncName enc;
 #endif
   switch (event->type)
     {
@@ -94,10 +93,13 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #if DEBUG
       if (GNUNET_ECRS_uri_test_loc (event->data.SearchResult.fi.uri))
         {
-          GNUNET_ECRS_locURI_extract_peer (event->data.SearchResult.fi.uri,
-                                           &enc);
-          fprintf (stdout, "Received locURI putting data at peer %s\n",
-                   (char *) enc);
+	  GNUNET_PeerIdentity id;
+          GNUNET_ECRS_uri_get_peer_identity_from_loc (event->data.SearchResult.fi.uri,
+						      &id);
+	  GNUNET_hash_to_enc (&id.hashPubKey, &enc);
+          fprintf (stdout,
+		   "Received locURI putting data at peer %s\n",
+                   (const char*) &enc);
         }
 #endif
       printf ("%s:\n", uri);

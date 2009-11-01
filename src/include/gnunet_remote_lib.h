@@ -58,6 +58,7 @@ struct GNUNET_REMOTE_TESTING_DaemonContext
   struct GNUNET_GC_Configuration *config;
   GNUNET_PeerIdentity *peer;
   unsigned short port;
+  char *path;
   char *pid;
   char *hostname;
   char *username;

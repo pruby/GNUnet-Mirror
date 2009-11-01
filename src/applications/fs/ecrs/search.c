@@ -68,11 +68,6 @@ struct GNUNET_ECRS_SearchContext
   GNUNET_CronTime start;
 
   /**
-   * What is the global timeout?
-   */
-  GNUNET_CronTime timeout;
-
-  /**
    * Search context
    */
   struct GNUNET_FS_SearchContext *sctx;

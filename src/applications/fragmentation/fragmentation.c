@@ -534,7 +534,7 @@ fragment (const GNUNET_PeerIdentity * peer,
           unsigned int len, GNUNET_BuildMessageCallback bmc, void *bmcClosure)
 {
   FragmentBMC *fbmc;
-  int xlen;
+  unsigned int xlen;
 
   GNUNET_GE_ASSERT (NULL, len > mtu);
   GNUNET_GE_ASSERT (NULL, mtu > sizeof (P2P_fragmentation_MESSAGE));
