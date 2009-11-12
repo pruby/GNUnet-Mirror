@@ -219,10 +219,10 @@ main (int argc, char *argv[])
   fprintf (stderr, "Uploading...\n");
   uri = uploadFile (SIZE);
   CHECK (NULL != uri);
-  fprintf (stderr, "Downloading...");
+  fprintf (stderr, "Downloading... - %llu", GNUNET_get_time());
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   GNUNET_ECRS_uri_destroy (uri);
-  fprintf (stderr, "\nUnindexing...\n");
+  fprintf (stderr, "\nUnindexing... %llu \n", GNUNET_get_time());
   CHECK (GNUNET_OK == unindexFile (SIZE));
   fprintf (stderr, "Ok.\n");
 
