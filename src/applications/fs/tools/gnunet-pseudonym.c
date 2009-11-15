@@ -95,6 +95,9 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
    gettext_noop
    ("do not generate an advertisement for this namespace (use when creating a new pseudonym)"),
    0, &GNUNET_getopt_configure_set_one, &no_advertisement},
+  {'p', "priority", "PRIORITY",
+   gettext_noop ("specify the priority of the content"),
+   1, &GNUNET_getopt_configure_set_uint, &priority},
   {'q', "quiet", NULL,
    gettext_noop ("do not list the pseudonyms from the pseudonym database"),
    0, &GNUNET_getopt_configure_set_one, &be_quiet},
