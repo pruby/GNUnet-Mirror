@@ -10,26 +10,6 @@ extern "C" {
 
 static struct GNUNET_GE_Context *ectx;
 static struct GNUNET_GC_Configuration *cfg;
-static struct GNUNET_GNS_Context *gns;
-static char *cfgFilename;
-static int config_daemon;
-
-/**
- * All gnunet-setup command line options
- */
-static struct GNUNET_CommandLineOption gnunetsetupOptions[] = {
-  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
-  {'d', "daemon", NULL,
-   gettext_noop ("generate configuration for gnunetd, the GNUnet daemon"),
-   0, &GNUNET_getopt_configure_set_one, &config_daemon},
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Tool to setup GNUnet.")),     /* -h */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
-  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
-  GNUNET_COMMAND_LINE_OPTION_END,
-};
-
-static const char *INFO = "gnunetsetup_qt [OPTIONS] qconfig|wizard-qt"
-  "";
 
 static void
 gns2cfg (struct GNUNET_GNS_TreeNode *pos)
