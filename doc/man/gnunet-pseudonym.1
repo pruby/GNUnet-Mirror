@@ -51,6 +51,9 @@ Advertise that the namespace contains files of the given MIMETYPE (use with \-C)
 \fB\-n\fR, \fB\-\-no\-advertisement\fR
 Do not generate an advertisement for the namespace (use with \-C).
 .TP
+\fB\-p \fIPRIORITY\fR, \fB\-\-prio=\fIPRIORITY\fR
+Set the priority of the inserted content (default: 365).  If the local database is full, GNUnet will discard the content with the lowest ranking.  Note that ranks change over time depending on popularity.  The default should be high enough to preserve the locally inserted content in favor of content that migrates from other peers.
+.TP
 \fB\-q\fR, \fB\-\-quiet\fR
 Do not print the list of pseudonyms (only perform create or delete operation).
 .TP
