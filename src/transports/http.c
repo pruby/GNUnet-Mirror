@@ -588,7 +588,9 @@ requestCompletedCallback (void *unused,
     stats->change (stat_mhd_close_callbacks, 1);
   if (httpsession == NULL)
     return;                     /* oops */
+  GNUNET_mutex_lock (lock);
   GNUNET_GE_ASSERT (NULL, !httpsession->is_client);
+  httpsession->is_mhd_active--;
   pprev = NULL;
   ppos = httpsession->cs.server.puts;
   while (ppos != NULL)
@@ -596,7 +598,12 @@ requestCompletedCallback (void *unused,
       if (ppos->session == session)
         {
           ppos->last_activity = 0;
+	  if (pprev != NULL)
+	    pprev->next = ppos->next;
+	  else
+	    httpsession->cs.server.puts = ppos->next;
           signal_select ();
+	  GNUNET_mutex_unlock (lock);
           return;
         }
       pprev = ppos;
@@ -610,14 +617,19 @@ requestCompletedCallback (void *unused,
       if (gpos->session == session)
         {
           gpos->last_get_activity = 0;
+	  if (gprev != NULL)
+	    gprev->next = gpos->next;
+	  else
+	    httpsession->cs.server.gets = gpos->next;
           signal_select ();
+	  GNUNET_mutex_unlock (lock);
           return;
         }
       gprev = gpos;
       gpos = gpos->next;
     }
 #endif
-  httpsession->is_mhd_active--;
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
