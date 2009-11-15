@@ -862,9 +862,9 @@ accessHandlerCallback (void *cls,
       get->last_get_activity = GNUNET_get_time ();
       get->get = MHD_create_response_from_callback (MHD_SIZE_UNKNOWN,
                                                     64 * 1024,
-                                                    contentReaderCallback,
+                                                    &contentReaderCallback,
                                                     get,
-                                                    contentReaderFreeCallback);
+                                                    &contentReaderFreeCallback);
       MHD_queue_response (session, MHD_HTTP_OK, get->get);
       GNUNET_mutex_unlock (lock);
       return MHD_YES;
