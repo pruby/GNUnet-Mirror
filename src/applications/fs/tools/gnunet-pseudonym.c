@@ -52,7 +52,7 @@ static char *root_name;
 
 static unsigned int anonymity;
 
-static unsigned int priority;
+static unsigned int priority = 365;
 
 static GNUNET_CronTime expiration = 2 * GNUNET_CRON_YEARS;
 
