@@ -42,9 +42,10 @@ searchspace into which only the holder of a certain pseudonym can add
 content.  Any GNUnet user can create any number of pseudonyms using
 \fBgnunet\-pseudonym\-create\fR. Pseudonyms are stored in the users
 GNUnet directory and can be additionally protected with a password.
-While pseudonyms are locally identified with an arbitrary string that
-the user selects when the pseudonym is created, the namespace is
-globally known only under the hash of the public key of the pseudonym.
+While pseudonyms are locally uniquely identified with an arbitrary string that
+the user selects when the pseudonym is created, the globally only the
+hash of the public key is guaranteed to be unique.  However, the locally
+chosen name is added to the meta\-data as the title of the namespace.
 Since only the owner of the pseudonym can add content to the
 namespace, it is impossible for other users to pollute the namespace.
 gnunet\-insert automatically inserts the top\-directory (or the only
@@ -197,7 +198,9 @@ inserted content in favor of content that migrates from other peers.
 .TP
 \fB\-P \fINAME\fR, \fB\-\-pseudonym=\fINAME\fR
 For the top\-level directory or file, create an SBlock that places the
-file into the namespace specified by the pseudonym NAME.
+file into the namespace specified by the pseudonym NAME.  When using
+\-P, you must also use the option \-t to specifiy which identifier 
+should be used for the entry in the namespace.
 
 .TP
 \fB\-s\fR, \fB\-\-simulate-only\fR
@@ -208,8 +211,8 @@ compute the GNUnet URI for a file without actually sharing it.
 .TP
 \fB\-t \fIID\fR, \fB\-\-this=\fIID\fR
 Specifies the ID of the SBlock.  This option is only valid together
-with the\ -s option and together with either the option \-b or only a
-single filename on the command-line.
+with the\ -P option and together with either the option \-b or only a
+single filename on the command\-line.
 
 .TP
 \fB\-u \fIURI\fR, \fB\-\-uri=\fIURI\fR
