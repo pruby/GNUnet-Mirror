@@ -16,9 +16,6 @@
    with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. */
 
-#include <config.h>
-
-#include <argz.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -297,7 +294,7 @@ argz_delete (char **argz, size_t *argz_len, char *entry)
 /* Append BUF, of length BUF_LEN to *TO, of length *TO_LEN, reallocating and
    updating *TO & *TO_LEN appropriately.  If an allocation error occurs,
    *TO's old value is freed, and *TO is set to 0.  */
-void
+static void
 str_append (char **to, size_t *to_len, const char *buf, const size_t buf_len)
 {
   size_t new_len = *to_len + buf_len;

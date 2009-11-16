@@ -186,6 +186,9 @@ configure_logging (struct GNUNET_GE_Context **ectx,
 #if HAVE_ARGZ_H
 #include <argz.h>
 #else
+#include "lib_strnlen.c"
+#include "lib_strndup.c"
+#include "lib_mempcpy.c"
 #include "lib_argz.c"
 #endif
 

@@ -12,5 +12,5 @@ noinst_LTLIBRARIES = \
 libboot_la_SOURCES = \
   startup.c
 
-EXTRA_DIST = lib_argz.c
+EXTRA_DIST = lib_argz.c lib_mempcpy.c lib_strnlen.c lib_strndup.c
 
