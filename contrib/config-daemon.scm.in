@@ -383,11 +383,13 @@ chat: broadcast chat (demo-application, ALPHA quality).	Required for gnunet-chat
 
 tbench: benchmark transport performance.  Required for gnunet-tbench.  Note that tbench allows other users to abuse your resources.
 
-tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note that loading tracekit will make it slightly easier for an adversary to compromise your anonymity." )
+tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note that loading tracekit will make it slightly easier for an adversary to compromise your anonymity.
+
+vpn: Experimental extension that is not yet working.  Do not use." )
   '()
   #t
   "advertising getoption fs stats traffic"
-  (list "MC" "advertising" "getoption" "fs" "hostlist" "stats" "traffic" "dht" "tracekit" "tbench" "vpn" "chat")
+  (list "MC" "advertising" "getoption" "fs" "hostlist" "stats" "traffic" "tracekit" "tbench" "vpn" "chat")
   'always) )
  
 
