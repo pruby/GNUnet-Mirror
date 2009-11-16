@@ -683,7 +683,7 @@ selectThread (void *ctx)
           if ((sh->listen_sock != NULL) &&
               (FD_ISSET (sh->listen_sock->handle, &readSet)))
             {
-              int pending;
+              unsigned int pending;
               int udp_sock;
               int error;
               socklen_t optlen;
@@ -697,9 +697,9 @@ selectThread (void *ctx)
               error = GETSOCKOPT (udp_sock,
                                   SOL_SOCKET, SO_NREAD, &pending, &optlen);
 #elif MINGW
-              error = ioctlsocket (udp_sock, FIONREAD, &pending);
+              error = ioctlsocket (udp_sock, FIONREAD, &pending); 
 #else
-              error = ioctl (udp_sock, FIONREAD, &pending);
+              error = ioctl (udp_sock, FIONREAD, &pending); 
 #endif
               if ((error != 0) || (optlen != sizeof (pending)))
                 {
@@ -717,7 +717,12 @@ selectThread (void *ctx)
 #endif
               GNUNET_GE_ASSERT (sh->ectx, pending >= 0);
               if (pending >= 65536)
-                pending = 65536;
+		{
+		   GNUNET_GE_LOG (sh->ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK, 
+				  _("OS tells us about very large message (%u bytes) pending on UDP socket, truncating at 64k\n"),
+				  pending);
+                   pending = 65536;
+		}
               if (pending == 0)
                 {
                   /* maybe empty UDP packet was sent (see report on bug-gnunet,
