@@ -675,7 +675,11 @@ void __attribute__ ((destructor)) GNUNET_cpustats_ltdl_fini ()
 #elif MINGW
   ShutdownWinEnv ();
 #endif
-  GNUNET_mutex_destroy (statusMutex);
+  if (statusMutex != NULL)
+    {
+      GNUNET_mutex_destroy (statusMutex);
+      statusMutex = NULL;
+    }
 }
 
 

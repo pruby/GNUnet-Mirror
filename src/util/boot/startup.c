@@ -269,6 +269,14 @@ GNUNET_init (int argc,
       size_t max;
 
       bindir = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
+      if (bindir == NULL)
+	{
+	  GNUNET_GE_LOG (*ectx,
+			 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+			 _("Failed to determine installation path.   Try setting `%s'\n"),
+			 "GNUNET_PREFIX");
+	  return -1;
+	}
       max = 128 + strlen (*cfgFileName) + strlen (bindir);
       run = GNUNET_malloc (max);
       GNUNET_snprintf (run,
