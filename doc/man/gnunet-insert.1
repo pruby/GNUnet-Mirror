@@ -304,6 +304,10 @@ Update the previous entry, do not allow any future updates:
  # gnunet\-insert \-P MPAA-1 \-t next noise_updated.mp3
 
 
+.SH NOTES
+As most GNUnet command-line tools, gnunet\-insert supports passing arguments using environment variables.  This can improve your privacy since otherwise the published filenames will likely be visible to other local users.  Setting "GNUNET_ARGS" will cause the respective string to be appended to the actual command-line and to be processed the same way as arguments given directly at the command line.
+
+
 .SH FILES
 .TP
 ~/.gnunet/gnunet.conf

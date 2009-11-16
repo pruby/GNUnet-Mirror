@@ -183,6 +183,12 @@ configure_logging (struct GNUNET_GE_Context **ectx,
   return 0;
 }
 
+#if HAVE_ARGZ_H
+#include <argz.h>
+#else
+#include "lib_argz.c"
+#endif
+
 /**
  * Run a standard GNUnet startup sequence
  * (initialize loggers and configuration,
@@ -205,8 +211,26 @@ GNUNET_init (int argc,
   char *path;
   int is_daemon;
   int ret;
+  const char *gargs;
 
   GNUNET_os_init (NULL);
+  gargs = getenv ("GNUNET_ARGS");
+  if (gargs != NULL)
+    {
+      char *gargz;
+      size_t gargl;
+      char **gargv;
+      int i;
+
+      argz_create_sep (gargs, ' ', &gargz, &gargl);
+      for (i=0;i<argc;i++)
+	argz_insert (&gargz, &gargl, gargz, argv[i]);
+      gargv = GNUNET_malloc (sizeof (char*) * (gargl+1));
+      argz_extract (gargz, gargl, gargv);
+      argc = argz_count (gargz, gargl);
+      free (gargz);
+      argv = (char *const *) gargv;
+    }
 
 #if ENABLE_NLS
   setlocale (LC_ALL, "");

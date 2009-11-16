@@ -42,10 +42,11 @@ Writes the encountered (unencrypted) RBlocks or SBlocks to files with name PREFI
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
 .SH NOTES
+As most GNUnet command-line tools, gnunet\-search supports passing arguments using environment variables.  This can improve your privacy since otherwise the search terms will likely be visible to other local users.  Setting "GNUNET_ARGS" will cause the respective string to be appended to the actual command-line and to be processed the same way as arguments given directly at the command line.
 
 You can run gnunet\-search with an URI instead of a keyword.  The URI can have the format for a namespace search or for a keyword search.  For a namespace search, the format is gnunet://ecrs/sks/NAMESPACE/IDENTIFIER.  For a keyword search, use gnunet://ecrs/ksk/KEYWORD[+KEYWORD]*.  If the format does not correspond to a GNUnet URI, GNUnet will automatically assume that keywords are supplied directly.  
 
-If multiple keywords are passed, gnunet-search will look for content matching any of the keywords.  The prefix "+" makes a keyword mandatory.  
+If multiple keywords are passed, gnunet\-search will look for content matching any of the keywords.  The prefix "+" makes a keyword mandatory.  
 
 # gnunet\-search "Das Kapital"
 

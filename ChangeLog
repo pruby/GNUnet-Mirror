@@ -1,6 +1,10 @@
+Mon Nov 16 09:25:47 CET 2009
+	Allow passing of command-line arguments using GNUNET_ARGS
+	environment variable (see Mantis #1467).
+
 Mon Apr 27 22:18:19 CEST 2009
-  Monitor low-traffic connections over a longer period
-  of time before terminating them.
+	Monitor low-traffic connections over a longer period
+	of time before terminating them.
 
 Fri Feb 27 22:05:50 MST 2009
 	Releasing 0.8.0c.

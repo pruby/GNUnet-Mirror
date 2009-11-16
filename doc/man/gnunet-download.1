@@ -47,6 +47,8 @@ print the version number
 \fB\-V\fR, \fB\-\-verbose\fR
 print progress information
 .SH NOTES
+As most GNUnet command\-line tools, gnunet\-download supports passing arguments using environment variables.  This can improve your privacy since otherwise the download URI will likely be visible to other local users.  Setting "GNUNET_ARGS" will cause the respective string to be appended to the actual command-line and to be processed the same way as arguments given directly at the command line.
+
 The GNUNET_URI is typically obtained from gnunet\-search. gnunet\-gtk can also be used instead of gnunet\-download.
 If youever have to abort a download, you can at any time continue it by re\-issuing gnunet\-download with the same filename. In that case GNUnet will not download blocks again that are already present. GNUnets file\-encoding will ensure file integrity, even if the existing file was not downloaded from GNUnet in the first place. Temporary information will be stored in FILENAME.X files until the download is completed. These files are used only if a download is resumed later. If you abort a download for good, you should remember to delete these files.
 

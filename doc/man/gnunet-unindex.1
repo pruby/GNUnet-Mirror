@@ -30,6 +30,8 @@ print the version number
 \fB\-V\fR, \fB\-\-verbose\fR
 be verbose
 .SH NOTES
+As most GNUnet command\-line tools, gnunet\-unindex supports passing arguments using environment variables.  This can improve your privacy since otherwise the filename will likely be visible to other local users.  Setting "GNUNET_ARGS" will cause the respective string to be appended to the actual command-line and to be processed the same way as arguments given directly at the command line.
+
 You can only unindex files that you indexed and that you still have available locally in full.  You should use gnunet\-unindex on files that you indexed (not inserted) and that you are going to delete or move locally.
 .TP
 .SH FILES
