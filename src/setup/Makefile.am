@@ -19,9 +19,7 @@ if HAVE_CDIALOG
 endif
 
 if !MINGW
-if HAVE_GUILE
  textdir=text
-endif
 endif
 
 SUBDIRS = lib $(textdir) . $(curses_dir) $(gtk_dir) $(qt_dir) $(cocoa_dir) .
