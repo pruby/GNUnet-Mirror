@@ -382,6 +382,7 @@ read_all_records (const char *dir_name)
     }
   MUNMAP (buf, size);
   CLOSE (fd);
+  GNUNET_free (record_fn);
   return ret;
 }
 
@@ -442,6 +443,7 @@ write_all_records (struct DirectoryRecord *dr)
     }
   MUNMAP (buf, size);
   CLOSE (fd);
+  GNUNET_free (record_fn);
 }
 
 static struct FileRecord *

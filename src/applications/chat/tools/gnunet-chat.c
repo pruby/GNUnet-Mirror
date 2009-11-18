@@ -347,6 +347,7 @@ do_pm (const char *msg, const void *xtra)
                                              &pos->pkey, &seq))
     fprintf (stderr, _("Failed to send message.\n"));
   GNUNET_mutex_unlock (lock);
+  GNUNET_free (user);
   return GNUNET_OK;
 }
 

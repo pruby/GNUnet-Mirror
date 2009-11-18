@@ -55,6 +55,7 @@ GNUNET_NS_sks_uri_to_human_readable_string (struct GNUNET_GE_Context *ectx,
   strcat (ret, ": ");
   strcat (ret, id);
   GNUNET_free (id);
+  GNUNET_free (name);
   return ret;
 }
 

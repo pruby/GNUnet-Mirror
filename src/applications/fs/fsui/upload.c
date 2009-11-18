@@ -237,6 +237,7 @@ createDirectoryHelper (struct GNUNET_GE_Context *ectx,
                                    GNUNET_GE_ERROR | GNUNET_GE_USER |
                                    GNUNET_GE_BULK, "write", tempName);
       *error = GNUNET_strdup (GNUNET_GE_memory_get (mem, 0));
+      GNUNET_free (tempName);
       GNUNET_GE_free_context (ee);
       GNUNET_GE_memory_free (mem);
       GNUNET_free (data);

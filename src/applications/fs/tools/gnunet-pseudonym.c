@@ -146,7 +146,6 @@ namespacePrinter (void *unused,
     printf (_("Namespace `%s' (%s) has rating %d.\n"),
             namespaceName, (char *) &enc, rating);
   printMeta (md);
-  GNUNET_free (namespaceName);
   if (set_rating != NULL)
     {
       int delta;
@@ -184,6 +183,7 @@ namespacePrinter (void *unused,
         }
     }
   printf ("\n");
+  GNUNET_free (namespaceName);
   return GNUNET_OK;
 }
 

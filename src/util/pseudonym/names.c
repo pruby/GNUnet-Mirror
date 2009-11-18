@@ -84,11 +84,17 @@ GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
   if (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES))
     {
       GNUNET_GE_BREAK (ectx, 0);
+      GNUNET_free (fn);
+      GNUNET_free (name);
       return NULL;
     }
   fd = GNUNET_disk_file_open (ectx, fn, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   if (-1 == fd)
-    return NULL;    
+    {
+      GNUNET_free (fn);
+      GNUNET_free (name);
+      return NULL;    
+    }
   i = 0;
   idx = -1;
   while ((len >= sizeof (GNUNET_HashCode)) &&

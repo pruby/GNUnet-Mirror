@@ -80,12 +80,17 @@ GNUNET_URITRACK_get_state (struct GNUNET_GE_Context *ectx,
   GNUNET_free (s);
   s = getDBName (cfg);
   if (GNUNET_NO == GNUNET_disk_file_test (ectx, s))
-    return GNUNET_URITRACK_FRESH;
+    {
+      GNUNET_free (s);
+      return GNUNET_URITRACK_FRESH;
+    }
   size = getDBSize (cfg);
   fd = GNUNET_disk_file_open (ectx, s, O_RDONLY);
-  GNUNET_free (s);
   if (fd == -1)
-    return GNUNET_URITRACK_FRESH;
+    {
+      GNUNET_free (s);
+      return GNUNET_URITRACK_FRESH;
+    }
   o = 2 * (crc % size);
   if (o != LSEEK (fd, o, SEEK_SET))
     {
@@ -94,8 +99,10 @@ GNUNET_URITRACK_get_state (struct GNUNET_GE_Context *ectx,
                                    GNUNET_GE_ADMIN | GNUNET_GE_BULK, "lseek",
                                    s);
       CLOSE (fd);
+      GNUNET_free (s);
       return GNUNET_URITRACK_FRESH;
     }
+  GNUNET_free (s);
   if (2 != read (fd, io, 2))
     {
       CLOSE (fd);
