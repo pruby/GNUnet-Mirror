@@ -175,18 +175,21 @@ GNUNET_thread_join_at_file_line_ (PThread * handle,
                      GNUNET_GE_IMMEDIATE,
                      _("`%s' failed with error code %s: %s\n"),
                      "pthread_join", "EINVAL", STRERROR (errno));
+      break;
     case EDEADLK:
       GNUNET_GE_LOG (NULL,
                      GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                      GNUNET_GE_IMMEDIATE,
                      _("`%s' failed with error code %s: %s\n"),
                      "pthread_join", "EDEADLK", STRERROR (errno));
+      break;
     default:
       GNUNET_GE_LOG (NULL,
                      GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                      GNUNET_GE_IMMEDIATE,
                      _("`%s' failed with error code %d: %s\n"),
                      "pthread_join", k, STRERROR (errno));
+      break;
     }
   GNUNET_GE_ASSERT (NULL, 0);
 }

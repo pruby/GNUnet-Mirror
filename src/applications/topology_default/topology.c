@@ -478,6 +478,7 @@ rereadConfiguration (void *ctx,
                          _("Could not read friends list `%s'\n"), fn);
           return GNUNET_SYSERR;
         }
+      return 0;
     }
   if ((frstat.st_mtime != fInfo.friends_mtime)
       || (frstat.st_size != fInfo.friends_size))

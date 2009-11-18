@@ -89,6 +89,7 @@ GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
                                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                                    GNUNET_GE_USER | GNUNET_GE_BULK, "access",
                                    rdir);
+      GNUNET_free (pif);
       GNUNET_free (rdir);
       GNUNET_free (user);
       return GNUNET_SYSERR;
