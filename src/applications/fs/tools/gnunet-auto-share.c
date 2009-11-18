@@ -389,7 +389,7 @@ read_all_records (const char *dir_name)
 static void
 write_all_records (struct DirectoryRecord *dr)
 {
-  const char dummy;
+  static char dummy;
   long off;
   unsigned int d;
   unsigned long long size;
@@ -658,6 +658,7 @@ auto_share_main ()
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       return GNUNET_SYSERR;
     }
+  head = NULL;
   errorCode = 0;
   if ((GNUNET_NO == debug_flag)
       && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes,

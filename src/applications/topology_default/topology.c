@@ -491,80 +491,82 @@ rereadConfiguration (void *ctx,
       GNUNET_free_non_null (fn);
       return 0;
     }
-  if ((fn != NULL) && (frstat.st_size > 0))
+  if (frstat.st_size == 0)
     {
-      GNUNET_array_grow (fInfo.friends, fInfo.friendCount, 0);
-      data = GNUNET_malloc (frstat.st_size);
-      if (frstat.st_size !=
-          GNUNET_disk_file_read (ectx, fn, frstat.st_size, data))
-        {
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                         _("Failed to read friends list from `%s'\n"), fn);
-          GNUNET_free (fn);
-          GNUNET_free (data);
-          return GNUNET_SYSERR;
-        }
-      GNUNET_free (fn);
-      fn = NULL;
-      pos = 0;
-      while ((pos < frstat.st_size) && isspace (data[pos]))
-        pos++;
-      while ((frstat.st_size >= sizeof (GNUNET_EncName)) &&
-             (pos <= frstat.st_size - sizeof (GNUNET_EncName)))
-        {
-          memcpy (&enc, &data[pos], sizeof (GNUNET_EncName));
-          if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
-            {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_BULK |
-                             GNUNET_GE_USER,
-                             _
-                             ("Syntax error in topology specification, skipping bytes.\n"));
-              pos++;
-              while ((pos < frstat.st_size) && (!isspace (data[pos])))
-                pos++;
-              continue;
-            }
-          enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
-          if (GNUNET_OK == GNUNET_enc_to_hash ((char *) &enc, &hc))
-            {
-              GNUNET_array_grow (fInfo.friends, fInfo.friendCount,
-                                 fInfo.friendCount + 1);
-              fInfo.friends[fInfo.friendCount - 1].hashPubKey = hc;
-            }
-          else
-            {
-              GNUNET_GE_LOG (ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_BULK |
-                             GNUNET_GE_USER,
-                             _
-                             ("Syntax error in topology specification, skipping bytes `%s'.\n"),
-                             &enc);
-            }
-          pos = pos + sizeof (GNUNET_EncName);
-          while ((pos < frstat.st_size) && isspace (data[pos]))
-            pos++;
-        }
-      if ((fInfo.minimum_friend_count > fInfo.friendCount)
-          && (fInfo.friends_only == GNUNET_NO))
-        {
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                         _
-                         ("Fewer friends specified than required by minimum friend count. Will only connect to friends.\n"));
-        }
-      if ((fInfo.minimum_friend_count >
-           coreAPI->core_slots_count ()) && (fInfo.friends_only == GNUNET_NO))
-        {
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                         _
-                         ("More friendly connections required than target total number of connections.\n"));
-        }
-      GNUNET_free (data);
+      GNUNET_free_non_null (fn);
+      return 0;
     }
-  GNUNET_free_non_null (fn);
+  GNUNET_array_grow (fInfo.friends, fInfo.friendCount, 0);
+  data = GNUNET_malloc (frstat.st_size);
+  if (frstat.st_size !=
+      GNUNET_disk_file_read (ectx, fn, frstat.st_size, data))
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("Failed to read friends list from `%s'\n"), fn);
+      GNUNET_free (fn);
+      GNUNET_free (data);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_free (fn);
+  fn = NULL;
+  pos = 0;
+  while ((pos < frstat.st_size) && isspace (data[pos]))
+    pos++;
+  while ((frstat.st_size >= sizeof (GNUNET_EncName)) &&
+	 (pos <= frstat.st_size - sizeof (GNUNET_EncName)))
+    {
+      memcpy (&enc, &data[pos], sizeof (GNUNET_EncName));
+      if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
+	{
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_WARNING | GNUNET_GE_BULK |
+			 GNUNET_GE_USER,
+			 _
+			 ("Syntax error in topology specification, skipping bytes.\n"));
+	  pos++;
+	  while ((pos < frstat.st_size) && (!isspace (data[pos])))
+	    pos++;
+	  continue;
+	}
+      enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
+      if (GNUNET_OK == GNUNET_enc_to_hash ((char *) &enc, &hc))
+	{
+	  GNUNET_array_grow (fInfo.friends, fInfo.friendCount,
+			     fInfo.friendCount + 1);
+	  fInfo.friends[fInfo.friendCount - 1].hashPubKey = hc;
+	}
+      else
+	{
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_WARNING | GNUNET_GE_BULK |
+			 GNUNET_GE_USER,
+			 _
+			 ("Syntax error in topology specification, skipping bytes `%s'.\n"),
+			 &enc);
+	}
+      pos = pos + sizeof (GNUNET_EncName);
+      while ((pos < frstat.st_size) && isspace (data[pos]))
+	pos++;
+    }
+  if ((fInfo.minimum_friend_count > fInfo.friendCount)
+      && (fInfo.friends_only == GNUNET_NO))
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _
+		     ("Fewer friends specified than required by minimum friend count. Will only connect to friends.\n"));
+    }
+  if ((fInfo.minimum_friend_count >
+       coreAPI->core_slots_count ()) && (fInfo.friends_only == GNUNET_NO))
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _
+		     ("More friendly connections required than target total number of connections.\n"));
+    }
+  GNUNET_free (data);
+  GNUNET_free (fn);
   return 0;
 }
 
