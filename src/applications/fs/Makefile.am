@@ -1,5 +1,5 @@
 SUBDIRS = \
- . gap lib ecrs uritrack namespace fsui collection tools 
+ . lib ecrs uritrack namespace fsui collection gap tools 
 
 
 if USE_COVERAGE
