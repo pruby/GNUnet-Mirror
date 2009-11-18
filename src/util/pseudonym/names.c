@@ -87,6 +87,8 @@ GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
       return NULL;
     }
   fd = GNUNET_disk_file_open (ectx, fn, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  if (-1 == fd)
+    return NULL;    
   i = 0;
   idx = -1;
   while ((len >= sizeof (GNUNET_HashCode)) &&
@@ -154,6 +156,8 @@ GNUNET_pseudonym_name_to_id (struct GNUNET_GE_Context *ectx,
     }
   fd = GNUNET_disk_file_open (ectx, fn, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   GNUNET_free (fn);
+  if (-1 == fd)
+    return GNUNET_SYSERR;    
   LSEEK (fd, idx * sizeof (GNUNET_HashCode), SEEK_SET);
   if (sizeof (GNUNET_HashCode) != READ (fd, nsid, sizeof (GNUNET_HashCode)))
     {
