@@ -30,7 +30,7 @@ libgnunetmodule_fs_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lm \
   $(GN_LIBINTL)
-  
+
 libgnunetmodule_dv_fs_la_SOURCES = \
   anonymity.c anonymity.h \
   dv_fs.c  \
@@ -59,7 +59,7 @@ check_PROGRAMS = \
   test_multi_results \
   test_star_topology \
   test_multi_results_dv
-	
+
 TESTS = $(check_PROGRAMS)
 
 test_loopback_SOURCES = \
@@ -112,8 +112,8 @@ test_gap_dv_LDADD = \
   $(top_builddir)/src/applications/testing/libgnunetremoteapi.la \
   $(top_builddir)/src/applications/stats/libgnunetstatsapi.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \  
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la
 
 EXTRA_DIST = \
   check.conf

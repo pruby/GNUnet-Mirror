@@ -42,6 +42,6 @@ SUBDIRS	= \
  dht \
  tracekit \
  $(VPN_DIR) \
- fs \
  testing \
+ fs \
  chat
