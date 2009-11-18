@@ -20,7 +20,7 @@
 
 
 /**
- * @file conf/gconf.h
+ * @file setup/gconf/gconf.h
  * @brief GNUnet Setup
  * @author Nils Durner
  */

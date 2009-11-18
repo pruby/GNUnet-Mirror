@@ -198,10 +198,16 @@ dyn_config (const char *module,
 
 static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
 #if HAVE_DIALOG
-  "|menuconfig|wizard-curses"
+#if HAVE_GUILE
+  "|menuconfig"
+#endif
+  "|wizard-curses"
 #endif
 #if HAVE_GTK
-  "|gconfig|wizard-gtk"
+#if HAVE_GUILE
+  "|gconfig"
+#endif
+  "|wizard-gtk"
 #endif
 #if HAVE_QT
   "|wizard-qt"
@@ -212,12 +218,17 @@ static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
   "";
 
 static const char *INFO_CLIENT_ONLY =
-  "gnunet-setup [OPTIONS] config|generate-defaults"
+  "gnunet-setup [OPTIONS] config"
+#if HAVE_GUILE
+  "|generate-defaults"
+#endif
 #if HAVE_DIALOG
   "|menuconfig"
 #endif
 #if HAVE_GTK
+#if HAVE_GUILE
   "|gconfig"
+#endif
 #endif
   "";
 
