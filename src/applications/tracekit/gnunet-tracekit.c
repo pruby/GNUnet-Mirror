@@ -213,6 +213,7 @@ process (void *cls)
       break;
     default:
       GNUNET_GE_BREAK (NULL, 0);
+      return NULL;
     }
   GNUNET_TRACEKIT_run (sock, depth, priority, report, NULL);
   /* final processing loop */

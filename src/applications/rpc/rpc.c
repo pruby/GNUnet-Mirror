@@ -685,14 +685,16 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
   reply = NULL;
   error = ntohl (res->functionNameLength);
   if (error == GNUNET_RPC_ERROR_OK)
-    reply = GNUNET_RPC_parameters_deserialize ((char *) &res[1],
-                                               ntohs (message->size) -
-                                               sizeof (P2P_rpc_MESSAGE));
-  if (ntohl (res->argumentCount) != GNUNET_RPC_parameters_count (reply))
     {
-      GNUNET_RPC_parameters_destroy (reply);
-      reply = NULL;
-      error = GNUNET_RPC_ERROR_REPLY_MALFORMED;
+      reply = GNUNET_RPC_parameters_deserialize ((char *) &res[1],
+						 ntohs (message->size) -
+						 sizeof (P2P_rpc_MESSAGE));
+      if (ntohl (res->argumentCount) != GNUNET_RPC_parameters_count (reply))
+	{
+	  GNUNET_RPC_parameters_destroy (reply);
+	  reply = NULL;
+	  error = GNUNET_RPC_ERROR_REPLY_MALFORMED;
+	}
     }
   if (pos->callback != NULL)
     {
