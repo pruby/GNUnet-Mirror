@@ -46,13 +46,15 @@ destroyMainXML ()
   mainXML_ = NULL;
 }
 
-char *
+static char *
 get_glade_filename ()
 {
   char *path;
   char *gladeFile;
 
   path = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+  if (path == NULL)
+    return NULL;
   gladeFile = GNUNET_malloc (strlen (path) + 20);
   strcpy (gladeFile, path);
   strcat (gladeFile, "gnunet-setup.glade");
@@ -85,6 +87,8 @@ load_xml (const char *dialog_name)
   GladeXML *ret;
 
   gladeFile = get_glade_filename ();
+  if (gladeFile == NULL)
+    return NULL;
   ret = glade_xml_new (gladeFile, dialog_name, PACKAGE_NAME);
   if (ret == NULL)
     GNUNET_GE_DIE_STRERROR_FILE (NULL,
@@ -121,12 +125,24 @@ showDialog (const char *name)
   GladeXML *myXML;
 
   gladeFile = get_glade_filename ();
+  if (gladeFile == NULL)
+    {
+      GNUNET_GE_LOG (NULL, 
+		     GNUNET_GE_USER | GNUNET_GE_ADMIN |
+		     GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
+		     _("Could not determine UI definition filename."));
+      GNUNET_GE_ASSERT (NULL, 0);
+      return;
+    }
   myXML = glade_xml_new (gladeFile, name, PACKAGE_NAME);
   if (mainXML_ == NULL)
-    GNUNET_GE_DIE_STRERROR_FILE (NULL,
-                                 GNUNET_GE_USER | GNUNET_GE_ADMIN |
-                                 GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
-                                 "open", gladeFile);
+    {
+      GNUNET_GE_DIE_STRERROR_FILE (NULL,
+				   GNUNET_GE_USER | GNUNET_GE_ADMIN |
+				   GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
+				   "open", gladeFile);
+      return;
+    }
   GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (myXML, &connector, myXML);
   msgSave = glade_xml_get_widget (myXML, name);

@@ -715,7 +715,6 @@ selectThread (void *ctx)
                              "Select %p is preparing to receive %u bytes from UDP\n",
                              sh, pending);
 #endif
-              GNUNET_GE_ASSERT (sh->ectx, pending >= 0);
               if (pending >= 65536)
 		{
 		   GNUNET_GE_LOG (sh->ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK, 
