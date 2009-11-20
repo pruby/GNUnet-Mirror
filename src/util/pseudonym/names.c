@@ -81,13 +81,7 @@ GNUNET_pseudonym_id_to_name (struct GNUNET_GE_Context *ectx,
   fn = GNUNET_pseudonym_internal_get_data_filename_ (ectx,
                                                      cfg, PS_NAMES_DIR, &nh);
   len = 0;
-  if (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES))
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      GNUNET_free (fn);
-      GNUNET_free (name);
-      return NULL;
-    }
+  (void) GNUNET_disk_file_size (ectx, fn, &len, GNUNET_YES);
   fd = GNUNET_disk_file_open (ectx, fn, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   if (-1 == fd)
     {
