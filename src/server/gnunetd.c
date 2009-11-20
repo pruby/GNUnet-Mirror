@@ -61,7 +61,11 @@ static void
 reread_config_helper (void *unused)
 {
   GNUNET_GE_ASSERT (NULL, cfgFilename != NULL);
-  GNUNET_GC_parse_configuration (cfg, cfgFilename);
+  if (0 != GNUNET_GC_parse_configuration (cfg, cfgFilename))
+    GNUNET_GE_LOG (ectx,
+		   GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+		   _("Failed to parse configuration file `%s'\n"),
+		   cfgFilename);
 }
 
 /**

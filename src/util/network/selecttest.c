@@ -204,7 +204,7 @@ check ()
                              128 /* socket quota */ );
 
   write_sock = SOCKET (PF_INET, SOCK_STREAM, 6);
-
+  GNUNET_assert (-1 != write_sock);
   memset (&serverAddr, 0, sizeof (serverAddr));
   serverAddr.sin_family = AF_INET;
   serverAddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);

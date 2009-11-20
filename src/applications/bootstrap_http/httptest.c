@@ -98,8 +98,19 @@ main (int argc, char **argv)
   capi.service_request = &rs;
   capi.service_release = &rsx;
   plugin = GNUNET_plugin_load (NULL, "libgnunetmodule_", "bootstrap");
+  if (NULL == plugin)
+    {
+      GNUNET_GC_free (cfg);
+      return 1;
+    }
   init =
     GNUNET_plugin_resolve_function (plugin, "provide_module_", GNUNET_YES);
+  if (NULL == init)
+    {
+      GNUNET_plugin_unload (plugin);
+      GNUNET_GC_free (cfg);
+      return 2;
+    }
   boot = init (&capi);
   if (boot != NULL)
     {

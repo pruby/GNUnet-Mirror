@@ -410,7 +410,10 @@ main (int argc, char *const *argv)
   GNUNET_free (dirname);
 
   if (0 == ACCESS (cfgFilename, F_OK))
-    GNUNET_GC_parse_configuration (cfg, cfgFilename);
+    if (0 != GNUNET_GC_parse_configuration (cfg, cfgFilename))
+      fprintf (stderr,
+	       _("Failed to parse configuration file `%s'\n"),
+	       cfgFilename);
   dirname = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
   GNUNET_GE_ASSERT (ectx, dirname != NULL);
 

@@ -140,11 +140,13 @@ namespacePrinter (void *unused,
 
   namespaceName = GNUNET_pseudonym_id_to_name (ectx, cfg, id);
   GNUNET_hash_to_enc (id, &enc);
-  if (0 == strcmp (namespaceName, (char *) &enc))
+  if ( (namespaceName != NULL) &&
+       (0 == strcmp (namespaceName, (char *) &enc)) )
     printf (_("Namespace `%s' has rating %d.\n"), namespaceName, rating);
   else
     printf (_("Namespace `%s' (%s) has rating %d.\n"),
-            namespaceName, (char *) &enc, rating);
+            namespaceName != NULL ? namespaceName : "<unknown>",
+	    (char *) &enc, rating);
   printMeta (md);
   if (set_rating != NULL)
     {
@@ -183,7 +185,7 @@ namespacePrinter (void *unused,
         }
     }
   printf ("\n");
-  GNUNET_free (namespaceName);
+  GNUNET_free_non_null (namespaceName);
   return GNUNET_OK;
 }
 

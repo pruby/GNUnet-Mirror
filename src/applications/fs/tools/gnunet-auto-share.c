@@ -690,7 +690,11 @@ auto_share_main ()
 
   meta_cfg = GNUNET_GC_create ();
   if (GNUNET_YES == GNUNET_disk_file_test (NULL, metafn))
-    GNUNET_GC_parse_configuration (meta_cfg, metafn);
+    if (0 != GNUNET_GC_parse_configuration (meta_cfg, metafn))
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+		     _("Failed to parse meta data information file `%s'\n"),
+		     metafn);		       
   if (GNUNET_NO == debug_flag)
     GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
   GNUNET_free (metafn);

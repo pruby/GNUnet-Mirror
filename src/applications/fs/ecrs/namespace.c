@@ -140,6 +140,7 @@ write_namespace_key (struct GNUNET_GC_Configuration *cfg,
       return GNUNET_SYSERR;
     }
   namespace_priv_key_encoded = GNUNET_RSA_encode_key (key);
+  GNUNET_assert (namespace_priv_key_encoded != NULL);
   GNUNET_disk_file_write (NULL, fileName,
                           (const char *) namespace_priv_key_encoded,
                           ntohs (namespace_priv_key_encoded->len), "600");
