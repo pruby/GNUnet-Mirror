@@ -167,7 +167,7 @@ pq_prepare (const char *name, const char *sql, int nparms, int line)
 
 /**
  * @brief Get a database handle
- * @return the native Postgres database handle, NULL on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
 init_connection ()
@@ -1041,7 +1041,6 @@ provide_module_sqstore_postgres (GNUNET_CoreAPIForPlugins * capi)
   lock = GNUNET_mutex_create (GNUNET_NO);
   if (GNUNET_OK != init_connection ())
     {
-      GNUNET_GE_BREAK (coreAPI->ectx, 0);
       GNUNET_mutex_destroy (lock);
       return NULL;
     }
