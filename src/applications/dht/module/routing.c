@@ -375,6 +375,7 @@ route_result (const GNUNET_HashCode * key,
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
             }
+	  prev = pos;
           pos = pos->next;
         }
       if (q->result_count >= MAX_RESULTS)
