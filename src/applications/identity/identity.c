@@ -1255,14 +1255,20 @@ identityRequestHelloHandler (struct GNUNET_ClientHandle *sock,
      however, we can request it briefly here */
   tapi = coreAPI->service_request ("transport");
   if (tapi == NULL)
-    return GNUNET_SYSERR;
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;
+    }
   hello = NULL;
   pos = 0;
   while ((hello == NULL) && (types[pos] != 0))
     hello = tapi->hello_create (types[pos++]);
   coreAPI->service_release (tapi);
   if (hello == NULL)
-    return GNUNET_SYSERR;
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;
+    }
   hello->header.type = htons (GNUNET_CS_PROTO_IDENTITY_HELLO);
   ret = coreAPI->cs_send_message (sock, &hello->header, GNUNET_YES);
   GNUNET_free (hello);
