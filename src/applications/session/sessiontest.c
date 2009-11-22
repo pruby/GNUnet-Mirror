@@ -81,7 +81,7 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-  GNUNET_assert (GNUNET_OK == GNUNET_TESTING_connect_daemons (2087, 12087));
+  GNUNET_GE_ASSERT (GNUNET_OK == GNUNET_TESTING_connect_daemons (2087, 12087));
   if (GNUNET_OK ==
       GNUNET_wait_for_daemon_running (NULL, cfg, 30 * GNUNET_CRON_SECONDS))
     {
