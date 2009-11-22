@@ -178,7 +178,7 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
                                     MHD_OPTION_PER_IP_CONNECTION_LIMIT, 1,
                                     MHD_OPTION_CONNECTION_TIMEOUT, 16,
                                     MHD_OPTION_CONNECTION_MEMORY_LIMIT,
-                                    16 * 1024, MHD_OPTION_END);
+                                    (size_t) 16 * 1024, MHD_OPTION_END);
   if (daemon_handle == NULL)
     {
       if (stats != NULL)
