@@ -44,8 +44,6 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   GNUNET_HashCode k1;
   GNUNET_HashCode k2;
 
-  GNUNET_HashCode n;
-  GNUNET_CronTime exp;
   int ret;
   unsigned int i = 42;
   unsigned long long trialuid;
@@ -54,7 +52,7 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   unsigned long long nodeuid = 0;
   unsigned long long internaluid = 1010223344;
   unsigned long long dhtkeyuid = 0;
-  unsigned long long bps = 10000000000000000;
+  unsigned long long bps = 100000000000;
   memset (&p1.hashPubKey, 3, sizeof (GNUNET_HashCode));
   memset (&p2.hashPubKey, 4, sizeof (GNUNET_HashCode));
   memset (&p3.hashPubKey, 5, sizeof (GNUNET_HashCode));
