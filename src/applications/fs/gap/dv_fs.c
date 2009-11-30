@@ -666,6 +666,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   enum GNUNET_FS_RoutingPolicy policy;
   double preference;
   struct DV_send_closure *dv_cls;
+  int result_count;
 
   if (stats != NULL)
     stats->change (stat_gap_query_received, 1);
@@ -789,7 +790,11 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       dv_cls = GNUNET_malloc (sizeof (struct DV_send_closure));
       dv_cls->message = (const P2P_gap_query_MESSAGE *) msg;
       dv_cls->request = NULL;   /* Not used for now... */
-      datastore->get (&req->queries[0], type, &send_results_dv, dv_cls);
+      result_count = datastore->get (&req->queries[0], type, &send_results_dv, dv_cls);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Found %d results (in handle_p2p_query)\n", result_count);
       GNUNET_free (dv_cls);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_OK;
@@ -807,8 +812,13 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       dv_cls = GNUNET_malloc (sizeof (struct DV_send_closure));
       dv_cls->message = (const P2P_gap_query_MESSAGE *) msg;
       dv_cls->request = NULL;   /* Not used for now... */
-      datastore->get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_DATA,
+      result_count = datastore->get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_DATA,
                       &send_results_dv, dv_cls);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "Found %d results (in handle_p2p_query)\n", result_count);
+
       GNUNET_free (dv_cls);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_OK;
@@ -826,8 +836,12 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       dv_cls = GNUNET_malloc (sizeof (struct DV_send_closure));
       dv_cls->message = (const P2P_gap_query_MESSAGE *) msg;
       dv_cls->request = NULL;   /* Not used for now... */
-      datastore->get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_ANY,
+      result_count = datastore->get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_ANY,
                       &send_results_dv, dv_cls);
+      GNUNET_GE_LOG (ectx,
+                           GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                           GNUNET_GE_BULK,
+                           "Found %d results (in handle_p2p_query)\n", result_count);
       GNUNET_free (dv_cls);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_OK;

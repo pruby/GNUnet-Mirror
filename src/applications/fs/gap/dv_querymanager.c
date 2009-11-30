@@ -183,11 +183,12 @@ send_dv_query (struct RequestList *request, const GNUNET_PeerIdentity * peer)
       request->last_ttl_used = ttl;
     }
   request->remaining_value -= prio;
-  if (stats != NULL)
+
+  ret = dv_api->dv_send (peer, &msg->header, prio * 2, ttl);
+  if ((stats != NULL) && (ret > 0))
     {
       stats->change (stat_gap_dv_sends, 1);
     }
-  ret = dv_api->dv_send (peer, &msg->header, prio * 2, ttl);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,

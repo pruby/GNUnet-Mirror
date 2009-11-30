@@ -175,14 +175,7 @@ main (int argc, const char **argv)
         break;
       sleep (60);
     }
-/*  pos = peers;
-  while (pos != NULL)
-    {
-      GNUNET_REMOTE_kill_daemon (pos);
-      pos = pos->next;
-    }
-  GNUNET_GC_free (cfg);
-*/
+
   for (r = 0; r < NUM_REPEAT; r++)
     {
       if (r > 0)

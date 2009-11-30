@@ -116,7 +116,7 @@ main (int argc, char **argv)
         return GNUNET_SYSERR;
 
     }
-  GNUNET_CONTAINER_heap_destroy(minHeap);
+  GNUNET_CONTAINER_heap_destroy (minHeap);
   return 0;
 }
 

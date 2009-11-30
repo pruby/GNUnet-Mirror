@@ -33,7 +33,7 @@
 #include "gnunet_stats_service.h"
 #include "dv.h"
 
-#define DEBUG_DV_MAINTAIN GNUNET_YES
+#define DEBUG_DV_MAINTAIN GNUNET_NO
 #define DEBUG_DV GNUNET_NO
 #define DEBUG_DV_FORWARD GNUNET_NO
 #define DEBUG_PEERS GNUNET_NO
@@ -99,14 +99,14 @@ static struct GNUNET_ThreadHandle *sendingThread;
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 #if DEBUG_PEERS
-static int printPeer (const GNUNET_HashCode * key,
-    void *value, void *cls)
+static int
+printPeer (const GNUNET_HashCode * key, void *value, void *cls)
 {
-	GNUNET_EncName enc;
+  GNUNET_EncName enc;
   GNUNET_hash_to_enc (key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
-								 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-								 GNUNET_GE_BULK, "\tPeer: %s", (char *)&enc);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "\tPeer: %s", (char *) &enc);
 }
 #endif
 
@@ -128,11 +128,9 @@ update_stats ()
   current_stat = stats->get (stat_dv_total_peers);
 
   GNUNET_GE_LOG (coreAPI->ectx,
-								 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-								 GNUNET_GE_BULK,
-								 "%s: Known Peers\n", &shortID);
-  GNUNET_multi_hash_map_iterate (ctx->extended_neighbors,
-       &printPeer, NULL);
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK, "%s: Known Peers\n", &shortID);
+  GNUNET_multi_hash_map_iterate (ctx->extended_neighbors, &printPeer, NULL);
 
 #endif
   return GNUNET_OK;
@@ -237,10 +235,10 @@ maintain_dv_job (void *unused)
  * GNUNET_NO if not
  */
 int
-GNUNET_DV_have_peer (GNUNET_PeerIdentity *peer)
+GNUNET_DV_have_peer (GNUNET_PeerIdentity * peer)
 {
-	return GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
-      &peer->hashPubKey);
+  return GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
+                                         &peer->hashPubKey);
 }
 
 /**
@@ -573,12 +571,15 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
 
 #endif
   ret = GNUNET_OK;
+
+#if DEBUG_DV
   GNUNET_GE_LOG (coreAPI->ectx,
-								 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-								 GNUNET_GE_BULK,
-								 "%s: Received data message:\nOriginal Sender ID:\n%d\nDestination ID:%d, type: %d\n",
-								 &shortID, ntohl (incoming->sender),
-								 ntohl (incoming->recipient), ntohs(packed_message->type));
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "%s: Received data message:\nOriginal Sender ID:\n%d\nDestination ID:%d, type: %d\n",
+                 &shortID, ntohl (incoming->sender),
+                 ntohl (incoming->recipient), ntohs (packed_message->type));
+#endif
 
   if ((ntohs (incoming->header.size) < sizeof (p2p_dv_MESSAGE_Data))
       || (ntohs (incoming->header.size) !=

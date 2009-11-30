@@ -1,5 +1,5 @@
 if HAVE_MYSQL
- MYSQL_DIR = sqstore_mysql dstore_mysql
+ MYSQL_DIR = sqstore_mysql dstore_mysql dhtlog_mysql
 endif
 
 if HAVE_SQLITE
@@ -44,4 +44,6 @@ SUBDIRS	= \
  $(VPN_DIR) \
  testing \
  fs \
- chat
+ chat \
+ dv \
+ dv_dht

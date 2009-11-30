@@ -240,7 +240,7 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
 #endif
   unused = system (cmd);
   GNUNET_free (cmd);
-  GNUNET_thread_sleep(500 * GNUNET_CRON_MILLISECONDS);
+  GNUNET_thread_sleep (500 * GNUNET_CRON_MILLISECONDS);
   UNLINK (tokill->path);
   return GNUNET_OK;
 }
@@ -555,9 +555,9 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   i = 0;
   count_started = 0;
   modnum = number_of_daemons / 4;
-  dotnum = ceil(number_of_daemons / 50);
+  dotnum = ceil (number_of_daemons / 50);
   if (dotnum == 0)
-  	dotnum = 1;
+    dotnum = 1;
   pos = length;
   fprintf (stdout, "Daemon start progress: [");
   fflush (stdout);
@@ -1398,10 +1398,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   if (totalConnections < 1)
     return 0;
 
-  modnum = ceil(totalConnections / 4);
-  dotnum = ceil(totalConnections / 50);
+  modnum = ceil (totalConnections / 4);
+  dotnum = ceil (totalConnections / 50);
   if (dotnum == 0)
-  	dotnum = 1;
+    dotnum = 1;
   if (ret == GNUNET_OK)
     {
       pos = head;
@@ -1481,9 +1481,9 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
       connectFailures = 0;
       tempThreadCount = 0;
       modnum = number_of_daemons / 4;
-      dotnum = ceil(number_of_daemons / 50);
+      dotnum = ceil (number_of_daemons / 50);
       if (dotnum == 0)
-      	dotnum = 1;
+        dotnum = 1;
       fprintf (stdout, "Friend connection progress: \[");
       for (j = 0; j < number_of_daemons; j++)
         {

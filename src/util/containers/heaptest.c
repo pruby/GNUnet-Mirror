@@ -28,15 +28,18 @@
 #include "gnunet_util_containers.h"
 #include "dv.h"
 
+#define VERBOSE GNUNET_NO
+
 static int
 iterator_callback (void *element, GNUNET_CostType cost,
                    struct GNUNET_CONTAINER_Heap *root, void *cls)
 {
+#if VERBOSE
   struct GNUNET_dv_neighbor *node;
   node = (struct GNUNET_dv_neighbor *) element;
   fprintf (stdout, "%d\n", node->cost);
   //fprintf (stdout, "%d\n", ((struct GNUNET_dv_neighbor *)element)->cost);
-
+#endif
   return GNUNET_OK;
 }
 
@@ -71,39 +74,29 @@ main (int argc, char **argv)
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor1, neighbor1->cost);
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
 
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor2, neighbor2->cost);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor3, neighbor3->cost);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor4, neighbor4->cost);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor5, neighbor5->cost);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor6, neighbor6->cost);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_remove_node (myHeap, neighbor5);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_remove_root (myHeap);
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
   GNUNET_CONTAINER_heap_update_cost (myHeap, neighbor6, 200);
-
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stdout, "\n");
 
   GNUNET_CONTAINER_heap_destroy (myHeap);
 

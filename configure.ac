@@ -1064,8 +1064,14 @@ src/applications/datastore/Makefile
 src/applications/dht/Makefile
 src/applications/dht/tools/Makefile
 src/applications/dht/module/Makefile
+src/applications/dhtlog_mysql/Makefile
+src/applications/dv_dht/Makefile
+src/applications/dv_dht/tools/Makefile
+src/applications/dv_dht/module/Makefile
 src/applications/dstore_mysql/Makefile
 src/applications/dstore_sqlite/Makefile
+src/applications/dv/Makefile
+src/applications/dv/module/Makefile
 src/applications/fragmentation/Makefile
 src/applications/fs/Makefile
 src/applications/fs/collection/Makefile
