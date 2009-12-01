@@ -235,7 +235,7 @@ maintain_dv_job (void *unused)
  * GNUNET_NO if not
  */
 int
-GNUNET_DV_have_peer (GNUNET_PeerIdentity * peer)
+GNUNET_DV_have_peer (const GNUNET_PeerIdentity * peer)
 {
   return GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
                                          &peer->hashPubKey);
