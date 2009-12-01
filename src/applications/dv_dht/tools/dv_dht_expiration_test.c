@@ -27,7 +27,7 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
-#include "gnunet_dht_lib.h"
+#include "gnunet_dv_dht_lib.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util.h"

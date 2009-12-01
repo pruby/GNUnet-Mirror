@@ -1061,9 +1061,6 @@ src/applications/chat/lib/Makefile
 src/applications/chat/module/Makefile
 src/applications/chat/tools/Makefile
 src/applications/datastore/Makefile
-src/applications/dht/Makefile
-src/applications/dht/tools/Makefile
-src/applications/dht/module/Makefile
 src/applications/dhtlog_mysql/Makefile
 src/applications/dv_dht/Makefile
 src/applications/dv_dht/tools/Makefile

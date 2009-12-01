@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
+      (C) 2001 - 2009 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -19,19 +19,19 @@
  */
 
 /**
- * @file fs/gap/fs_dht.h
- * @brief integration of file-sharing with the DHT
+ * @file fs/gap/fs_dv_dht.h
+ * @brief integration of file-sharing with the DV_DHT
  *        infrastructure
- * @author Christian Grothoff
+ * @author Christian Grothoff, Nathan Evans
  */
-#ifndef FS_DHT_H
-#define FS_DHT_H
+#ifndef FS_DV_DHT_H
+#define FS_DV_DHT_H
 
 #include "gnunet_util.h"
 
-int GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_FS_DV_DHT_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_FS_DHT_done (void);
+int GNUNET_FS_DV_DHT_done (void);
 
 /**
  * Execute a GAP query.  Determines where to forward
@@ -39,10 +39,10 @@ int GNUNET_FS_DHT_done (void);
  * May also have to check the local datastore.
  *
  * @param type type of content requested
- * @param querie hash code of the query
+ * @param query hash code of the query
  */
 void
-GNUNET_FS_DHT_execute_query (unsigned int type,
-                             const GNUNET_HashCode * query);
+GNUNET_FS_DV_DHT_execute_query (unsigned int type,
+                                const GNUNET_HashCode * query);
 
 #endif

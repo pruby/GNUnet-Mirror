@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
+      (C) 2001 - 2009 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -19,14 +19,14 @@
  */
 
 /**
- * @file fs/gap/fs_dht.c
+ * @file fs/gap/fs_dv_dht.c
  * @brief integration of file-sharing with the DHT
  *        infrastructure
- * @author Christian Grothoff
+ * @author Christian Grothoff, Nathan Evans
  */
 
 #include "platform.h"
-#include "gnunet_dht_service.h"
+#include "gnunet_dv_dht_service.h"
 #include "gnunet_sqstore_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_protocols.h"
@@ -45,7 +45,7 @@ struct ActiveRequestRecords
 
   struct ActiveRequestRecords *next;
 
-  struct GNUNET_DHT_GetHandle *handle;
+  struct GNUNET_DV_DHT_GetHandle *handle;
 
   GNUNET_CronTime end_time;
 
@@ -53,7 +53,7 @@ struct ActiveRequestRecords
 
 };
 
-static GNUNET_DHT_ServiceAPI *dht;
+static GNUNET_DV_DHT_ServiceAPI *dv_dht;
 
 static GNUNET_SQstore_ServiceAPI *sqstore;
 
@@ -103,7 +103,7 @@ purge_old_records (GNUNET_CronTime limit)
             records = pos->next;
           else
             prev->next = pos->next;
-          dht->get_stop (pos->handle);
+          dv_dht->get_stop (pos->handle);
           GNUNET_free (pos);
           if (prev == NULL)
             pos = records;
@@ -148,7 +148,7 @@ response_callback (const GNUNET_HashCode * key,
       GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_OK;
     }
-  GNUNET_FS_QUERYMANAGER_handle_response (NULL, &hc, 0, size, dblock);
+  GNUNET_DV_FS_QUERYMANAGER_handle_response (NULL, &hc, 0, size, dblock);
   if (record->type == GNUNET_ECRS_BLOCKTYPE_DATA)
     {
       record->end_time = 0;     /* delete ASAP */
@@ -163,21 +163,25 @@ response_callback (const GNUNET_HashCode * key,
  * May also have to check the local datastore.
  *
  * @param type type of content requested
- * @param querie hash code of the query
+ * @param query hash code of the query
  */
 void
-GNUNET_FS_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query)
+GNUNET_FS_DV_DHT_execute_query (unsigned int type,
+                                const GNUNET_HashCode * query)
 {
   struct ActiveRequestRecords *record;
   GNUNET_CronTime now;
 
-  if (dht == NULL)
+  if (dv_dht == NULL)
     return;
+
   now = GNUNET_get_time ();
   record = GNUNET_malloc (sizeof (struct ActiveRequestRecords));
   record->end_time = now + GNUNET_GAP_MAX_DHT_DELAY;
   record->type = type;
-  record->handle = dht->get_start (type, query, &response_callback, record);
+  /*record->type = GNUNET_ECRS_BLOCKTYPE_KEYWORD; *//* Anonymous query should only get this type, right? */
+  record->handle =
+    dv_dht->get_start (record->type, query, &response_callback, record);
   if (record->handle == NULL)
     {
       GNUNET_free (record);
@@ -213,10 +217,11 @@ push_callback (const GNUNET_HashCode * key,
   GNUNET_thread_sleep (delay);
   if (GNUNET_YES == shutdown_requested)
     return GNUNET_SYSERR;
-  dht->put (key,
-            ntohl (value->type),
-            ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
-            (const char *) &value[1]);
+
+  dv_dht->put (key,
+               ntohl (value->type),
+               ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
+               (const char *) &value[1]);
   if (stats != NULL)
     stats->change (stat_push_count, 1);
   if (GNUNET_YES == shutdown_requested)
@@ -232,7 +237,7 @@ static void *
 push_thread (void *cls)
 {
   while ((shutdown_requested == GNUNET_NO) &&
-         (dht != NULL) && (sqstore != NULL))
+         (dv_dht != NULL) && (sqstore != NULL))
     {
       if (total == 0)
         total = 1;
@@ -245,16 +250,16 @@ push_thread (void *cls)
 
 
 int
-GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_FS_DV_DHT_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  dht = capi->service_request ("dht");
+  dv_dht = capi->service_request ("dv_dht");
   sqstore = capi->service_request ("sqstore");
   stats = capi->service_request ("stats");
   if (stats != NULL)
     stat_push_count
       = stats->create (gettext_noop ("# blocks pushed into DHT"));
-  if ((dht != NULL) && (sqstore != NULL))
+  if ((dv_dht != NULL) && (sqstore != NULL))
     {
       shutdown_requested = GNUNET_NO;
       thread = GNUNET_thread_create (&push_thread, NULL, 1024 * 128);
@@ -263,7 +268,7 @@ GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
 }
 
 int
-GNUNET_FS_DHT_done ()
+GNUNET_FS_DV_DHT_done ()
 {
   void *unused;
 
@@ -279,9 +284,9 @@ GNUNET_FS_DHT_done ()
       coreAPI->service_release (stats);
       stats = NULL;
     }
-  if (dht != NULL)
-    coreAPI->service_release (dht);
-  dht = NULL;
+  if (dv_dht != NULL)
+    coreAPI->service_release (dv_dht);
+  dv_dht = NULL;
   if (sqstore != NULL)
     coreAPI->service_release (sqstore);
   sqstore = NULL;

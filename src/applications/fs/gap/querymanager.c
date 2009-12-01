@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
+      (C) 2001 - 2009 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -19,9 +19,10 @@
  */
 
 /**
- * @file fs/gap/querymanager.c
+ * @file fs/gap/dv_querymanager.c
  * @brief management of queries from our clients
  * @author Christian Grothoff
+ * @author Nathan Evans
  *
  * This code forwards queries (using GAP and DHT) to other peers and
  * passes replies (from GAP or DHT) back to clients.
@@ -37,6 +38,7 @@
 #include "plan.h"
 #include "pid_table.h"
 #include "shared.h"
+#include "gnunet_dv_service.h"
 
 #define CHECK_REPEAT_FREQUENCY (150 * GNUNET_CRON_MILLISECONDS)
 
@@ -78,6 +80,8 @@ static struct ClientDataList *clients_tail;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
+static GNUNET_DV_ServiceAPI *dv_api;
+
 static GNUNET_Stats_ServiceAPI *stats;
 
 static GNUNET_Datastore_ServiceAPI *datastore;
@@ -92,6 +96,7 @@ static int stat_gap_client_query_injected;
 
 static int stat_gap_client_bf_updates;
 
+static int stat_gap_dv_sends;
 
 /**
  * How many bytes should a bloomfilter be if
@@ -131,6 +136,67 @@ mark_response_seen (const GNUNET_HashCode * key, void *value, void *cls)
   return GNUNET_OK;
 }
 
+static int
+send_dv_query (struct RequestList *request, const GNUNET_PeerIdentity * peer)
+{
+  P2P_gap_query_MESSAGE *msg;
+  unsigned int size;
+  GNUNET_CronTime now;
+  int ret;
+  ret = GNUNET_SYSERR;
+  int ttl;
+  int prio = GNUNET_FS_GAP_get_average_priority ();
+
+  GNUNET_GE_ASSERT (NULL, request->key_count > 0);
+  size = sizeof (P2P_gap_query_MESSAGE)
+    + request->bloomfilter_size + (request->key_count -
+                                   1) * sizeof (GNUNET_HashCode);
+  msg = (P2P_gap_query_MESSAGE *) GNUNET_malloc (size);
+  if ((prio > request->remaining_value) && (request->response_client == NULL))
+    prio = request->remaining_value;
+  now = GNUNET_get_time ();
+  ttl = GNUNET_FS_HELPER_bound_ttl (now + 60 * GNUNET_CRON_SECONDS, prio);
+  msg->header.size = htons (size);
+  msg->header.type = htons (GNUNET_P2P_PROTO_GAP_QUERY);
+  msg->type = htonl (request->type);
+  msg->priority = htonl (prio);
+  msg->ttl = htonl (ttl);
+  msg->filter_mutator = htonl (request->bloomfilter_mutator);
+  msg->number_of_queries = htonl (request->key_count);
+  if (0 != (request->policy & GNUNET_FS_RoutingPolicy_INDIRECT))
+    msg->returnTo = *coreAPI->my_identity;
+  else
+    GNUNET_FS_PT_resolve (request->response_target, &msg->returnTo);
+  memcpy (&msg->queries[0],
+          &request->queries[0],
+          request->key_count * sizeof (GNUNET_HashCode));
+  if (request->bloomfilter != NULL)
+    GNUNET_bloomfilter_get_raw_data (request->bloomfilter,
+                                     (char *) &msg->queries[request->
+                                                            key_count],
+                                     request->bloomfilter_size);
+  now = GNUNET_get_time ();
+  if (now + ttl > request->last_request_time + request->last_ttl_used)
+    {
+      request->last_request_time = now;
+      request->last_prio_used = prio;
+      request->last_ttl_used = ttl;
+    }
+  request->remaining_value -= prio;
+
+  ret = dv_api->dv_send (peer, &msg->header, prio * 2, ttl);
+  if ((stats != NULL) && (ret > 0))
+    {
+      stats->change (stat_gap_dv_sends, 1);
+    }
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "Sending message via DV returned %d, type of request %d (htonl %d)\n",
+                 ret, request->type, htonl (request->type));
+  return ret;
+}
+
 /**
  * A client is asking us to run a query.  The query should be issued
  * until either a unique response has been obtained or until the
@@ -139,18 +205,26 @@ mark_response_seen (const GNUNET_HashCode * key, void *value, void *cls)
  * @param target peer known to have the content, maybe NULL.
  */
 void
-GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
-                                    unsigned int key_count,
-                                    unsigned int anonymityLevel,
-                                    unsigned int type,
-                                    struct GNUNET_ClientHandle *client,
-                                    const GNUNET_PeerIdentity * target,
-                                    const struct GNUNET_MultiHashMap *seen,
-                                    int have_more)
+GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
+                                       unsigned int key_count,
+                                       unsigned int anonymityLevel,
+                                       unsigned int type,
+                                       struct GNUNET_ClientHandle *client,
+                                       const GNUNET_PeerIdentity * target,
+                                       const struct GNUNET_MultiHashMap *seen,
+                                       int have_more)
 {
   struct ClientDataList *cl;
   struct RequestList *request;
 
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "entered GNUNET_DV_FS_QUERYMANAGER_start_query\n");
+  if (target == NULL)
+    GNUNET_GE_LOG (coreAPI->ectx,
+                   GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                   GNUNET_GE_BULK, "target is null!\n");
   GNUNET_GE_ASSERT (NULL, key_count > 0);
   if (stats != NULL)
     {
@@ -203,6 +277,29 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   cl->requests = request;
   if (cl->request_tail == NULL)
     cl->request_tail = request;
+
+  if ((anonymityLevel == 0) && (target != NULL)
+      && (dv_api->have_peer (target)))
+    {
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "anonymity is zero, target non-null, and we know this peer.  Will attempt to send requests out over DV\n");
+      if (send_dv_query (request, target) > 0)
+        {
+          GNUNET_mutex_unlock (GNUNET_FS_lock);
+          request->last_dht_get = GNUNET_get_time ();
+          request->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;
+          return;
+        }
+    }
+  else if ((anonymityLevel == 0) && (target != NULL))
+    {
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     "anonymity is zero, target non-null, but we don't know this peer\n");
+    }
   if ((GNUNET_YES == GNUNET_FS_PLAN_request (client, 0, request)) &&
       (stats != NULL))
     stats->change (stat_gap_client_query_injected, 1);
@@ -212,19 +309,19 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
       request->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
-  if (anonymityLevel == 0)
-    GNUNET_FS_DHT_execute_query (type, query);
+  if ((anonymityLevel == 0) && (type == 0))     /* Cannot search the dht with type 0 */
+    GNUNET_FS_DV_DHT_execute_query (GNUNET_ECRS_BLOCKTYPE_KEYWORD, query);
 }
 
 /**
  * A client is asking us to stop running a query (without disconnect).
  */
 int
-GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
-                                   unsigned int key_count,
-                                   unsigned int anonymityLevel,
-                                   unsigned int type,
-                                   struct GNUNET_ClientHandle *client)
+GNUNET_DV_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
+                                      unsigned int key_count,
+                                      unsigned int anonymityLevel,
+                                      unsigned int type,
+                                      struct GNUNET_ClientHandle *client)
 {
   struct ClientDataList *cl;
   struct ClientDataList *cprev;
@@ -413,7 +510,7 @@ handle_response (PID_INDEX sender,
  * Handle the given response (by forwarding it to
  * other peers as necessary).
  *
- * @param sender who send the response (good too know
+ * @param sender who sent the response (good too know
  *        for future routing decisions)
  * @param primary_query hash code used for lookup
  *        (note that namespace membership may
@@ -425,11 +522,12 @@ handle_response (PID_INDEX sender,
  * @return how much was this content worth to us?
  */
 unsigned int
-GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
-                                        const GNUNET_HashCode * primary_query,
-                                        GNUNET_CronTime expirationTime,
-                                        unsigned int size,
-                                        const GNUNET_EC_DBlock * data)
+GNUNET_DV_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
+                                           const GNUNET_HashCode *
+                                           primary_query,
+                                           GNUNET_CronTime expirationTime,
+                                           unsigned int size,
+                                           const GNUNET_EC_DBlock * data)
 {
   struct ClientDataList *cl;
   struct RequestList *rl;
@@ -674,10 +772,10 @@ repeat_requests_job (void *unused)
           (request->last_ttl_used * GNUNET_CRON_SECONDS +
            request->last_request_time < now))
         {
-          if ((GNUNET_OK ==
-               GNUNET_FS_PLAN_request (client->client, 0, request))
-              && (stats != NULL))
-            stats->change (stat_gap_client_query_injected, 1);
+          /*if ((GNUNET_OK ==
+             GNUNET_FS_PLAN_request (client->client, 0, request))
+             && (stats != NULL))
+             stats->change (stat_gap_client_query_injected, 1); */
         }
 
       if ((request->anonymityLevel == 0) &&
@@ -686,22 +784,23 @@ repeat_requests_job (void *unused)
           if (request->dht_back_off * 2 > request->dht_back_off)
             request->dht_back_off *= 2;
           request->last_dht_get = now;
-          GNUNET_FS_DHT_execute_query (request->type, &request->queries[0]);
+          /*GNUNET_FS_DV_DHT_execute_query (request->type, &request->queries[0]); */
         }
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
 int
-GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_DV_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  GNUNET_GE_ASSERT (capi->ectx,
+  GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    capi->cs_disconnect_handler_register
+                    coreAPI->cs_disconnect_handler_register
                     (&handle_client_exit));
-  datastore = capi->service_request ("datastore");
-  stats = capi->service_request ("stats");
+  datastore = coreAPI->service_request ("datastore");
+  stats = coreAPI->service_request ("stats");
+  dv_api = coreAPI->service_request ("dv");
   if (stats != NULL)
     {
       stat_gap_client_query_received =
@@ -715,15 +814,17 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_client_bf_updates =
         stats->create (gettext_noop
                        ("# gap query bloomfilter resizing updates"));
+      stat_gap_dv_sends =
+        stats->create (gettext_noop ("# dv gap requests sent"));
     }
-  GNUNET_cron_add_job (capi->cron,
+  GNUNET_cron_add_job (coreAPI->cron,
                        &repeat_requests_job,
                        CHECK_REPEAT_FREQUENCY, CHECK_REPEAT_FREQUENCY, NULL);
   return 0;
 }
 
 int
-GNUNET_FS_QUERYMANAGER_done ()
+GNUNET_DV_FS_QUERYMANAGER_done ()
 {
   GNUNET_cron_del_job (coreAPI->cron,
                        &repeat_requests_job, CHECK_REPEAT_FREQUENCY, NULL);
@@ -735,6 +836,8 @@ GNUNET_FS_QUERYMANAGER_done ()
     handle_client_exit (clients->client);
   coreAPI->service_release (datastore);
   datastore = NULL;
+  coreAPI->service_release (dv_api);
+  dv_api = NULL;
   if (stats != NULL)
     {
       coreAPI->service_release (stats);
@@ -743,4 +846,4 @@ GNUNET_FS_QUERYMANAGER_done ()
   return 0;
 }
 
-/* end of querymanager.c */
+/* end of dv_querymanager.c */

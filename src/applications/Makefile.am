@@ -39,7 +39,6 @@ SUBDIRS	= \
  traffic \
  transport \
  advertising \
- dht \
  tracekit \
  $(VPN_DIR) \
  testing \

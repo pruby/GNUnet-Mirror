@@ -19,21 +19,21 @@
  */
 
 /**
- * @file fs/gap/querymanager.h
+ * @file fs/gap/dv_querymanager.h
  * @brief management of queries from our clients
- * @author Christian Grothoff
+ * @author Christian Grothoff, Nathan Evans
  */
-#ifndef QUERYMANAGER_H
-#define QUERYMANAGER_H
+#ifndef DV_QUERYMANAGER_H
+#define DV_QUERYMANAGER_H
 
 #include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "ecrs_core.h"
 #include "shared.h"
 
-int GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_DV_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_FS_QUERYMANAGER_done (void);
+int GNUNET_DV_FS_QUERYMANAGER_done (void);
 
 
 /**
@@ -45,24 +45,24 @@ int GNUNET_FS_QUERYMANAGER_done (void);
  * @param have_more do we have more results in our local datastore?
  */
 void
-GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
-                                    unsigned int key_count,
-                                    unsigned int anonymityLevel,
-                                    unsigned int type,
-                                    struct GNUNET_ClientHandle *client,
-                                    const GNUNET_PeerIdentity * target,
-                                    const struct GNUNET_MultiHashMap *seen,
-                                    int have_more);
+GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
+                                       unsigned int key_count,
+                                       unsigned int anonymityLevel,
+                                       unsigned int type,
+                                       struct GNUNET_ClientHandle *client,
+                                       const GNUNET_PeerIdentity * target,
+                                       const struct GNUNET_MultiHashMap *seen,
+                                       int have_more);
 
 /**
  * A client is asking us to stop running a query (without disconnect).
  */
 int
-GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
-                                   unsigned int key_count,
-                                   unsigned int anonymityLevel,
-                                   unsigned int type,
-                                   struct GNUNET_ClientHandle *client);
+GNUNET_DV_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
+                                      unsigned int key_count,
+                                      unsigned int anonymityLevel,
+                                      unsigned int type,
+                                      struct GNUNET_ClientHandle *client);
 
 /**
  * Handle the given response (by forwarding it to
@@ -80,11 +80,12 @@ GNUNET_FS_QUERYMANAGER_stop_query (const GNUNET_HashCode * query,
  * @return how much was this content worth to us?
  */
 unsigned int
-GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
-                                        const GNUNET_HashCode * primary_query,
-                                        GNUNET_CronTime expirationTime,
-                                        unsigned int size,
-                                        const GNUNET_EC_DBlock * data);
+GNUNET_DV_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
+                                           const GNUNET_HashCode *
+                                           primary_query,
+                                           GNUNET_CronTime expirationTime,
+                                           unsigned int size,
+                                           const GNUNET_EC_DBlock * data);
 
 
 #endif

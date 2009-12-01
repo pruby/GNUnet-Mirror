@@ -8,9 +8,7 @@ endif
 plugindir = $(libdir)/GNUnet
 
 plugin_LTLIBRARIES = \
-  libgnunetmodule_fs.la \
-  libgnunetmodule_dv_fs.la
-
+  libgnunetmodule_fs.la
 
 libgnunetmodule_fs_la_SOURCES = \
   anonymity.c anonymity.h \
@@ -30,25 +28,6 @@ libgnunetmodule_fs_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lm \
   $(GN_LIBINTL)
-
-libgnunetmodule_dv_fs_la_SOURCES = \
-  anonymity.c anonymity.h \
-  dv_fs.c  \
-  fs_dv_dht.c fs_dv_dht.h \
-  gap.c gap.h \
-  migration.c migration.h \
-  ondemand.c ondemand.h \
-  plan.c plan.h \
-  pid_table.c pid_table.h \
-  dv_querymanager.c dv_querymanager.h \
-  shared.c shared.h 
-libgnunetmodule_dv_fs_la_LDFLAGS = \
-  $(GN_PLUGIN_LDFLAGS)
-libgnunetmodule_dv_fs_la_LIBADD = \
-  $(top_builddir)/src/applications/fs/libgnunetecrscore.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  -lm \
-  $(GN_LIBINTL)  
 
 noinst_PROGRAMS = \
   test_gap_dv
