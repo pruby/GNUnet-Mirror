@@ -967,7 +967,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
  * @return GNUNET_SYSERR on errors
  */
 int
-initialize_module_dv_fs (GNUNET_CoreAPIForPlugins * capi)
+initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
 {
   ectx = capi->ectx;
   coreAPI = capi;
@@ -1092,7 +1092,7 @@ initialize_module_dv_fs (GNUNET_CoreAPIForPlugins * capi)
 }
 
 void
-done_module_dv_fs ()
+done_module_fs ()
 {
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "dv_fs shutdown\n");
@@ -1167,7 +1167,7 @@ done_module_dv_fs ()
  * Update FS.
  */
 void
-update_module_dv_fs (GNUNET_UpdateAPI * uapi)
+update_module_fs (GNUNET_UpdateAPI * uapi)
 {
   uapi->service_update ("datastore");
 }
