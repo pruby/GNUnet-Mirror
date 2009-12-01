@@ -136,7 +136,7 @@ main (int argc, char *argv[])
       return -1;
     }
   cron = GNUNET_cron_create (NULL);
-  GNUNET_CORE_init (NULL, cfg, cron, NULL);
+  GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_CORE_init (NULL, cfg, cron, NULL));
 
   api = GNUNET_CORE_request_service ("dhtlog_mysql");
   if (api != NULL)

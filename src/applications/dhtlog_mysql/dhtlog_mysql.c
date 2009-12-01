@@ -35,11 +35,7 @@
 
 static unsigned long max_varchar_len;
 
-static char *blank;
-
 static GNUNET_CoreAPIForPlugins *coreAPI;
-
-static struct GNUNET_GC_Configuration *dhtlog_cfg;
 
 static unsigned long long current_trial = 0;    /* I like to assign 0, just to remember */
 
@@ -179,7 +175,7 @@ iopen ()
   int ret;
   if (db != NULL)
     return GNUNET_OK;
-  db = GNUNET_MYSQL_database_open (coreAPI->ectx, dhtlog_cfg);
+  db = GNUNET_MYSQL_database_open (coreAPI->ectx, coreAPI->cfg);
   if (db == NULL)
     return GNUNET_SYSERR;
 
@@ -704,76 +700,14 @@ GNUNET_dhtlog_ServiceAPI *
 provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_dhtlog_ServiceAPI api;
-  char *mysql_server;
-  char *mysql_user;
-  char *mysql_db;
-  char *mysql_password;
-  unsigned long long mysql_port;
 
-  dhtlog_cfg = GNUNET_GC_create ();
   coreAPI = capi;
   max_varchar_len = 255;
-  blank = "";
 #if DEBUG_DHTLOG
   GNUNET_GE_LOG (capi->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER |
                  GNUNET_GE_BULK, "MySQL DHT Logger: initializing database\n");
   fprintf (stderr, "MySQL DHT Logger: initializing database\n");
-#endif
-
-  GNUNET_GC_get_configuration_value_string (capi->cfg,
-                                            "MULTIPLE_SERVER_TESTING",
-                                            "MYSQL_SERVER", "localhost",
-                                            &mysql_server);
-
-  GNUNET_GC_get_configuration_value_string (capi->cfg,
-                                            "MULTIPLE_SERVER_TESTING",
-                                            "MYSQL_DB", "dhttests",
-                                            &mysql_db);
-
-  GNUNET_GC_get_configuration_value_string (capi->cfg,
-                                            "MULTIPLE_SERVER_TESTING",
-                                            "MYSQL_USER", "dht", &mysql_user);
-
-  GNUNET_GC_get_configuration_value_string (capi->cfg,
-                                            "MULTIPLE_SERVER_TESTING",
-                                            "MYSQL_PASSWORD", "dht**",
-                                            &mysql_password);
-
-  GNUNET_GC_get_configuration_value_number (capi->cfg,
-                                            "MULTIPLE_SERVER_TESTING",
-                                            "MYSQL_PORT", 1, -1, 3306,
-                                            &mysql_port);
-
-  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
-                                            NULL,
-                                            "MYSQL", "DATABASE", mysql_db);
-
-  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
-                                            NULL,
-                                            "MYSQL", "HOST", mysql_server);
-
-  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
-                                            NULL,
-                                            "MYSQL", "USER", mysql_user);
-
-  GNUNET_GC_set_configuration_value_string (dhtlog_cfg,
-                                            NULL,
-                                            "MYSQL", "PASSWORD",
-                                            mysql_password);
-
-  GNUNET_GC_set_configuration_value_number (dhtlog_cfg,
-                                            NULL,
-                                            "MYSQL", "PORT", mysql_port);
-
-#if DEBUG_DHTLOG
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK,
-                 _
-                 ("pertinent mysql information: host %s, user %s, port %llu, pass %s, DB %s\n"),
-                 mysql_server, mysql_user, mysql_port, mysql_password,
-                 mysql_db);
 #endif
   if (iopen () != GNUNET_OK)
     {
@@ -781,10 +715,6 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _
                      ("Failed to initialize MySQL database connection for dhtlog.\n"));
-      GNUNET_free (mysql_user);
-      GNUNET_free (mysql_password);
-      GNUNET_free (mysql_db);
-      GNUNET_free (mysql_server);
       return NULL;
     }
 
@@ -799,10 +729,6 @@ provide_module_dhtlog_mysql (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK, _("current trial is %llu\n"), current_trial);
-  GNUNET_free (mysql_user);
-  GNUNET_free (mysql_password);
-  GNUNET_free (mysql_db);
-  GNUNET_free (mysql_server);
   return &api;
 }
 
