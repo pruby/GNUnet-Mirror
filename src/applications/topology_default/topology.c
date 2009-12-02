@@ -566,7 +566,7 @@ rereadConfiguration (void *ctx,
 		     ("More friendly connections required than target total number of connections.\n"));
     }
   GNUNET_free (data);
-  GNUNET_free (fn);
+  GNUNET_free_non_null (fn);
   return 0;
 }
 
