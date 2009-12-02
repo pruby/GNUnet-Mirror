@@ -622,8 +622,7 @@ typedef int (*GNUNET_CONTAINER_HeapIterator) (void *element,
  * @param heap - the heap
  * @param iterator - function to call on each entry
  * @param cls - client argument (closure)
- * @return - number of items handled
- *         GNUNET_SYSERR if there's a problem
+ * @return GNUNET_YES if we iterated over all items, otherwise GNUNET_NO
  */
 int GNUNET_CONTAINER_heap_iterate (struct GNUNET_CONTAINER_Heap *heap,
                                    GNUNET_CONTAINER_HeapIterator iterator,

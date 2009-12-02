@@ -480,16 +480,18 @@ GNUNET_CONTAINER_heap_update_cost (struct GNUNET_CONTAINER_Heap *root,
   return ret;
 }
 
-void
+int
 internal_iterator (struct GNUNET_CONTAINER_Heap *root,
                    struct GNUNET_CONTAINER_heap_node *node,
                    GNUNET_CONTAINER_HeapIterator iterator, void *cls)
 {
   if (node == NULL)
     return;
-  internal_iterator (root, node->left_child, iterator, cls);
-  internal_iterator (root, node->right_child, iterator, cls);
-  iterator (node->element, node->cost, root, cls);
+  if (GNUNET_YES != internal_iterator (root, node->left_child, iterator, cls))
+    return;
+  if (GNUNET_YES != internal_iterator (root, node->right_child, iterator, cls))
+    return;
+  return iterator (node->element, node->cost, root, cls);
 }
 
 int
@@ -497,8 +499,7 @@ GNUNET_CONTAINER_heap_iterate (struct GNUNET_CONTAINER_Heap *heap,
                                GNUNET_CONTAINER_HeapIterator iterator,
                                void *cls)
 {
-  internal_iterator (heap, heap->root, iterator, cls);
-  return GNUNET_OK;
+  return internal_iterator (heap, heap->root, iterator, cls);
 }
 
 void *

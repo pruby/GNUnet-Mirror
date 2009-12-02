@@ -1055,8 +1055,7 @@ static int
 delete_callback (void *element, GNUNET_CostType cost,
                  struct GNUNET_CONTAINER_Heap *root, void *cls)
 {
-  struct GNUNET_dv_neighbor *neighbor;
-  neighbor = (struct GNUNET_dv_neighbor *) element;
+  struct GNUNET_dv_neighbor *neighbor = element;
   GNUNET_PeerIdentity *toMatch = cls;
 #if DEBUG_DV
   GNUNET_EncName encNeighbor;
@@ -1086,8 +1085,13 @@ delete_callback (void *element, GNUNET_CostType cost,
                                                  0)))
     {
       delete_neighbor (neighbor);
+      /* we must not continue iterating at this point since
+	 'delete_neighbor' modified the tree and hence internal
+	 invariants of the iterator were likely broken! 
+	 Besides, each neighbor should only appear once anyway... */
+      return GNUNET_NO;
     }
-  return GNUNET_OK;
+  return GNUNET_YES;
 }
 
 /*
@@ -1129,7 +1133,7 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       if (neighbor != NULL)
         {
           GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
-                                         &delete_callback, (void *) peer);
+                                         &delete_callback, peer);
           /* Note that we do not use delete_neighbor here because
            * we are deleting from the direct neighbor list! */
           GNUNET_free (neighbor->neighbor);
