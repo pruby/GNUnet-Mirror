@@ -339,8 +339,6 @@ readAndProcess (SelectHandle * sh, Session * session)
       if (GNUNET_OK != sh->mh (sh->mh_cls,
                                sh, session->sock, session->sock_ctx, pack))
         {	  
-          GNUNET_GE_BREAK(sh->ectx, 0);
-	  abort ();
           GNUNET_mutex_lock (sh->lock);
           if (session->locked == 1)
             session->locked = 0;
