@@ -46,7 +46,6 @@ main (int argc, char **argv)
   struct GNUNET_CONTAINER_Heap *minHeap;
   struct GNUNET_CONTAINER_Heap *maxHeap;
   int i;
-  int j;
   int ret;
   int cur_pos = 0;
   unsigned int temp_rand;
