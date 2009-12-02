@@ -217,12 +217,10 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
   else
     {
       pclose (output);
-      GNUNET_free_non_null (output);
       return -1;
     }
 
   pclose (output);
-  GNUNET_free_non_null (output);
   if (is_local)
     {
       length = snprintf (NULL, 0, "kill %d", pid);
@@ -1402,7 +1400,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   totalCreatedConnections = 0;
   totalConnectAttempts = 0;
   if (totalConnections < 1)
+  {
+    GNUNET_free(daemon_list);
     return 0;
+  }
 
   modnum = ceil (totalConnections / 4);
   dotnum = ceil (totalConnections / 50);
