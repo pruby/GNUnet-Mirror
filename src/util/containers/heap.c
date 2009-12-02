@@ -115,7 +115,7 @@ GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HeapType type)
 void *GNUNET_CONTAINER_heap_peek (struct GNUNET_CONTAINER_Heap *root)
 {
   if ((root == NULL) || (root->root == NULL))
-    return NULL; 
+    return NULL;
   return root->root->element;
 }
 
@@ -347,6 +347,13 @@ GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_Heap *root,
     {
       root->traversal_pos = root->root;
     }
+
+  if (last == del_node)
+    {
+      GNUNET_free(last);
+      return ret;
+    }
+
   GNUNET_free (last);
   root->size--;
 
