@@ -153,7 +153,7 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
                                                           NULL))
         {
           fd = GNUNET_disk_file_open (NULL, tmpName, O_RDONLY);
-	  GNUNET_assert (fd != -1);
+	  GNUNET_GE_ASSERT (NULL, fd != -1);
           if ((size != READ (fd, in, size)) ||
               (0 != memcmp (&buf[j], &in[j], 16 * 1024)))
             {
