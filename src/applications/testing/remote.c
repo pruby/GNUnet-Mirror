@@ -216,9 +216,13 @@ GNUNET_REMOTE_kill_daemon (struct GNUNET_REMOTE_TESTING_DaemonContext *tokill)
     }
   else
     {
+      pclose (output);
+      GNUNET_free_non_null (output);
       return -1;
     }
 
+  pclose (output);
+  GNUNET_free_non_null (output);
   if (is_local)
     {
       length = snprintf (NULL, 0, "kill %d", pid);
@@ -1177,6 +1181,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_REMOTE_TESTING_DaemonContext
   GNUNET_free (remote_pid_path);
   GNUNET_free (data_dir);
   GNUNET_free (ssh_username);
+  GNUNET_free (prepend_exec);
   GNUNET_free (control_host);
   GNUNET_free (hostnames);
   GNUNET_free (remote_config_path);
@@ -1341,6 +1346,7 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
   void *unusedVoid;
   globalDotFile = dotOutFile;
   ret = GNUNET_OK;
+  totalConnections = 0;
   connected = GNUNET_multi_hash_map_create (number_of_daemons * 3);
 
   daemon_list =
@@ -1551,7 +1557,10 @@ GNUNET_REMOTE_create_topology (GNUNET_REMOTE_TOPOLOGIES type,
 
   GNUNET_multi_hash_map_destroy (connected);
   if (ret != GNUNET_OK)
-    return ret;
+    {
+      GNUNET_free (daemon_list);
+      return ret;
+    }
   else
     {
       GNUNET_free (daemon_list);
