@@ -32,9 +32,6 @@
 
 #define MAX_SIZE 100
 #define TESTS 75
-static int tempmaxsize;
-static int tempminsize;
-static int heapverify;
 
 
 int
