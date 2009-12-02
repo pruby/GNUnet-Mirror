@@ -492,6 +492,7 @@ forward_message (const p2p_dv_MESSAGE_Data * message,
               original_sender = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
               memcpy (original_sender, &ctx->neighbor_id_array[i].identity,
                       sizeof (GNUNET_PeerIdentity));
+              break;
             }
         }
     }
@@ -504,6 +505,7 @@ forward_message (const p2p_dv_MESSAGE_Data * message,
           recipient = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
           memcpy (recipient, &ctx->neighbor_id_array[i].identity,
                   sizeof (GNUNET_PeerIdentity));
+          break;
         }
     }
   GNUNET_mutex_unlock (ctx->dvMutex);
