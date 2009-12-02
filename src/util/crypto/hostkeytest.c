@@ -73,7 +73,7 @@ testEncryptDecrypt ()
       if (strncmp (TESTSTRING, result, strlen (TESTSTRING)) != 0)
         {
           printf ("%s != %.*s - testEncryptDecrypt failed!\n",
-                  TESTSTRING, MAX_TESTVAL, result);
+                  TESTSTRING, (int) MAX_TESTVAL, result);
           ok++;
           continue;
         }
