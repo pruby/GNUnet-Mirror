@@ -628,6 +628,7 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
               original_sender = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
               memcpy (original_sender, &ctx->neighbor_id_array[i].identity,
                       sizeof (GNUNET_PeerIdentity));
+              break;
             }
         }
     }
@@ -686,8 +687,10 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
       if (stats != NULL)
         stats->change (stat_dv_unknown_peer, 1);
     }
-
-  GNUNET_free_non_null (original_sender);
+  else
+    {
+      GNUNET_free (original_sender);
+    }
   GNUNET_free (message_content);
   return ret;
 }
@@ -1087,7 +1090,7 @@ delete_callback (void *element, GNUNET_CostType cost,
       delete_neighbor (neighbor);
       /* we must not continue iterating at this point since
 	 'delete_neighbor' modified the tree and hence internal
-	 invariants of the iterator were likely broken! 
+	 invariants of the iterator were likely broken!
 	 Besides, each neighbor should only appear once anyway... */
       return GNUNET_NO;
     }
