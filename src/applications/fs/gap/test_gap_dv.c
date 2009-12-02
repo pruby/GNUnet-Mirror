@@ -301,6 +301,8 @@ static int uploadFile(struct GNUNET_GC_Configuration *cfg,
       GNUNET_FSUI_upload_abort(ul);
     GNUNET_FSUI_upload_stop(ul);
   }
+
+  GNUNET_meta_data_destroy(meta);
   GNUNET_FSUI_stop(ctx);
   GNUNET_free(name);
   return errorCode;
