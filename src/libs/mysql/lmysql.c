@@ -316,12 +316,17 @@ iopen (struct GNUNET_MysqlDatabaseHandle *ret)
                                                 &mysql_server);
     }
 
-  GNUNET_GC_get_configuration_value_number (ret->cfg, "MYSQL",
-                                            "PORT", 1, -1, 0, &mysql_port);
+  if (GNUNET_YES == GNUNET_GC_have_configuration_value (ret->cfg,
+                                                        "MYSQL", "PORT"))
+    {
+      GNUNET_GC_get_configuration_value_number (ret->cfg, "MYSQL",
+                                                "PORT", 1, -1, 0, &mysql_port);
+    }
 
   GNUNET_GE_ASSERT (ret->ectx, mysql_dbname != NULL);
   mysql_real_connect (ret->dbf, mysql_server, mysql_user, mysql_password,
                       mysql_dbname, (unsigned int) mysql_port, NULL, 0);
+
   GNUNET_free (mysql_dbname);
   if (mysql_error (ret->dbf)[0])
     {
