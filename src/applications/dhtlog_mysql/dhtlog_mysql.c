@@ -565,7 +565,7 @@ add_query (unsigned long long *sqlqueryuid, unsigned long long queryid,
     {
 
     }
-  else if (key->bits[(512 / 8 / sizeof (unsigned int)) - 1] == 42)      /* Malicious marker */
+  else if ((key != NULL) && (key->bits[(512 / 8 / sizeof (unsigned int)) - 1] == 42))      /* Malicious marker */
     {
       key_uid = 0;
     }
