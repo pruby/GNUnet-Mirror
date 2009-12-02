@@ -277,7 +277,10 @@ static int uploadFile(struct GNUNET_GC_Configuration *cfg,
   GNUNET_free (buf);
   GNUNET_disk_file_close(ectx, name, fd);
   if (ret == -1)
+  {
+    GNUNET_free(name);
     return ret;
+  }
 
   carry_on = GNUNET_NO;
   ctx = GNUNET_FSUI_start(ectx, cfg, "gnunet-insert", GNUNET_NO, 32, /* make configurable */
@@ -299,7 +302,7 @@ static int uploadFile(struct GNUNET_GC_Configuration *cfg,
     GNUNET_FSUI_upload_stop(ul);
   }
   GNUNET_FSUI_stop(ctx);
-
+  GNUNET_free(name);
   return errorCode;
 }
 
