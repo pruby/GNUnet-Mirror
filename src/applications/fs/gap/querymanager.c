@@ -40,6 +40,7 @@
 #include "shared.h"
 #include "gnunet_dv_service.h"
 
+#define DEBUG_QUERIES GNUNET_NO
 #define CHECK_REPEAT_FREQUENCY (150 * GNUNET_CRON_MILLISECONDS)
 
 /**
@@ -217,14 +218,6 @@ GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   struct ClientDataList *cl;
   struct RequestList *request;
 
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                 GNUNET_GE_BULK,
-                 "entered GNUNET_DV_FS_QUERYMANAGER_start_query\n");
-  if (target == NULL)
-    GNUNET_GE_LOG (coreAPI->ectx,
-                   GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                   GNUNET_GE_BULK, "target is null!\n");
   GNUNET_GE_ASSERT (NULL, key_count > 0);
   if (stats != NULL)
     {
@@ -281,10 +274,12 @@ GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   if ((anonymityLevel == 0) && (target != NULL)
       && (dv_api->have_peer (target)))
     {
+#if DEBUG_QUERIES
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "anonymity is zero, target non-null, and we know this peer.  Will attempt to send requests out over DV\n");
+#endif
       if (send_dv_query (request, target) > 0)
         {
           GNUNET_mutex_unlock (GNUNET_FS_lock);

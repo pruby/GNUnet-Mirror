@@ -520,9 +520,12 @@ GNUNET_CO_collection_publish_now ()
                     GNUNET_OK == GNUNET_ECRS_directory_create (ectx,
                                                                &dirData,
                                                                &dirLen,
-                                                               collectionData->file_count,
-                                                               collectionData->files,
-                                                               collectionData->meta));
+                                                               collectionData->
+                                                               file_count,
+                                                               collectionData->
+                                                               files,
+                                                               collectionData->
+                                                               meta));
   if (-1 == WRITE (fd, dirData, dirLen))
     {
       GNUNET_GE_LOG_STRERROR (ectx,

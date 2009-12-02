@@ -303,9 +303,11 @@ add_request (struct Node *node)
   struct GNUNET_ECRS_DownloadContext *rm = node->ctx;
 
   GNUNET_DLL_insert (rm->head, rm->tail, node);
+#if DEBUG_DOWNLOAD
   GNUNET_GE_LOG (rm->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "in add_request, rm->have_target is %d\n", rm->have_target);
+#endif
   GNUNET_FS_start_search (rm->sctx,
                           rm->have_target == GNUNET_NO ? NULL : &rm->target,
                           GNUNET_ECRS_BLOCKTYPE_DATA, 1,

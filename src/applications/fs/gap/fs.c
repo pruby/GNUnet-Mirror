@@ -519,8 +519,10 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
          sizeof (CS_fs_request_search_MESSAGE)) / sizeof (GNUNET_HashCode);
   have_target =
     memcmp (&all_zeros, &rs->target, sizeof (GNUNET_PeerIdentity)) != 0;
+#if DEBUG_FS
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "in dv_fs, have_target is %d", have_target);
+#endif
 
   GNUNET_DV_FS_QUERYMANAGER_start_query (&rs->query[0], keyCount,
                                          anonymityLevel, type, sock,
@@ -774,27 +776,32 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   have_peer = dv_api->have_peer (sender);
   have_data = datastore->get (&req->queries[0], type, NULL, NULL);
   GNUNET_hash_to_enc (&req->queries[0], &enc);
+#if DEBUG_GAP
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
                  "have_peer returned %d, get (%s) returned %d results for query type %d",
                  have_peer, (char *) &enc, have_data, type);
+#endif
   if ((dv_api->have_peer (sender) > 0)
       && (datastore->get (&req->queries[0], type, NULL, NULL) > 0))
     {
+#if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "We have the data, we know the return peer intimately (DV), so we will try and send results thataway!\n");
-
+#endif
       dv_cls = GNUNET_malloc (sizeof (struct DV_send_closure));
       dv_cls->message = (const P2P_gap_query_MESSAGE *) msg;
       dv_cls->request = NULL;   /* Not used for now... */
       result_count = datastore->get (&req->queries[0], type, &send_results_dv, dv_cls);
+#if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "Found %d results (in handle_p2p_query)\n", result_count);
+#endif
       GNUNET_free (dv_cls);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_OK;
@@ -804,21 +811,23 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_DATA, NULL,
                     NULL) > 0))
     {
+#if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "We have the data (blocktype_data), we know the return peer intimately (DV), so we will try and send results thataway!\n");
-
+#endif
       dv_cls = GNUNET_malloc (sizeof (struct DV_send_closure));
       dv_cls->message = (const P2P_gap_query_MESSAGE *) msg;
       dv_cls->request = NULL;   /* Not used for now... */
       result_count = datastore->get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_DATA,
                       &send_results_dv, dv_cls);
+#if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "Found %d results (in handle_p2p_query)\n", result_count);
-
+#endif
       GNUNET_free (dv_cls);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_OK;
@@ -828,20 +837,23 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
                     NULL) > 0))
     {
+#if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "We have the data (blocktype_any), we know the return peer intimately (DV), so we will try and send results thataway!\n");
-
+#endif
       dv_cls = GNUNET_malloc (sizeof (struct DV_send_closure));
       dv_cls->message = (const P2P_gap_query_MESSAGE *) msg;
       dv_cls->request = NULL;   /* Not used for now... */
       result_count = datastore->get (&req->queries[0], GNUNET_ECRS_BLOCKTYPE_ANY,
                       &send_results_dv, dv_cls);
+#if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
                            GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                            GNUNET_GE_BULK,
                            "Found %d results (in handle_p2p_query)\n", result_count);
+#endif
       GNUNET_free (dv_cls);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return GNUNET_OK;
