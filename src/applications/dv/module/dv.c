@@ -1133,7 +1133,7 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       if (neighbor != NULL)
         {
           GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
-                                         &delete_callback, peer);
+                                         &delete_callback, (void*) peer);
           /* Note that we do not use delete_neighbor here because
            * we are deleting from the direct neighbor list! */
           GNUNET_free (neighbor->neighbor);
