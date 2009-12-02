@@ -162,7 +162,7 @@ main (int argc, char *argv[])
       fprintf (stderr, "Ending without errors (:\n");
     }
 
-  return GNUNET_OK;
+  return 0;
 }
 
 /* end of dhtlog_test.c */
