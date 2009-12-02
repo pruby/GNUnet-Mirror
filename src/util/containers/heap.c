@@ -485,12 +485,13 @@ internal_iterator (struct GNUNET_CONTAINER_Heap *root,
                    struct GNUNET_CONTAINER_heap_node *node,
                    GNUNET_CONTAINER_HeapIterator iterator, void *cls)
 {
+  int ret;
   if (node == NULL)
-    return;
-  if (GNUNET_YES != internal_iterator (root, node->left_child, iterator, cls))
-    return;
-  if (GNUNET_YES != internal_iterator (root, node->right_child, iterator, cls))
-    return;
+    return GNUNET_YES;
+  if (GNUNET_YES != (ret =internal_iterator (root, node->left_child, iterator, cls)))
+    return ret;
+  if (GNUNET_YES != (ret = internal_iterator (root, node->right_child, iterator, cls)))
+    return ret;
   return iterator (node->element, node->cost, root, cls);
 }
 
