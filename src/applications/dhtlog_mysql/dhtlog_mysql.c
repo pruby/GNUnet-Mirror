@@ -31,7 +31,7 @@
 #include "gnunet_mysql.h"
 #include "gnunet_dhtlog_service.h"
 
-#define DEBUG_DHTLOG GNUNET_YES
+#define DEBUG_DHTLOG GNUNET_NO
 
 static unsigned long max_varchar_len;
 
@@ -137,26 +137,30 @@ itable ()
     return GNUNET_SYSERR;
 
   if (MRUNS ("CREATE TABLE IF NOT EXISTS `trials` ("
-             "`trialuid` int(10) unsigned NOT NULL auto_increment,"
-             "`numnodes` int(10) unsigned NOT NULL,"
-             "`topology` int(10) NOT NULL,"
-             "`puts` int(10) unsigned NOT NULL,"
-             "`gets` int(10) unsigned NOT NULL,"
-             "`concurrent` int(10) unsigned NOT NULL,"
-             "`starttime` datetime NOT NULL,"
-             "`endtime` datetime NOT NULL,"
-             "`settle_time` int(10) unsigned NOT NULL,"
-             "`num_rounds` int(10) unsigned NOT NULL,"
-             "`malicious_getters` int(10) unsigned NOT NULL,"
-             "`malicious_putters` int(10) unsigned NOT NULL,"
-             "`malicious_droppers` int(10) unsigned NOT NULL,"
-             "`message` text NOT NULL,"
-             "`totalMessagesDropped` int(10) unsigned NOT NULL,"
-             "`totalBytesDropped` int(10) unsigned NOT NULL,"
-             "`unknownPeers` int(10) unsigned NOT NULL,"
-             "PRIMARY KEY  (`trialuid`),"
-             "UNIQUE KEY `trialuid` (`trialuid`)"
-             ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
+            "`trialuid` int(10) unsigned NOT NULL auto_increment,"
+            "`numnodes` int(10) unsigned NOT NULL,"
+            "`topology` int(10) NOT NULL,"
+            "`starttime` datetime NOT NULL,"
+            "`endtime` datetime NOT NULL,"
+            "`puts` int(10) unsigned NOT NULL,"
+            "`gets` int(10) unsigned NOT NULL,"
+            "`concurrent` int(10) unsigned NOT NULL,"
+            "`settle_time` int(10) unsigned NOT NULL,"
+            "`totalConnections` int(10) unsigned NOT NULL,"
+            "`message` text NOT NULL,"
+            "`num_rounds` int(10) unsigned NOT NULL,"
+            "`malicious_getters` int(10) unsigned NOT NULL,"
+            "`malicious_putters` int(10) unsigned NOT NULL,"
+            "`malicious_droppers` int(10) unsigned NOT NULL,"
+            "`totalMessagesDropped` int(10) unsigned NOT NULL,"
+            "`totalBytesDropped` int(10) unsigned NOT NULL,"
+            "`topology_modifier` double NOT NULL,"
+            "`logNMultiplier` double NOT NULL,"
+            "`maxnetbps` bigint(20) unsigned NOT NULL,"
+            "`unknownPeers` int(10) unsigned NOT NULL,"
+            "PRIMARY KEY  (`trialuid`),"
+            "UNIQUE KEY `trialuid` (`trialuid`)"
+            ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
 
   if (MRUNS ("SET AUTOCOMMIT = 1"))
