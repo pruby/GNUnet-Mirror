@@ -102,6 +102,7 @@ itable ()
              "`nodeuid` int(10) unsigned NOT NULL auto_increment,"
              "`trialuid` int(10) unsigned NOT NULL,"
              "`nodeid` varchar(255) NOT NULL,"
+             "`nodebits` blob NOT NULL,"
              "PRIMARY KEY  (`nodeuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;
@@ -132,6 +133,7 @@ itable ()
              "`dhtkeyuid` int(10) unsigned NOT NULL,"
              "`from_node` int(10) unsigned NOT NULL,"
              "`to_node` int(10) unsigned NOT NULL,"
+             "`dvhops` int(10) unsigned NOT NULL,"
              "PRIMARY KEY  (`queryuid`)"
              ") ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1"))
     return GNUNET_SYSERR;

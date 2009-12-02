@@ -64,12 +64,13 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   ret =
     api->insert_trial (&trialuid, i, 5, .75, .25, 0, 0, 0, 0, 0, 0, 0, 0, bps,
                        "");
-  fprintf (stderr, "Trial uid is %llu\n", trialuid);
 
   if (ret != GNUNET_OK)
     {
       return ret;
     }
+
+  fprintf (stderr, "Trial uid is %llu\n", trialuid);
 
   ret = api->insert_node (&nodeuid, &p1);
   ret = api->insert_node (&nodeuid, &p2);
