@@ -86,6 +86,7 @@ main (int argc, const char **argv)
   int i;
 
   ectx = NULL;
+  value = NULL;
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
@@ -154,7 +155,7 @@ FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  GNUNET_free (value);
+  GNUNET_free_non_null (value);
   GNUNET_GC_free (cfg);
   return ret;
 }

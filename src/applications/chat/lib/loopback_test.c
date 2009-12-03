@@ -155,7 +155,7 @@ main (int argc, char **argv)
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
   struct GNUNET_CHAT_Room *r1;
-  struct GNUNET_CHAT_Room *r2;
+  struct GNUNET_CHAT_Room *r2 = NULL;
   unsigned int seq;
   struct GNUNET_MetaData *meta1;
   struct GNUNET_MetaData *meta2;
