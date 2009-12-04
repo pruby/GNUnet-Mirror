@@ -8,7 +8,8 @@ lib_LTLIBRARIES = \
   libgnunetdvdhtapi.la 
 
 noinst_PROGRAMS = \
-  gnunet-dvdht-query 
+  gnunet-dvdht-query \
+  dv_dht_multi_topology_test
 
 libgnunetdvdhtapi_la_SOURCES = \
   dv_dht_api.c

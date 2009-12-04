@@ -212,8 +212,8 @@ main (int argc, const char **argv)
   printf ("DV_DHT get (1->1)");
   CHECK (0 == get_at_peer (&p1, "key 1", 'A'));
   printf ("DV_DHT get (2->2");
-*/
   CHECK (0 == get_at_peer (&p2, "key 2", 'B'));
+*/
   printf ("DV_DHT get (1->2)");
   CHECK (0 == get_at_peer (&p1, "key 2", 'B'));
   printf ("DV_DHT get (2->1)");
