@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/dv_dht/tools/dv_dht_multipeer_test.c
+ * @file applications/dv_dht/tools/dv_dht_multi_topology_test.c
  * @brief DV_DHT testcase
  * @author Christian Grothoff
  * @author Nathan Evans

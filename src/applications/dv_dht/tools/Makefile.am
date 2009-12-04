@@ -41,8 +41,7 @@ dv_dht_driver_LDADD = \
 check_PROGRAMS = \
   dv_dht_loopback_test \
   dv_dht_twopeer_test \
-  dv_dht_multipeer_test \
-  dv_dht_multi_topology_test
+  dv_dht_multipeer_test
 
 TESTS = $(check_PROGRAMS)
 
