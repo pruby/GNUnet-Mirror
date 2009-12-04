@@ -94,7 +94,7 @@ main (int argc, const char **argv)
       return -1;
     }
 #if START_PEERS
-  peers = GNUNET_TESTING_start_daemons ("nat",
+  peers = GNUNET_TESTING_start_daemons ("nat tcp udp",
                                         "advertising dv_dht stats",
                                         "/tmp/gnunet-dv-dht-loopback-test",
                                         2087, 10000, 1);
