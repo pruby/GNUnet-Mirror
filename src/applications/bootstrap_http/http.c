@@ -248,6 +248,7 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   if (ret != CURLE_OK)
     goto cleanup;
   CURL_EASY_SETOPT (curl, CURLOPT_FAILONERROR, 1);
+  CURL_EASY_SETOPT (curl, CURLOPT_FOLLOWLOCATION, 1);
   CURL_EASY_SETOPT (curl, CURLOPT_URL, url);
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
