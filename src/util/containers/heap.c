@@ -132,18 +132,22 @@ find_element (struct GNUNET_CONTAINER_heap_node *node, void *element)
 {
   struct GNUNET_CONTAINER_heap_node *ret;
   ret = NULL;
-  if (node == NULL)
-    return NULL;
 
-  if (node->element == element)
-    return node;
-
-  if (node->left_child != NULL)
-    ret = find_element (node->left_child, element);
-
-  if (node->right_child != NULL)
-    ret = find_element (node->right_child, element);
-
+  if ((node != NULL) && (node->element == element))                                                                                      
+    {                                                                                                                                    
+      ret = node;                                                                                                                        
+    }                                                                                                                                    
+                                                                                                                                          
+  if ((ret == NULL) && (node != NULL) && (node->left_child != NULL))                                                                     
+    {                                                                                                                                    
+      ret = find_element (node->left_child, element);                                                                                    
+    }                                                                                                                                    
+                                                                                                                                          
+  if ((ret == NULL) && (node != NULL) && (node->right_child != NULL))                                                                    
+    {                                                                                                                                    
+      ret = find_element (node->right_child, element);                                                                                   
+    }                                                                                                                                    
+                                                                                                                                          
   return ret;
 }
 

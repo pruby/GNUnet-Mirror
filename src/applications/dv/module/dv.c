@@ -195,7 +195,6 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
    * Why do we check if it is a direct neighbor? delete_neighbor
    * only deletes from the extended list anyways...
    */
-  GNUNET_mutex_lock (ctx->dvMutex);
   if ((GNUNET_NO ==
        GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
                                        &neighbor->neighbor->hashPubKey))
@@ -214,7 +213,6 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
 #endif
       delete_neighbor (neighbor);
     }
-  GNUNET_mutex_unlock (ctx->dvMutex);
   return GNUNET_OK;
 }
 
@@ -224,8 +222,10 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
 static void
 maintain_dv_job (void *unused)
 {
+	GNUNET_mutex_lock (ctx->dvMutex);
   GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                  &delete_expired_callback, NULL);
+  GNUNET_mutex_unlock (ctx->dvMutex);
 }
 
 /**
@@ -819,6 +819,11 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer, unsigned int neighbor_id,
   if (cost > ctx->fisheye_depth)
     {
       ret = GNUNET_NO;
+
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, "Node cost %d too high, not adding this peer!\n",
+                     cost);
 
       if ((GNUNET_YES ==
            GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
