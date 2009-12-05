@@ -50,6 +50,8 @@ static char *set_rating;
 
 static char *root_name;
 
+static int local_only;
+
 static unsigned int anonymity;
 
 static unsigned int priority = 365;
@@ -84,6 +86,10 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
    0, &GNUNET_getopt_configure_set_one, &stop_collection},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")),     /* -h */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
+  {'l', "local-only", NULL,
+   gettext_noop
+   ("only display local namespaces"),
+   0, &GNUNET_getopt_configure_set_one, &local_only},
   {'k', "keyword", "KEYWORD",
    gettext_noop
    ("use the given keyword to advertise the namespace (use when creating a new pseudonym)"),
@@ -138,6 +144,11 @@ namespacePrinter (void *unused,
   int cpos;
   char *namespaceName;
 
+  if ( (local_only != 0) &&
+       (GNUNET_OK != GNUNET_ECRS_namespace_test_exists (NULL,
+							cfg,
+							id)) )
+    return GNUNET_OK;
   namespaceName = GNUNET_pseudonym_id_to_name (ectx, cfg, id);
   GNUNET_hash_to_enc (id, &enc);
   if ( (namespaceName != NULL) &&
@@ -214,6 +225,7 @@ main (int argc, char *const *argv)
         printf (_("Collection stopped.\n"));
       else
         printf (_("Failed to stop collection (not active?).\n"));
+      be_quiet = 1;
     }
 
   /* delete pseudonyms */
@@ -238,6 +250,7 @@ main (int argc, char *const *argv)
           printf (_("\tUnknown namespace `%s'\n"), delete_name);
         }
       GNUNET_free (delete_name);
+      be_quiet = 1;
     }
 
   /* create collections / namespace */
@@ -257,6 +270,7 @@ main (int argc, char *const *argv)
               printf ("%s", _("Failed to start collection.\n"));
               success++;
             }
+	  be_quiet = 1;
         }
       else
         {                       /* no collection */
@@ -300,10 +314,12 @@ main (int argc, char *const *argv)
               root = GNUNET_ECRS_uri_to_string (rootURI);
               printf (_("Namespace `%s' created (root: %s).\n"),
                       ns_name, root);
+	      printf (_("Note that a number was appended to your selected name to ensure uniqueness on your system.\n"));
               GNUNET_free (ns_name);
               GNUNET_free (root);
               GNUNET_ECRS_uri_destroy (rootURI);
             }
+	  be_quiet = 1;
           if (NULL != advertisement)
             GNUNET_ECRS_uri_destroy (advertisement);
         }
@@ -314,9 +330,12 @@ main (int argc, char *const *argv)
   else
     {
       if (start_collection)
-        printf (_
-                ("You must specify a name for the collection (`%s' option).\n"),
-                "-C");
+	{
+	  printf (_
+		  ("You must specify a name for the collection (`%s' option).\n"),
+		  "-C");
+	  be_quiet = 1;
+	}
     }
   if (0 == be_quiet)
     {
