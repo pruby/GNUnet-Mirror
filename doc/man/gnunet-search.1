@@ -1,4 +1,4 @@
-.TH GNUNET-SEARCH "1" "11 Sep 2006" "GNUnet"
+.TH GNUNET-SEARCH "1" "6 Dec 2009" "GNUnet"
 .SH NAME
 gnunet\-search \- a command line interface to search for content on GNUnet
 .SH SYNOPSIS
@@ -9,7 +9,7 @@ gnunet\-search \- a command line interface to search for content on GNUnet
 [\fIOPTIONS\fR] [+]\fIURI\fR
 .SH DESCRIPTION
 .PP
-Search for content on GNUnet. The keywords are case-sensitive.  gnunet\-search can be used both for a search in the global namespace as well as for searching a private subspace.
+Search for content on GNUnet. The keywords are case\-sensitive.  gnunet\-search can be used both for a search in the global namespace as well as for searching a private subspace.
 .TP
 \fB\-a \fILEVEL\fR, \fB\-\-anonymity=\fILEVEL\fR
 The \fB-a\fR option can be used to specify additional anonymity constraints.  If set to 0, GNUnet will try to download the file as fast as possible without any additional slowdown for anonymous routing.  Note that you may still have some amount of anonymity depending on the current network load and the power of the adversary.  Use at least 1 to force GNUnet to use anonymous routing.
@@ -42,17 +42,17 @@ Writes the encountered (unencrypted) RBlocks or SBlocks to files with name PREFI
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
 .SH NOTES
-As most GNUnet command-line tools, gnunet\-search supports passing arguments using environment variables.  This can improve your privacy since otherwise the search terms will likely be visible to other local users.  Setting "GNUNET_ARGS" will cause the respective string to be appended to the actual command-line and to be processed the same way as arguments given directly at the command line.
+As most GNUnet command\-line tools, gnunet\-search supports passing arguments using environment variables.  This can improve your privacy since otherwise the search terms will likely be visible to other local users.  Setting "GNUNET_ARGS" will cause the respective string to be appended to the actual command\-line and to be processed the same way as arguments given directly at the command line.
 
 You can run gnunet\-search with an URI instead of a keyword.  The URI can have the format for a namespace search or for a keyword search.  For a namespace search, the format is gnunet://ecrs/sks/NAMESPACE/IDENTIFIER.  For a keyword search, use gnunet://ecrs/ksk/KEYWORD[+KEYWORD]*.  If the format does not correspond to a GNUnet URI, GNUnet will automatically assume that keywords are supplied directly.  
 
 If multiple keywords are passed, gnunet\-search will look for content matching any of the keywords.  The prefix "+" makes a keyword mandatory.  
 
-# gnunet\-search "Das Kapital"
+$ gnunet\-search "Das Kapital"
 
 searches for content matching the keyword "Das Kapital".  Whereas
 
-# gnunet\-search +Das +Kapital
+$ gnunet\-search +Das +Kapital
 
 Searches for content matching both mandatory keywords "Das" and "Kapital".
 
@@ -73,6 +73,6 @@ The first line contains the command to run to download the file.  The suggested 
 ~/.gnunet/gnunet.conf
 GNUnet configuration file; specifies the default value for the timeout
 .SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
 .SH "SEE ALSO"
 \fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-download\fP(1), \fBgnunet\-pseudonym\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
