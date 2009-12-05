@@ -6,8 +6,6 @@ EXTRA_DIST = \
  config.rpath \
  install-sh \
  HACKING \
- README.de \
- README.fr \
  README.win32 \
  README.debian \
  UPDATING \
