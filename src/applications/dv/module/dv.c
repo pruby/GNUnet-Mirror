@@ -819,12 +819,12 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer, unsigned int neighbor_id,
   if (cost > ctx->fisheye_depth)
     {
       ret = GNUNET_NO;
-
+#if DEBUG_DV_MAINTAIN
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK, "Node cost %d too high, not adding this peer!\n",
                      cost);
-
+#endif
       if ((GNUNET_YES ==
            GNUNET_multi_hash_map_contains (ctx->extended_neighbors,
                                            &peer->hashPubKey))
@@ -981,11 +981,14 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
                        ntohl (nmsg->cost) + 1);
   if (stats != NULL)
     stats->change (stat_dv_received_gossips, 1);
+
+#if DEBUG_DV_MAINTAIN
   if (GNUNET_OK != ret)
     GNUNET_GE_LOG (coreAPI->ectx,
                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                    _("%s: Problem adding/updating neighbor in `%s'\n"),
                    &shortID, "dv");
+#endif
 
 #if DEBUG_DV
   GNUNET_hash_to_enc (&sender->hashPubKey, &from);
