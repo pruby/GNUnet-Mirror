@@ -318,6 +318,16 @@ findBucketFor (const GNUNET_PeerIdentity * peer)
  * bucket.  Why do all this nonsense?  Also why break in error when we have
  * a peer that matches lots of our bits?  We WANT that peer in our table,
  * but returning NULL and erroring out keeps it far far away from us!
+ *
+ * ANSWER:
+ * A bucket is for more than one bit distance; a bucket can be for a range
+ * of bit distances.  I.e., we may have one bucket for 0 bits shared,
+ * one bucket for 1 bit shared, one bucket for 2 bits shared, one bucket
+ * for 2 or 3 bits shared and one bucket for 4 to N bits shared.
+ * Finally, if there are more bits shared than we have buckets for,
+ * our bucket initialization was wrong (the entire range was not covered!),
+ * so we throw an assertion failure and return NULL --- after all, how
+ * can another peer have all the same bits as we do but still be different?
  */
   i = bucketCount - 1;
   while ((buckets[i].bstart > index) && (i > 0))
@@ -991,11 +1001,17 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
    buckets[i].bend = 512 * (i + 1) / bucketCount;
    }
    */
+  /* ANSWER:
+     GNUNET_array_grow updates bucketCount to i as a side effect -- it
+     is a really tricky macro, not a function call!
+     Other than the bucketCount = i which is a NO-OP here,
+     I don't see a difference between your new code and the
+     code commented out above... -CG */
 
   /* So if we are trying to cover all locations with i (not bucketCount,
    * which will always be zero at this point) we set bucketCount = i.
    */
-  bucketCount = i;
+  bucketCount = i; 
   for (i = 0; i < bucketCount; i++)
     {
       buckets[i].bstart = 512 * i / bucketCount;
