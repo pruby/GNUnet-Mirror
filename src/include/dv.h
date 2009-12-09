@@ -125,7 +125,9 @@ struct GNUNET_dv_neighbor
   struct GNUNET_dv_heap_node *max_loc;
 
   /**
-   * Identity of neighbor
+   * Identity of neighbor.
+   * FIXME: should not be a pointer (avoid need to malloc/free 
+   * this member).
    */
   GNUNET_PeerIdentity *neighbor;
 
