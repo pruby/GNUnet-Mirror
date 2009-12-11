@@ -530,7 +530,6 @@ route_result (const GNUNET_HashCode * key,
                              "%s: Routing result (in hashmap) to `%s'\n",
                              &shortID, &enc);
 #endif
-              match = GNUNET_NO;
               match =
                 GNUNET_bloomfilter_test (bloom, &pos->source.hashPubKey);
               if (match == GNUNET_YES)
@@ -539,7 +538,6 @@ route_result (const GNUNET_HashCode * key,
                   continue;
                 }
 
-              match = GNUNET_NO;
               match =
                 GNUNET_bloomfilter_test (q->bloom_results,
                                          &pos->source.hashPubKey);
