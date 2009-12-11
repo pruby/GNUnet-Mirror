@@ -187,7 +187,7 @@ typedef struct
   /*
    * Bloomfilter to stop circular routes
    */
-  char bloomfilter[4];
+  char bloomfilter[DV_DHT_BLOOM_SIZE];
 
 #if DEBUG_ROUTING
   /*
