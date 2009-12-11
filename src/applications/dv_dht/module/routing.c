@@ -439,20 +439,15 @@ route_result (const GNUNET_HashCode * key,
   unsigned int routed;
   unsigned int tracked;
   unsigned int sent_other;
-
   int match;
   int cost;
   DV_DHT_Source_Route *pos;
   DV_DHT_Source_Route *prev;
-
   GNUNET_PeerIdentity set;
-
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   unsigned long long dhtqueryuid;
-#endif
 
-#if DEBUG_ROUTING
   GNUNET_hash_to_enc (key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
@@ -466,9 +461,7 @@ route_result (const GNUNET_HashCode * key,
       result = GNUNET_malloc (ntohs(rrc->rmsg->header.size));
       memcpy (result, rrc->rmsg, ntohs(rrc->rmsg->header.size));
       GNUNET_GE_ASSERT (NULL, ntohs (result->header.type) == GNUNET_P2P_PROTO_DHT_RESULT);
-#if DEBUG_ROUTING
       result->hop_count = htonl (ntohl (result->hop_count) + 1);
-#endif
     }
   else
     {
@@ -500,16 +493,15 @@ route_result (const GNUNET_HashCode * key,
   bloom =
     GNUNET_bloomfilter_init (NULL, &result->bloomfilter[0], DV_DHT_BLOOM_SIZE,
                              DV_DHT_BLOOM_K);
-  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
   GNUNET_bloomfilter_get_raw_data (bloom, &result->bloomfilter[0],
                                    DV_DHT_BLOOM_SIZE);
-
+  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
   GNUNET_hash (data, size, &hc);
   routed = 0;
   tracked = 0;
   sent_other = 0;
-  GNUNET_mutex_lock (lock);
 
+  GNUNET_mutex_lock (lock);
   if (GNUNET_multi_hash_map_contains (new_records.hashmap, key))
     {
       q = GNUNET_multi_hash_map_get (new_records.hashmap, key);
