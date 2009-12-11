@@ -53,6 +53,11 @@
 #define DEBUG_INSANE GNUNET_NO
 
 /**
+ * Enable options to simulate malicious hosts.
+ */
+#define ENABLE_MALICIOUS GNUNET_NO
+
+/**
  * What is the request priority for DV_DHT operations?
  */
 #define DV_DHT_PRIORITY GNUNET_EXTREME_PRIORITY / 4
@@ -67,7 +72,9 @@
  */
 #define DV_DHT_BLOOM_SIZE 4
 
+#if ENABLE_MALICIOUS
 #define MAGIC_MALICIOUS_NUMBER 42
+#endif
 
 /**
  * What is the estimated per-hop delay for DV_DHT operations
@@ -107,6 +114,7 @@
  */
 #define CONTENT_LIFETIME (12 * GNUNET_CRON_HOURS)
 
+#if ENABLE_MALICIOUS
 /*
  * Default frequency for sending malicious get messages
  */
@@ -116,6 +124,7 @@
  * Default frequency for sending malicious put messages
  */
 #define DEFAULT_MALICIOUS_PUT_FREQUENCY (1 * GNUNET_CRON_SECONDS)
+#endif
 
 /**
  * @brief record used for sending response back
@@ -254,6 +263,7 @@ static DV_DHTResults new_records;
  */
 static unsigned int rt_size;
 
+#if ENABLE_MALICIOUS
 /*
  * frequency for malicious get sending thread
  */
@@ -273,6 +283,7 @@ static unsigned long long malicious_put_frequency;
  * Malicious put thread, if needed
  */
 static struct GNUNET_ThreadHandle *malicious_put_threadHandle;
+#endif
 
 #if DEBUG_INSANE
 static unsigned int indentation;
@@ -294,6 +305,7 @@ static unsigned int debug_routes;
  */
 static unsigned int debug_routes_extended;
 
+#if ENABLE_MALICIOUS
 /*
  * GNUNET_YES or GNUNET_NO, whether or not to act as
  * a malicious node which drops all messages
@@ -311,6 +323,7 @@ static unsigned int malicious_get;
  * a malicious node which sends out lots of PUTS
  */
 static unsigned int malicious_put;
+#endif
 
 /**
  * Statistics service.
@@ -493,9 +506,9 @@ route_result (const GNUNET_HashCode * key,
   bloom =
     GNUNET_bloomfilter_init (NULL, &result->bloomfilter[0], DV_DHT_BLOOM_SIZE,
                              DV_DHT_BLOOM_K);
+  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
   GNUNET_bloomfilter_get_raw_data (bloom, &result->bloomfilter[0],
                                    DV_DHT_BLOOM_SIZE);
-  GNUNET_bloomfilter_add (bloom, &coreAPI->my_identity->hashPubKey);
   GNUNET_hash (data, size, &hc);
   routed = 0;
   tracked = 0;
@@ -682,8 +695,9 @@ add_route (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "%s: Size of record hash map %u, size of heap %u. Bad!\n",
-                     &shortID, routes_size,
-                     GNUNET_CONTAINER_heap_get_size (new_records.minHeap));
+                     &shortID, 
+		     routes_size,
+                     heap_size);
 #endif
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -708,8 +722,6 @@ add_route (const GNUNET_PeerIdentity * sender,
       heap_size = GNUNET_CONTAINER_heap_get_size (new_records.minHeap);
     }
 
-  routes_size = GNUNET_multi_hash_map_size (new_records.hashmap);
-  heap_size = GNUNET_CONTAINER_heap_get_size (new_records.minHeap);
   if (routes_size != heap_size)
     {
 #if DEBUG_ROUTING
@@ -718,7 +730,7 @@ add_route (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_BULK,
                      "%s: Size of record hash map %u, size of heap %u. Bad!\n",
                      &shortID, routes_size,
-                     GNUNET_CONTAINER_heap_get_size (new_records.minHeap));
+                     heap_size);
 #endif
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -913,10 +925,12 @@ handle_get (const GNUNET_PeerIdentity * sender,
     }
 #endif
 
+#if ENABLE_MALICIOUS
   if (malicious_drop == GNUNET_YES)
     {
       return GNUNET_OK;
     }
+#endif
 
   if (total > MAX_RESULTS)
     {
@@ -1055,6 +1069,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
 
   hop_count = htonl (put->hop_count);
 
+#if ENABLE_MALICIOUS
   if (malicious_drop == GNUNET_YES)
     {
 #if DEBUG_ROUTING
@@ -1069,6 +1084,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
 #endif
       return GNUNET_OK;
     }
+#endif
 
   store = 0;
   target_value = get_forward_count (hop_count, PUT_TRIES);
@@ -1269,11 +1285,12 @@ handle_result (const GNUNET_PeerIdentity * sender,
   if (sender != NULL)
     GNUNET_DV_DHT_considerPeer (sender);
 
+#if ENABLE_MALICIOUS
   if (malicious_drop == GNUNET_YES)
     {
       return GNUNET_OK;
     }
-
+#endif
   rrc.queryuid = 0;
   rrc.rmsg = result;
   route_result (&result->key,
@@ -1441,6 +1458,7 @@ extra_get_callback (const GNUNET_PeerIdentity * receiver,
   return 0;
 }
 
+#if ENABLE_MALICIOUS
 /*
  * Thread which will be created if this node is meant to
  * be a malicious putter, will attempt to put data (with
@@ -1512,6 +1530,7 @@ malicious_get_thread (void *cls)
 
   return NULL;
 }
+#endif
 
 /**
  * Initialize routing DV_DHT component.
@@ -1588,6 +1607,7 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
                                    &extra_get_callback);
 
   routing_stop = GNUNET_NO;
+#if ENABLE_MALICIOUS
   if (GNUNET_YES ==
       GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg, "DHT",
                                                "MALICIOUS_DROPPER",
@@ -1635,7 +1655,7 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
       malicious_put_threadHandle =
         GNUNET_thread_create (&malicious_put_thread, NULL, 1024 * 128);
     }
-
+#endif
   if (GNUNET_YES ==
       GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg, "DHT", "LOGSQL",
                                                GNUNET_NO))
