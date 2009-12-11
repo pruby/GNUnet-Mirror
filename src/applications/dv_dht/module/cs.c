@@ -33,8 +33,6 @@
 #include "gnunet_dv_dht_service.h"
 #include "service.h"
 
-#define DEBUG_CS GNUNET_NO
-
 /**
  * Global core API.
  */

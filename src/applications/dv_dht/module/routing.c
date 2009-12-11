@@ -26,6 +26,18 @@
  * TODO:
  * - implement extra_get_callback
  * - use "network_size" field to improve our network size estimate(s)
+ *
+ * NATE:
+ * - I am confused about dhtqueryuid vs. queryuid and where those
+ *   are created / set; their use in route_result was totally
+ *   broken (cls could point to a DV_DHT_MESSAGE *or* a
+ *   unsigned long long queryuid and the old code never knew which...),
+ *   so I've fixed that but the use of 'dhtqueryuid' in there is
+ *   likely still totally broken
+ * - I suspect the bloomfilter is too small (4 bytes now, maybe
+ *   use 32 or 64 bytes?); also, we'll likely need to use
+ *   bloomfilter "mutation" for 0.9.x to make all routes at least
+ *   possible
  */
 
 #include "platform.h"
@@ -401,6 +413,13 @@ get_forward_count (unsigned int hop_count, double target_replication)
 }
 
 
+struct RouteResultContext
+{
+  unsigned long long queryuid;
+  const DV_DHT_MESSAGE *rmsg;
+};
+
+
 /**
  * Given a result, lookup in the routing table
  * where to send it next.
@@ -408,8 +427,11 @@ get_forward_count (unsigned int hop_count, double target_replication)
 static int
 route_result (const GNUNET_HashCode * key,
               unsigned int type,
-              unsigned int size, const char *data, void *cls)
+              unsigned int size,
+	      const char *data,
+	      void *ctx)
 {
+  struct RouteResultContext *rrc = ctx;
   DV_DHTQueryRecord *q;
   GNUNET_HashCode hc;
   DV_DHT_MESSAGE *result;
@@ -427,8 +449,6 @@ route_result (const GNUNET_HashCode * key,
 
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
-  unsigned long long queryuid;
-  unsigned long long *dhtqueryuid_ptr = NULL;
   unsigned long long dhtqueryuid;
 #endif
 
@@ -440,43 +460,18 @@ route_result (const GNUNET_HashCode * key,
                  _("%s: DV_DHT-Routing of result for key `%s', type %d.\n"),
                  &shortID, &enc, type);
 #endif
-
-  if (cls != NULL)
+  result = NULL;
+  if (rrc->rmsg != NULL)
     {
-      result = cls;
+      result = GNUNET_malloc (ntohs(rrc->rmsg->header.size));
+      memcpy (result, rrc->rmsg, ntohs(rrc->rmsg->header.size));
+      GNUNET_GE_ASSERT (NULL, ntohs (result->header.type) == GNUNET_P2P_PROTO_DHT_RESULT);
 #if DEBUG_ROUTING
       result->hop_count = htonl (ntohl (result->hop_count) + 1);
 #endif
     }
-  if ((cls == NULL)
-      || (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
+  else
     {
-#if DEBUG_ROUTING
-
-      if ((cls != NULL)
-          && (ntohs (result->header.type) != GNUNET_P2P_PROTO_DHT_RESULT))
-        {
-          dhtqueryuid_ptr = cls;
-          dhtqueryuid = *dhtqueryuid_ptr;
-          GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
-                         | GNUNET_GE_BULK,
-                         _
-                         ("%s: cls not null and type is wrong! Got dhtqueryuid of %llu\n"),
-                         &shortID, dhtqueryuid);
-          GNUNET_GE_LOG (coreAPI->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER
-                         | GNUNET_GE_BULK,
-                         _("%s: got header type of %d or %d, wanted %d"),
-                         &shortID, ntohs (result->header.type),
-                         result->header.type, GNUNET_P2P_PROTO_DHT_RESULT);
-
-        }
-      else
-        {
-          dhtqueryuid = 0;
-        }
-#endif
       result = GNUNET_malloc (sizeof (DV_DHT_MESSAGE) + size);
       result->header.size = htons (sizeof (DV_DHT_MESSAGE) + size);
       result->header.type = htons (GNUNET_P2P_PROTO_DHT_RESULT);
@@ -487,16 +482,17 @@ route_result (const GNUNET_HashCode * key,
       result->key = *key;
       memset (&result->bloomfilter, 0, DV_DHT_BLOOM_SIZE);
 #if DEBUG_ROUTING
+      dhtqueryuid = 0; /* FIXME: why have this? */
       if ((debug_routes) && (dhtlog != NULL))
         {
-          dhtlog->insert_query (&queryuid, dhtqueryuid, DHTLOG_RESULT,
+          dhtlog->insert_query (&rrc->queryuid, dhtqueryuid, DHTLOG_RESULT,
                                 ntohl (result->hop_count), GNUNET_NO,
                                 coreAPI->my_identity, key);
         }
       if (dhtqueryuid != 0)
-        result->queryuid = htonl (dhtqueryuid);
+        result->queryuid = GNUNET_htonll (dhtqueryuid);
       else
-        result->queryuid = htonl (queryuid);
+        result->queryuid = GNUNET_htonll (rrc->queryuid);
 #endif
       memcpy (&result[1], data, size);
     }
@@ -596,8 +592,7 @@ route_result (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
               if ((debug_routes_extended) && (dhtlog != NULL))
                 {
-                  queryuid = ntohl (result->queryuid);
-                  dhtlog->insert_route (NULL, queryuid,
+                  dhtlog->insert_route (NULL, rrc->queryuid,
                                         DHTLOG_RESULT,
                                         ntohl (result->hop_count), cost,
                                         GNUNET_NO, coreAPI->my_identity, key,
@@ -622,16 +617,14 @@ route_result (const GNUNET_HashCode * key,
 #if DEBUG_ROUTING
               if ((debug_routes) && (dhtlog != NULL))
                 {
-                  queryuid = ntohl (result->queryuid);
-                  dhtlog->insert_query (NULL, queryuid, DHTLOG_RESULT,
+                  dhtlog->insert_query (NULL, rrc->queryuid, DHTLOG_RESULT,
                                         ntohl (result->hop_count), GNUNET_YES,
                                         coreAPI->my_identity, key);
                 }
 
               if ((debug_routes_extended) && (dhtlog != NULL))
                 {
-                  queryuid = ntohl (result->queryuid);
-                  dhtlog->insert_route (NULL, queryuid,
+                  dhtlog->insert_route (NULL, rrc->queryuid,
                                         DHTLOG_RESULT,
                                         ntohl (result->hop_count), 0,
                                         GNUNET_YES, coreAPI->my_identity, key,
@@ -655,8 +648,7 @@ route_result (const GNUNET_HashCode * key,
                  &shortID, routed, tracked, sent_other);
 #endif
   GNUNET_bloomfilter_free (bloom);
-  if (cls == NULL)
-    GNUNET_free (result);
+  GNUNET_free (result);
   return GNUNET_OK;
 }
 
@@ -831,6 +823,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
   int i;
   int j;
   int cost;
+  struct RouteResultContext rrc;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
   GNUNET_EncName henc;
@@ -881,7 +874,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
       if ((debug_routes) && (dhtlog != NULL))
         {
           hop_count = ntohl (get->hop_count);
-          queryuid = ntohl (get->queryuid);
+          queryuid = GNUNET_ntohll (get->queryuid);
           dhtlog->insert_query (NULL, queryuid, DHTLOG_GET,
                                 hop_count, GNUNET_NO, coreAPI->my_identity,
                                 &get->key);
@@ -891,17 +884,20 @@ handle_get (const GNUNET_PeerIdentity * sender,
     }
 
 #if DEBUG_ROUTING
-  queryuid = ntohl (get->queryuid);
+  rrc.queryuid = GNUNET_ntohll (get->queryuid);
+  rrc.rmsg = NULL;
   total =
     dstore->get (&get->key, ntohl (get->type), &route_result,
-                 (void *) &queryuid);
+                 &rrc);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
                  "Found %d local results for query %s, type %d\n", total,
                  (char *) &enc, ntohl (get->type));
 #else
-  total = dstore->get (&get->key, ntohl (get->type), &route_result, NULL);
+  rrc.queryuid = 0;
+  rrc.rmsg = NULL;
+  total = dstore->get (&get->key, ntohl (get->type), &route_result, &rrc);
 #endif
 
 #if DEBUG_ROUTING
@@ -909,7 +905,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
     {
       if ((debug_routes) && (dhtlog != NULL))
         {
-          queryuid = ntohl (get->queryuid);
+          queryuid = GNUNET_ntohll (get->queryuid);
           hop_count = ntohl (get->hop_count);
           dhtlog->insert_query (NULL, queryuid, DHTLOG_GET,
                                 hop_count, GNUNET_YES, coreAPI->my_identity,
@@ -918,8 +914,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
 
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
-          queryuid = ntohl (get->queryuid);
-          dhtlog->insert_route (NULL, ntohl (get->queryuid), DHTLOG_GET,
+          queryuid = GNUNET_ntohll (get->queryuid);
+          dhtlog->insert_route (NULL, queryuid, DHTLOG_GET,
                                 hop_count, 0, GNUNET_YES,
                                 coreAPI->my_identity, &get->key, sender,
                                 NULL);
@@ -1008,8 +1004,8 @@ handle_get (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
-          queryuid = ntohl (get->queryuid);
-          dhtlog->insert_route (NULL, ntohl (get->queryuid), DHTLOG_GET,
+          queryuid = GNUNET_ntohll (get->queryuid);
+          dhtlog->insert_route (NULL, queryuid, DHTLOG_GET,
                                 hop_count, cost, GNUNET_NO,
                                 coreAPI->my_identity, &get->key, sender,
                                 &next[j]);
@@ -1074,7 +1070,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
-          queryuid = ntohl (put->queryuid);
+          queryuid = GNUNET_ntohll (put->queryuid);
           dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
                                 hop_count, 0, GNUNET_NO,
                                 coreAPI->my_identity, &put->key, sender,
@@ -1158,7 +1154,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
-          queryuid = ntohl (put->queryuid);
+          queryuid = GNUNET_ntohll (put->queryuid);
           dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
                                 hop_count, cost, GNUNET_NO,
                                 coreAPI->my_identity, &put->key, sender,
@@ -1181,7 +1177,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
   if ((store == 0) && (target_value == 0) && (debug_routes_extended)
       && (dhtlog != NULL))
     {
-      queryuid = ntohl (put->queryuid);
+      queryuid = GNUNET_ntohll (put->queryuid);
       dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
                             hop_count, 0, GNUNET_NO,
                             coreAPI->my_identity, &put->key, sender, NULL);
@@ -1201,7 +1197,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
 
       if ((debug_routes) && (dhtlog != NULL))
         {
-          queryuid = ntohl (put->queryuid);
+          queryuid = GNUNET_ntohll (put->queryuid);
           dhtlog->insert_query (NULL, queryuid, DHTLOG_PUT,
                                 hop_count, GNUNET_YES,
                                 coreAPI->my_identity, &put->key);
@@ -1209,7 +1205,7 @@ handle_put (const GNUNET_PeerIdentity * sender,
 
       if ((debug_routes_extended) && (dhtlog != NULL))
         {
-          queryuid = ntohl (put->queryuid);
+          queryuid = GNUNET_ntohll (put->queryuid);
           dhtlog->insert_route (NULL, queryuid, DHTLOG_PUT,
                                 hop_count, 0, GNUNET_YES,
                                 coreAPI->my_identity, &put->key, sender,
@@ -1262,6 +1258,7 @@ handle_result (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
 #endif
+  struct RouteResultContext rrc;
 
   if (ntohs (msg->size) < sizeof (DV_DHT_MESSAGE))
     {
@@ -1287,10 +1284,13 @@ handle_result (const GNUNET_PeerIdentity * sender,
       return GNUNET_OK;
     }
 
+  rrc.queryuid = 0;
+  rrc.rmsg = result;
   route_result (&result->key,
                 ntohl (result->type),
                 ntohs (result->header.size) - sizeof (DV_DHT_MESSAGE),
-                (const char *) &result[1], (void *) msg);
+                (const char *) &result[1],
+		&rrc);
   return GNUNET_OK;
 }
 
@@ -1323,7 +1323,7 @@ GNUNET_DV_DHT_get_start (const GNUNET_HashCode * key,
                             coreAPI->my_identity, key);
     }
 
-  get.queryuid = htonl (queryuid);
+  get.queryuid = GNUNET_htonll (queryuid);
   GNUNET_hash_to_enc (&get.key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
@@ -1426,7 +1426,7 @@ GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
                      "%s: Inserted dhtkey, uid: %llu, inserted query, uid: %llu\n",
                      &shortID, keyuid, queryuid);
     }
-  put->queryuid = htonl (queryuid);
+  put->queryuid = GNUNET_htonll (queryuid);
 #endif
 
   memcpy (&put[1], data, size);
