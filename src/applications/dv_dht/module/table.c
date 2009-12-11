@@ -59,10 +59,6 @@
 
 #define DEBUG_TABLE GNUNET_NO
 
-#if DEBUG_TABLE
-static unsigned int indentation;
-#endif
-
 /**
  * How often should the cron job for maintaining the DV_DHT
  * run?
@@ -235,6 +231,7 @@ typedef struct
 #if DEBUG_TABLE
 static FILE *debug_file;
 static char *debug_file_name;
+static unsigned int indentation;
 static void
 print_entry (char *function)
 {
@@ -436,8 +433,6 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
                            unsigned int blocked_size,
                            struct GNUNET_BloomFilter *bloom)
 {
-  unsigned long long total_distance;
-  unsigned long long largest_distance;
   unsigned long long selected;
   unsigned int distance;
   unsigned int bc;
@@ -446,13 +441,15 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
   int match;
   const PeerBucket *bucket;
   const PeerInfo *pi;
-#if NATE_WHAT_IS_THIS
+#if USE_KADEMLIA
   const PeerInfo *chosen;
+  unsigned long long largest_distance;
+#else
+  unsigned long long total_distance;
 #endif
 
+#if USE_KADEMLIA
   largest_distance = 0;
-  total_distance = 0;
-#if NATE_WHAT_IS_THIS
   GNUNET_mutex_lock (lock);
   for (bc = 0; bc < bucketCount; bc++)
     {
@@ -498,8 +495,8 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
     {
       return GNUNET_SYSERR;
     }
-#endif
-
+#else
+  /* GNUnet-style */
   GNUNET_mutex_lock (lock);
   if (stats != NULL)
     stats->change (stat_dht_route_looks, 1);
@@ -514,6 +511,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
           match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
           if (match == GNUNET_YES)
             {
+	      /* circular route */
               continue;
             }
           for (i = 0; i < blocked_size; i++)
@@ -546,10 +544,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
           match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
           if (match == GNUNET_YES)
             {
-              GNUNET_GE_LOG (coreAPI->ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
-                             GNUNET_GE_USER | GNUNET_GE_BULK,
-                             "Avoiding circular route, yay!\n");
+	      /* circular route */
               continue;
             }
           for (i = 0; i < blocked_size; i++)
@@ -576,6 +571,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
   GNUNET_GE_BREAK (NULL, 0);
   GNUNET_mutex_unlock (lock);
   return GNUNET_SYSERR;
+#endif
 }
 
 
@@ -797,9 +793,7 @@ GNUNET_DV_DHT_considerPeer (const GNUNET_PeerIdentity * peer)
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     return;                     /* do not care */
   if (NULL != findPeerEntryInBucket (bucket, peer))
-    {
-      return;                   /* already have this peer in buckets */
-    }
+    return;                   /* already have this peer in buckets */    
   /* do we know how to contact this peer? */
   /* This may not work with the dv implementation... */
 
@@ -883,7 +877,7 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
                               GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
-  dvapi->dv_send (sender, &hello->header, 0, 1 * GNUNET_CRON_SECONDS);
+  dvapi->dv_send (sender, &hello->header, 0, GNUNET_CRON_SECONDS);
   GNUNET_free (hello);
   return GNUNET_OK;
 }
@@ -987,41 +981,11 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
                  coreAPI->core_slots_count (), i);
 
   GNUNET_array_grow (buckets, bucketCount, i);
-  /* I think this is wrong.  First, we have just increased the
-   * number of buckets to i, but then we iterate only over whatever
-   * the old bucketCount was!  And bucketCount is declared as
-   * static and never changed which means that it will always be
-   * 0.  This results in having a single bucket for all peers,
-   * which is rather insane/useless.  Also, why would bstart
-   * and bend be multiplied by 512?? Their bit distance should
-   * be between 2^i and 2^i+1 right???  Not 2^(512 + i) as that
-   * number is freaking huge and nuts.  Are we trying to evenly
-   * spread the table over however many buckets we have?  That
-   * makes more sense, but still doesn't get accomplished by
-   * the code below.
-   * for (i = 0; i < bucketCount; i++)
-   {
-   buckets[i].bstart = 512 * i / bucketCount;
-   buckets[i].bend = 512 * (i + 1) / bucketCount;
-   }
-   */
-  /* ANSWER:
-     GNUNET_array_grow updates bucketCount to i as a side effect -- it
-     is a really tricky macro, not a function call!
-     Other than the bucketCount = i which is a NO-OP here,
-     I don't see a difference between your new code and the
-     code commented out above... -CG */
-
-  /* So if we are trying to cover all locations with i (not bucketCount,
-   * which will always be zero at this point) we set bucketCount = i.
-   */
-  bucketCount = i; 
   for (i = 0; i < bucketCount; i++)
     {
       buckets[i].bstart = 512 * i / bucketCount;
       buckets[i].bend = 512 * (i + 1) / bucketCount;
     }
-
   lock = capi->global_lock_get ();
   stats = capi->service_request ("stats");
   dvapi = capi->service_request ("dv");
@@ -1033,8 +997,7 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
       stat_dht_discoveries =
         stats->create (gettext_noop ("# dv_dht discovery messages received"));
       stat_dht_route_looks =
-        stats->
-        create (gettext_noop ("# dv_dht route host lookups performed"));
+        stats->create (gettext_noop ("# dv_dht route host lookups performed"));
       stat_dht_advertisements =
         stats->create (gettext_noop ("# dv_dht discovery messages sent"));
     }
