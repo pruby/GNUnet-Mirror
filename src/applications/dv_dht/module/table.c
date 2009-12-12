@@ -975,9 +975,9 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   i = coreAPI->core_slots_count () / MAINTAIN_BUCKET_SIZE / 2;
   i = sizeof (GNUNET_HashCode) * 8;
   GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_INFO | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
-                 "core_slots_count returns %d, using %d buckets\n",
+                 "core_slots_count returns %d, using %d buckets for DHT\n",
                  coreAPI->core_slots_count (), i);
 
   GNUNET_array_grow (buckets, bucketCount, i);

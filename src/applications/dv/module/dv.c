@@ -1270,7 +1270,7 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
   strncpy ((char *) &shortID, (char *) &encMe, 4);
   shortID[4] = '\0';
   GNUNET_GE_LOG (capi->ectx,
-                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                 GNUNET_GE_INFO | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
                  _("%s: `%s' registering P2P handlers %d %d\n"),
                  "dv", &shortID,
