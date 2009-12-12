@@ -644,8 +644,10 @@ GNUNET_DV_connection_get_bandwidth_assigned_to_peer (const
                                                     &node->hashPubKey))
     {
       ret = GNUNET_OK;
-      *bpm = 0; /* FIXME */
-      *last_seen = 0; /* FIXME */
+      if (bpm != NULL)
+	*bpm = 0; /* FIXME */
+      if (last_seen != NULL)
+	*last_seen = 0; /* FIXME */
     }
   GNUNET_mutex_unlock (ctx->dvMutex);
   return ret;
