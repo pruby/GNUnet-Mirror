@@ -72,7 +72,7 @@ typedef struct
 
 #define DEBUG_PINGPONG GNUNET_NO
 
-#define MAX_PING_PONG 256
+#define MAX_PING_PONG 2048
 
 typedef struct
 {
