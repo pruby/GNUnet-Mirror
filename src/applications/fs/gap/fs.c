@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/gap/dv_fs.c
+ * @file applications/fs/gap/fs.c
  * @brief functions for handling CS and P2P file-sharing requests
  * @author Christian Grothoff, Nathan Evans
  *
@@ -521,7 +521,7 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
     memcmp (&all_zeros, &rs->target, sizeof (GNUNET_PeerIdentity)) != 0;
 #if DEBUG_FS
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "in dv_fs, have_target is %d", have_target);
+                 "in fs, have_target is %d", have_target);
 #endif
 
   GNUNET_DV_FS_QUERYMANAGER_start_query (&rs->query[0], keyCount,
@@ -1097,7 +1097,7 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                     GNUNET_GC_set_configuration_value_string (coreAPI->cfg,
                                                               coreAPI->ectx,
                                                               "ABOUT",
-                                                              "dv_fs",
+                                                              "fs",
                                                               gettext_noop
                                                               ("enables (anonymous) file-sharing")));
   return GNUNET_OK;
@@ -1107,7 +1107,7 @@ void
 done_module_fs ()
 {
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "dv_fs shutdown\n");
+                 "fs shutdown\n");
 
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
@@ -1185,4 +1185,4 @@ update_module_fs (GNUNET_UpdateAPI * uapi)
 }
 
 
-/* end of dv_fs.c */
+/* end of fs.c */
