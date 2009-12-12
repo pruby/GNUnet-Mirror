@@ -124,8 +124,10 @@ remove_unavailable_mark (const GNUNET_HashCode * fileId)
  * called to either initially mark a file as unavailable,
  * or, if the condition persists, to trigger its
  * removal from the database.
+ *
+ * @return GNUNET_YES if this is a new mark
  */
-static void
+static int
 publish_unavailable_mark (const GNUNET_HashCode * fileId)
 {
   char unavail_key[256];
@@ -145,11 +147,11 @@ publish_unavailable_mark (const GNUNET_HashCode * fileId)
     {
       now = GNUNET_htonll (now);
       state->write (coreAPI->ectx,
-                    unavail_key, sizeof (GNUNET_CronTime), (void *) &now);
-      return;
+                    unavail_key, sizeof (GNUNET_CronTime), (void *) &now);      
+      return GNUNET_YES;
     }
   if (GNUNET_ntohll (*first_unavail) - now < 3 * GNUNET_CRON_DAYS)
-    return;                     /* do nothing for first 3 days */
+    return GNUNET_NO;                     /* do nothing for first 3 days */
   fn = get_indexed_filename (fileId);
   /* Delete it after 3 days */
   len = 256;
@@ -161,7 +163,7 @@ publish_unavailable_mark (const GNUNET_HashCode * fileId)
         GNUNET_GE_BREAK (coreAPI->ectx, 0);
         GNUNET_array_grow (ofn, len, 0);
         GNUNET_free (fn);
-        return;
+        return GNUNET_NO;
       }
   GNUNET_array_grow (ofn, len, len * 2);
   if (ret != -1)
@@ -179,6 +181,7 @@ publish_unavailable_mark (const GNUNET_HashCode * fileId)
   state->unlink (coreAPI->ectx, unavail_key);
   UNLINK (fn);
   GNUNET_free (fn);
+  return GNUNET_NO;
 }
 
 /**
@@ -379,7 +382,7 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
   const OnDemandBlock *odb;
   GNUNET_EC_DBlock *db;
   struct stat linkStat;
-
+  int eno;
 
   if ((ntohl (dbv->size) != sizeof (OnDemandBlock)) ||
       (ntohl (dbv->type) != GNUNET_ECRS_BLOCKTYPE_ONDEMAND))
@@ -395,15 +398,28 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
                                                   fn, O_LARGEFILE | O_RDONLY,
                                                   0))))
     {
-      GNUNET_GE_LOG_STRERROR_FILE (coreAPI->ectx,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
-                                   GNUNET_GE_USER | GNUNET_GE_BULK, "open",
-                                   fn);
+      eno = errno;
       /* Is the symlink (still) there? */
       if (LSTAT (fn, &linkStat) == -1)
-        delete_content_asynchronously (dbv, query);
+	{
+	  errno = eno;
+	  GNUNET_GE_LOG_STRERROR_FILE (coreAPI->ectx,
+				       GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+				       GNUNET_GE_USER | GNUNET_GE_BULK, "open",
+				       fn);
+	  delete_content_asynchronously (dbv, query);
+	}
       else
-        publish_unavailable_mark (&odb->fileId);
+	{
+	  if (GNUNET_YES == publish_unavailable_mark (&odb->fileId))
+	    {
+	      errno = eno;
+	      GNUNET_GE_LOG_STRERROR_FILE (coreAPI->ectx,
+					   GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+					   GNUNET_GE_USER | GNUNET_GE_BULK, "open",
+					   fn);
+	    }
+	}
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }

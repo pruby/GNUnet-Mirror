@@ -188,7 +188,10 @@ del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
                ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &vhc);
   ok = sq->get (query, &vhc, ntohl (value->type), &deleteCB, (void *) value);
   if (ok == GNUNET_SYSERR)
-    return GNUNET_SYSERR;
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_SYSERR;
+    }
   if (ok == 0)
     {
       IF_GELOG (coreAPI->ectx,
