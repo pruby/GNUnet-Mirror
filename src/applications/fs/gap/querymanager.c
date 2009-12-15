@@ -547,6 +547,7 @@ GNUNET_DV_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
                                primary_query,
                                expirationTime, size, data, &value))
             {
+	      value++; // FIXME...
               if (prev != NULL)
                 prev->next = rl->next;
               else
@@ -585,7 +586,7 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
   struct ClientDataList *cl;
   struct ClientDataList *prev;
   struct RequestList *rl;
-
+ 
   GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
   prev = NULL;

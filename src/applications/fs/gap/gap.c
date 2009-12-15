@@ -215,14 +215,9 @@ datastore_value_processor (const GNUNET_HashCode * key,
       req->have_more += GNUNET_GAP_HAVE_MORE_INCREMENT;
       want_more = GNUNET_SYSERR;
     }
-  if (stats != NULL)
-    {
-      stats->change (stat_trust_earned, req->value_offered);
-      req->value_offered = 0;
-    }
   req->remaining_value = 0;
   GNUNET_cron_add_job (cron,
-                       send_delayed,
+                       &send_delayed,
                        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
                                           GNUNET_GAP_TTL_DECREMENT), 0, msg);
   ret =
@@ -271,7 +266,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   GNUNET_CronTime minTTL;
   unsigned int total;
   int ret;
-
+  
   GNUNET_GE_ASSERT (NULL, query_count > 0);
   GNUNET_mutex_lock (GNUNET_FS_lock);
   index = get_table_index (&queries[0]);
@@ -489,9 +484,9 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
       blocked[block_count++] = rl->response_target;
       GNUNET_FS_PT_change_rc (rl->response_target, 1);
 
-      rl->value_offered = 0;
       if (stats != NULL)
         stats->change (stat_trust_earned, rl->value_offered);
+      rl->value_offered = 0;
       if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
         GNUNET_FS_SHARED_mark_response_seen (&hc, rl);
       GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
@@ -499,7 +494,6 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
       rl_value = rl->value;
       total_priority -= rl->value;
       rl->value = 0;
-
       if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
         {
           if (prev == NULL)

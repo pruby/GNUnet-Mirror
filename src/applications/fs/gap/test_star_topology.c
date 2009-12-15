@@ -99,11 +99,14 @@ uploadFile (unsigned int size)
       return NULL;
     }
   buf = GNUNET_malloc_large (size);
-  memset (buf, size + size / 253, size);
-  for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
-       i += sizeof (GNUNET_HashCode))
-    GNUNET_hash (&buf[i + sizeof (GNUNET_HashCode)], 42,
-                 (GNUNET_HashCode *) & buf[i]);
+  memset (buf, size + size / 253, sizeof(GNUNET_HashCode));
+  for (i = 0; i < (size / sizeof (GNUNET_HashCode))-1;i++)
+    {
+      buf[i*sizeof (GNUNET_HashCode)] = i;
+      GNUNET_hash (&buf[i * sizeof (GNUNET_HashCode)], 
+		   sizeof (GNUNET_HashCode),
+		   (GNUNET_HashCode *) &buf[(i+1) * sizeof(GNUNET_HashCode)]);
+    }
   WRITE (fd, buf, size);
   GNUNET_free (buf);
   GNUNET_disk_file_close (ectx, name, fd);
@@ -148,16 +151,20 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
       fd = GNUNET_disk_file_open (ectx, tmpName, O_RDONLY);
       if (fd == -1)
         {
+	  GNUNET_GE_BREAK (NULL, 0);
           GNUNET_free (tmpName);
           return GNUNET_SYSERR;
         }
       buf = GNUNET_malloc (size);
       in = GNUNET_malloc (size);
-      memset (buf, size + size / 253, size);
-      for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
-           i += sizeof (GNUNET_HashCode))
-        GNUNET_hash (&buf[i + sizeof (GNUNET_HashCode)], 42,
-                     (GNUNET_HashCode *) & buf[i]);
+      memset (buf, size + size / 253, sizeof(GNUNET_HashCode));
+      for (i = 0; i < (size / sizeof (GNUNET_HashCode))-1;i++)
+	{
+	  buf[i*sizeof (GNUNET_HashCode)] = i;
+	  GNUNET_hash (&buf[i * sizeof (GNUNET_HashCode)], 
+		       sizeof (GNUNET_HashCode),
+		       (GNUNET_HashCode *) &buf[(i+1) * sizeof(GNUNET_HashCode)]);
+	}
       if (size != READ (fd, in, size))
         ret = GNUNET_SYSERR;
       else if (0 == memcmp (buf, in, size))
