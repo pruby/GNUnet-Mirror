@@ -1305,6 +1305,7 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
   unsigned int len;
   unsigned int bpm;
   GNUNET_CronTime last;
+  HostEntry *he;
 
   if (confirmed == GNUNET_NO)
     return GNUNET_OK;
@@ -1340,7 +1341,8 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
   reply->header.type = htons (GNUNET_CS_PROTO_IDENTITY_INFO);
   reply->peer = *identity;
   reply->last_message = GNUNET_htonll (last);
-  reply->trust = htonl (change_host_trust (identity, 0));
+  he = lookup_host_entry (identity);
+  reply->trust = htonl (he->trust & TRUST_ACTUAL_MASK);
   reply->bpm = htonl (bpm);
   memcpy (&reply[1], address, len);
   GNUNET_free_non_null (address);
