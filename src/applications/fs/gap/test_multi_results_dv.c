@@ -216,7 +216,7 @@ main (int argc, char **argv)
     }
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("tcp",
-                                        "advertising topology dv_fs stats",
+                                        "advertising topology fs stats",
                                         "/tmp/gap-dv-multi-results-test",
                                         2087, 10, PEER_COUNT);
   if (peers == NULL)
