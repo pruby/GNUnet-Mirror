@@ -34,6 +34,8 @@
 
 static struct MHD_Daemon *daemon_handle;
 
+static struct MHD_Daemon *daemon_handle6;
+
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static GNUNET_Identity_ServiceAPI *identity;
@@ -168,7 +170,7 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
       stat_bytes_returned
         = stats->create (gettext_noop ("# hostlist bytes returned"));
     }
-  daemon_handle = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_IPv6,
+  daemon_handle6 = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_IPv6,
                                     (unsigned short) port,
                                     &accept_policy_callback,
                                     NULL,
@@ -179,7 +181,19 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
                                     MHD_OPTION_CONNECTION_TIMEOUT, 16,
                                     MHD_OPTION_CONNECTION_MEMORY_LIMIT,
                                     (size_t) 16 * 1024, MHD_OPTION_END);
-  if (daemon_handle == NULL)
+  daemon_handle = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY,
+                                    (unsigned short) port,
+                                    &accept_policy_callback,
+                                    NULL,
+                                    &access_handler_callback,
+                                    NULL,
+                                    MHD_OPTION_CONNECTION_LIMIT, 16,
+                                    MHD_OPTION_PER_IP_CONNECTION_LIMIT, 1,
+                                    MHD_OPTION_CONNECTION_TIMEOUT, 16,
+                                    MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+                                    (size_t) 16 * 1024, MHD_OPTION_END);
+  if ( (daemon_handle == NULL) &&
+       (daemon_handle6 == NULL) )
     {
       if (stats != NULL)
         {
@@ -190,6 +204,8 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
       identity = NULL;
       return GNUNET_SYSERR;
     }
+  fprintf (stderr, "hostlist running on port %u\n", (unsigned int) port);
+
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                                    capi->ectx,
@@ -203,8 +219,16 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_hostlist ()
 {
-  MHD_stop_daemon (daemon_handle);
-  daemon_handle = NULL;
+  if (daemon_handle != NULL)
+    {
+      MHD_stop_daemon (daemon_handle);
+      daemon_handle = NULL;
+    }
+  if (daemon_handle6 != NULL)
+    {
+      MHD_stop_daemon (daemon_handle6);
+      daemon_handle6 = NULL;
+    }
   if (stats != NULL)
     {
       coreAPI->service_release (stats);
