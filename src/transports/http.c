@@ -193,11 +193,6 @@ struct MHDGetData
   struct MHD_Connection *session;
 
   /**
-   * GET session response handle
-   */
-  struct MHD_Response *get;
-
-  /**
    * My HTTP session.
    */
   struct HTTPSession *httpsession;
@@ -502,11 +497,11 @@ destroy_tsession (GNUNET_TSession * tsession)
   HTTPSession *httpsession = tsession->internal;
   struct HTTPPutData *pos;
   struct HTTPPutData *next;
+  struct MHDPutData *put;
 #if DO_GET
   struct MHDGetData *gpos;
   struct MHDGetData *gnext;
 #endif
-  struct MHD_Response *r;
   int i;
 
   GNUNET_mutex_lock (lock);
@@ -547,16 +542,20 @@ destroy_tsession (GNUNET_TSession * tsession)
   else
     {
       httpsession->destroyed = GNUNET_YES;
-      GNUNET_GE_BREAK (NULL, httpsession->cs.server.puts == NULL);
+      while (NULL != (put = httpsession->cs.server.puts))
+	{
+	  httpsession->cs.server.puts = put->next;
+	  GNUNET_array_grow (put->rbuff2,
+			     put->rsize2,
+			     0);
+	  free (put);
+	}
 #if DO_GET
       gpos = httpsession->cs.server.gets;
       while (gpos != NULL)
         {
           GNUNET_array_grow (gpos->wbuff, gpos->wsize, 0);
-          r = gpos->get;
-          gpos->get = NULL;
           gnext = gpos->next;
-          MHD_destroy_response (r);
           gpos = gnext;
         }
       httpsession->cs.server.gets = NULL;
@@ -747,7 +746,6 @@ contentReaderFreeCallback (void *cls)
 {
   struct MHDGetData *mgd = cls;
 
-  GNUNET_GE_ASSERT (NULL, mgd->get == NULL);
   GNUNET_array_grow (mgd->wbuff, mgd->wsize, 0);
   GNUNET_free (mgd);
 }
@@ -782,6 +780,7 @@ accessHandlerCallback (void *cls,
   GNUNET_TransportPacket *mp;
   unsigned int cpy;
   unsigned int poff;
+  struct MHD_Response *gg;
 
   if (stats != NULL)
     stats->change (stat_mhd_access_callbacks, 1);
@@ -872,12 +871,14 @@ accessHandlerCallback (void *cls,
       get->session = session;
       get->httpsession = httpSession;
       get->last_get_activity = GNUNET_get_time ();
-      get->get = MHD_create_response_from_callback (MHD_SIZE_UNKNOWN,
-                                                    64 * 1024,
-                                                    &contentReaderCallback,
-                                                    get,
-                                                    &contentReaderFreeCallback);
-      MHD_queue_response (session, MHD_HTTP_OK, get->get);
+      gg = MHD_create_response_from_callback (MHD_SIZE_UNKNOWN,
+					      64 * 1024,
+					      &contentReaderCallback,
+					      get,
+					      &contentReaderFreeCallback);
+      MHD_queue_response (session, MHD_HTTP_OK, gg);
+      MHD_destroy_response (gg);
+
       GNUNET_mutex_unlock (lock);
       return MHD_YES;
     }
@@ -1614,7 +1615,6 @@ cleanup_connections ()
   struct MHDPutData *mpos;
   struct MHDPutData *mprev;
 #if DO_GET
-  struct MHD_Response *r;
   struct MHDGetData *gpos;
   struct MHDGetData *gnext;
 #endif
@@ -1720,9 +1720,6 @@ cleanup_connections ()
                 {
                   if (gpos == s->cs.server.gets)
                     s->cs.server.gets = NULL;
-                  r = gpos->get;
-                  gpos->get = NULL;
-                  MHD_destroy_response (r);
                 }
               gpos = gnext;
             }
