@@ -63,6 +63,7 @@ main (int argc, char **argv)
       temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
       while ((cur_pos <= 1) && (temp_rand != 0))
         temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
+      fprintf(stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size(minHeap));
       switch (temp_rand)
         {
         case 0:

@@ -34,7 +34,7 @@
 #include "gnunet_directories.h"
 
 #define START_PEERS 1
-#define NUM_RUNS 10
+#define NUM_RUNS 2
 
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer1;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer2;
@@ -196,42 +196,42 @@ main (int argc, char **argv)
     {
       if (ret == 0)
         ret =
-          test (sock, 64, 1, 1, 500 * GNUNET_CRON_MILLISECONDS, 1,
-                15 * GNUNET_CRON_SECONDS, *peer2->peer);
+          test (sock, 64, 5, 5, 500 * GNUNET_CRON_MILLISECONDS, 1,
+                5 * GNUNET_CRON_SECONDS, *peer2->peer);
 
       printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
               (char *) &peer3enc);
       if (ret == 0)
         ret =
-          test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+          test (sock, 64, 5, 5, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer3->peer);
 
       printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
               (char *) &peer4enc);
       if (ret == 0)
         ret =
-          test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+          test (sock, 64, 5, 5, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer4->peer);
 
       printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
               (char *) &peer5enc);
       if (ret == 0)
         ret =
-          test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+          test (sock, 64, 5, 5, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer5->peer);
 
       printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
               (char *) &peer6enc);
       if (ret == 0)
         ret =
-          test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+          test (sock, 64, 5, 5, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer6->peer);
 
       printf (_("Sending from %s to %s...\n"), (char *) &peer1enc,
               (char *) &peer7enc);
       if (ret == 0)
         ret =
-          test (sock, 64, 1, 1, 50 * GNUNET_CRON_MILLISECONDS, 1,
+          test (sock, 64, 5, 5, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer7->peer);
       sleep (60);
     }
