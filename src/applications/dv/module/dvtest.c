@@ -36,6 +36,8 @@
 #define START_PEERS 1
 #define NUM_RUNS 2
 
+static unsigned int sent_messages;
+static unsigned int failed_messages;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer1;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer2;
 static struct GNUNET_REMOTE_TESTING_DaemonContext *peer3;
@@ -81,6 +83,7 @@ test (struct GNUNET_ClientServerConnection *sock,
   msg.timeOut = GNUNET_htonll (messageTimeOut);
   msg.priority = htonl (5);
   msg.receiverId = receiver;
+  sent_messages += messageCnt * messageIterations;
 
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &msg.header))
     return -1;
@@ -108,6 +111,7 @@ test (struct GNUNET_ClientServerConnection *sock,
       printf (_("Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"),
               ntohl (buffer->max_loss), ntohl (buffer->min_loss),
               buffer->mean_loss, buffer->variance_loss);
+      failed_messages += ntohl (buffer->max_loss);
     }
   else
     {
@@ -233,9 +237,17 @@ main (int argc, char **argv)
         ret =
           test (sock, 64, 5, 5, 50 * GNUNET_CRON_MILLISECONDS, 1,
                 5 * GNUNET_CRON_SECONDS, *peer7->peer);
-      sleep (60);
+      sleep (10);
     }
   GNUNET_client_connection_destroy (sock);
+
+  fprintf (stdout,
+           "Total messages sent: %u, total failed %u, %1.2f percent success\n",
+           sent_messages, failed_messages,
+           ((sent_messages - failed_messages) / (float) sent_messages) * 100);
+  if (((sent_messages - failed_messages) / (float) sent_messages) * 100 <
+      40.0)
+    ret = 1;
 #if START_PEERS
   /*FIXME: Have GNUNET_REMOTE_TESTING_stop_daemons... GNUNET_TESTING_stop_daemons (peers); */
   pos = peers;
