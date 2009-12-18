@@ -192,7 +192,13 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       if (GNUNET_YES == GNUNET_FS_test_indexed (sock, &fileId))
         {
           /* file already indexed; simulate only to get the URI! */
-          doIndex = GNUNET_SYSERR;
+          /* doIndex = GNUNET_SYSERR; */
+	  /* The above optimization is not quite correct since we
+	     may list the file as indexed but might have removed
+	     individual blocks from the datastore already if the
+	     indexed file "temporarily" disappeared; in order to
+	     ensure that re-indexing of such a file actually
+	     "repairs" the database, we must not skip the work here */
         }
     }
   if (doIndex == GNUNET_YES)
