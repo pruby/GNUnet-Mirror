@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006 - 2009 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2009 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -50,9 +50,9 @@ test (GNUNET_dhtlog_ServiceAPI * api)
   unsigned long long sqlqueryuid;
   unsigned long long sqlrouteuid = 0;
   unsigned long long nodeuid = 0;
-  unsigned long long internaluid = 1010223344;
+  unsigned long long internaluid = 1010223344LL;
   unsigned long long dhtkeyuid = 0;
-  unsigned long long bps = 100000000000;
+  unsigned long long bps = 100000000000LL;
   memset (&p1.hashPubKey, 3, sizeof (GNUNET_HashCode));
   memset (&p2.hashPubKey, 4, sizeof (GNUNET_HashCode));
   memset (&p3.hashPubKey, 5, sizeof (GNUNET_HashCode));
