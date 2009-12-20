@@ -325,9 +325,8 @@ findPeerEntryInBucket (PeerBucket * bucket, const GNUNET_PeerIdentity * peer)
   if (bucket == NULL)
     return NULL;
   for (i = 0; i < bucket->peers_size; i++)
-    if (0 == memcmp (peer, 
-		     &bucket->peers[i]->id, 
-		     sizeof (GNUNET_PeerIdentity)))
+    if (0 == memcmp (peer,
+                     &bucket->peers[i]->id, sizeof (GNUNET_PeerIdentity)))
       return bucket->peers[i];
   return NULL;
 }
@@ -354,8 +353,7 @@ findPeerEntry (const GNUNET_PeerIdentity * peer)
  *           the two hash codes inceases
  */
 static unsigned int
-distance (const GNUNET_HashCode * target,
-	  const GNUNET_HashCode * have)
+distance (const GNUNET_HashCode * target, const GNUNET_HashCode * have)
 {
   unsigned int bucket;
   unsigned int msb;
@@ -380,30 +378,31 @@ distance (const GNUNET_HashCode * target,
   bucket = get_bit_distance (target, have);
   /* bucket is now a value between 0 and 512 */
   if (bucket == 512)
-    return 0; /* perfect match */
+    return 0;                   /* perfect match */
   if (bucket == 0)
-    return (unsigned int) -1; /* LSB differs; use max (if we did the bit-shifting
-				 below, we'd end up with max+1 (overflow)) */
+    return (unsigned int) -1;   /* LSB differs; use max (if we did the bit-shifting
+                                   below, we'd end up with max+1 (overflow)) */
 
   /* calculate the most significant bits of the final result */
-  msb = (512 - bucket) << (32-9);
+  msb = (512 - bucket) << (32 - 9);
   /* calculate the 32-9 least significant bits of the final result by
      looking at the differences in the 32-9 bits following the
      mismatching bit at 'bucket' */
   lsb = 0;
-  for (i=bucket+1; (i<sizeof(GNUNET_HashCode)*8) && (i<bucket+1+32-9);i++)
+  for (i = bucket + 1;
+       (i < sizeof (GNUNET_HashCode) * 8) && (i < bucket + 1 + 32 - 9); i++)
     {
       if (GNUNET_hash_get_bit (target, i) != GNUNET_hash_get_bit (have, i))
-	lsb |= (1 << (bucket+32-9-i)); /* first bit set will be 10, 
-					  last bit set will be 31 -- if
-					  i does not reach 512 first... */
+        lsb |= (1 << (bucket + 32 - 9 - i));    /* first bit set will be 10,
+                                                   last bit set will be 31 -- if
+                                                   i does not reach 512 first... */
     }
   return msb | lsb;
 }
 
 /**
  * Return a number that is the larger the closer the
- * "have" GNUNET_hash code is to the "target".  
+ * "have" GNUNET_hash code is to the "target".
  *
  * @return inverse distance metric, non-zero.
  */
@@ -411,7 +410,7 @@ static unsigned int
 inverse_distance (const GNUNET_HashCode * target,
                   const GNUNET_HashCode * have)
 {
-  return ((unsigned int) -1)-distance (target, have);
+  return ((unsigned int) -1) - distance (target, have);
 }
 
 /**
@@ -511,7 +510,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
           match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
           if (match == GNUNET_YES)
             {
-	      /* circular route */
+              /* circular route */
               continue;
             }
           for (i = 0; i < blocked_size; i++)
@@ -544,7 +543,7 @@ GNUNET_DV_DHT_select_peer (GNUNET_PeerIdentity * set,
           match = GNUNET_bloomfilter_test (bloom, &pi->id.hashPubKey);
           if (match == GNUNET_YES)
             {
-	      /* circular route */
+              /* circular route */
               continue;
             }
           for (i = 0; i < blocked_size; i++)
@@ -601,7 +600,7 @@ find_closest_peer (GNUNET_PeerIdentity * set, const GNUNET_HashCode * target)
       for (ec = 0; ec < bucket->peers_size; ec++)
         {
           pi = bucket->peers[ec];
-	  inv_dist = inverse_distance (target, &pi->id.hashPubKey);
+          inv_dist = inverse_distance (target, &pi->id.hashPubKey);
           if (inv_dist > largest_inv_distance)
             {
               chosen = bucket->peers[ec];
@@ -623,15 +622,15 @@ static void
 printKeyBits (const GNUNET_HashCode * key)
 {
   unsigned int i;
-  char loc[sizeof(GNUNET_HashCode)*8+1];
+  char loc[sizeof (GNUNET_HashCode) * 8 + 1];
 
-  loc[sizeof(loc)-1] = '\0';
+  loc[sizeof (loc) - 1] = '\0';
   for (i = 0; i < sizeof (GNUNET_HashCode) * 8; i++)
     {
       if (GNUNET_hash_get_bit (key, i) == 0)
-	loc[i] = '0';        
+        loc[i] = '0';
       else
-	loc[i] = '1';
+        loc[i] = '1';
     }
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
@@ -687,7 +686,7 @@ GNUNET_DV_DHT_am_closest_peer (const GNUNET_HashCode * target)
 #endif
   if (distance (target, &coreAPI->my_identity->hashPubKey) <=
       distance (target, &closest.hashPubKey))
-    return GNUNET_YES;    
+    return GNUNET_YES;
   return GNUNET_NO;
 }
 
@@ -789,11 +788,15 @@ GNUNET_DV_DHT_considerPeer (const GNUNET_PeerIdentity * peer)
   if (bucket == NULL)
     return;                     /* peers[i] == self */
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
+  {
+    GNUNET_mutex_lock(lock); /* Possible missing lock causing bug 1523? */
     checkExpiration (bucket);
+    GNUNET_mutex_unlock(lock);
+  }
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     return;                     /* do not care */
   if (NULL != findPeerEntryInBucket (bucket, peer))
-    return;                   /* already have this peer in buckets */    
+    return;                     /* already have this peer in buckets */
   /* do we know how to contact this peer? */
   /* This may not work with the dv implementation... */
 
@@ -997,7 +1000,8 @@ GNUNET_DV_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
       stat_dht_discoveries =
         stats->create (gettext_noop ("# dv_dht discovery messages received"));
       stat_dht_route_looks =
-        stats->create (gettext_noop ("# dv_dht route host lookups performed"));
+        stats->
+        create (gettext_noop ("# dv_dht route host lookups performed"));
       stat_dht_advertisements =
         stats->create (gettext_noop ("# dv_dht discovery messages sent"));
     }
