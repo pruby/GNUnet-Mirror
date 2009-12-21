@@ -401,6 +401,7 @@ GNUNET_FSUI_uploadThread (void *cls)
       return NULL;
     }
   utc->state = GNUNET_FSUI_COMPLETED;
+  loc = NULL;
   if (utc->shared->doIndex != GNUNET_SYSERR)
     {
       if (utc->child == NULL)
@@ -526,8 +527,7 @@ GNUNET_FSUI_uploadThread (void *cls)
                                            utc->shared->priority,
                                            utc->shared->expiration, loc,
                                            utc->meta);
-      GNUNET_ECRS_uri_destroy (loc);
-      loc = NULL;
+
       fi.meta = utc->meta;
       fi.uri = utc->uri;
       if (utc->shared->doIndex != GNUNET_SYSERR)
@@ -548,7 +548,16 @@ GNUNET_FSUI_uploadThread (void *cls)
   event.data.UploadCompleted.uc.pcctx = utc->parent->cctx;
   event.data.UploadCompleted.total = utc->total;
   event.data.UploadCompleted.filename = utc->filename;
-  event.data.UploadCompleted.uri = utc->uri;
+
+  if (loc != NULL)
+  {
+    event.data.UploadCompleted.uri = GNUNET_ECRS_uri_duplicate(loc);
+    GNUNET_ECRS_uri_destroy (loc);
+    loc = NULL;
+  }
+  else
+    event.data.UploadCompleted.uri = utc->uri;
+
   utc->shared->ctx->ecb (utc->shared->ctx->ecbClosure, &event);
   if (utc->child != NULL)
     UNLINK (filename);
