@@ -1342,7 +1342,10 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
   reply->peer = *identity;
   reply->last_message = GNUNET_htonll (last);
   he = lookup_host_entry (identity);
-  reply->trust = htonl (he->trust & TRUST_ACTUAL_MASK);
+  if (he != NULL)    
+    reply->trust = htonl (he->trust & TRUST_ACTUAL_MASK);
+  else
+    reply->trust = htonl (0);
   reply->bpm = htonl (bpm);
   memcpy (&reply[1], address, len);
   GNUNET_free_non_null (address);
