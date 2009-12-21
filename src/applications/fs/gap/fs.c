@@ -643,6 +643,7 @@ send_results_dv (const GNUNET_HashCode * key,
     }
 
   GNUNET_free_non_null (enc);
+  GNUNET_free (msg);
   return ret;
 
 }
