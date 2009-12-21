@@ -285,7 +285,6 @@ GNUNET_DV_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
           GNUNET_mutex_unlock (GNUNET_FS_lock);
           request->last_dht_get = GNUNET_get_time ();
           request->dht_back_off = GNUNET_GAP_MAX_DHT_DELAY;
-          return;
         }
     }
   else if ((anonymityLevel == 0) && (target != NULL))
@@ -768,10 +767,10 @@ repeat_requests_job (void *unused)
           (request->last_ttl_used * GNUNET_CRON_SECONDS +
            request->last_request_time < now))
         {
-          /*if ((GNUNET_OK ==
-             GNUNET_FS_PLAN_request (client->client, 0, request))
-             && (stats != NULL))
-             stats->change (stat_gap_client_query_injected, 1); */
+          if ((GNUNET_OK ==
+	       GNUNET_FS_PLAN_request (client->client, 0, request))
+	      && (stats != NULL))
+	    stats->change (stat_gap_client_query_injected, 1); 
         }
 
       if ((request->anonymityLevel == 0) &&
@@ -780,7 +779,7 @@ repeat_requests_job (void *unused)
           if (request->dht_back_off * 2 > request->dht_back_off)
             request->dht_back_off *= 2;
           request->last_dht_get = now;
-          /*GNUNET_FS_DV_DHT_execute_query (request->type, &request->queries[0]); */
+          GNUNET_FS_DV_DHT_execute_query (request->type, &request->queries[0]);
         }
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);

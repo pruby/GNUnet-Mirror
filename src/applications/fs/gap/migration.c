@@ -131,6 +131,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   unsigned int minDist;
   struct MigrationRecord *rec;
 
+  if (GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2) == 0)
+    return 0; /* skip migration 50% of the time */
   if (content_size == 0)
     return 0;
   index = GNUNET_FS_PT_intern (receiver);
