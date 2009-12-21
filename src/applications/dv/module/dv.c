@@ -108,6 +108,17 @@ printPeer (const GNUNET_HashCode * key, void *value, void *cls)
 }
 #endif
 
+
+static int
+free_neighbor (const GNUNET_HashCode * key, void *value, void *cls)
+{
+  struct GNUNET_dv_neighbor * neighbor = (struct GNUNET_dv_neighbor *)value;
+  GNUNET_free (neighbor->neighbor);
+  GNUNET_free_non_null(neighbor->referrer);
+  GNUNET_free (neighbor);
+  return GNUNET_YES;
+}
+
 /*
  * Update the statistics about dv routing
  */
@@ -977,6 +988,7 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       neighbor->neighbor_id =
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, RAND_MAX - 1) + 1;
       memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      neighbor->referrer = NULL;
       GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
                                  neighbor, GNUNET_MultiHashMapOption_REPLACE);
     }
@@ -1029,8 +1041,8 @@ delete_callback (void *element, GNUNET_CostType cost,
 #endif
 
   if ( ( (neighbor->referrer == NULL) &&
-	 (0 == memcmp (neighbor->neighbor, 
-		       toMatch, 
+	 (0 == memcmp (neighbor->neighbor,
+		       toMatch,
 		       sizeof (GNUNET_PeerIdentity))) ) ||
        ( (neighbor->referrer != NULL) &&
 	 (0 == memcmp (neighbor->referrer, toMatch,
@@ -1088,8 +1100,11 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                                             &peer->hashPubKey);
           GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                          &delete_callback, (void *) peer);
-	  /* delete_callback will free 'neighbour' (and members) */
+          /* delete_callback will free 'neighbor' (and members) */
         }
+      GNUNET_free(neighbor->neighbor);
+      GNUNET_free_non_null(neighbor->referrer);
+      GNUNET_free(neighbor);
     }
   GNUNET_mutex_unlock (ctx->dvMutex);
 #if DEBUG_DV
@@ -1405,7 +1420,9 @@ release_module_dv ()
   coreAPI->peer_disconnect_notification_unregister (&peer_connect_handler,
                                                     NULL);
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dv_job,
-                       GNUNET_DV_MAINTAIN_FREQUENCY, NULL);  
+                       GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
+  GNUNET_multi_hash_map_iterate (ctx->direct_neighbors, &free_neighbor, NULL);
+  GNUNET_multi_hash_map_iterate (ctx->extended_neighbors, &free_neighbor, NULL);
   GNUNET_multi_hash_map_destroy (ctx->direct_neighbors);
   GNUNET_multi_hash_map_destroy (ctx->extended_neighbors);
   GNUNET_CONTAINER_heap_destroy (ctx->neighbor_max_heap);
