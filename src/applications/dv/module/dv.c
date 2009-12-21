@@ -1286,7 +1286,7 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
       stat_dv_sent_gossips =
         stats->create (gettext_noop ("# dv gossips sent"));
       stat_dv_unknown_peer =
-        stats->create (gettext_noop ("# dv messages to/from unknown peers"));
+        stats->create (gettext_noop ("# dv messages of unknown peers"));
     }
 
   ctx = GNUNET_malloc (sizeof (struct GNUNET_DV_Context));
@@ -1405,7 +1405,7 @@ release_module_dv ()
   coreAPI->peer_disconnect_notification_unregister (&peer_connect_handler,
                                                     NULL);
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dv_job,
-                       GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
+                       GNUNET_DV_MAINTAIN_FREQUENCY, NULL);  
   GNUNET_multi_hash_map_destroy (ctx->direct_neighbors);
   GNUNET_multi_hash_map_destroy (ctx->extended_neighbors);
   GNUNET_CONTAINER_heap_destroy (ctx->neighbor_max_heap);
