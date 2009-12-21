@@ -1028,14 +1028,14 @@ delete_callback (void *element, GNUNET_CostType cost,
            (char *) &encNeighbor);
 #endif
 
-  if (((memcmp (neighbor->neighbor, toMatch, sizeof (GNUNET_PeerIdentity)) ==
-        0) && (neighbor->referrer == NULL)) || ((neighbor->referrer != NULL)
-                                                &&
-                                                (memcmp
-                                                 (neighbor->referrer, toMatch,
-                                                  sizeof
-                                                  (GNUNET_PeerIdentity)) ==
-                                                 0)))
+  if ( ( (neighbor->referrer == NULL) &&
+	 (0 == memcmp (neighbor->neighbor, 
+		       toMatch, 
+		       sizeof (GNUNET_PeerIdentity))) ) ||
+       ( (neighbor->referrer != NULL) &&
+	 (0 == memcmp (neighbor->referrer, toMatch,
+		       sizeof
+		       (GNUNET_PeerIdentity))) ) )
     {
       /* FIXME: we might want to have some way to notify the rest of
          our DV-neigborhood about this disconnect as well... */
@@ -1088,11 +1088,7 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                                             &peer->hashPubKey);
           GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                          &delete_callback, (void *) peer);
-          /* Note that we do not use delete_neighbor here because
-             we are deleting from the direct neighbor list! */
-          GNUNET_free (neighbor->neighbor);
-          GNUNET_free_non_null (neighbor->referrer);
-          GNUNET_free (neighbor);
+	  /* delete_callback will free 'neighbour' (and members) */
         }
     }
   GNUNET_mutex_unlock (ctx->dvMutex);
