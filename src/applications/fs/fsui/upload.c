@@ -401,7 +401,40 @@ GNUNET_FSUI_uploadThread (void *cls)
       return NULL;
     }
   utc->state = GNUNET_FSUI_COMPLETED;
-  loc = NULL;
+  if (utc->shared->anonymityLevel == 0)
+    {
+      /* generate location URI for non-anonymous download */
+      struct GNUNET_ClientServerConnection *sock;
+      GNUNET_MessageHello *hello;
+      
+      sock = GNUNET_client_connection_create (utc->shared->ctx->ectx,
+					      utc->shared->ctx->cfg);
+      
+      if (GNUNET_OK == GNUNET_IDENTITY_get_self (sock, &hello))
+	{
+	  loc = GNUNET_ECRS_location_to_uri (utc->uri,
+					     &hello->publicKey,
+					     ntohl
+					     (hello->expiration_time),
+					     (GNUNET_ECRS_SignFunction) &
+					     GNUNET_IDENTITY_sign_function,
+					     sock);
+	  
+	  GNUNET_free (hello);
+	}
+      else
+	{
+	  /* may happen if no transports are available... */
+	  loc = GNUNET_ECRS_uri_duplicate (utc->uri);
+	}
+      GNUNET_client_connection_destroy (sock);
+    }
+  else
+    {
+      /* no location URI, use standard URI
+	 (copied here to allow free later) */
+      loc = GNUNET_ECRS_uri_duplicate (utc->uri);
+    }
   if (utc->shared->doIndex != GNUNET_SYSERR)
     {
       if (utc->child == NULL)
@@ -453,41 +486,6 @@ GNUNET_FSUI_uploadThread (void *cls)
               GNUNET_meta_data_insert (utc->meta, EXTRACTOR_RELATION, pfn);
               GNUNET_free (pfn);
             }
-        }
-      if ((utc->shared->anonymityLevel == 0)
-          && (utc->shared->doIndex == GNUNET_YES))
-        {
-          /* generate location URI for non-anonymous download */
-          struct GNUNET_ClientServerConnection *sock;
-          GNUNET_MessageHello *hello;
-
-          sock = GNUNET_client_connection_create (utc->shared->ctx->ectx,
-                                                  utc->shared->ctx->cfg);
-
-          if (GNUNET_OK == GNUNET_IDENTITY_get_self (sock, &hello))
-            {
-              loc = GNUNET_ECRS_location_to_uri (utc->uri,
-                                                 &hello->publicKey,
-                                                 ntohl
-                                                 (hello->expiration_time),
-                                                 (GNUNET_ECRS_SignFunction) &
-                                                 GNUNET_IDENTITY_sign_function,
-                                                 sock);
-
-              GNUNET_free (hello);
-            }
-          else
-            {
-              /* may happen if no transports are available... */
-              loc = GNUNET_ECRS_uri_duplicate (utc->uri);
-            }
-          GNUNET_client_connection_destroy (sock);
-        }
-      else
-        {
-          /* no location URI, use standard URI
-             (copied here to allow free later) */
-          loc = GNUNET_ECRS_uri_duplicate (utc->uri);
         }
       uri = NULL;
       if (utc->shared->individualKeywords == GNUNET_YES)
@@ -549,10 +547,7 @@ GNUNET_FSUI_uploadThread (void *cls)
   event.data.UploadCompleted.total = utc->total;
   event.data.UploadCompleted.filename = utc->filename;
 
-  if (loc != NULL)
-    event.data.UploadCompleted.uri = loc;
-  else
-    event.data.UploadCompleted.uri = utc->uri;
+  event.data.UploadCompleted.uri = loc;
   utc->shared->ctx->ecb (utc->shared->ctx->ecbClosure, &event);
   GNUNET_ECRS_uri_destroy (loc);
   if (utc->child != NULL)
