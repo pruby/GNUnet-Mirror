@@ -112,7 +112,8 @@ GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HeapType type)
   return heap;
 }
 
-void *GNUNET_CONTAINER_heap_peek (struct GNUNET_CONTAINER_Heap *root)
+void *
+GNUNET_CONTAINER_heap_peek (struct GNUNET_CONTAINER_Heap *root)
 {
   if ((root == NULL) || (root->root == NULL))
     return NULL;
@@ -133,21 +134,21 @@ find_element (struct GNUNET_CONTAINER_heap_node *node, void *element)
   struct GNUNET_CONTAINER_heap_node *ret;
   ret = NULL;
 
-  if ((node != NULL) && (node->element == element))                                                                                      
-    {                                                                                                                                    
-      ret = node;                                                                                                                        
-    }                                                                                                                                    
-                                                                                                                                          
-  if ((ret == NULL) && (node != NULL) && (node->left_child != NULL))                                                                     
-    {                                                                                                                                    
-      ret = find_element (node->left_child, element);                                                                                    
-    }                                                                                                                                    
-                                                                                                                                          
-  if ((ret == NULL) && (node != NULL) && (node->right_child != NULL))                                                                    
-    {                                                                                                                                    
-      ret = find_element (node->right_child, element);                                                                                   
-    }                                                                                                                                    
-                                                                                                                                          
+  if ((node != NULL) && (node->element == element))
+    {
+      ret = node;
+    }
+
+  if ((ret == NULL) && (node != NULL) && (node->left_child != NULL))
+    {
+      ret = find_element (node->left_child, element);
+    }
+
+  if ((ret == NULL) && (node != NULL) && (node->right_child != NULL))
+    {
+      ret = find_element (node->right_child, element);
+    }
+
   return ret;
 }
 
@@ -354,7 +355,7 @@ GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_Heap *root,
 
   if (last == del_node)
     {
-      GNUNET_free(last);
+      GNUNET_free (last);
       return ret;
     }
 
@@ -425,6 +426,7 @@ GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *root)
 
   if ((root_node == last) && (root->size == 1)) /* We are removing the last node in the heap! */
     {
+      GNUNET_free (root->root);
       root->root = NULL;
       root->traversal_pos = NULL;
       root->size = 0;
@@ -499,9 +501,11 @@ internal_iterator (struct GNUNET_CONTAINER_Heap *root,
   int ret;
   if (node == NULL)
     return GNUNET_YES;
-  if (GNUNET_YES != (ret =internal_iterator (root, node->left_child, iterator, cls)))
+  if (GNUNET_YES !=
+      (ret = internal_iterator (root, node->left_child, iterator, cls)))
     return ret;
-  if (GNUNET_YES != (ret = internal_iterator (root, node->right_child, iterator, cls)))
+  if (GNUNET_YES !=
+      (ret = internal_iterator (root, node->right_child, iterator, cls)))
     return ret;
   return iterator (node->element, node->cost, root, cls);
 }

@@ -55,7 +55,7 @@ main (int argc, char **argv)
   struct GNUNET_dv_neighbor *neighbor5;
   struct GNUNET_dv_neighbor *neighbor6;
 
-  myHeap = GNUNET_CONTAINER_heap_create (GNUNET_MAX_HEAP);
+  myHeap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
 
   neighbor1 = malloc (sizeof (struct GNUNET_dv_neighbor));
   neighbor2 = malloc (sizeof (struct GNUNET_dv_neighbor));
@@ -64,23 +64,31 @@ main (int argc, char **argv)
   neighbor5 = malloc (sizeof (struct GNUNET_dv_neighbor));
   neighbor6 = malloc (sizeof (struct GNUNET_dv_neighbor));
 
-  neighbor1->cost = 60;
-  neighbor2->cost = 50;
-  neighbor3->cost = 70;
-  neighbor4->cost = 120;
+  neighbor1->cost = 11;
+  neighbor2->cost = 78;
+  neighbor3->cost = 5;
+  neighbor4->cost = 50;
   neighbor5->cost = 100;
   neighbor6->cost = 30;
 
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor1, neighbor1->cost);
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
+  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
 
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor2, neighbor2->cost);
+  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
+
+  GNUNET_CONTAINER_heap_remove_node (myHeap, neighbor2);
+  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor3, neighbor3->cost);
+  GNUNET_CONTAINER_heap_update_cost (myHeap, neighbor3, 15);
+  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor4, neighbor4->cost);
+  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
 
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
   GNUNET_CONTAINER_heap_insert (myHeap, neighbor5, neighbor5->cost);
@@ -99,6 +107,13 @@ main (int argc, char **argv)
   GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
 
   GNUNET_CONTAINER_heap_destroy (myHeap);
+
+  GNUNET_free (neighbor1);
+  GNUNET_free (neighbor2);
+  GNUNET_free (neighbor3);
+  GNUNET_free (neighbor4);
+  GNUNET_free (neighbor5);
+  GNUNET_free (neighbor6);
 
   return 0;
 
