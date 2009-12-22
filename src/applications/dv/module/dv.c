@@ -1056,6 +1056,19 @@ delete_callback (void *element, GNUNET_CostType cost,
          'delete_neighbor' modified the tree and hence internal
          invariants of the iterator were likely broken!
          Besides, each neighbor should only appear once anyway... */
+
+      /* Why should each neighbor appear only once??? We are talking about
+       * deleting any nodes that the disconnected node has referred to us!
+       * While the disconnected node itself appears only once, those it has
+       * told us about may abound...  If we don't remove them, we are going
+       * to try sending data to peers whose direct connection is gone.
+       *
+       * Also, the way that the heap removal works (for a min or max heap)
+       * the iterator doesn't move because the last node is switched with
+       * the node being removed, so we don't break the iteration unless
+       * the heap is empty but then we still should be okay (we just stop
+       * iterating).
+       */
       return GNUNET_NO;
     }
   return GNUNET_YES;
@@ -1101,6 +1114,11 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
           GNUNET_CONTAINER_heap_iterate (ctx->neighbor_max_heap,
                                          &delete_callback, (void *) peer);
           /* delete_callback will free 'neighbor' (and members) */
+
+          /* no, it won't.  It will free the neighbor and members contained
+           * in the ctx->extended_neighbors set but not those in the
+           * ctx->direct_neighbors set.
+           */
         }
     }
   GNUNET_mutex_unlock (ctx->dvMutex);
