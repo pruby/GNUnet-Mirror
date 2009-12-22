@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006m 2009 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -550,15 +550,11 @@ GNUNET_FSUI_uploadThread (void *cls)
   event.data.UploadCompleted.filename = utc->filename;
 
   if (loc != NULL)
-  {
-    event.data.UploadCompleted.uri = GNUNET_ECRS_uri_duplicate(loc);
-    GNUNET_ECRS_uri_destroy (loc);
-    loc = NULL;
-  }
+    event.data.UploadCompleted.uri = loc;
   else
     event.data.UploadCompleted.uri = utc->uri;
-
   utc->shared->ctx->ecb (utc->shared->ctx->ecbClosure, &event);
+  GNUNET_ECRS_uri_destroy (loc);
   if (utc->child != NULL)
     UNLINK (filename);
   GNUNET_free (filename);
