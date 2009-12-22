@@ -29,7 +29,7 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 static struct GNUNET_GE_Context *ectx;
 
