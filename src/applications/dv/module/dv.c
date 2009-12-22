@@ -112,7 +112,7 @@ printPeer (const GNUNET_HashCode * key, void *value, void *cls)
 static int
 free_neighbor (const GNUNET_HashCode * key, void *value, void *cls)
 {
-  struct GNUNET_dv_neighbor * neighbor = (struct GNUNET_dv_neighbor *)value;
+  struct GNUNET_dv_neighbor * neighbor = value;
   GNUNET_free (neighbor->neighbor);
   GNUNET_free_non_null(neighbor->referrer);
   GNUNET_free (neighbor);
