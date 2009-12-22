@@ -1102,9 +1102,6 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
                                          &delete_callback, (void *) peer);
           /* delete_callback will free 'neighbor' (and members) */
         }
-      GNUNET_free(neighbor->neighbor);
-      GNUNET_free_non_null(neighbor->referrer);
-      GNUNET_free(neighbor);
     }
   GNUNET_mutex_unlock (ctx->dvMutex);
 #if DEBUG_DV
