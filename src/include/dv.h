@@ -70,10 +70,10 @@ typedef struct
    */
   GNUNET_PeerIdentity neighbor;
 
-  /*
+  /**
    * Neighbor ID to use when sending to this peer
    */
-  unsigned int neighbor_id;
+  unsigned int neighbor_id GNUNET_PACKED;
 
 } p2p_dv_MESSAGE_NeighborInfo;
 
@@ -84,25 +84,19 @@ typedef struct
 {
   GNUNET_MessageHeader header;
 
-  /**
-   * Identity of peer that sent the message
-
-  GNUNET_PeerIdentity sender GNUNET_PACKED;
-  */
-  /**
-   * Identity of neighbor this message is going to
-
-  GNUNET_PeerIdentity recipient GNUNET_PACKED;
-   */
 
   /**
-   * Identity of peer that sent the message
+   * Identity of peer that ultimately sent the message.
+   * Should be looked up in the set of 'neighbor_id's of
+   * the referring peer.
    */
   unsigned int sender GNUNET_PACKED;
 
   /**
-   * Identity of neighbor this message is going to
-  */
+   * Identity of neighbor this message is going to.  Should
+   * be looked up in the set of our own identifiers for
+   * neighbors!
+   */
   unsigned int recipient GNUNET_PACKED;
 
 } p2p_dv_MESSAGE_Data;
