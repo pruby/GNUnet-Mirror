@@ -234,6 +234,8 @@ typedef struct DV_DHTQueryRecord
    */
   struct GNUNET_BloomFilter *bloom_results;
 
+  struct GNUNET_CONTAINER_HeapNode *hnode;
+
 } DV_DHTQueryRecord;
 
 /*
@@ -721,7 +723,7 @@ add_route (const GNUNET_PeerIdentity * sender,
   if (GNUNET_multi_hash_map_contains (new_records.hashmap, &get->key))
     {
       q = GNUNET_multi_hash_map_get (new_records.hashmap, &get->key);
-      GNUNET_CONTAINER_heap_remove_node (new_records.minHeap, q);
+      GNUNET_CONTAINER_heap_remove_node (new_records.minHeap, q->hnode);
     }
   else
     {
@@ -778,7 +780,7 @@ add_route (const GNUNET_PeerIdentity * sender,
 #endif
     }
 
-  GNUNET_CONTAINER_heap_insert (new_records.minHeap, q, now);
+  q->hnode = GNUNET_CONTAINER_heap_insert (new_records.minHeap, q, now);
   GNUNET_multi_hash_map_put (new_records.hashmap, &get->key, q,
                              GNUNET_MultiHashMapOption_REPLACE);
 
@@ -1355,7 +1357,7 @@ GNUNET_DV_DHT_get_stop (const GNUNET_HashCode * key,
             }
         }
       GNUNET_multi_hash_map_remove (new_records.hashmap, key, q);
-      GNUNET_CONTAINER_heap_remove_node (new_records.minHeap, q);
+      GNUNET_CONTAINER_heap_remove_node (new_records.minHeap, q->hnode);
       records_removed++;
     }
 
@@ -1554,7 +1556,7 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
   rt_size = (unsigned int) rts;
 
   new_records.hashmap = GNUNET_multi_hash_map_create ((unsigned int) rts);
-  new_records.minHeap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
+  new_records.minHeap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
   memset (&nulldata, 0, sizeof (nulldata));
 
   lock = GNUNET_mutex_create (GNUNET_NO);

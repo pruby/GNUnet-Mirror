@@ -107,49 +107,6 @@ typedef struct
 
 } p2p_dv_MESSAGE_Data;
 
-/*
- * Struct where actual neighbor information is stored,
- * referenced by min_heap and max_heap.  Freeing dealt
- * with when items removed from hashmap.
- */
-struct GNUNET_dv_neighbor
-{
-  /*
-   * Back-pointer location in min heap
-   */
-  struct GNUNET_dv_heap_node *min_loc;
-
-  /*
-   * Back-pointer location in max heap
-   */
-  struct GNUNET_dv_heap_node *max_loc;
-
-  /**
-   * Identity of neighbor.
-   */
-  GNUNET_PeerIdentity neighbor;
-
-  /**
-   * Identity of referrer (where we got the information)
-   */
-  GNUNET_PeerIdentity *referrer;
-
-  /**
-   * Cost to neighbor, used for actual distance vector computations
-   */
-  unsigned int cost;
-
-  /**
-   * Last time we received routing information from this peer
-   */
-  GNUNET_CronTime last_activity;
-
-  /*
-   * Random identifier we use for this peer, to be used as shortcut
-   * instead of sending full peer id for each message
-   */
-  unsigned int neighbor_id;
-};
 
 #endif
 

@@ -20,10 +20,11 @@
 
 /**
  * @author Nathan Evans
+ * @author Christian Grothoff
  * @file util/containers/heaptest.c
  * @brief Test of heap operations
  */
-
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
 #include "dv.h"
@@ -31,15 +32,11 @@
 #define VERBOSE GNUNET_NO
 
 static int
-iterator_callback (void *element, GNUNET_CostType cost,
-                   struct GNUNET_CONTAINER_Heap *root, void *cls)
+iterator_callback (void *cls,
+		   struct GNUNET_CONTAINER_HeapNode *node,
+		   void *element,
+		   GNUNET_CONTAINER_HeapCostType cost)
 {
-#if VERBOSE
-  struct GNUNET_dv_neighbor *node;
-  node = (struct GNUNET_dv_neighbor *) element;
-  fprintf (stdout, "%d\n", node->cost);
-  //fprintf (stdout, "%d\n", ((struct GNUNET_dv_neighbor *)element)->cost);
-#endif
   return GNUNET_OK;
 }
 
@@ -48,75 +45,58 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_CONTAINER_Heap *myHeap;
-  struct GNUNET_dv_neighbor *neighbor1;
-  struct GNUNET_dv_neighbor *neighbor2;
-  struct GNUNET_dv_neighbor *neighbor3;
-  struct GNUNET_dv_neighbor *neighbor4;
-  struct GNUNET_dv_neighbor *neighbor5;
-  struct GNUNET_dv_neighbor *neighbor6;
+  struct GNUNET_CONTAINER_HeapNode *n1;
+  struct GNUNET_CONTAINER_HeapNode *n2;
+  struct GNUNET_CONTAINER_HeapNode *n3;
+  struct GNUNET_CONTAINER_HeapNode *n4;
+  struct GNUNET_CONTAINER_HeapNode *n5;
+  struct GNUNET_CONTAINER_HeapNode *n6;
 
-  myHeap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
+  myHeap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
+  n1 = GNUNET_CONTAINER_heap_insert (myHeap, "11", 11);
+  GNUNET_CONTAINER_heap_iterate (myHeap, &iterator_callback, NULL);
+  GNUNET_GE_ASSERT (NULL,
+		    1 == GNUNET_CONTAINER_heap_get_size (myHeap));
+  n2 = GNUNET_CONTAINER_heap_insert (myHeap, "78", 78);
+  GNUNET_GE_ASSERT (NULL, 
+		    2 == GNUNET_CONTAINER_heap_get_size (myHeap));
+  GNUNET_GE_ASSERT (NULL,
+		    0 == strcmp ("78",
+				 GNUNET_CONTAINER_heap_remove_node (myHeap, n2)));
+  GNUNET_GE_ASSERT (NULL,
+		    1 == GNUNET_CONTAINER_heap_get_size (myHeap));
+  GNUNET_CONTAINER_heap_iterate (myHeap, &iterator_callback, NULL);
 
-  neighbor1 = malloc (sizeof (struct GNUNET_dv_neighbor));
-  neighbor2 = malloc (sizeof (struct GNUNET_dv_neighbor));
-  neighbor3 = malloc (sizeof (struct GNUNET_dv_neighbor));
-  neighbor4 = malloc (sizeof (struct GNUNET_dv_neighbor));
-  neighbor5 = malloc (sizeof (struct GNUNET_dv_neighbor));
-  neighbor6 = malloc (sizeof (struct GNUNET_dv_neighbor));
+  n3 = GNUNET_CONTAINER_heap_insert (myHeap, "15", 5);
+  GNUNET_CONTAINER_heap_update_cost (myHeap, n3, 15);
+  GNUNET_GE_ASSERT (NULL, 
+		    2 == GNUNET_CONTAINER_heap_get_size (myHeap));
+  GNUNET_CONTAINER_heap_iterate (myHeap, &iterator_callback, NULL);
 
-  neighbor1->cost = 11;
-  neighbor2->cost = 78;
-  neighbor3->cost = 5;
-  neighbor4->cost = 50;
-  neighbor5->cost = 100;
-  neighbor6->cost = 30;
+  n4 = GNUNET_CONTAINER_heap_insert (myHeap, "50", 50);
+  GNUNET_GE_ASSERT (NULL, 
+		    3 == GNUNET_CONTAINER_heap_get_size (myHeap));
+  GNUNET_CONTAINER_heap_iterate (myHeap, &iterator_callback, NULL);
 
-  GNUNET_CONTAINER_heap_insert (myHeap, neighbor1, neighbor1->cost);
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
-
-  GNUNET_CONTAINER_heap_insert (myHeap, neighbor2, neighbor2->cost);
-  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
-
-  GNUNET_CONTAINER_heap_remove_node (myHeap, neighbor2);
-  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_insert (myHeap, neighbor3, neighbor3->cost);
-  GNUNET_CONTAINER_heap_update_cost (myHeap, neighbor3, 15);
-  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_insert (myHeap, neighbor4, neighbor4->cost);
-  fprintf (stderr, "size is %d\n", GNUNET_CONTAINER_heap_get_size (myHeap));
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_insert (myHeap, neighbor5, neighbor5->cost);
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_insert (myHeap, neighbor6, neighbor6->cost);
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_remove_node (myHeap, neighbor5);
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_remove_root (myHeap);
-
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-  GNUNET_CONTAINER_heap_update_cost (myHeap, neighbor6, 200);
-  GNUNET_CONTAINER_heap_iterate (myHeap, iterator_callback, NULL);
-
+  n5 = GNUNET_CONTAINER_heap_insert (myHeap, "100", 100);
+  n6 = GNUNET_CONTAINER_heap_insert (myHeap, "30/200", 30);
+  GNUNET_GE_ASSERT (NULL, 
+		    5 == GNUNET_CONTAINER_heap_get_size (myHeap));
+  GNUNET_CONTAINER_heap_remove_node (myHeap, n5);
+  GNUNET_GE_ASSERT (NULL, 
+		    0 == strcmp ("11",
+				 GNUNET_CONTAINER_heap_remove_root (myHeap))); /* n1 */
+  GNUNET_CONTAINER_heap_update_cost (myHeap, n6, 200);
+  GNUNET_CONTAINER_heap_remove_node (myHeap, n3); 
+  GNUNET_GE_ASSERT (NULL,
+		    0 == strcmp ("50",
+				 GNUNET_CONTAINER_heap_remove_root (myHeap))); /* n4 */
+  GNUNET_GE_ASSERT (NULL,
+		    0 == strcmp ("30/200",
+				 GNUNET_CONTAINER_heap_remove_root (myHeap))); /* n6 */
+  GNUNET_GE_ASSERT (NULL, 0 == GNUNET_CONTAINER_heap_get_size (myHeap));
   GNUNET_CONTAINER_heap_destroy (myHeap);
-
-  GNUNET_free (neighbor1);
-  GNUNET_free (neighbor2);
-  GNUNET_free (neighbor3);
-  GNUNET_free (neighbor4);
-  GNUNET_free (neighbor5);
-  GNUNET_free (neighbor6);
-
   return 0;
-
 }
 
 /* end of heaptest.c */
