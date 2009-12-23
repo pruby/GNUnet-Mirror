@@ -126,10 +126,8 @@ struct GNUNET_dv_neighbor
 
   /**
    * Identity of neighbor.
-   * FIXME: should not be a pointer (avoid need to malloc/free 
-   * this member).
    */
-  GNUNET_PeerIdentity *neighbor;
+  GNUNET_PeerIdentity neighbor;
 
   /**
    * Identity of referrer (where we got the information)

@@ -113,7 +113,6 @@ static int
 free_neighbor (const GNUNET_HashCode * key, void *value, void *cls)
 {
   struct GNUNET_dv_neighbor * neighbor = value;
-  GNUNET_free (neighbor->neighbor);
   GNUNET_free_non_null(neighbor->referrer);
   GNUNET_free (neighbor);
   return GNUNET_YES;
@@ -150,8 +149,7 @@ delete_neighbor (struct GNUNET_dv_neighbor *neighbor)
   GNUNET_CONTAINER_heap_remove_node (ctx->neighbor_max_heap, neighbor);
   GNUNET_CONTAINER_heap_remove_node (ctx->neighbor_min_heap, neighbor);
   GNUNET_multi_hash_map_remove_all (ctx->extended_neighbors,
-                                    &neighbor->neighbor->hashPubKey);
-  GNUNET_free (neighbor->neighbor);
+                                    &neighbor->neighbor.hashPubKey);
   GNUNET_free_non_null (neighbor->referrer);
   GNUNET_free (neighbor);
   update_stats ();
@@ -167,7 +165,7 @@ connection_iterate_callback (void *element, GNUNET_CostType cost,
 {
   struct GNUNET_dv_neighbor *neighbor = element;
   struct callbackWrapper *wrap = cls;
-  wrap->method (neighbor->neighbor, wrap->arg);
+  wrap->method (&neighbor->neighbor, wrap->arg);
   return GNUNET_OK;
 }
 
@@ -193,7 +191,7 @@ delete_expired_callback (void *element, GNUNET_CostType cost,
    */
   if ((GNUNET_NO ==
        GNUNET_multi_hash_map_contains (ctx->direct_neighbors,
-                                       &neighbor->neighbor->hashPubKey))
+                                       &neighbor->neighbor.hashPubKey))
       && (now - neighbor->last_activity > GNUNET_DV_PEER_EXPIRATION_TIME))
     {
 #if DEBUG_DV_MAINTAIN
@@ -429,7 +427,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
 #endif
   coreAPI->ciphertext_send ((neighbor->referrer != NULL)
                             ? neighbor->referrer
-                            : neighbor->neighbor,
+                            : &neighbor->neighbor,
                             &toSend->header, importance, maxdelay);
   if (stats != NULL)
     stats->change (stat_dv_actual_sent_messages, 1);
@@ -820,9 +818,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer, unsigned int neighbor_id,
       neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
       neighbor->cost = cost;
       neighbor->last_activity = now;
-      neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       neighbor->neighbor_id = neighbor_id;
-      memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      memcpy (&neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
       addToNeighborMap (neighbor_id, peer);
 
       if (referrer == NULL)
@@ -878,9 +875,8 @@ addUpdateNeighbor (const GNUNET_PeerIdentity * peer, unsigned int neighbor_id,
   neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
   neighbor->cost = cost;
   neighbor->last_activity = now;
-  neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
   neighbor->neighbor_id = neighbor_id;
-  memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+  memcpy (&neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
   addToNeighborMap (neighbor_id, peer);
 
   if (referrer == NULL)
@@ -984,10 +980,9 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer, void *unused)
       neighbor = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
       neighbor->cost = cost;
       neighbor->last_activity = GNUNET_get_time ();
-      neighbor->neighbor = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       neighbor->neighbor_id =
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, RAND_MAX - 1) + 1;
-      memcpy (neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
+      memcpy (&neighbor->neighbor, peer, sizeof (GNUNET_PeerIdentity));
       neighbor->referrer = NULL;
       GNUNET_multi_hash_map_put (ctx->direct_neighbors, &peer->hashPubKey,
                                  neighbor, GNUNET_MultiHashMapOption_REPLACE);
@@ -1041,7 +1036,7 @@ delete_callback (void *element, GNUNET_CostType cost,
 #endif
 
   if ( ( (neighbor->referrer == NULL) &&
-	 (0 == memcmp (neighbor->neighbor,
+	 (0 == memcmp (&neighbor->neighbor,
 		       toMatch,
 		       sizeof (GNUNET_PeerIdentity))) ) ||
        ( (neighbor->referrer != NULL) &&
@@ -1247,7 +1242,8 @@ neighbor_send_thread (void *rcls)
       to = chooseToNeighbor ();
 
       if ((about != NULL) && (to != NULL)
-          && (memcmp (about->neighbor, to->neighbor, sizeof (GNUNET_HashCode))
+          && (memcmp (&about->neighbor, 
+		      &to->neighbor, sizeof (GNUNET_HashCode))
               != 0))
         {
 #if DEBUG_DV
@@ -1262,9 +1258,10 @@ neighbor_send_thread (void *rcls)
 #endif
           message.cost = htonl (about->cost);
           message.neighbor_id = htonl (about->neighbor_id);
-          memcpy (&message.neighbor, about->neighbor,
+          memcpy (&message.neighbor, 
+		  &about->neighbor,
                   sizeof (GNUNET_PeerIdentity));
-          coreAPI->ciphertext_send (to->neighbor, &message.header,
+          coreAPI->ciphertext_send (&to->neighbor, &message.header,
                                     GNUNET_DV_DHT_GOSSIP_PRIORITY,
                                     ctx->send_interval);
           if (stats != NULL)
