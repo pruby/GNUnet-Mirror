@@ -711,7 +711,7 @@ addUpdateNeighbor (const GNUNET_PeerIdentity *peer,
 	  GNUNET_mutex_unlock (ctx.dvMutex);
 	  return;
 	}
-      if (ctx.max_table_size >=
+      if (ctx.max_table_size <=
           GNUNET_multi_hash_map_size (ctx.extended_neighbors))
         {
 	  /* remove most expensive entry */
