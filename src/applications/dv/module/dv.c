@@ -1125,12 +1125,11 @@ direct_neighbor_free_iterator (const GNUNET_HashCode * key,
 
   GNUNET_GE_ASSERT (NULL, neighbor->referee_head == NULL);
   GNUNET_GE_ASSERT (NULL, neighbor->referee_tail == NULL);
-  /* FIXME: this modifies the hash map that we are iterating over! */
   GNUNET_multi_hash_map_remove (ctx.direct_neighbors,
 				key,
 				value);
   GNUNET_free (neighbor);
-  return GNUNET_YES;
+  return GNUNET_NO;
 }
 
 
@@ -1158,7 +1157,7 @@ release_module_dv ()
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dv_job,
                        GNUNET_DV_MAINTAIN_FREQUENCY, NULL);
   GNUNET_multi_hash_map_iterate (ctx.extended_neighbors, &distant_neighbor_free_iterator, NULL);
-  GNUNET_multi_hash_map_iterate (ctx.direct_neighbors, &direct_neighbor_free_iterator, NULL);
+  while (0 != GNUNET_multi_hash_map_iterate (ctx.direct_neighbors, &direct_neighbor_free_iterator, NULL));
   GNUNET_multi_hash_map_destroy (ctx.extended_neighbors);
   GNUNET_multi_hash_map_destroy (ctx.direct_neighbors);
   GNUNET_CONTAINER_heap_destroy (ctx.neighbor_max_heap);
