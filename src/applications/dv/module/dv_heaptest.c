@@ -33,11 +33,24 @@
 #define MAX_SIZE 100
 #define TESTS 75
 
+struct GNUNET_dv_neighbor
+{
+
+  /**
+   * Identity of neighbor.
+   */
+  unsigned int neighbor;
+
+  /**
+   * Cost to neighbor, used for actual distance vector computations
+   */
+  unsigned int cost;
+};
+
+
 int
 main (int argc, char **argv)
 {
-  struct GNUNET_RSA_PrivateKey *hostkey;
-  GNUNET_RSA_PublicKey pubkey;
 
   struct GNUNET_CONTAINER_Heap *minHeap;
   struct GNUNET_CONTAINER_Heap *maxHeap;
@@ -46,11 +59,15 @@ main (int argc, char **argv)
   int cur_pos = 0;
   unsigned int temp_rand;
   unsigned int temp_node;
+  unsigned int temp_id;
 
   struct GNUNET_dv_neighbor *neighbors[TESTS];
+  struct GNUNET_CONTAINER_HeapNode *min_nodes[TESTS];
+  struct GNUNET_CONTAINER_HeapNode *max_nodes[TESTS];
+
   ret = GNUNET_OK;
-  maxHeap = GNUNET_CONTAINER_heap_create (GNUNET_MAX_HEAP);
-  minHeap = GNUNET_CONTAINER_heap_create (GNUNET_MIN_HEAP);
+  maxHeap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MAX);
+  minHeap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
 
   for (i = 0; i < TESTS; i++)
     {
@@ -59,7 +76,7 @@ main (int argc, char **argv)
 
   for (i = 0; i < TESTS; i++)
     {
-      temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
+      temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2);
       while ((cur_pos <= 1) && (temp_rand != 0))
         temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
 
@@ -68,18 +85,14 @@ main (int argc, char **argv)
         case 0:
         case 1:
           temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
+          temp_id = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100000) + 1;
           fprintf (stderr, "Adding node with cost %d\n", temp_rand);
-          neighbors[cur_pos] = malloc (sizeof (struct GNUNET_dv_neighbor));
-          neighbors[cur_pos]->neighbor =
-            malloc (sizeof (GNUNET_PeerIdentity));
-          hostkey = GNUNET_RSA_create_key ();
-          GNUNET_RSA_get_public_key (hostkey, &pubkey);
-          GNUNET_hash (&pubkey, sizeof (GNUNET_RSA_PublicKey),
-                       &neighbors[cur_pos]->neighbor->hashPubKey);
+          neighbors[cur_pos] = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+          neighbors[cur_pos]->neighbor = temp_id;
           neighbors[cur_pos]->cost = temp_rand;
-          GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos],
+          max_nodes[cur_pos] = GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos],
                                         temp_rand);
-          GNUNET_CONTAINER_heap_insert (minHeap, neighbors[cur_pos],
+          min_nodes[cur_pos] = GNUNET_CONTAINER_heap_insert (minHeap, neighbors[cur_pos],
                                         temp_rand);
           cur_pos++;
           break;
@@ -89,17 +102,17 @@ main (int argc, char **argv)
           temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
           fprintf (stderr, "Updating node %d (cost %d) with new cost %d\n",
                    temp_node + 1, neighbors[temp_node]->cost, temp_rand);
-          GNUNET_CONTAINER_heap_update_cost (maxHeap, neighbors[temp_node],
+          GNUNET_CONTAINER_heap_update_cost (maxHeap, max_nodes[temp_node],
                                              temp_rand);
-          GNUNET_CONTAINER_heap_update_cost (minHeap, neighbors[temp_node],
+          GNUNET_CONTAINER_heap_update_cost (minHeap, min_nodes[temp_node],
                                              temp_rand);
+          neighbors[temp_node]->cost = temp_rand;
           break;
         case 3:
           fprintf (stderr, "Removing node %d with cost %d\n", cur_pos,
                    neighbors[cur_pos - 1]->cost);
-          GNUNET_CONTAINER_heap_remove_node (maxHeap, neighbors[cur_pos - 1]);
-          GNUNET_CONTAINER_heap_remove_node (minHeap, neighbors[cur_pos - 1]);
-          GNUNET_free (neighbors[cur_pos - 1]->neighbor);
+          GNUNET_CONTAINER_heap_remove_node (maxHeap, max_nodes[cur_pos - 1]);
+          GNUNET_CONTAINER_heap_remove_node (minHeap, min_nodes[cur_pos - 1]);
           GNUNET_free (neighbors[cur_pos - 1]);
           neighbors[cur_pos - 1] = NULL;
           cur_pos--;
@@ -112,6 +125,17 @@ main (int argc, char **argv)
         return GNUNET_SYSERR;
 
     }
+  while (GNUNET_CONTAINER_heap_get_size(maxHeap) > 0)
+  {
+    GNUNET_CONTAINER_heap_remove_root(maxHeap);
+  }
+
+  while (GNUNET_CONTAINER_heap_get_size(minHeap) > 0)
+  {
+    GNUNET_CONTAINER_heap_remove_root(minHeap);
+  }
+
+  GNUNET_CONTAINER_heap_destroy (maxHeap);
   GNUNET_CONTAINER_heap_destroy (minHeap);
   return 0;
 }
