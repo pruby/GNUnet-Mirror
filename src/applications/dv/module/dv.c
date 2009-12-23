@@ -19,8 +19,9 @@
  */
 
 /**
- * @author Nathan Evans
  * @file applications/dv/module/dv.c
+ * @author Nathan Evans
+ * @author Christian Grothoff
  * @brief Core of distance vector routing algorithm.  Loads the service,
  * initializes necessary routing tables, and schedules updates, etc.
  */
@@ -40,12 +41,16 @@
  */
 #define SUPPORT_HIDING GNUNET_NO
 
-#define DEBUG_DV_MAINTAIN GNUNET_NO
 #define DEBUG_DV GNUNET_NO
-#define DEBUG_DV_FORWARD GNUNET_NO
-#define DEBUG_PEERS GNUNET_NO
-/* How long to allow a message to be delayed */
+
+/**
+ * How long to allow a message to be delayed 
+ */
 #define DV_DELAY (5000 * GNUNET_CRON_MILLISECONDS)
+
+/**
+ * Priority to use for DV messages.
+ */
 #define DV_PRIORITY 0
 
 /**
