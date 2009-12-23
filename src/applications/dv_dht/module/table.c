@@ -786,17 +786,22 @@ GNUNET_DV_DHT_considerPeer (const GNUNET_PeerIdentity * peer)
 
   bucket = findBucketFor (peer);
   if (bucket == NULL)
-    return;                     /* peers[i] == self */
+    {
+      return;                   /* peers[i] == self */
+    }
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
-  {
-    GNUNET_mutex_lock(lock); /* Possible missing lock causing bug 1523? */
-    checkExpiration (bucket);
-    GNUNET_mutex_unlock(lock);
-  }
+    {
+      checkExpiration (bucket);
+    }
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
-    return;                     /* do not care */
+    {
+      return;                   /* do not care */
+    }
   if (NULL != findPeerEntryInBucket (bucket, peer))
-    return;                     /* already have this peer in buckets */
+    {
+      return;                   /* already have this peer in buckets */
+    }
+
   /* do we know how to contact this peer? */
   /* This may not work with the dv implementation... */
 
@@ -811,7 +816,6 @@ GNUNET_DV_DHT_considerPeer (const GNUNET_PeerIdentity * peer)
       return;
     }
   /* we are connected (in dv), add to bucket */
-  GNUNET_mutex_lock (lock);
   pi = GNUNET_malloc (sizeof (PeerInfo));
   memset (pi, 0, sizeof (PeerInfo));
   pi->id = *peer;
@@ -822,7 +826,6 @@ GNUNET_DV_DHT_considerPeer (const GNUNET_PeerIdentity * peer)
   total_peers++;
   if (stats != NULL)
     stats->change (stat_dht_total_peers, 1);
-  GNUNET_mutex_unlock (lock);
 }
 
 static void
@@ -831,9 +834,7 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 #if DEBUG_TABLE
   print_entry ("broadcast_dht_discovery_prob");
 #endif
-
   GNUNET_DV_DHT_considerPeer (other);
-
 #if DEBUG_TABLE
   print_exit ("broadcast_dht_discovery_prob");
 #endif

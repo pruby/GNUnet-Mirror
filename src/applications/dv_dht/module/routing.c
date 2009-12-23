@@ -424,9 +424,7 @@ struct RouteResultContext
 static int
 route_result (const GNUNET_HashCode * key,
               unsigned int type,
-              unsigned int size,
-	      const char *data,
-	      void *ctx)
+              unsigned int size, const char *data, void *ctx)
 {
   struct RouteResultContext *rrc = ctx;
   DV_DHTQueryRecord *q;
@@ -455,9 +453,11 @@ route_result (const GNUNET_HashCode * key,
   result = NULL;
   if (rrc->rmsg != NULL)
     {
-      result = GNUNET_malloc (ntohs(rrc->rmsg->header.size));
-      memcpy (result, rrc->rmsg, ntohs(rrc->rmsg->header.size));
-      GNUNET_GE_ASSERT (NULL, ntohs (result->header.type) == GNUNET_P2P_PROTO_DHT_RESULT);
+      result = GNUNET_malloc (ntohs (rrc->rmsg->header.size));
+      memcpy (result, rrc->rmsg, ntohs (rrc->rmsg->header.size));
+      GNUNET_GE_ASSERT (NULL,
+                        ntohs (result->header.type) ==
+                        GNUNET_P2P_PROTO_DHT_RESULT);
       result->hop_count = htonl (ntohl (result->hop_count) + 1);
     }
   else
@@ -472,7 +472,7 @@ route_result (const GNUNET_HashCode * key,
       result->key = *key;
       memset (&result->bloomfilter, 0, DV_DHT_BLOOM_SIZE);
 #if DEBUG_ROUTING
-      dhtqueryuid = 0; /* FIXME: why have this? */
+      dhtqueryuid = 0;          /* FIXME: why have this? */
       if ((debug_routes) && (dhtlog != NULL))
         {
           dhtlog->insert_query (&rrc->queryuid, dhtqueryuid, DHTLOG_RESULT,
@@ -636,6 +636,7 @@ route_result (const GNUNET_HashCode * key,
 #endif
   GNUNET_bloomfilter_free (bloom);
   GNUNET_free (result);
+
   return GNUNET_OK;
 }
 
@@ -679,9 +680,7 @@ add_route (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "%s: Size of record hash map %u, size of heap %u. Bad!\n",
-                     &shortID, 
-		     routes_size,
-                     heap_size);
+                     &shortID, routes_size, heap_size);
 #endif
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -713,8 +712,7 @@ add_route (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
                      "%s: Size of record hash map %u, size of heap %u. Bad!\n",
-                     &shortID, routes_size,
-                     heap_size);
+                     &shortID, routes_size, heap_size);
 #endif
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -872,9 +870,7 @@ handle_get (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
   rrc.queryuid = GNUNET_ntohll (get->queryuid);
   rrc.rmsg = NULL;
-  total =
-    dstore->get (&get->key, ntohl (get->type), &route_result,
-                 &rrc);
+  total = dstore->get (&get->key, ntohl (get->type), &route_result, &rrc);
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                  GNUNET_GE_BULK,
@@ -1280,8 +1276,7 @@ handle_result (const GNUNET_PeerIdentity * sender,
   route_result (&result->key,
                 ntohl (result->type),
                 ntohs (result->header.size) - sizeof (DV_DHT_MESSAGE),
-                (const char *) &result[1],
-		&rrc);
+                (const char *) &result[1], &rrc);
   return GNUNET_OK;
 }
 
@@ -1556,7 +1551,8 @@ GNUNET_DV_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
   rt_size = (unsigned int) rts;
 
   new_records.hashmap = GNUNET_multi_hash_map_create ((unsigned int) rts);
-  new_records.minHeap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
+  new_records.minHeap =
+    GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
   memset (&nulldata, 0, sizeof (nulldata));
 
   lock = GNUNET_mutex_create (GNUNET_NO);
@@ -1742,6 +1738,12 @@ GNUNET_DV_DHT_done_routing ()
 
   coreAPI->service_release (dstore);
   GNUNET_multi_hash_map_destroy (new_records.hashmap);
+
+  while (GNUNET_CONTAINER_heap_get_size (new_records.minHeap) > 0)
+    {
+      GNUNET_CONTAINER_heap_remove_root (new_records.minHeap);
+    }
+
   GNUNET_CONTAINER_heap_destroy (new_records.minHeap);
   return GNUNET_OK;
 }

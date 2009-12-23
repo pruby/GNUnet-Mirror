@@ -74,7 +74,7 @@ result_callback (const GNUNET_HashCode * key,
   struct PeerData *pd = cls;
   char expect[8];
 
-#if 0
+#if 1
   fprintf (stderr, "Got %u %u `%.*s'\n", type, size, size, data);
 #endif
   memset (expect, pd->expect_i, sizeof (expect));
