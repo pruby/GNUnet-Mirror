@@ -43,13 +43,42 @@
 
 #define DEBUG_DV GNUNET_NO
 
+
 /**
- * How long to allow a message to be delayed 
+ * How often do we check about sending out more peer information (if
+ * we are connected to no peers previously).
+ */
+#define GNUNET_DV_DEFAULT_SEND_INTERVAL (500 * GNUNET_CRON_MILLISECONDS)
+
+/**
+ * How long do we wait at most between sending out information?
+ */
+#define GNUNET_DV_MAX_SEND_INTERVAL (5000 * GNUNET_CRON_MILLISECONDS)
+
+/**
+ * How long can we have not heard from a peer and
+ * still have it in our tables?
+ */
+#define GNUNET_DV_PEER_EXPIRATION_TIME (3000 * GNUNET_CRON_SECONDS)
+
+/**
+ * Priority for gossip.
+ */
+#define GNUNET_DV_DHT_GOSSIP_PRIORITY (GNUNET_EXTREME_PRIORITY / 10)
+
+/**
+ * How often should we check if expiration time has elapsed for
+ * some peer?
+ */
+#define GNUNET_DV_MAINTAIN_FREQUENCY (5 * GNUNET_CRON_SECONDS)
+
+/**
+ * How long to allow a message to be delayed?
  */
 #define DV_DELAY (5000 * GNUNET_CRON_MILLISECONDS)
 
 /**
- * Priority to use for DV messages.
+ * Priority to use for DV data messages.
  */
 #define DV_PRIORITY 0
 
@@ -269,6 +298,8 @@ distant_neighbor_free (struct DistantNeighbor *referee)
  * @param node peer we may delete
  * @param element 'DistantNeighbor' struct of that peer
  * @param cost known communication cost
+ * @return GNUNET_YES if we should continue to iterate,
+ *         GNUNET_NO if not.
  */
 static int
 delete_expired_callback (void *cls,
@@ -280,11 +311,17 @@ delete_expired_callback (void *cls,
   GNUNET_CronTime now;
 
   if (cost == 0)
-    return GNUNET_OK; /* never delete direct neighbors */
+    return GNUNET_YES; /* never delete direct neighbors */
   now = GNUNET_get_time ();
   if (now - neighbor->last_activity > GNUNET_DV_PEER_EXPIRATION_TIME)
-    distant_neighbor_free (neighbor);  /* FIXME: this changes 'neighbor_max_heap' while we iterate over it! */
-  return GNUNET_OK;
+    {
+      distant_neighbor_free (neighbor);  
+      /* Stop iteration since we changed 'neighbor_max_heap', which
+	 breaks invariants of the iterator code (besides,
+	 expiring one entry per run should be enough)! */
+      return GNUNET_NO;
+    }
+  return GNUNET_YES;
 }
 
 

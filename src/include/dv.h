@@ -29,30 +29,6 @@
 
 #include "gnunet_core.h"
 
-#define GNUNET_DV_LEAST_COST 1
-#define GNUNET_DV_MAX_COST -1
-#define GNUNET_DV_MAX_TABLE_SIZE -1
-
-/*
- * How often do we send out peer information?
- */
-#define GNUNET_DV_DEFAULT_SEND_INTERVAL 500 * GNUNET_CRON_MILLISECONDS
-
-#define GNUNET_DV_MAX_SEND_INTERVAL 5000 * GNUNET_CRON_MILLISECONDS
-/*
- * How long can we have not heard from a peer and
- * still have it in our tables?
- */
-#define GNUNET_DV_PEER_EXPIRATION_TIME 3000 * GNUNET_CRON_SECONDS
-
-/*
- * How often should we check if expiration time has elapsed?
- */
-#define GNUNET_DV_MAINTAIN_FREQUENCY 30 * GNUNET_CRON_SECONDS
-
-#define GNUNET_DV_DHT_GOSSIP_PRIORITY GNUNET_EXTREME_PRIORITY / 10
-
-
 /**
  * Message that gets sent between nodes updating dv infos
  */
