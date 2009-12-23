@@ -812,7 +812,7 @@ peer_connect_handler (const GNUNET_PeerIdentity * peer,
   GNUNET_multi_hash_map_put (ctx.direct_neighbors, 
 			     &peer->hashPubKey,
 			     neighbor, 
-			     GNUNET_MultiHashMapOption_UNIQUE);
+			     GNUNET_MultiHashMapOption_UNIQUE_ONLY);
   GNUNET_mutex_unlock (ctx.dvMutex);
   addUpdateNeighbor (peer, 
 		     0,
@@ -833,13 +833,15 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer,
 			 void *unused)
 {
   struct DirectNeighbor *neighbor;
+  struct DistantNeighbor *referee;
 
   GNUNET_mutex_lock (ctx.dvMutex);
   neighbor =
     GNUNET_multi_hash_map_get (ctx.direct_neighbors, &peer->hashPubKey);
   GNUNET_GE_ASSERT (NULL, neighbor != NULL);
-  while (NULL != (referee = neighbor->referees))
+  while (NULL != (referee = neighbor->referee_head))    
     distant_neighbor_free (referee);
+  GNUNET_GE_ASSERT (NULL, neighbor->referee_tail == NULL);
   GNUNET_multi_hash_map_remove (ctx.direct_neighbors,
 				&peer->hashPubKey,
 				neighbor);
@@ -924,8 +926,8 @@ neighbor_send_thread (void *rcls)
 	   (about->hidden == GNUNET_NO) &&
 #endif
 	   (to != NULL) &&
-	   (0 != memcmp (&about->identifier, 
-			 &to->identifier, sizeof (PeerIdentity))) )
+	   (0 != memcmp (&about->identity, 
+			 &to->identity, sizeof (GNUNET_PeerIdentity))) )
         {
 #if DEBUG_DV
           GNUNET_hash_to_enc (&about->neighbor->hashPubKey, &encPeerAbout);
@@ -939,9 +941,9 @@ neighbor_send_thread (void *rcls)
                          (char *) &encPeerTo);
 #endif
           message.cost = htonl (about->cost);
-          message.neighbor_id = htonl (about->neighbor_id);
+          message.neighbor_id = htonl (about->our_id);
           memcpy (&message.neighbor, 
-		  &about->neighbor,
+		  &about->identity,
                   sizeof (GNUNET_PeerIdentity));
           coreAPI->ciphertext_send (&to->identity, &message.header,
                                     GNUNET_DV_DHT_GOSSIP_PRIORITY,
@@ -966,7 +968,6 @@ provide_module_dv (GNUNET_CoreAPIForPlugins * capi)
   unsigned long long max_hosts;
   GNUNET_EncName encMe;
   static GNUNET_DV_ServiceAPI api;
-  int i;
 
   api.dv_send = &GNUNET_DV_send_message;
   api.dv_connections_iterate = &GNUNET_DV_connection_iterate_peers;
@@ -1073,16 +1074,19 @@ distant_neighbor_free_iterator (const GNUNET_HashCode *key,
  * Deletes a direct neighbor from the min heap and from the
  * direct neighbor hash map.
  */
-static void
+static int
 direct_neighbor_free_iterator (const GNUNET_HashCode * key,
 			       void *value, 
 			       void *cls)
 {
   struct DirectNeighbor * neighbor = value;
+
   GNUNET_GE_ASSERT (NULL, neighbor->referee_head == NULL);
   GNUNET_GE_ASSERT (NULL, neighbor->referee_tail == NULL);
+  /* FIXME: this modifies the hash map that we are iterating over! */
   GNUNET_multi_hash_map_remove (ctx.direct_neighbors,
-				key);
+				key,
+				value);
   GNUNET_free (neighbor);
   return GNUNET_YES;
 }
