@@ -20,20 +20,23 @@
 
 /**
  * @author Nathan Evans
- * @file applications/dv/module/dv_heaptest.c
- * @brief Test of heap operations in dv like conditions (churny)...
+ * @file util/containers/heaptest.c
+ * @brief Test of heap operations in churny like conditions...
  */
 
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
 #include "platform.h"
-#include "dv.h"
 #include "../../../util/crypto/hostkey_gcrypt.c"
 
 #define MAX_SIZE 100
 #define TESTS 75
+#define DEBUG GNUNET_NO
 
-struct GNUNET_dv_neighbor
+/* Test struct so we have something to actually
+ * put into the heap */
+
+struct GNUNET_neighbor
 {
 
   /**
@@ -42,7 +45,7 @@ struct GNUNET_dv_neighbor
   unsigned int neighbor;
 
   /**
-   * Cost to neighbor, used for actual distance vector computations
+   * Cost to neighbor
    */
   unsigned int cost;
 };
@@ -61,7 +64,7 @@ main (int argc, char **argv)
   unsigned int temp_node;
   unsigned int temp_id;
 
-  struct GNUNET_dv_neighbor *neighbors[TESTS];
+  struct GNUNET_neighbor *neighbors[TESTS];
   struct GNUNET_CONTAINER_HeapNode *min_nodes[TESTS];
   struct GNUNET_CONTAINER_HeapNode *max_nodes[TESTS];
 
@@ -76,7 +79,7 @@ main (int argc, char **argv)
 
   for (i = 0; i < TESTS; i++)
     {
-      temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2);
+      temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
       while ((cur_pos <= 1) && (temp_rand != 0))
         temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 5);
 
@@ -85,23 +88,31 @@ main (int argc, char **argv)
         case 0:
         case 1:
           temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
-          temp_id = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100000) + 1;
+          temp_id =
+            GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100000) + 1;
+#if DEBUG
           fprintf (stderr, "Adding node with cost %d\n", temp_rand);
-          neighbors[cur_pos] = GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
+#endif
+          neighbors[cur_pos] =
+            GNUNET_malloc (sizeof (struct GNUNET_dv_neighbor));
           neighbors[cur_pos]->neighbor = temp_id;
           neighbors[cur_pos]->cost = temp_rand;
-          max_nodes[cur_pos] = GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos],
-                                        temp_rand);
-          min_nodes[cur_pos] = GNUNET_CONTAINER_heap_insert (minHeap, neighbors[cur_pos],
-                                        temp_rand);
+          max_nodes[cur_pos] =
+            GNUNET_CONTAINER_heap_insert (maxHeap, neighbors[cur_pos],
+                                          temp_rand);
+          min_nodes[cur_pos] =
+            GNUNET_CONTAINER_heap_insert (minHeap, neighbors[cur_pos],
+                                          temp_rand);
           cur_pos++;
           break;
 
         case 2:
           temp_node = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, cur_pos);
           temp_rand = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) + 1;
+#if DEBUG
           fprintf (stderr, "Updating node %d (cost %d) with new cost %d\n",
                    temp_node + 1, neighbors[temp_node]->cost, temp_rand);
+#endif
           GNUNET_CONTAINER_heap_update_cost (maxHeap, max_nodes[temp_node],
                                              temp_rand);
           GNUNET_CONTAINER_heap_update_cost (minHeap, min_nodes[temp_node],
@@ -109,8 +120,10 @@ main (int argc, char **argv)
           neighbors[temp_node]->cost = temp_rand;
           break;
         case 3:
+#if DEBUG
           fprintf (stderr, "Removing node %d with cost %d\n", cur_pos,
                    neighbors[cur_pos - 1]->cost);
+#endif
           GNUNET_CONTAINER_heap_remove_node (maxHeap, max_nodes[cur_pos - 1]);
           GNUNET_CONTAINER_heap_remove_node (minHeap, min_nodes[cur_pos - 1]);
           GNUNET_free (neighbors[cur_pos - 1]);
@@ -125,15 +138,15 @@ main (int argc, char **argv)
         return GNUNET_SYSERR;
 
     }
-  while (GNUNET_CONTAINER_heap_get_size(maxHeap) > 0)
-  {
-    GNUNET_CONTAINER_heap_remove_root(maxHeap);
-  }
+  while (GNUNET_CONTAINER_heap_get_size (maxHeap) > 0)
+    {
+      GNUNET_CONTAINER_heap_remove_root (maxHeap);
+    }
 
-  while (GNUNET_CONTAINER_heap_get_size(minHeap) > 0)
-  {
-    GNUNET_CONTAINER_heap_remove_root(minHeap);
-  }
+  while (GNUNET_CONTAINER_heap_get_size (minHeap) > 0)
+    {
+      GNUNET_CONTAINER_heap_remove_root (minHeap);
+    }
 
   GNUNET_CONTAINER_heap_destroy (maxHeap);
   GNUNET_CONTAINER_heap_destroy (minHeap);

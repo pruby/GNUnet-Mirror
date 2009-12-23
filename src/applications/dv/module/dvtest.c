@@ -86,7 +86,10 @@ test (struct GNUNET_ClientServerConnection *sock,
   sent_messages += messageCnt * messageIterations;
 
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &msg.header))
+  {
+    failed_messages += messageCnt * messageIterations;
     return -1;
+  }
   ret = 0;
 
   buffer = NULL;
@@ -116,6 +119,7 @@ test (struct GNUNET_ClientServerConnection *sock,
   else
     {
       printf (_("\nFailed to receive reply from gnunetd.\n"));
+      failed_messages += messageCnt * messageIterations;
       ret = -1;
     }
   GNUNET_free_non_null (buffer);
