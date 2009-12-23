@@ -74,7 +74,17 @@ struct GNUNET_DV_Context
   struct GNUNET_MultiHashMap *direct_neighbors;
 
   struct GNUNET_MultiHashMap *extended_neighbors;
+  /**
+   * We use the min heap (min refers to cost) to prefer
+   * gossipping about peers with small costs.
+   */
   struct GNUNET_CONTAINER_Heap *neighbor_min_heap;
+
+  /**
+   * We use the max heap (max refers to cost) for general
+   * iterations over all peers and to remove the most costly
+   * connection if we have too many.
+   */
   struct GNUNET_CONTAINER_Heap *neighbor_max_heap;
   struct NeighborID *neighbor_id_array;
   unsigned long long fisheye_depth;
