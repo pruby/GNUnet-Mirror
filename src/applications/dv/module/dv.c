@@ -844,7 +844,11 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_lock (ctx.dvMutex);
   neighbor =
     GNUNET_multi_hash_map_get (ctx.direct_neighbors, &peer->hashPubKey);
-  GNUNET_GE_ASSERT (NULL, neighbor != NULL);
+  if (neighbor == NULL)
+    {
+      GNUNET_mutex_unlock (ctx.dvMutex);
+      return;
+    }
   while (NULL != (referee = neighbor->referee_head))
     distant_neighbor_free (referee);
   GNUNET_GE_ASSERT (NULL, neighbor->referee_tail == NULL);
