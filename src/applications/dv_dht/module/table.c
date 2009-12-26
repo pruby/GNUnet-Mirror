@@ -834,7 +834,9 @@ broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 #if DEBUG_TABLE
   print_entry ("broadcast_dht_discovery_prob");
 #endif
+  GNUNET_mutex_lock (lock);
   GNUNET_DV_DHT_considerPeer (other);
+  GNUNET_mutex_unlock (lock);
 #if DEBUG_TABLE
   print_exit ("broadcast_dht_discovery_prob");
 #endif
