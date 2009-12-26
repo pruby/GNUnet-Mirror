@@ -1125,7 +1125,8 @@ get (const GNUNET_HashCode * key,
   handle = getDBHandle ();
   dbh = handle->dbh;
 
-  GNUNET_snprintf (scratch, 256,
+  GNUNET_snprintf (scratch,
+		   sizeof(scratch),
                    "SELECT count(*) FROM gn080 WHERE hash=:1%s%s",
                    vhash == NULL ? "" : " AND vhash=:2",
                    type == 0 ? "" : (vhash ==
@@ -1181,7 +1182,8 @@ get (const GNUNET_HashCode * key,
       return total;
     }
 
-  GNUNET_snprintf (scratch, 256,
+  GNUNET_snprintf (scratch, 
+		   sizeof(scratch),
                    "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ "
                    "FROM gn080 WHERE hash=:1%s%s AND _ROWID_ >= :%d "
                    "ORDER BY _ROWID_ ASC LIMIT 1 OFFSET :d",
