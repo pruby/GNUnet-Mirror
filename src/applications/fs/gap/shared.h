@@ -26,6 +26,8 @@
 #ifndef SHARED_H
 #define SHARED_H
 
+#define RECENT_TARGET_LIST_SIZE 8
+
 #include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "ecrs_core.h"
@@ -136,6 +138,16 @@ struct RequestList
    * Maybe zero (if we are the peer that cares).
    */
   PID_INDEX response_target;
+
+  /**
+   * PIDs of recent recipients.
+   */
+  PID_INDEX recent_targets[RECENT_TARGET_LIST_SIZE];
+
+  /**
+   * Offset of the next entry in 'recent_targets' to overwrite.
+   */ 
+  unsigned int recent_target_off;
 
   /**
    * (Relative) TTL used in the last request.

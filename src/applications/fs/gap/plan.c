@@ -200,6 +200,8 @@ static int stat_gap_query_sent;
 
 static int stat_gap_query_planned;
 
+static int stat_gap_query_foreign_planned;
+
 static int stat_gap_query_success;
 
 static int stat_trust_spent;
@@ -318,7 +320,9 @@ queue_request (PID_INDEX target,
   struct QueryPlanEntry *entry;
   struct QueryPlanEntry *pos;
   unsigned int total;
-
+  if (request->recent_target_off >= RECENT_TARGET_LIST_SIZE)
+    request->recent_target_off = 0; /* wrap around */
+  request->recent_targets[request->recent_target_off++] = target;
   /* find query plan for target */
   qpl = find_or_create_query_plan_list (target);
   /* construct entry */
@@ -333,7 +337,11 @@ queue_request (PID_INDEX target,
   request->plan_entries = entry;
 
   if (stats != NULL)
-    stats->change (stat_gap_query_planned, 1);
+    {
+      stats->change (stat_gap_query_planned, 1);
+      if (request->response_client == NULL)
+	stats->change (stat_gap_query_foreign_planned, 1);
+    }
   /* compute (random) insertion position in doubly-linked list */
   total = count_query_plan_entries (qpl);
   total = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total + 1);
@@ -377,6 +385,7 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   unsigned int allowable_prio;
   long long score;
   PID_INDEX peer;
+  int i;
 
   peer = GNUNET_FS_PT_intern (identity);
   if ((peer == rpc->request->response_target) ||
@@ -406,21 +415,29 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       last = history->last_response_time;
       if (last >= now)
         last = now - 1;
-      /* the more responses we have in relation
-         to the number of requests we sent, the
-         higher we score; the score is the more
-         significant the more recent the last
-         response was */
+      /* the more responses we have in relation to the number of
+         requests we sent, the higher we score; the score is the more
+         significant the more recent the last response was */
       history_score
         =
         (GNUNET_GAP_MAX_GAP_DELAY * history->response_count) /
         (history->request_count * (now - last));
       if (history->response_count == 0)
-        history_score =
+        history_score = 
           -history->request_count * coreAPI->p2p_connections_iterate (NULL,
                                                                       NULL);
       if (history_score > (1 << 30))
         history_score = (1 << 30);
+    }
+  for (i=0;i<RECENT_TARGET_LIST_SIZE;i++)
+    {
+      if (peer == rpc->request->recent_targets[i]) 
+	{
+	  if (history_score > 0)
+	    history_score = 0;
+	  else
+	    history_score -= (1 << 30);	       
+	}
     }
   /* check query proximity */
   proximity_score =
@@ -478,18 +495,17 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   /* compute combined score */
   /* open question: any good weights for the scoring? */
   score = history_score + rank->reserved_bandwidth - proximity_score;
-  if (score <= -(1 << 16))
+  if (score <= -(1 << 24))
     {
-      /* would underflow, use lowest legal score */
-      rank->score = 1;
+      /* would underflow, use low, randomized score */
+      rank->score = 1 + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1<<24);
     }
   else
     {
-      rank->score = (unsigned int) ((1 << 16) + score);
+      rank->score = (unsigned int) ((1 << 24) + score);
       if (rank->score < score)  /* integer overflow */
         rank->score = -1;       /* max int */
     }
-
   /* insert into ranking list */
   rank->next = rpc->rankings;
   rpc->rankings = rank;
@@ -943,7 +959,9 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_query_sent =
         stats->create (gettext_noop ("# gap requests total sent"));
       stat_gap_query_planned =
-        stats->create (gettext_noop ("# gap content total planned"));
+        stats->create (gettext_noop ("# gap query total planned"));
+      stat_gap_query_foreign_planned =
+        stats->create (gettext_noop ("# gap query foreign planned"));
       stat_gap_query_success =
         stats->create (gettext_noop ("# gap routes succeeded"));
       stat_trust_spent = stats->create (gettext_noop ("# trust spent"));
