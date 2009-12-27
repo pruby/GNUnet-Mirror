@@ -533,6 +533,12 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
   GNUNET_mutex_lock (ctx.dvMutex);
   dn = GNUNET_multi_hash_map_get (ctx.direct_neighbors,
                                   &sender->hashPubKey);
+  if (dn == NULL)
+    {
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_mutex_unlock (ctx.dvMutex);
+      return GNUNET_OK;
+    }
   sid = ntohl (incoming->sender);
   pos = dn->referee_head;
   while ((NULL != pos) && (pos->referrer_id != sid))
