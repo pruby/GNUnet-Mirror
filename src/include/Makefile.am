@@ -22,6 +22,7 @@ gnunetinclude_HEADERS = \
   gnunet_collection_lib.h \
   gnunet_core.h \
   gnunet_datastore_service.h \
+  gnunet_dv_service.h \
   gnunet_dv_dht_lib.h \
   gnunet_dv_dht_service.h \
   gnunet_dhtlog_service.h \
