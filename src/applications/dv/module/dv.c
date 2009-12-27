@@ -551,9 +551,13 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
     {
       /* 0 == us */
       GNUNET_mutex_unlock (ctx.dvMutex);
-      coreAPI->loopback_send (&original_sender,
-                              (const char *) packed_message,
-                              ntohs (packed_message->size), GNUNET_YES, NULL);
+      GNUNET_GE_BREAK (NULL, ntohs (packed_message->type) != GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE);
+      GNUNET_GE_BREAK (NULL, ntohs (packed_message->type) != GNUNET_P2P_PROTO_DV_DATA_MESSAGE);
+      if ( (ntohs (packed_message->type) != GNUNET_P2P_PROTO_DV_NEIGHBOR_MESSAGE) &&
+	   (ntohs (packed_message->type) != GNUNET_P2P_PROTO_DV_DATA_MESSAGE) )
+	coreAPI->loopback_send (&original_sender,
+				(const char *) packed_message,
+				ntohs (packed_message->size), GNUNET_YES, NULL);
       return GNUNET_OK;
     }
 
@@ -796,7 +800,9 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
     stats->change (stat_dv_received_gossips, 1);
   neighbor = GNUNET_multi_hash_map_get (ctx.direct_neighbors,
                                         &sender->hashPubKey);
-  GNUNET_GE_ASSERT (NULL, neighbor != NULL);
+  GNUNET_GE_BREAK (NULL, neighbor != NULL);
+  if (neighbor == NULL)
+    return GNUNET_OK;
   addUpdateNeighbor (&nmsg->neighbor,
                      ntohl (nmsg->neighbor_id),
                      neighbor, ntohl (nmsg->cost) + 1);
