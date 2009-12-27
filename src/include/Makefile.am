@@ -4,6 +4,7 @@ EXTRA_DIST = \
   chat.h \
   core.h \
   dht.h \
+  dv.h \
   ecrs_core.h \
   fs.h \
   gettext.h \
