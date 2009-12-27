@@ -24,6 +24,7 @@ gnunetinclude_HEADERS = \
   gnunet_datastore_service.h \
   gnunet_dv_dht_lib.h \
   gnunet_dv_dht_service.h \
+  gnunet_dhtlog_service.h \
   gnunet_dstore_service.h \
   gnunet_ecrs_lib.h \
   gnunet_fragmentation_service.h \

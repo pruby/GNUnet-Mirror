@@ -136,15 +136,6 @@ src/applications/dstore_mysql/dstore_quota_test.c
 src/applications/dstore_mysql/dstore_test.c
 src/applications/transport/transport.c
 src/applications/transport/check.c
-src/applications/dht/tools/dht_multipeer_test.c
-src/applications/dht/tools/dht_api.c
-src/applications/dht/tools/dht_twopeer_test.c
-src/applications/dht/tools/dht-query.c
-src/applications/dht/tools/dht_loopback_test.c
-src/applications/dht/module/table.c
-src/applications/dht/module/routing.c
-src/applications/dht/module/cs.c
-src/applications/dht/module/service.c
 src/applications/identity/clientapi.c
 src/applications/identity/hostkey.c
 src/applications/identity/identitytest.c
@@ -223,7 +214,6 @@ src/applications/fs/gap/pid_table.c
 src/applications/fs/gap/querymanager.c
 src/applications/fs/gap/migration.c
 src/applications/fs/gap/gap.c
-src/applications/fs/gap/fs_dht.c
 src/applications/fs/gap/anonymity.c
 src/applications/fs/gap/test_star_topology.c
 src/applications/fs/gap/test_loopback.c
@@ -309,9 +299,6 @@ src/applications/traffic/traffic.h
 src/applications/tracekit/tracekit.h
 src/applications/advertising/bootstrap.h
 src/applications/chat/module/p2p.h
-src/applications/dht/module/service.h
-src/applications/dht/module/routing.h
-src/applications/dht/module/table.h
 src/applications/identity/hostkey.h
 src/applications/identity/identity.h
 src/applications/session/cache.h
@@ -322,7 +309,6 @@ src/applications/fs/fsui/fsui.h
 src/applications/fs/gap/shared.h
 src/applications/fs/gap/ondemand.h
 src/applications/fs/gap/plan.h
-src/applications/fs/gap/fs_dht.h
 src/applications/fs/gap/anonymity.h
 src/applications/fs/gap/pid_table.h
 src/applications/fs/gap/migration.h
@@ -348,7 +334,6 @@ src/include/gnunet_util_error_loggers.h
 src/include/gnunet_fragmentation_service.h
 src/include/gettext.h
 src/include/gnunet_util_common.h
-src/include/gnunet_dht_lib.h
 src/include/gnunet_fs_lib.h
 src/include/gnunet_util_pseudonym.h
 src/include/gnunet_tracekit_lib.h
@@ -375,7 +360,6 @@ src/include/gnunet_transport.h
 src/include/gnunet_kvstore_service.h
 src/include/gnunet_ecrs_lib.h
 src/include/gnunet_dstore_service.h
-src/include/gnunet_dht_service.h
 src/include/gnunet_util.h
 src/include/chat.h
 src/include/gnunet_getoption_lib.h
