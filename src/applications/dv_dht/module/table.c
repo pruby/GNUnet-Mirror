@@ -720,11 +720,9 @@ pingPeer (PeerInfo * pi)
 
   p = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
   *p = pi->id;
-  if (GNUNET_OK == pingpong->ping (p, &pongNotify, p, GNUNET_NO, rand ()))
-    {
-      pi->lastTimePingSend = GNUNET_get_time ();
-      pi->request_count++;
-    }
+  pi->lastTimePingSend = GNUNET_get_time ();
+  pi->request_count++;
+  pingpong->ping (p, &pongNotify, p, GNUNET_NO, rand ());
 }
 
 /**
