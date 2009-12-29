@@ -1690,6 +1690,8 @@ ensureTransportConnected (BufferEntry * be)
     transport->connect_freely (&be->session.sender, GNUNET_NO, __FILE__);
   if (be->session.tsession == NULL)
     {
+      if (be->status == STAT_UP)
+	notify_disconnect (be);
       be->status = STAT_DOWN;
       be->time_established = 0;
       return GNUNET_NO;

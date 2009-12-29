@@ -110,6 +110,7 @@ GNUNET_multi_hash_map_iterate (const struct GNUNET_MultiHashMap *map,
   int count;
   unsigned int i;
   struct MapEntry *e;
+  struct MapEntry *nxt;
 
   count = 0;
   for (i = 0; i < map->map_length; i++)
@@ -117,10 +118,11 @@ GNUNET_multi_hash_map_iterate (const struct GNUNET_MultiHashMap *map,
       e = map->map[i];
       while (e != NULL)
         {
+	  nxt = e->next;
           if ((NULL != it) && (GNUNET_OK != it (&e->key, e->value, cls)))
             return GNUNET_SYSERR;
           count++;
-          e = e->next;
+          e = nxt;
         }
     }
   return count;

@@ -39,10 +39,15 @@
  * peers?  This is good for better anonymity (network harder to
  * analyze for attackers), but likely not so good for testing DV...
  */
-#define SUPPORT_HIDING GNUNET_NO
+#define SUPPORT_HIDING GNUNET_YES
 
 #define DEBUG_DV GNUNET_NO
 
+/**
+ * Enable checks that in theory should not fail but we know to 
+ * fail but are harmless (and warning would confuse users).
+ */ 
+#define STRICT GNUNET_NO
 
 /**
  * How often do we check about sending out more peer information (if
@@ -454,6 +459,7 @@ send_message (const GNUNET_PeerIdentity * recipient,
       sender_id = source->our_id;
     }
 
+  cost = target->cost;
   toSend = GNUNET_malloc (msg_size);
   toSend->header.size = htons (msg_size);
   toSend->header.type = htons (GNUNET_P2P_PROTO_DV_DATA_MESSAGE);
@@ -465,7 +471,6 @@ send_message (const GNUNET_PeerIdentity * recipient,
   if (stats != NULL)
     stats->change (stat_dv_actual_sent_messages, 1);
   GNUNET_free (toSend);
-  cost = target->cost;
   GNUNET_mutex_unlock (ctx.dvMutex);
   return (int) cost;
 }
@@ -535,7 +540,9 @@ p2pHandleDVDataMessage (const GNUNET_PeerIdentity * sender,
                                   &sender->hashPubKey);
   if (dn == NULL)
     {
+#if STRICT
       GNUNET_GE_BREAK (NULL, 0);
+#endif
       GNUNET_mutex_unlock (ctx.dvMutex);
       return GNUNET_OK;
     }
@@ -806,7 +813,9 @@ p2pHandleDVNeighborMessage (const GNUNET_PeerIdentity * sender,
     stats->change (stat_dv_received_gossips, 1);
   neighbor = GNUNET_multi_hash_map_get (ctx.direct_neighbors,
                                         &sender->hashPubKey);
+#if STRICT
   GNUNET_GE_BREAK (NULL, neighbor != NULL);
+#endif
   if (neighbor == NULL)
     return GNUNET_OK;
   addUpdateNeighbor (&nmsg->neighbor,
