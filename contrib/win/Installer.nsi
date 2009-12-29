@@ -76,7 +76,7 @@ InstallDir "$PROGRAMFILES\GNU\GNUnet"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
-RequestExecutionLevel user
+RequestExecutionLevel admin
 
 Var LANGCODE
 Var USR_PROF
@@ -379,7 +379,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		SectionEnd
 
     Section "RPC" SEC_RPC
-      SectionIn 1 2 4
+      SectionIn 4
       SetOutPath "$INSTDIR\bin"
 
       File "C:\GNUnet\bin\libgnunetrpcutil-0.dll"
@@ -387,11 +387,10 @@ SectionGroup "GNUnet" SEC_GNUNET
     SectionEnd
     
     Section "Testing" SEC_TEST
-    	SectionIn 1 2 4
+    	SectionIn 4
     	SetOutPath "$INSTDIR\bin"
     	
       File "C:\GNUnet\bin\libgnunettestingapi-0.dll"
-      File "C:\GNUnet\bin\libgnunetecrscore-0.dll"
     SectionEnd
 	SectionGroupEnd
 SectionGroupEnd
@@ -546,6 +545,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TRACE} "Tracekit"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TBENCH} "TBench"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_RPC} "Remote Procedure Calls"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TEST} "Test API"  
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LE_ALL} "Sophisticated keyword extractors (mp3, pdf, zip...)"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_BASE} "3rd party software required by GNUnet"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_GTK} "3rd party software required by GNUnet Setup and the GUI"
