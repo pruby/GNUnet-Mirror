@@ -234,7 +234,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_dv_tbench.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_dv_dht.dll"
 			File "C:\GNUnet\bin\libgnunetdvdhtapi-0.dll"
-			File "C:\GNUnet\bin\libgnunetdhtapi-0.dll"
 		SectionEnd
 
     Section "Chat" SEC_SERVER_CHAT
@@ -392,7 +391,6 @@ SectionGroup "GNUnet" SEC_GNUNET
     	SetOutPath "$INSTDIR\bin"
     	
       File "C:\GNUnet\bin\libgnunettestingapi-0.dll"
-      File "C:\GNUnet\bin\remotetest.exe"
       File "C:\GNUnet\bin\libgnunetecrscore-0.dll"
     SectionEnd
 	SectionGroupEnd
@@ -453,7 +451,6 @@ SectionGroup "GNU libextractor"
 		File "C:\GNUnet\bin\libextractor_tar.dll"
 		File "C:\GNUnet\bin\libextractor_tiff.dll"
     File "C:\GNUnet\bin\libextractor_wav.dll"
-    File "C:\GNUnet\bin\libextractor_word.dll"
     File "C:\GNUnet\bin\libextractor_xm.dll"
 		File "C:\GNUnet\bin\libextractor_zip.dll"
 	SectionEnd
@@ -548,7 +545,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DIAG} "Advanced diagnostic tools"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TRACE} "Tracekit"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TBENCH} "TBench"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DHT} "Distributed Hash Tables"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_RPC} "Remote Procedure Calls"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LE_ALL} "Sophisticated keyword extractors (mp3, pdf, zip...)"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_BASE} "3rd party software required by GNUnet"
