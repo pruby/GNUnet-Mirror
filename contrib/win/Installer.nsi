@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.8.0c"
+!define PRODUCT_VERSION "0.8.1"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -190,7 +190,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\gnunetd.exe"
       File "C:\GNUnet\bin\libgnunetip-0.dll" 
 			File "C:\GNUnet\bin\libgnunetstatsapi-0.dll"
-      File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
       File "C:\GNUnet\bin\libgnunettransport_http.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
@@ -230,6 +229,12 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_sqstore_sqlite.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_sqstore_mysql.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_kvstore_sqlite.dll"
+     	File "C:\GNUnet\bin\libgnunetmodule_dstore_sqlite.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_dv.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_dv_tbench.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_dv_dht.dll"
+			File "C:\GNUnet\bin\libgnunetdvdhtapi-0.dll"
+			File "C:\GNUnet\bin\libgnunetdhtapi-0.dll"
 		SectionEnd
 
     Section "Chat" SEC_SERVER_CHAT
@@ -374,21 +379,21 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_tbench.dll"			
 		SectionEnd
 
-		Section "DHT" SEC_DHT
-			SectionIn 1 2 4
-		  SetOutPath "$INSTDIR\bin"
-
-     	File "C:\GNUnet\bin\libgnunetmodule_dstore_sqlite.dll"
-			File "C:\GNUnet\bin\libgnunetmodule_dht.dll"
-			File "C:\GNUnet\bin\libgnunetdhtapi-0.dll"
-		SectionEnd
-    
     Section "RPC" SEC_RPC
       SectionIn 1 2 4
       SetOutPath "$INSTDIR\bin"
 
       File "C:\GNUnet\bin\libgnunetrpcutil-0.dll"
       File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
+    SectionEnd
+    
+    Section "Testing" SEC_TEST
+    	SectionIn 1 2 4
+    	SetOutPath "$INSTDIR\bin"
+    	
+      File "C:\GNUnet\bin\libgnunettestingapi-0.dll"
+      File "C:\GNUnet\bin\remotetest.exe"
+      File "C:\GNUnet\bin\libgnunetecrscore-0.dll"
     SectionEnd
 	SectionGroupEnd
 SectionGroupEnd
@@ -687,6 +692,10 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetcore-0.dll"
   Delete "$INSTDIR\bin\libgnunetdht_api-0.dll"
   Delete "$INSTDIR\bin\libgnunetdhtapi-0.dll"
+  Delete "$INSTDIR\bin\libgnunetmodule_dv.dll"
+  Delete "$INSTDIR\bin\libgnunetmodule_dv_tbench.dll"
+  Delete "$INSTDIR\bin\libgnunetmodule_dv_dht.dll"
+  Delete "$INSTDIR\bin\libgnunetdvdhtapi-0.dll"
 	Delete "$INSTDIR\bin\libgnunetdht_datastore_memory-0.dll"
   Delete "$INSTDIR\bin\ibgnunetmodule_dstore.dll"
   Delete "$INSTDIR\bin\libgnunetmodule_dstore_sqlite.dll"
@@ -753,6 +762,10 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetutil_logging-0.dll"
 	Delete "$INSTDIR\bin\libgnunetutil_network_client-0.dll"
 	Delete "$INSTDIR\bin\libgnunetutil_boot-0.dll"
+	Delete "$INSTDIR\bin\libgnunettestingapi-0.dll"
+  Delete "$INSTDIR\bin\remotetest.exe"
+  Delete "$INSTDIR\bin\libgnunetecrscore-0.dll"
+	
 	Delete "$INSTDIR\bin\libgobject-2.0-0.dll"
 	Delete "$INSTDIR\bin\libgthread-2.0-0.dll"
 	Delete "$INSTDIR\bin\libiconv-2.dll"
