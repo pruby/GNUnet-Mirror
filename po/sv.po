@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2009-12-27 19:20+0100\n"
+"POT-Creation-Date: 2009-12-29 12:23+0100\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -3905,108 +3905,108 @@ msgstr "\"%s\" valda %d av %d meddelanden (MTU: %d).\n"
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Detaljer om meddelande: %u: längd %d, prioritet: %d\n"
 
-#: src/server/connection.c:3169
+#: src/server/connection.c:3171
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Meddelande från \"%s\" kastades bort: ogiltigt format.\n"
 
-#: src/server/connection.c:3258
+#: src/server/connection.c:3260
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:3280
+#: src/server/connection.c:3282
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:3803
+#: src/server/connection.c:3805
 msgid "# outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:3806
+#: src/server/connection.c:3808
 msgid "# bytes of outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:3808
+#: src/server/connection.c:3810
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:3812
+#: src/server/connection.c:3814
 msgid "# connections closed (transport issue)"
 msgstr ""
 
-#: src/server/connection.c:3815
+#: src/server/connection.c:3817
 msgid "# bytes encrypted"
 msgstr "# byte krypterade"
 
-#: src/server/connection.c:3819
+#: src/server/connection.c:3821
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# byte skickade av typen %d"
 
-#: src/server/connection.c:3823
+#: src/server/connection.c:3825
 #, fuzzy
 msgid "# bytes received"
 msgstr "# byte mottogs via TCP"
 
-#: src/server/connection.c:3825
+#: src/server/connection.c:3827
 msgid "# bytes decrypted"
 msgstr "# byte dekrypterade"
 
-#: src/server/connection.c:3826
+#: src/server/connection.c:3828
 msgid "# bytes noise sent"
 msgstr ""
 
-#: src/server/connection.c:3829
+#: src/server/connection.c:3831
 msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3832
+#: src/server/connection.c:3834
 msgid "# total bytes per second receive limit"
 msgstr ""
 
-#: src/server/connection.c:3835
+#: src/server/connection.c:3837
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "antal meddelanden i ett meddelandeblock"
 
-#: src/server/connection.c:3838
+#: src/server/connection.c:3840
 msgid "# total number of bytes we were allowed to send but did not"
 msgstr ""
 
-#: src/server/connection.c:3841
+#: src/server/connection.c:3843
 msgid "# total number of bytes we were allowed to sent"
 msgstr ""
 
-#: src/server/connection.c:3844
+#: src/server/connection.c:3846
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
-#: src/server/connection.c:3847
+#: src/server/connection.c:3849
 msgid "# transports switched to stream transport"
 msgstr ""
 
-#: src/server/connection.c:3850
+#: src/server/connection.c:3852
 msgid "# average connection lifetime (in ms)"
 msgstr ""
 
-#: src/server/connection.c:3853
+#: src/server/connection.c:3855
 msgid "# conn. shutdown: other peer sent too much"
 msgstr ""
 
-#: src/server/connection.c:3856
+#: src/server/connection.c:3858
 msgid "# conn. shutdown: we lacked bandwidth"
 msgstr ""
 
-#: src/server/connection.c:3859
+#: src/server/connection.c:3861
 msgid "# conn. shutdown: other peer timed out"
 msgstr ""
 
-#: src/server/connection.c:3862
+#: src/server/connection.c:3864
 msgid "# conn. shutdown: timed out during connect"
 msgstr ""
 
-#: src/server/connection.c:3865
+#: src/server/connection.c:3867
 msgid "# conn. shutdown: other peer requested it"
 msgstr ""
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2009-12-27 19:20+0100\n"
+"POT-Creation-Date: 2009-12-29 12:23+0100\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -4130,113 +4130,113 @@ msgstr "`%s' wählte %d von %d Nachrichten aus (MTU: %d).\n"
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Nachrichten Details: %u: Länge %d, Priorität: %d\n"
 
-#: src/server/connection.c:3169
+#: src/server/connection.c:3171
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Nachricht von `%s' verworfen: ungültiges Format.\n"
 
-#: src/server/connection.c:3258
+#: src/server/connection.c:3260
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Ungültige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:3280
+#: src/server/connection.c:3282
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 "Empfangene Nachricht ist mehr als ein Tag alt. Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:3803
+#: src/server/connection.c:3805
 msgid "# outgoing messages dropped"
 msgstr "# ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:3806
+#: src/server/connection.c:3808
 msgid "# bytes of outgoing messages dropped"
 msgstr "# Bytes ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:3808
+#: src/server/connection.c:3810
 msgid "# connections closed (HANGUP sent)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:3812
+#: src/server/connection.c:3814
 #, fuzzy
 msgid "# connections closed (transport issue)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:3815
+#: src/server/connection.c:3817
 msgid "# bytes encrypted"
 msgstr "# Bytes verschlüsselt"
 
-#: src/server/connection.c:3819
+#: src/server/connection.c:3821
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# Bytes des Typs %d übertragen"
 
-#: src/server/connection.c:3823
+#: src/server/connection.c:3825
 #, fuzzy
 msgid "# bytes received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/server/connection.c:3825
+#: src/server/connection.c:3827
 msgid "# bytes decrypted"
 msgstr "# Bytes entschlüsselt"
 
-#: src/server/connection.c:3826
+#: src/server/connection.c:3828
 msgid "# bytes noise sent"
 msgstr "# Bytes Rauschen gesendet"
 
-#: src/server/connection.c:3829
+#: src/server/connection.c:3831
 msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3832
+#: src/server/connection.c:3834
 #, fuzzy
 msgid "# total bytes per second receive limit"
 msgstr "# Bytes Rauschen empfangen"
 
-#: src/server/connection.c:3835
+#: src/server/connection.c:3837
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: src/server/connection.c:3838
+#: src/server/connection.c:3840
 #, fuzzy
 msgid "# total number of bytes we were allowed to send but did not"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: src/server/connection.c:3841
+#: src/server/connection.c:3843
 #, fuzzy
 msgid "# total number of bytes we were allowed to sent"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: src/server/connection.c:3844
+#: src/server/connection.c:3846
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
-#: src/server/connection.c:3847
+#: src/server/connection.c:3849
 msgid "# transports switched to stream transport"
 msgstr ""
 
-#: src/server/connection.c:3850
+#: src/server/connection.c:3852
 msgid "# average connection lifetime (in ms)"
 msgstr ""
 
-#: src/server/connection.c:3853
+#: src/server/connection.c:3855
 msgid "# conn. shutdown: other peer sent too much"
 msgstr ""
 
-#: src/server/connection.c:3856
+#: src/server/connection.c:3858
 msgid "# conn. shutdown: we lacked bandwidth"
 msgstr ""
 
-#: src/server/connection.c:3859
+#: src/server/connection.c:3861
 msgid "# conn. shutdown: other peer timed out"
 msgstr ""
 
-#: src/server/connection.c:3862
+#: src/server/connection.c:3864
 msgid "# conn. shutdown: timed out during connect"
 msgstr ""
 
-#: src/server/connection.c:3865
+#: src/server/connection.c:3867
 msgid "# conn. shutdown: other peer requested it"
 msgstr ""
 
