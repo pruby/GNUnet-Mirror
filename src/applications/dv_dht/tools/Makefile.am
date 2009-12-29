@@ -9,6 +9,7 @@ lib_LTLIBRARIES = \
 
 noinst_PROGRAMS = \
   gnunet-dvdht-query \
+  dv_dht_driver \
   dv_dht_multi_topology_test
 
 libgnunetdvdhtapi_la_SOURCES = \
@@ -26,9 +27,6 @@ gnunet_dvdht_query_LDADD =  \
   $(top_builddir)/src/applications/dv_dht/tools/libgnunetdvdhtapi.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
-
-bin_PROGRAMS = \
-  dv_dht_driver
 
 dv_dht_driver_SOURCES = \
   dv_dht_driver.c
