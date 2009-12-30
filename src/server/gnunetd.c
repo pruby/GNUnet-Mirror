@@ -191,7 +191,7 @@ static struct GNUNET_CommandLineOption gnunetdOptions[] = {
    0, &GNUNET_getopt_configure_set_one, &debug_flag},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Starts the gnunetd daemon.")),        /* -h */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  {'p', "padding-disable", "YES/NO",
+  {'p', "padding-disable", NULL,
    gettext_noop ("disable padding with random data (experimental)"), 0,
    &GNUNET_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING"},
   {'l', "loud", NULL,
