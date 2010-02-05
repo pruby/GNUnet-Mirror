@@ -316,11 +316,8 @@ GNUNET_client_connection_ensure_connected (struct
    * a connection issue.
    */
 #define TRIES_PER_AF 2
-#ifdef WINDOWS
-#define DELAY_PER_RETRY (5000 * GNUNET_CRON_MILLISECONDS)
-#else
+#define CONNECT_TIMEOUT (5 * GNUNET_CRON_SECONDS)
 #define DELAY_PER_RETRY (50 * GNUNET_CRON_MILLISECONDS)
-#endif
 #define ADVANCE() do { af_index++; tries = TRIES_PER_AF; } while(0)
 #define RETRY() do { tries--; if (tries == 0) { ADVANCE(); } else { GNUNET_thread_sleep(DELAY_PER_RETRY); } } while (0)
   tries = TRIES_PER_AF;
@@ -415,8 +412,8 @@ GNUNET_client_connection_ensure_connected (struct
       FD_ZERO (&eset);
       FD_SET (osock, &wset);
       FD_SET (osock, &eset);
-      timeout.tv_sec = 0;
-      timeout.tv_usec = DELAY_PER_RETRY * TRIES_PER_AF * 1000;
+      timeout.tv_sec = CONNECT_TIMEOUT * TRIES_PER_AF / 1000;
+      timeout.tv_usec = (CONNECT_TIMEOUT * TRIES_PER_AF - timeout.tv_sec * 1000) * 1000;
       errno = 0;
       select_start = GNUNET_get_time ();
       ret = SELECT (osock + 1, &rset, &wset, &eset, &timeout);
@@ -430,7 +427,7 @@ GNUNET_client_connection_ensure_connected (struct
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
           if ((GNUNET_get_time () - select_start >
-               TRIES_PER_AF * DELAY_PER_RETRY) || (errno != EINTR))
+               TRIES_PER_AF * CONNECT_TIMEOUT) || (errno != EINTR))
             ADVANCE ();         /* spend enough time trying here */
           else
             RETRY ();
@@ -442,7 +439,7 @@ GNUNET_client_connection_ensure_connected (struct
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
           if (GNUNET_get_time () - select_start >
-              TRIES_PER_AF * DELAY_PER_RETRY)
+              TRIES_PER_AF * CONNECT_TIMEOUT)
             ADVANCE ();         /* spend enough time trying here */
           else
             RETRY ();
@@ -462,7 +459,7 @@ GNUNET_client_connection_ensure_connected (struct
           sock->sock = NULL;
           GNUNET_mutex_unlock (sock->destroylock);
           if (GNUNET_get_time () - select_start >
-              TRIES_PER_AF * DELAY_PER_RETRY)
+              TRIES_PER_AF * CONNECT_TIMEOUT)
             ADVANCE ();         /* spend enough time trying here */
           else
             RETRY ();
@@ -478,6 +475,7 @@ GNUNET_client_connection_ensure_connected (struct
 #undef RETRY
 #undef TRIES_PER_AF
 #undef DELAY_PER_RETRY
+#undef CONNECT_TIMEOUT
   return GNUNET_OK;
 }
 
