@@ -1392,9 +1392,7 @@ GNUNET_DV_DHT_put (const GNUNET_HashCode * key,
   put->type = htonl (type);
   put->hop_count = htonl (0);
   memset (&put->bloomfilter, 0, DV_DHT_BLOOM_SIZE);
-  GNUNET_mutex_lock(lock);
   put->network_size = htonl (GNUNET_DV_DHT_estimate_network_diameter ());
-  GNUNET_mutex_unlock(lock);
 #if DEBUG_ROUTING
   queryuid = 0;
   GNUNET_GE_LOG (coreAPI->ectx,

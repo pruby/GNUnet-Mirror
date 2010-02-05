@@ -269,11 +269,14 @@ unsigned int
 GNUNET_DV_DHT_estimate_network_diameter ()
 {
   unsigned int i;
-
+  GNUNET_mutex_lock(lock);
   for (i = bucketCount - 1; i > 0; i--)
     if (buckets[i].peers_size > 0)
       break;
+
+  GNUNET_mutex_unlock(lock);
   return i + 1;
+
 }
 
 /**
