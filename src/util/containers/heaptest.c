@@ -49,13 +49,27 @@ struct GNUNET_neighbor
   unsigned int cost;
 };
 
+static struct GNUNET_CONTAINER_Heap *minHeap;
+static struct GNUNET_CONTAINER_Heap *maxHeap;
+
+static int
+iterator_callback (void *cls,
+                   struct GNUNET_CONTAINER_HeapNode * node,
+                   void *element,
+                   GNUNET_CONTAINER_HeapCostType cost)
+{
+  struct GNUNET_neighbor *neighbor = element;
+#if DEBUG
+  fprintf(stderr, "Iterating, at neighbor %u with cost %u\n", neighbor->neighbor, neighbor->cost);
+#endif
+  GNUNET_CONTAINER_heap_remove_node (maxHeap, node);
+  return GNUNET_YES;
+
+}
 
 int
 main (int argc, char **argv)
 {
-
-  struct GNUNET_CONTAINER_Heap *minHeap;
-  struct GNUNET_CONTAINER_Heap *maxHeap;
   int i;
   int ret;
   int cur_pos = 0;
@@ -137,6 +151,9 @@ main (int argc, char **argv)
         return GNUNET_SYSERR;
 
     }
+
+  GNUNET_CONTAINER_heap_iterate(maxHeap, &iterator_callback, NULL);
+
   while (GNUNET_CONTAINER_heap_get_size (maxHeap) > 0)
     {
       GNUNET_CONTAINER_heap_remove_root (maxHeap);
