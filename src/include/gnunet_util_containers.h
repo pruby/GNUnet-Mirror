@@ -618,8 +618,9 @@ struct GNUNET_CONTAINER_HeapNode;
  * @param order how should the heap be sorted?
  * @return handle to the heap
  */
-struct GNUNET_CONTAINER_Heap *
-GNUNET_CONTAINER_heap_create (enum GNUNET_CONTAINER_HeapOrder order);
+struct GNUNET_CONTAINER_Heap *GNUNET_CONTAINER_heap_create (enum
+                                                            GNUNET_CONTAINER_HeapOrder
+                                                            order);
 
 
 /**
@@ -637,8 +638,7 @@ void GNUNET_CONTAINER_heap_destroy (struct GNUNET_CONTAINER_Heap *heap);
  * @param heap heap to inspect
  * @return NULL if heap is empty
  */
-void *
-GNUNET_CONTAINER_heap_peek (const struct GNUNET_CONTAINER_Heap *heap);
+void *GNUNET_CONTAINER_heap_peek (const struct GNUNET_CONTAINER_Heap *heap);
 
 
 /**
@@ -662,9 +662,10 @@ GNUNET_CONTAINER_heap_get_size (const struct GNUNET_CONTAINER_Heap *heap);
  *         GNUNET_NO if not.
  */
 typedef int (*GNUNET_CONTAINER_HeapIterator) (void *cls,
-					      struct GNUNET_CONTAINER_HeapNode *node,
-					      void *element,
-                                              GNUNET_CONTAINER_HeapCostType cost);
+                                              struct GNUNET_CONTAINER_HeapNode
+                                              * node, void *element,
+                                              GNUNET_CONTAINER_HeapCostType
+                                              cost);
 
 
 /**
@@ -675,9 +676,9 @@ typedef int (*GNUNET_CONTAINER_HeapIterator) (void *cls,
  * @param iterator_cls closure for iterator
  */
 void
-GNUNET_CONTAINER_heap_iterate (const struct GNUNET_CONTAINER_Heap *heap,
-			       GNUNET_CONTAINER_HeapIterator iterator,
-			       void *iterator_cls);
+GNUNET_CONTAINER_heap_iterate (struct GNUNET_CONTAINER_Heap *heap,
+                               GNUNET_CONTAINER_HeapIterator iterator,
+                               void *iterator_cls);
 
 
 /**
@@ -691,8 +692,8 @@ GNUNET_CONTAINER_heap_iterate (const struct GNUNET_CONTAINER_Heap *heap,
  * @return data stored at the next random node in the walk;
  *         NULL if the tree is empty.
  */
-void *
-GNUNET_CONTAINER_heap_walk_get_next (struct GNUNET_CONTAINER_Heap *heap);
+void *GNUNET_CONTAINER_heap_walk_get_next (struct GNUNET_CONTAINER_Heap
+                                           *heap);
 
 
 /**
@@ -703,10 +704,12 @@ GNUNET_CONTAINER_heap_walk_get_next (struct GNUNET_CONTAINER_Heap *heap);
  * @param cost cost for the element
  * @return node for the new element
  */
-struct GNUNET_CONTAINER_HeapNode *
-GNUNET_CONTAINER_heap_insert (struct GNUNET_CONTAINER_Heap *heap,
-                              void *element,
-			      GNUNET_CONTAINER_HeapCostType cost);
+struct GNUNET_CONTAINER_HeapNode *GNUNET_CONTAINER_heap_insert (struct
+                                                                GNUNET_CONTAINER_Heap
+                                                                *heap,
+                                                                void *element,
+                                                                GNUNET_CONTAINER_HeapCostType
+                                                                cost);
 
 
 /**
@@ -715,8 +718,7 @@ GNUNET_CONTAINER_heap_insert (struct GNUNET_CONTAINER_Heap *heap,
  * @param heap heap to modify
  * @return element data stored at the root node
  */
-void *
-GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *heap);
+void *GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *heap);
 
 
 /**
@@ -726,9 +728,9 @@ GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *heap);
  * @param node node to remove
  * @return element data stored at the node, NULL if heap is empty
  */
-void *
-GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_Heap *heap,
-				   struct GNUNET_CONTAINER_HeapNode *node);
+void *GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_Heap *heap,
+                                         struct GNUNET_CONTAINER_HeapNode
+                                         *node);
 
 
 /**
@@ -740,8 +742,8 @@ GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_Heap *heap,
  */
 void
 GNUNET_CONTAINER_heap_update_cost (struct GNUNET_CONTAINER_Heap *heap,
-                                   struct GNUNET_CONTAINER_HeapNode *node, 
-				   GNUNET_CONTAINER_HeapCostType new_cost);
+                                   struct GNUNET_CONTAINER_HeapNode *node,
+                                   GNUNET_CONTAINER_HeapCostType new_cost);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
