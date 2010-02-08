@@ -102,19 +102,19 @@ struct GNUNET_CONTAINER_Heap
    */
   enum GNUNET_CONTAINER_HeapOrder order;
 
-  /*
-   * Is the heap dirty (needs expunged)?
+  /**
+   * Is the heap dirty (needs purge of deleted nodes after iterators are done)?
    */
   unsigned int dirty;
 
-  /*
+  /**
    * How many iterations are we into this heap?
    *
    * 0 - if no iteration(s) taking place
    *   > 0 if iteration(s) in progress
    *   < 0 if we are currently cleaning up the heap (removing dead nodes)!
    */
-  int iterator_count;
+  unsigned int iterator_count;
 
 };
 
@@ -230,11 +230,9 @@ node_iterator (const struct GNUNET_CONTAINER_Heap *heap,
   if (GNUNET_YES != node_iterator (heap,
                                    node->right_child, iterator, iterator_cls))
     return GNUNET_NO;
-
-  if (node->delete == GNUNET_NO)
-    return iterator (iterator_cls, node, node->element, node->cost);
-  else
-    return GNUNET_NO;
+  if (node->delete != GNUNET_NO)
+    return GNUNET_YES;
+  return iterator (iterator_cls, node, node->element, node->cost);
 }
 
 
@@ -247,33 +245,25 @@ node_iterator (const struct GNUNET_CONTAINER_Heap *heap,
  * @param iterator_cls closure for iterator
  * @return GNUNET_YES to continue to iterate
  */
-void
+static void
 cleanup_node_iterator (struct GNUNET_CONTAINER_Heap *heap,
                struct GNUNET_CONTAINER_HeapNode *node)
 {
   if (node == NULL)
     return;
-
   if (node->left_child != NULL)
     cleanup_node_iterator(heap, node->left_child);
   if (node->right_child != NULL)
     cleanup_node_iterator(heap, node->right_child);
-
-  if (node->delete == GNUNET_YES)
-    {
-      if (heap->root == node)
-        GNUNET_CONTAINER_heap_remove_root (heap);
-      else
-        GNUNET_CONTAINER_heap_remove_node (heap, node);
-    }
-  return;
+  if (node->delete != GNUNET_YES)
+    return;
+  if (heap->root == node)
+    GNUNET_CONTAINER_heap_remove_root (heap);
+  else
+    GNUNET_CONTAINER_heap_remove_node (heap, node);
 }
 
-void cleanup_heap(struct GNUNET_CONTAINER_Heap *heap)
-{
-  cleanup_node_iterator(heap, heap->root);
-  heap->dirty = GNUNET_NO;
-}
+
 /**
  * Iterate over all entries in the heap.
  *
@@ -288,12 +278,13 @@ GNUNET_CONTAINER_heap_iterate (struct GNUNET_CONTAINER_Heap *heap,
 {
   heap->iterator_count++;
   (void) node_iterator (heap, heap->root, iterator, iterator_cls);
-  heap->iterator_count--;
-
-  if (heap->iterator_count == 0)
-  {
-    cleanup_heap(heap);
-  }
+  heap->iterator_count--;  
+  if ( (heap->iterator_count == 0) &&
+       (heap->dirty == GNUNET_YES) )    
+    {
+      cleanup_node_iterator(heap, heap->root);
+      heap->dirty = GNUNET_NO;
+    }
 }
 
 
@@ -431,14 +422,10 @@ GNUNET_CONTAINER_heap_remove_root (struct GNUNET_CONTAINER_Heap *heap)
     return NULL;
 
   ret = root->element;
-  if (heap->iterator_count != 0)
+  if (heap->iterator_count > 0)
     {
       heap->root->delete = GNUNET_YES;
-      if (heap->dirty == GNUNET_NO)
-      {
-        heap->dirty = GNUNET_YES;
-      }
-
+      heap->dirty = GNUNET_YES;     
       return ret;
     }
   heap->size--;
@@ -560,13 +547,10 @@ GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_Heap *heap,
   CHECK (heap->root);
 
   ret = node->element;
-  if (heap->iterator_count != 0)
+  if (heap->iterator_count > 0)
     {
       node->delete = GNUNET_YES;
-      if (heap->dirty == GNUNET_NO)
-      {
-        heap->dirty = GNUNET_YES;
-      }
+      heap->dirty = GNUNET_YES;      
       return ret;
     }
 
