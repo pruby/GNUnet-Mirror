@@ -49,21 +49,44 @@ struct GNUNET_neighbor
   unsigned int cost;
 };
 
+static struct GNUNET_CONTAINER_Heap *minHeap;
+static struct GNUNET_CONTAINER_Heap *maxHeap;
+static int cur_pos = 0;
+struct GNUNET_neighbor *neighbors[TESTS];
+
+static int
+iterator_callback (void *cls,
+                   struct GNUNET_CONTAINER_HeapNode * node,
+                   void *element,
+                   GNUNET_CONTAINER_HeapCostType cost)
+{
+  struct GNUNET_neighbor *neighbor = element;
+  struct GNUNET_neighbor *to_remove = cls;
+
+  if (to_remove == neighbor)
+  {
+#if DEBUG
+  fprintf(stderr, "Iterating, removing: neighbor %u with cost %u\n", neighbor->neighbor, neighbor->cost);
+#endif
+    GNUNET_CONTAINER_heap_remove_node (maxHeap, node);
+    GNUNET_free (neighbors[cur_pos - 1]);
+    neighbors[cur_pos - 1] = NULL;
+    cur_pos--;
+  }
+  return GNUNET_YES;
+
+}
 
 int
 main (int argc, char **argv)
 {
-
-  struct GNUNET_CONTAINER_Heap *minHeap;
-  struct GNUNET_CONTAINER_Heap *maxHeap;
   int i;
   int ret;
-  int cur_pos = 0;
+
   unsigned int temp_rand;
   unsigned int temp_node;
   unsigned int temp_id;
 
-  struct GNUNET_neighbor *neighbors[TESTS];
   struct GNUNET_CONTAINER_HeapNode *min_nodes[TESTS];
   struct GNUNET_CONTAINER_HeapNode *max_nodes[TESTS];
 
@@ -130,6 +153,19 @@ main (int argc, char **argv)
           cur_pos--;
           break;
         case 4:
+#if DEBUG
+          fprintf (stderr, "First removing from minheap, pre removal size is %d\n", GNUNET_CONTAINER_heap_get_size(minHeap));
+#endif
+          GNUNET_CONTAINER_heap_remove_node (minHeap, min_nodes[cur_pos - 1]);
+#if DEBUG
+          fprintf (stderr, "removal from minheap, post removal size is %d\n", GNUNET_CONTAINER_heap_get_size(minHeap));
+          fprintf (stderr, "Iterating over heap, pre removal size is %d\n", GNUNET_CONTAINER_heap_get_size(maxHeap));
+#endif
+          GNUNET_CONTAINER_heap_iterate(maxHeap, &iterator_callback, neighbors[cur_pos - 1]);
+#if DEBUG
+          fprintf (stderr, "post removal size is %d\n", GNUNET_CONTAINER_heap_get_size(maxHeap));
+#endif
+
           break;
         }
 
@@ -137,6 +173,9 @@ main (int argc, char **argv)
         return GNUNET_SYSERR;
 
     }
+
+
+
   while (GNUNET_CONTAINER_heap_get_size (maxHeap) > 0)
     {
       GNUNET_CONTAINER_heap_remove_root (maxHeap);

@@ -676,7 +676,7 @@ typedef int (*GNUNET_CONTAINER_HeapIterator) (void *cls,
  * @param iterator_cls closure for iterator
  */
 void
-GNUNET_CONTAINER_heap_iterate (const struct GNUNET_CONTAINER_Heap *heap,
+GNUNET_CONTAINER_heap_iterate (struct GNUNET_CONTAINER_Heap *heap,
                                GNUNET_CONTAINER_HeapIterator iterator,
                                void *iterator_cls);
 
