@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2009-12-29 12:23+0100\n"
+"POT-Creation-Date: 2010-02-12 22:35+0100\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -795,17 +795,17 @@ msgstr ""
 msgid "Syntax error in configuration entry HOST in section NETWORK: `%s'\n"
 msgstr "Syntaxfel i konfigurationsfil \"%s\" på rad %d.\n"
 
-#: src/util/network_client/tcpio.c:335
+#: src/util/network_client/tcpio.c:332
 #, c-format
 msgid "Error connecting to %s:%u. Is the daemon running?\n"
 msgstr ""
 
-#: src/util/network_client/tcpio.c:398 src/util/network/io.c:164
+#: src/util/network_client/tcpio.c:395 src/util/network/io.c:164
 #, fuzzy, c-format
 msgid "Cannot connect to %s:%u: %s\n"
 msgstr "Kan inte ansluta till %u.%u.%u.%u:%u: %s\n"
 
-#: src/util/network_client/tcpio.c:636
+#: src/util/network_client/tcpio.c:634
 #, fuzzy
 msgid "Reading result from gnunetd failed, reply invalid!\n"
 msgstr "\"%s\" misslyckades, svar ogiltigt!\n"
