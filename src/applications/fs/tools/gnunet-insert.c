@@ -431,6 +431,7 @@ main (int argc, char *const *argv)
         }
     }
 
+  start_time = GNUNET_get_time ();
   if (uri_string != NULL)
     {
       struct GNUNET_ECRS_URI *us
@@ -467,7 +468,6 @@ main (int argc, char *const *argv)
   tmp = GNUNET_expand_file_name (ectx, filename);
   if (!do_disable_creation_time)
     GNUNET_meta_data_add_publication_date (meta);
-  start_time = GNUNET_get_time ();
   errorCode = 1;
   ul = GNUNET_FSUI_upload_start (ctx,
                                  tmp,
