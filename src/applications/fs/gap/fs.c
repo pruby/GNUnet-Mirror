@@ -592,10 +592,6 @@ send_results_dv (const GNUNET_HashCode * key,
   unsigned int size;
   unsigned long long et;
   GNUNET_CronTime now;
-  int ret;
-  int want_more;
-
-  want_more = GNUNET_OK;
 
   enc = NULL;
   if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
@@ -620,7 +616,7 @@ send_results_dv (const GNUNET_HashCode * key,
   else
     {
       if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_KEYWORD)
-        return want_more;       /* expired KSK -- ignore! */
+        return GNUNET_YES;       /* expired KSK -- ignore! */
       /* indicate entry has expired */
       et = -1;
     }
@@ -634,9 +630,8 @@ send_results_dv (const GNUNET_HashCode * key,
   msg->expiration = GNUNET_htonll (et);
   memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
 
-  ret =
-    dv_api->dv_send (&original_msg->returnTo, &msg->header,
-                     htonl (original_msg->priority) * 2, et);
+  dv_api->dv_send (&original_msg->returnTo, &msg->header,
+                   htonl (original_msg->priority) * 2, et);
   if (stats != NULL)
     {
       stats->change (stat_dv_replies_sent, 1);
@@ -644,8 +639,7 @@ send_results_dv (const GNUNET_HashCode * key,
 
   GNUNET_free_non_null (enc);
   GNUNET_free (msg);
-  return ret;
-
+  return GNUNET_OK;
 }
 
 /**
