@@ -19,15 +19,18 @@ AC_DEFUN([AM_PATH_LIBLTDL],
      libltdl_prefix="$withval", libltdl_prefix="")
   ltdl_save_CPPFLAGS="$CPPFLAGS"
   ltdl_save_LDFLAGS="$LDFLAGS"
+  ltdl_save_LIBS="$LIBS"
   if test x$libltdl_prefix != x ; then
     CPPFLAGS="-I$libltdl_prefix/include $CPPFLAGS"
-    LDFLAGS="-L$libltdl_prefix/lib -lltdl $LDFLAGS"
+    LDFLAGS="-L$libltdl_prefix/lib $LDFLAGS"
+    LIBS="-lltdl $LIBS"
   else
     if test x"$LIBLTDL" = x ; then
-      LIBLTDL="-lltdl"
+      LTDLLIB="-lltdl"
     fi
     CPPFLAGS="$LTDLINCL $CPPFLAGS"
-    LDFLAGS="$LIBLTDL $LDFLAGS"
+    LDFLAGS="$LTDLLDF $LDFLAGS"
+    LIBS="$LTDLLIB $LIBS"
   fi
 
   symbols_to_check=ifelse([$1], ,"ltdl_dlopen","$1")
@@ -51,14 +54,17 @@ AC_DEFUN([AM_PATH_LIBLTDL],
 
   if test x$libltdl_prefix != x ; then
     LTDLINCL="-I$libltdl_prefix/include"
-    LIBLTDL="-L$libltdl_prefix/lib -lltdl"
+    LTDLLDF="-L$libltdl_prefix/lib"
+    LTDLLIB="-lltdl"
   else
-    if test x"$LIBLTDL" = x ; then
-      LIBLTDL="-lltdl"
+    if test x"$LTDLLIB" = x ; then
+      LTDLLIB="-lltdl"
+      LTDLLDF=""
     fi
   fi
   CPPFLAGS="$ltdl_save_CPPFLAGS"
   LDFLAGS="$ltdl_save_LDFLAGS"
+  LIBS="$ltdl_save_LIBS"
 
   AC_MSG_CHECKING(for libltdl with symbols $symbols_to_check)
   if test $ltdl_found = yes; then
@@ -66,10 +72,12 @@ AC_DEFUN([AM_PATH_LIBLTDL],
     ifelse([$2], , :, [$2])
   else
     LTDLINCL=""
-    LIBLTDL=""
+    LTDLLIB=""
+    LTDLLDF=""
     AC_MSG_RESULT(no)
     ifelse([$3], , :, [$3])
   fi
   AC_SUBST(LTDLINCL)
-  AC_SUBST(LIBLTDL)
+  AC_SUBST(LTDLLIB)
+  AC_SUBST(LTDLLDF)
 ])
