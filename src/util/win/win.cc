@@ -45,6 +45,8 @@ typedef list<WSAOVERLAPPED *> TOLList;
 
 static HANDLE hOLLock;
 static TOLList lstOL;
+/* ignored */
+static DWORD dwSent;
 
 int plibc_conv_to_win_path(const char *pszUnix, char *pszWindows);
 
@@ -850,7 +852,7 @@ int win_ols_sendto(struct GNUNET_SocketHandle *s, const char *buf, int len,
   
   pending = 0;
   
-  iRet = WSASendTo(s->handle, &wbuf, 1, NULL, 0, to, tolen, ol, NULL);
+  iRet = WSASendTo(s->handle, &wbuf, 1, &dwSent, 0, to, tolen, ol, NULL);
   err = WSAGetLastError();
   if (iRet == SOCKET_ERROR) {
     if (err == WSA_IO_PENDING) {
