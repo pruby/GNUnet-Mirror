@@ -27,6 +27,16 @@
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
 
+#define WRITE_MEM_STATS 1
+
+#if WRITE_MEM_STATS
+  #define HM_MALLOC malloc
+  #define HM_FREE free
+#else
+  #define HM_MALLOC GNUNET_malloc
+  #define HM_FREE GNUNET_free
+#endif
+
 struct MapEntry
 {
   GNUNET_HashCode key;
@@ -49,9 +59,9 @@ GNUNET_multi_hash_map_create (unsigned int len)
 {
   struct GNUNET_MultiHashMap *ret;
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_MultiHashMap));
+  ret = HM_MALLOC (sizeof (struct GNUNET_MultiHashMap));
   ret->size = 0;
-  ret->map = GNUNET_malloc (len * sizeof (struct MapEntry *));
+  ret->map = HM_MALLOC (len * sizeof (struct MapEntry *));
   memset (ret->map, 0, len * sizeof (struct MapEntry *));
   ret->map_length = len;
   return ret;
@@ -68,11 +78,11 @@ GNUNET_multi_hash_map_destroy (struct GNUNET_MultiHashMap *map)
       while (NULL != (e = map->map[i]))
         {
           map->map[i] = e->next;
-          GNUNET_free (e);
+          HM_FREE (e);
         }
     }
-  GNUNET_free (map->map);
-  GNUNET_free (map);
+  HM_FREE (map->map);
+  HM_FREE (map);
 }
 
 static unsigned int
@@ -148,7 +158,7 @@ GNUNET_multi_hash_map_remove (struct GNUNET_MultiHashMap *map,
             map->map[i] = e->next;
           else
             p->next = e->next;
-          GNUNET_free (e);
+          HM_FREE (e);
           map->size--;
           return GNUNET_YES;
         }
@@ -179,7 +189,7 @@ GNUNET_multi_hash_map_remove_all (struct GNUNET_MultiHashMap *map,
             map->map[i] = e->next;
           else
             p->next = e->next;
-          GNUNET_free (e);
+          HM_FREE (e);
           map->size--;
           if (p == NULL)
             e = map->map[i];
@@ -225,7 +235,7 @@ grow (struct GNUNET_MultiHashMap *map)
   old = map->map;
   l = map->map_length;
   map->map_length *= 2;
-  map->map = GNUNET_malloc (sizeof (struct MapEntry *) * map->map_length);
+  map->map = HM_MALLOC (sizeof (struct MapEntry *) * map->map_length);
   memset (map->map, 0, sizeof (struct MapEntry *) * map->map_length);
   for (i = 0; i < l; i++)
     {
@@ -236,7 +246,7 @@ grow (struct GNUNET_MultiHashMap *map)
           map->map[idx_of (map, &e->key)] = e;
         }
     }
-  GNUNET_free (old);
+  HM_FREE (old);
 }
 
 int
@@ -270,7 +280,7 @@ GNUNET_multi_hash_map_put (struct GNUNET_MultiHashMap *map,
       grow (map);
       i = idx_of (map, key);
     }
-  e = GNUNET_malloc (sizeof (struct MapEntry));
+  e = HM_MALLOC (sizeof (struct MapEntry));
   e->key = *key;
   e->value = value;
   e->next = map->map[i];

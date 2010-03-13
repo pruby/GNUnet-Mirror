@@ -32,10 +32,68 @@
 #define INT_MAX 0x7FFFFFFF
 #endif
 
-#define RECORD_USAGE 0
+#define RECORD_USAGE 1
+#define WRITE_MEM_STATS 1
 
 #if RECORD_USAGE
-volatile int GNUNET_memory_usage = 0;
+volatile unsigned long long GNUNET_memory_usage = 0;
+#endif
+
+#if WRITE_MEM_STATS
+  struct GNUNET_MultiHashMap *map;
+
+  typedef struct
+  {
+    char *filename;
+    int line;
+    size_t size;
+  } GNUNET_MemBlock;
+#endif
+
+#if WRITE_MEM_STATS
+static void __attribute__ ((constructor)) xmalloc_init()
+  {
+    map = GNUNET_multi_hash_map_create (50);
+    GNUNET_GE_ASSERT (NULL, map);
+  }
+
+static int map_iter (const GNUNET_HashCode *key, void *value, void *cls)
+  {
+    GNUNET_MemBlock *block;
+
+    block = (GNUNET_MemBlock *) value;
+
+    FPRINTF ((FILE *) cls, "%p;%u;%s:%u\n", key, block->size, block->filename, block->line);
+    return GNUNET_YES;
+  }
+
+static void __attribute__ ((destructor)) xmalloc_deinit()
+  {
+    FILE *f;
+    char fn[4097], *path;
+
+#ifdef MINGW
+    path = getenv ("USERPROFILE");
+#else
+    path = getenv ("HOME");
+#endif
+
+    snprintf (fn, 4096, "%s/gnunet_mem_stats.txt", path);
+    f = FOPEN (fn, "w");
+    if (!f)
+      {
+        PRINTF ("Cannot write memory statistics to %s: %s\n", fn, STRERROR(errno));
+        return;
+      }
+
+    FPRINTF (f, "Total: %llu\n\n", GNUNET_memory_usage);
+    fprintf (f, "ptr;size;source\n");
+    GNUNET_multi_hash_map_iterate (map, map_iter, f);
+    fputs ("\n*** end ***\n", f);
+
+    GNUNET_free (fn);
+    fclose (f);
+  }
 #endif
 
 /**
@@ -65,6 +123,10 @@ void *
 GNUNET_xmalloc_unchecked_ (size_t size, const char *filename, int linenumber)
 {
   void *result;
+#if WRITE_MEM_STATS
+  GNUNET_HashCode key;
+  GNUNET_MemBlock *block;
+#endif
 
   GNUNET_GE_ASSERT_FL (NULL, size < INT_MAX, filename, linenumber);
 
@@ -84,6 +146,24 @@ GNUNET_xmalloc_unchecked_ (size_t size, const char *filename, int linenumber)
   *((size_t *) result) = size;
   result += sizeof (size_t);
   GNUNET_memory_usage += size;
+#if WRITE_MEM_STATS
+  if (!map)
+    xmalloc_init();
+
+  memset (&key, 0, sizeof (GNUNET_HashCode));
+  memcpy (&key, result, sizeof (void *));
+  block = GNUNET_multi_hash_map_get (map, &key);
+  if (block)
+    block->size += size;
+  else
+    {
+      block = malloc (sizeof (GNUNET_MemBlock));
+      block->filename = strdup (filename);
+      block->line = linenumber;
+      block->size = size;
+      GNUNET_GE_ASSERT (NULL, GNUNET_multi_hash_map_put (map, &key, block, GNUNET_MultiHashMapOption_UNIQUE_ONLY) == GNUNET_YES);
+    }
+#endif
 #endif
 
   memset (result, 0, size);     /* client code should not rely on this, though... */
@@ -107,8 +187,31 @@ GNUNET_xrealloc_ (void *ptr,
                   const size_t n, const char *filename, int linenumber)
 {
 #if RECORD_USAGE
+  size_t old;
+#if WRITE_MEM_STATS
+  GNUNET_HashCode key;
+  GNUNET_MemBlock *block;
+#endif
+
   ptr -= sizeof (size_t);
-  GNUNET_memory_usage = GNUNET_memory_usage - (*((size_t *) ptr)) + n;
+  old = (*((size_t *) ptr));
+  GNUNET_memory_usage = GNUNET_memory_usage - old + n;
+
+  memset (&key, 0, sizeof (GNUNET_HashCode));
+  memcpy (&key, ptr, sizeof (void *));
+  block = GNUNET_multi_hash_map_get (map, &key);
+  if (block)
+    {
+      block->size = block->size - old + n;
+
+      if (!block->size)
+        {
+          GNUNET_multi_hash_map_remove_all (map, &key);
+          free (block->filename);
+          free (block);
+        }
+    }
+
   *((size_t *) ptr) = n;
   (*((size_t *) & n)) += sizeof (size_t);
 #endif
@@ -139,11 +242,28 @@ GNUNET_xrealloc_ (void *ptr,
 void
 GNUNET_xfree_ (void *ptr, const char *filename, int linenumber)
 {
+#if WRITE_MEM_STATS
+  GNUNET_HashCode key;
+  GNUNET_MemBlock *block;
+#endif
+
   GNUNET_GE_ASSERT_FL (NULL, ptr != NULL, filename, linenumber);
 
 #if RECORD_USAGE
   ptr -= sizeof (size_t);
   GNUNET_memory_usage -= *((size_t *) ptr);
+#endif
+#if WRITE_MEM_STATS
+  memset (&key, 0, sizeof (GNUNET_HashCode));
+  memcpy (&key, ptr, sizeof (void *));
+  block = GNUNET_multi_hash_map_get (map, &key);
+
+  if (block)
+    {
+      GNUNET_multi_hash_map_remove_all (map, &key);
+      free (block->filename);
+      free (block);
+    }
 #endif
 
   free (ptr);
