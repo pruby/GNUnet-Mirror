@@ -32,8 +32,8 @@
 #define INT_MAX 0x7FFFFFFF
 #endif
 
-#define RECORD_USAGE 1
-#define WRITE_MEM_STATS 1
+#define RECORD_USAGE 0
+#define WRITE_MEM_STATS 0
 
 #if RECORD_USAGE
 volatile unsigned long long GNUNET_memory_usage = 0;

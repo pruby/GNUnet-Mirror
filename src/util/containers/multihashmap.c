@@ -27,7 +27,7 @@
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
 
-#define WRITE_MEM_STATS 1
+#define WRITE_MEM_STATS 0
 
 #if WRITE_MEM_STATS
   #define HM_MALLOC malloc
